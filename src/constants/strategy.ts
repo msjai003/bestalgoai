@@ -35,5 +35,11 @@ export const strategyDescriptions = {
   "Short Straddle": "A neutral options strategy that involves simultaneously selling a put and a call of the same strike price and expiration date.",
   "Combined Short Straddle": "An advanced version of short straddle with additional hedging positions.",
   "Straddle Spread": "Involves buying and selling straddles at different strike prices.",
-  "Supertrend": "A trend-following indicator that shows buy and sell signals based on volatility and momentum."
+  "Supertrend": "A trend-following indicator that shows buy and sell signals based on volatility and momentum.",
+  "Overnight Momentum": "A strategy that captures overnight price movements based on market momentum.",
+  "Gap Up Strategy": "Takes advantage of price gaps between market close and next day's open.",
+  "Trend Following BTST": "Buy Today Sell Tomorrow strategy following market trends.",
+  "Swing Trading": "Medium-term trading strategy that captures 'swings' in stock prices.",
+  "Position Trading": "Long-term trading strategy that holds positions for extended periods.",
+  "Trend Following": "Strategy that follows the overall market trend for longer durations."
 } as const;

@@ -27,24 +27,24 @@ export const StrategyDetailsStep = ({
       return (
         <div className="space-y-6">
           <h3 className="text-white font-medium">Select Strategy Category</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="flex flex-col space-y-4">
             <Button
               variant="outline"
-              className="h-16 bg-gray-800 border-gray-700 text-white"
+              className="h-12 w-full bg-gray-800 border-gray-700 text-white"
               onClick={() => onCategorySelect("intraday")}
             >
               Intraday
             </Button>
             <Button
               variant="outline"
-              className="h-16 bg-gray-800 border-gray-700 text-white"
+              className="h-12 w-full bg-gray-800 border-gray-700 text-white"
               onClick={() => onCategorySelect("btst")}
             >
               BTST
             </Button>
             <Button
               variant="outline"
-              className="h-16 bg-gray-800 border-gray-700 text-white"
+              className="h-12 w-full bg-gray-800 border-gray-700 text-white"
               onClick={() => onCategorySelect("positional")}
             >
               Positional
