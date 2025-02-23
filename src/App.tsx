@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import StrategyBuilder from "./pages/StrategyBuilder";
 import BacktestReport from "./pages/BacktestReport";
+import LiveTrading from "./pages/LiveTrading";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/strategy-builder" element={<StrategyBuilder />} />
           <Route path="/backtest" element={<BacktestReport />} />
+          <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
