@@ -14,17 +14,17 @@ const slides: OnboardingSlide[] = [
   {
     title: "AI-Powered Trading",
     description: "Advanced algorithms working 24/7 to optimize your trading strategies",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   },
   {
     title: "Real-Time Analytics",
     description: "Get instant insights and market analysis to make informed decisions",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   },
   {
     title: "Secure & Reliable",
     description: "Your investments are protected with enterprise-grade security",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   }
 ];
 
