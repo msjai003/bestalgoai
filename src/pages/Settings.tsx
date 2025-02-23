@@ -1,14 +1,20 @@
 
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
       <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
-          <Button variant="ghost" className="p-2">
+          <Button 
+            variant="ghost" 
+            className="p-2"
+            onClick={() => navigate('/subscription')}
+          >
             <i className="fa-solid fa-arrow-left text-lg"></i>
           </Button>
           <h1 className="text-lg font-semibold">Settings</h1>
