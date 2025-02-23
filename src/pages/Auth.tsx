@@ -1,201 +1,123 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ChevronLeft } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-
-interface RegistrationData {
-  fullName: string;
-  email: string;
-  mobile: string;
-  password: string;
-  confirmPassword: string;
-  tradingExperience: string;
-  preferredMarkets: string[];
-}
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<RegistrationData>({
-    fullName: '',
-    email: '',
-    mobile: '',
-    password: '',
-    confirmPassword: '',
-    tradingExperience: '',
-    preferredMarkets: [],
-  });
+  const navigate = useNavigate();
 
-  const handleChange = (field: keyof RegistrationData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleNext = () => {
-    setStep(prev => Math.min(prev + 1, 3));
-  };
-
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(prev => prev - 1);
-    }
-  };
-
-  const renderRegistrationStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Full Name</Label>
-              <Input
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Email Address</Label>
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Mobile Number</Label>
-              <Input
-                type="tel"
-                placeholder="+91 "
-                value={formData.mobile}
-                onChange={(e) => handleChange('mobile', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
-              />
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Password</Label>
-              <Input
-                type="password"
-                placeholder="Create a secure password"
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Confirm Password</Label>
-              <Input
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
-              />
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Trading Experience</Label>
-              <select
-                value={formData.tradingExperience}
-                onChange={(e) => handleChange('tradingExperience', e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none text-white"
-              >
-                <option value="">Select your experience level</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
+  const handleSignUpClick = () => {
+    navigate('/registration');
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <header className="flex items-center justify-between mb-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={step > 1 ? handleBack : () => {}}
-          className="p-2 text-gray-400"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <div className="flex items-center">
-          <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl mr-2"></i>
-          <span className="text-xl font-bold bg-gradient-to-r from-[#FF00D4] to-purple-600 bg-clip-text text-transparent">
-            BestAlgo.ai
-          </span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-gray-400">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <Link to="/" className="flex items-center">
+            <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl"></i>
+            <span className="text-white text-xl ml-2">BestAlgo.ai</span>
+          </Link>
         </div>
-        <Link to="/" className="p-2 text-gray-400">
-          <X className="h-6 w-6" />
+        <Link to="/" className="text-gray-400">
+          <X className="h-5 w-5" />
         </Link>
-      </header>
+      </div>
 
-      <section className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
-        <div className="flex items-center justify-between mb-6">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`w-1/3 h-1 rounded-full ${
-                s <= step ? 'bg-[#FF00D4]' : 'bg-gray-700'
-              } ${s !== 3 ? 'mr-1' : ''}`}
+      <div className="flex flex-col items-center mt-12">
+        <h1 className="text-2xl font-bold text-white mb-8">Welcome Back</h1>
+
+        <div className="bg-gray-800/50 p-1 rounded-xl mb-8">
+          <div className="flex">
+            <Button
+              variant="ghost"
+              className={`px-8 py-2 rounded-lg ${
+                isLogin ? 'bg-[#FF00D4] text-white' : 'text-gray-400'
+              }`}
+              onClick={() => setIsLogin(true)}
+            >
+              Login
+            </Button>
+            <Button
+              variant="ghost"
+              className={`px-8 py-2 rounded-lg ${
+                !isLogin ? 'bg-[#FF00D4] text-white' : 'text-gray-400'
+              }`}
+              onClick={() => {
+                setIsLogin(false);
+                handleSignUpClick();
+              }}
+            >
+              Sign Up
+            </Button>
+          </div>
+        </div>
+
+        <div className="w-full space-y-4">
+          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
+            <Input
+              type="email"
+              placeholder="Email Address"
+              className="w-full bg-transparent text-white outline-none border-none"
             />
-          ))}
-        </div>
-        <p className="text-gray-400 text-sm">Step {step} of 3</p>
-      </section>
-
-      <section className="space-y-6">
-        <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700">
-          {renderRegistrationStep()}
-        </div>
-
-        <Button
-          onClick={step === 3 ? () => {} : handleNext}
-          className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
-        >
-          {step === 3 ? 'Complete Registration' : 'Next Step'}
-        </Button>
-
-        <footer className="mt-8 text-center text-sm text-gray-400">
-          <p className="mb-2">
-            By continuing, you agree to our{' '}
-            <Button variant="link" className="text-[#FF00D4] p-0 h-auto">
-              Terms
-            </Button>{' '}
-            &{' '}
-            <Button variant="link" className="text-[#FF00D4] p-0 h-auto">
-              Privacy Policy
+          </div>
+          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
+            <Input
+              type="password"
+              placeholder="Password"
+              className="w-full bg-transparent text-white outline-none border-none"
+            />
+          </div>
+          <div className="text-right">
+            <Button variant="link" className="text-[#FF00D4] text-sm p-0 h-auto">
+              Forgot Password?
             </Button>
-          </p>
-          <p>
-            Need help?{' '}
-            <Button variant="link" className="text-[#FF00D4] p-0 h-auto">
-              Contact Support
+          </div>
+          <Button className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg">
+            Login
+          </Button>
+
+          <div className="flex items-center gap-4 justify-center mt-6">
+            <Button
+              variant="outline"
+              className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+            >
+              <i className="fa-brands fa-google text-white"></i>
             </Button>
-          </p>
-        </footer>
-      </section>
+            <Button
+              variant="outline"
+              className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+            >
+              <i className="fa-brands fa-apple text-white"></i>
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+            >
+              <i className="fa-brands fa-facebook text-white"></i>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 p-6 text-center">
+        <p className="text-gray-500 text-sm">
+          By continuing, you agree to our{' '}
+          <Button variant="link" className="text-[#FF00D4] p-0 h-auto">
+            Terms of Service
+          </Button>{' '}
+          &{' '}
+          <Button variant="link" className="text-[#FF00D4] p-0 h-auto">
+            Privacy Policy
+          </Button>
+        </p>
+      </div>
     </div>
   );
 };
