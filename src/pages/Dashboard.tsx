@@ -39,9 +39,11 @@ const Dashboard = () => {
           <div className="grid grid-cols-4 gap-4">
             <QuickActionButton icon="fa-chart-line" label="Strategies" />
             <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
-            <QuickActionButton icon="fa-shield-halved" label="Risk" />
-            <Link to="/community" className="block">
+            <Link to="/subscription" className="block">
               <QuickActionButton icon="fa-star" label="Premium" />
+            </Link>
+            <Link to="/community" className="block">
+              <QuickActionButton icon="fa-users" label="Community" />
             </Link>
           </div>
         </section>
