@@ -66,6 +66,7 @@ const Settings = () => {
         <section className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
           <Button 
             className="w-full py-6 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg font-medium shadow-lg hover:from-pink-700 hover:to-purple-700"
+            onClick={() => navigate('/logout')}
           >
             Logout
           </Button>

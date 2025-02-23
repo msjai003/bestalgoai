@@ -21,6 +21,7 @@ import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
 import Subscription from "./pages/Subscription";
 import CommunityLearning from "./pages/CommunityLearning";
+import Logout from "./pages/Logout";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/community" element={<CommunityLearning />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
