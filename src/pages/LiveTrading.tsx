@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const LiveTrading = () => {
   const [selectedStock, setSelectedStock] = useState("NIFTY");
   const [timeFrame, setTimeFrame] = useState("1D");
   const [isActive, setIsActive] = useState(false);
+  const navigate = useNavigate();
 
   const handleTradingToggle = () => {
     setIsActive(!isActive);
@@ -105,10 +112,20 @@ const LiveTrading = () => {
                 <p className="text-gray-400 text-xs mb-1">Current P&L</p>
                 <p className="text-emerald-400 text-lg font-semibold">+₹8,450</p>
               </div>
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <p className="text-gray-400 text-xs mb-1">Success Rate</p>
-                <p className="text-white text-lg font-semibold">72%</p>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="bg-gray-800/50 p-3 rounded-lg cursor-pointer" onClick={() => navigate('/backtest-report')}>
+                      <p className="text-gray-400 text-xs mb-1">Success Rate</p>
+                      <p className="text-white text-lg font-semibold">68%</p>
+                      <p className="text-xs text-gray-500">View Backtest Report</p>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-800 text-white border-gray-700">
+                    <p>Based on latest backtest results</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div className="space-y-3">
               {!isActive ? (
