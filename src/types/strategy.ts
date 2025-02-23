@@ -24,6 +24,8 @@ export interface FormData {
   accessToken: string;
 }
 
+export type StepType = typeof STEPS[keyof typeof STEPS];
+
 export const STEPS = {
   STRATEGY_TYPE: 0,
   STRATEGY_DETAILS: 1,

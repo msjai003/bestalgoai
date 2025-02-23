@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StrategyTypeStep } from "@/components/strategy/StrategyTypeStep";
 import { StrategyDetailsStep } from "@/components/strategy/StrategyDetailsStep";
-import { STEPS, FormData, StrategyType, StrategyCategory } from "@/types/strategy";
+import { STEPS, FormData, StrategyType, StrategyCategory, StepType } from "@/types/strategy";
 import { indices, positionTypes, optionTypes, expiryTypes, strikeTypes, highLowTypes, brokers } from "@/constants/strategy";
 
 const StrategyBuilder = () => {
-  const [currentStep, setCurrentStep] = useState(STEPS.STRATEGY_TYPE);
+  const [currentStep, setCurrentStep] = useState<StepType>(STEPS.STRATEGY_TYPE);
   const [strategyType, setStrategyType] = useState<StrategyType>("predefined");
   const [selectedCategory, setSelectedCategory] = useState<StrategyCategory | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -252,7 +252,7 @@ const StrategyBuilder = () => {
       return;
     }
     if (currentStep < STEPS.BROKER) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((currentStep + 1) as StepType);
     }
   };
 
@@ -262,7 +262,7 @@ const StrategyBuilder = () => {
         setSelectedCategory(null);
         return;
       }
-      setCurrentStep(currentStep - 1);
+      setCurrentStep((currentStep - 1) as StepType);
     }
   };
 
