@@ -29,7 +29,7 @@ export const Features = () => {
           <div key={feature.id} id={feature.id} className="p-4 rounded-xl bg-gray-800/50 border border-gray-700">
             <i className={`${feature.icon} text-[#FF00D4] text-2xl mb-3`}></i>
             <h3 className="font-semibold mb-2">{feature.title}</h3>
-            <p className="text-sm text-gray-300">{description}</p>
+            <p className="text-sm text-gray-300">{feature.description}</p>
           </div>
         ))}
       </div>
