@@ -1,14 +1,11 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StrategyTypeStep } from "@/components/strategy/StrategyTypeStep";
 import { StrategyDetailsStep } from "@/components/strategy/StrategyDetailsStep";
 import { STEPS, FormData, StrategyType, StrategyCategory, StepType } from "@/types/strategy";
-import { indices, positionTypes, optionTypes, expiryTypes, strikeTypes, highLowTypes, brokers } from "@/constants/strategy";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
