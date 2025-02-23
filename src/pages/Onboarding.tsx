@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,17 +13,17 @@ const slides: OnboardingSlide[] = [
   {
     title: "AI-Powered Trading",
     description: "Advanced algorithms working 24/7 to optimize your trading strategies",
-    image: "/assets/ai-trading.png"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   },
   {
     title: "Real-Time Analytics",
     description: "Get instant insights and market analysis to make informed decisions",
-    image: "/assets/analytics.png"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   },
   {
     title: "Secure & Reliable",
     description: "Your investments are protected with enterprise-grade security",
-    image: "/assets/security.png"
+    image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/e9f4ab2317-59a78029ca7bc003a10f.png"
   }
 ];
 
