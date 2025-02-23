@@ -1,37 +1,36 @@
 
-const FeatureCard = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
-  <div className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl border border-gray-700 shadow-lg">
-    <div className="flex items-start gap-4">
-      <div className="bg-[#FF00D4]/10 p-3 rounded-xl">
-        <i className={`${icon} text-[#FF00D4] text-2xl`}></i>
-      </div>
-      <div>
-        <h3 className="font-semibold text-lg mb-2">{title}</h3>
-        <p className="text-gray-400 text-sm">{description}</p>
-      </div>
-    </div>
-  </div>
-);
-
 export const Features = () => {
   const features = [
     {
-      icon: "fa-solid fa-robot",
-      title: "AI-Powered Trading",
-      description: "Advanced algorithms that analyze market patterns and execute trades automatically"
+      id: 'feature-1',
+      icon: 'fa-solid fa-robot',
+      title: 'AI-Powered Strategies',
+      description: 'Advanced algorithms that adapt to market conditions in real-time'
     },
     {
-      icon: "fa-solid fa-shield-halved",
-      title: "Risk Management",
-      description: "Built-in safeguards and real-time monitoring to protect your investments"
+      id: 'feature-2',
+      icon: 'fa-solid fa-shield-halved',
+      title: 'SEBI Compliant',
+      description: 'Fully regulated and secure trading platform'
+    },
+    {
+      id: 'feature-3',
+      icon: 'fa-solid fa-gauge-high',
+      title: 'Low Latency Execution',
+      description: 'Lightning-fast order execution for optimal results'
     }
   ];
 
   return (
-    <section className="px-4 py-8">
-      <div className="space-y-4">
-        {features.map((feature, index) => (
-          <FeatureCard key={index} {...feature} />
+    <section className="px-4 py-12">
+      <h2 className="text-2xl font-bold mb-6">Why Choose BestAlgo.ai?</h2>
+      <div className="space-y-6">
+        {features.map((feature) => (
+          <div key={feature.id} id={feature.id} className="p-4 rounded-xl bg-gray-800/50 border border-gray-700">
+            <i className={`${feature.icon} text-[#FF00D4] text-2xl mb-3`}></i>
+            <h3 className="font-semibold mb-2">{feature.title}</h3>
+            <p className="text-sm text-gray-300">{description}</p>
+          </div>
         ))}
       </div>
     </section>

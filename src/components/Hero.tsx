@@ -1,16 +1,21 @@
 
 export const Hero = () => {
   return (
-    <section className="pt-16 px-4">
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-pink-800 p-6 mt-4">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 backdrop-blur-sm"></div>
-        <div className="relative z-10 text-center py-12">
-          <h1 className="text-3xl font-bold mb-3">AI-Powered Algo Trading</h1>
-          <p className="text-gray-300 mb-6">Smart trading strategies for the modern Indian investor</p>
-          <button className="bg-gradient-to-r from-[#FF00D4] to-purple-600 px-8 py-3 rounded-full font-semibold shadow-lg shadow-[#FF00D4]/25 hover:shadow-[#FF00D4]/40 transition-all">
-            Get Started Now
-          </button>
-        </div>
+    <section className="relative px-4 py-12 bg-gradient-to-b from-gray-900 to-gray-800">
+      <div className="absolute inset-0 bg-[#FF00D4]/10"></div>
+      <div className="relative">
+        <h1 className="text-3xl font-bold mb-3">AI-Powered Algo Trading for Everyone</h1>
+        <p className="text-gray-300 mb-6">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
+        <button className="w-full py-3 px-6 bg-gradient-to-r from-[#FF00D4] to-purple-600 rounded-xl font-semibold shadow-lg shadow-[#FF00D4]/20">
+          Start Trading Now
+        </button>
+      </div>
+      <div className="mt-8">
+        <img 
+          className="w-full h-48 object-cover rounded-xl shadow-lg" 
+          src="https://storage.googleapis.com/uxpilot-auth.appspot.com/493f062fc3-bc315fc272ae97137e07.png" 
+          alt="3D illustration of trading dashboard with charts and graphs, dark theme with purple accents, modern UI"
+        />
       </div>
     </section>
   );
