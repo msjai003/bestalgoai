@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -24,7 +24,9 @@ const Logout = () => {
         >
           <i className="fa-solid fa-arrow-left text-xl"></i>
         </Button>
-        <h1 className="text-xl font-medium flex-1 text-center mr-8">Logout</h1>
+        <Link to="/" className="flex-1 text-center mr-8">
+          <h1 className="text-xl font-medium">BestAlgo.ai</h1>
+        </Link>
       </header>
 
       <main className="flex flex-col items-center justify-center px-4 mt-16">
