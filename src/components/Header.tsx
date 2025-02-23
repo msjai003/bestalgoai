@@ -29,6 +29,7 @@ export const Header = () => {
           <nav className="flex flex-col p-4 space-y-4">
             <Link to="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
             <Link to="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
+            <Link to="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
             <a href="#" className="text-gray-300 hover:text-white transition-colors">Market</a>
             <a href="#" className="text-gray-300 hover:text-white transition-colors">Strategy</a>
             <a href="#" className="text-gray-300 hover:text-white transition-colors">Profile</a>
