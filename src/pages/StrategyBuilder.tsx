@@ -46,6 +46,14 @@ const StrategyBuilder = () => {
     }));
   };
 
+  const handleStrategyTypeChange = (type: StrategyType) => {
+    setStrategyType(type);
+  };
+
+  const handleNextStep = () => {
+    setCurrentStep(STEPS.STRATEGY_DETAILS);
+  };
+
   const renderPositionDetails = () => (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -224,7 +232,8 @@ const StrategyBuilder = () => {
         return (
           <StrategyTypeStep
             strategyType={strategyType}
-            onStrategyTypeChange={setStrategyType}
+            onStrategyTypeChange={handleStrategyTypeChange}
+            onNextStep={handleNextStep}
           />
         );
       case STEPS.STRATEGY_DETAILS:
