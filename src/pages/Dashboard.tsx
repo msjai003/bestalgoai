@@ -1,6 +1,7 @@
 
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   return (
@@ -14,7 +15,12 @@ const Dashboard = () => {
                 <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
                 <p className="text-2xl font-bold text-white">₹12,45,678</p>
               </div>
-              <span className="text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg text-sm">+2.4%</span>
+              <Link 
+                to="/subscription" 
+                className="text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg text-sm hover:bg-emerald-400/20"
+              >
+                Upgrade
+              </Link>
             </div>
             <div className="flex justify-between text-sm mt-4">
               <div>
@@ -34,7 +40,9 @@ const Dashboard = () => {
             <QuickActionButton icon="fa-chart-line" label="Strategies" />
             <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
             <QuickActionButton icon="fa-shield-halved" label="Risk" />
-            <QuickActionButton icon="fa-paper-plane" label="Paper" />
+            <Link to="/subscription" className="block">
+              <QuickActionButton icon="fa-star" label="Premium" />
+            </Link>
           </div>
         </section>
       </main>

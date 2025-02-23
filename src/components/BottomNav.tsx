@@ -19,8 +19,8 @@ export const BottomNav = () => {
           <i className={`fa-solid fa-bell ${location.pathname === '/alerts' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
           <span className="text-xs text-gray-400 mt-1">Alerts</span>
         </Link>
-        <Link to="/settings" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-gear ${location.pathname === '/settings' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
+        <Link to="/subscription" className="flex flex-col items-center p-2">
+          <i className={`fa-solid fa-gear ${location.pathname === '/subscription' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
           <span className="text-xs text-gray-400 mt-1">Settings</span>
         </Link>
       </div>
