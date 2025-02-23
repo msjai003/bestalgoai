@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, X } from 'lucide-react';
@@ -27,9 +28,19 @@ const slides: OnboardingSlide[] = [
   }
 ];
 
+const SLIDE_INTERVAL = 3000; // 3 seconds per slide
+
 const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+    }, SLIDE_INTERVAL);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
@@ -83,7 +94,7 @@ const Onboarding = () => {
             <div className="text-center">
               <div className="mb-6">
                 <img
-                  className="w-48 h-48 mx-auto rounded-xl object-cover"
+                  className="w-48 h-48 mx-auto rounded-xl object-cover transition-opacity duration-500"
                   src={slides[currentSlide].image}
                   alt={slides[currentSlide].title}
                 />
@@ -97,7 +108,7 @@ const Onboarding = () => {
               {slides.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                     index === currentSlide ? 'bg-[#FF00D4]' : 'bg-gray-600'
                   }`}
                 />
