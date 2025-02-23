@@ -14,6 +14,8 @@ import Registration from "./pages/Registration";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
+import StrategyBuilder from "./pages/StrategyBuilder";
+import BacktestReport from "./pages/BacktestReport";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/registration" element={<Registration />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/strategy-builder" element={<StrategyBuilder />} />
+          <Route path="/backtest" element={<BacktestReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
