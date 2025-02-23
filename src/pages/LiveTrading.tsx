@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 const LiveTrading = () => {
   const [selectedStock, setSelectedStock] = useState("RELIANCE");
   const [timeFrame, setTimeFrame] = useState("1D");
+  const [isActive, setIsActive] = useState(false);
+
+  const handleTradingToggle = () => {
+    setIsActive(!isActive);
+  };
 
   return (
     <div className="bg-gray-900 min-h-screen">
@@ -25,14 +30,9 @@ const LiveTrading = () => {
 
       <main className="pt-16 pb-20 px-4">
         <div className="bg-gray-800/50 p-1 rounded-xl mt-4 mb-6">
-          <div className="grid grid-cols-2 gap-1">
-            <button className="text-gray-400 py-2 px-4 rounded-lg text-sm font-medium">
-              Manual Trading
-            </button>
-            <button className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white py-2 px-4 rounded-lg text-sm font-medium">
-              Algo Trading
-            </button>
-          </div>
+          <button className="w-full bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white py-2 px-4 rounded-lg text-sm font-medium">
+            Algo Trading
+          </button>
         </div>
 
         <section className="space-y-4 mb-6">
@@ -47,7 +47,7 @@ const LiveTrading = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Select Stock</span>
+                <span className="text-gray-300 text-sm">Selected Instrument</span>
                 <div className="flex items-center gap-2 text-white">
                   <span>{selectedStock}</span>
                   <i className="fa-solid fa-chevron-down text-xs text-gray-400"></i>
@@ -65,8 +65,12 @@ const LiveTrading = () => {
               <div className="flex items-center justify-between">
                 <span className="text-gray-300 text-sm">Status</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-emerald-400">Active</span>
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className={isActive ? "text-emerald-400" : "text-red-400"}>
+                    {isActive ? "Active" : "Inactive"}
+                  </span>
+                  {isActive && (
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  )}
                 </div>
               </div>
             </div>
@@ -86,19 +90,22 @@ const LiveTrading = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <Button 
-                className="w-full bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white py-6 rounded-lg font-medium shadow-lg"
-                onClick={() => console.log("Start trading")}
-              >
-                Start Trading
-              </Button>
-              <Button 
-                variant="outline"
-                className="w-full border-gray-700 text-gray-400 py-6 rounded-lg font-medium"
-                onClick={() => console.log("Stop trading")}
-              >
-                Stop Trading
-              </Button>
+              {!isActive ? (
+                <Button 
+                  className="w-full bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white py-6 rounded-lg font-medium shadow-lg"
+                  onClick={handleTradingToggle}
+                >
+                  Start Trading
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline"
+                  className="w-full border-gray-700 text-gray-400 py-6 rounded-lg font-medium"
+                  onClick={handleTradingToggle}
+                >
+                  Stop Trading
+                </Button>
+              )}
             </div>
           </div>
         </section>
