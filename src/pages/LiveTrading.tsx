@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -118,7 +117,6 @@ const LiveTrading = () => {
                     <div className="bg-gray-800/50 p-3 rounded-lg cursor-pointer" onClick={() => navigate('/backtest-report')}>
                       <p className="text-gray-400 text-xs mb-1">Success Rate</p>
                       <p className="text-white text-lg font-semibold">68%</p>
-                      <p className="text-xs text-gray-500">View Backtest Report</p>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-gray-800 text-white border-gray-700">
