@@ -52,14 +52,17 @@ const CommunityLearning = () => {
               <h1 className="text-xl font-bold">Community & Learning</h1>
             </div>
             <p className="text-gray-400 mb-4">Connect with traders and master algo trading</p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="bg-[#FF00D4] text-white hover:bg-[#FF00D4]/90"
+                className="bg-[#FF00D4] text-white hover:bg-[#FF00D4]/90 w-full sm:w-auto"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Join Discussion
               </Button>
-              <Button variant="outline" className="border-gray-700 text-gray-400 hover:bg-gray-800">
+              <Button 
+                variant="outline" 
+                className="border-gray-700 text-gray-400 hover:bg-gray-800 w-full sm:w-auto"
+              >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Browse Courses
               </Button>
