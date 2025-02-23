@@ -1,67 +1,20 @@
 import { useState } from "react";
-import { Header } from "@/components/Header";
+import { Link } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ChevronDown, Clock } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-const STEPS = {
-  STRATEGY_TYPE: 0,
-  STRATEGY_DETAILS: 1,
-  POSITION: 2,
-  OPTIONS: 3,
-  PARAMETERS: 4,
-  BROKER: 5
-};
-
-const strategies = {
-  intraday: [
-    "Short Straddle",
-    "Combined Short Straddle",
-    "Straddle Spread",
-    "Supertrend"
-  ],
-  btst: [
-    "Overnight Momentum",
-    "Gap Up Strategy",
-    "Trend Following BTST"
-  ],
-  positional: [
-    "Swing Trading",
-    "Position Trading",
-    "Trend Following"
-  ]
-};
-
-const indices = ["Nifty", "Sensex"];
-const positionTypes = ["Buy", "Sell"];
-const optionTypes = ["Call", "Put"];
-const expiryTypes = ["Weekly", "Next Weekly", "Monthly"];
-const brokers = ["Zerodha", "Aliceblue", "Angel One"];
-const highLowTypes = ["High", "Low"];
-
-const strikeTypes = [
-  "OTM10", "OTM9", "OTM8", "OTM7", "OTM6", "OTM5", "OTM4", "OTM3", "OTM2", "OTM1",
-  "ATM",
-  "ITM1", "ITM2", "ITM3", "ITM4", "ITM5", "ITM6", "ITM7", "ITM8", "ITM9", "ITM10"
-];
-
-const strategyDescriptions = {
-  "Short Straddle": "A neutral options strategy that involves simultaneously selling a put and a call of the same strike price and expiration date.",
-  "Combined Short Straddle": "An advanced version of short straddle with additional hedging positions.",
-  "Straddle Spread": "Involves buying and selling straddles at different strike prices.",
-  "Supertrend": "A trend-following indicator that shows buy and sell signals based on volatility and momentum."
-};
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StrategyTypeStep } from "@/components/strategy/StrategyTypeStep";
+import { StrategyDetailsStep } from "@/components/strategy/StrategyDetailsStep";
+import { STEPS, FormData, StrategyType, StrategyCategory } from "@/types/strategy";
+import { indices, positionTypes, optionTypes, expiryTypes, strikeTypes, highLowTypes, brokers } from "@/constants/strategy";
 
 const StrategyBuilder = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.STRATEGY_TYPE);
-  const [strategyType, setStrategyType] = useState<"predefined" | "custom">("predefined");
-  const [selectedCategory, setSelectedCategory] = useState<"intraday" | "btst" | "positional" | null>(null);
-  const [formData, setFormData] = useState({
+  const [strategyType, setStrategyType] = useState<StrategyType>("predefined");
+  const [selectedCategory, setSelectedCategory] = useState<StrategyCategory | null>(null);
+  const [formData, setFormData] = useState<FormData>({
     strategy: "",
     strategyDescription: "",
     index: "",
@@ -88,121 +41,6 @@ const StrategyBuilder = () => {
       ...prev,
       [field]: value
     }));
-  };
-
-  const renderStrategyTypeSelection = () => (
-    <div className="space-y-6">
-      <h3 className="text-white font-medium">Choose Strategy Type</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant={strategyType === "predefined" ? "default" : "outline"}
-          className={`h-24 ${strategyType === "predefined" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
-          onClick={() => setStrategyType("predefined")}
-        >
-          Predefined Strategies
-        </Button>
-        <Button
-          variant={strategyType === "custom" ? "default" : "outline"}
-          className={`h-24 ${strategyType === "custom" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
-          onClick={() => setStrategyType("custom")}
-        >
-          Custom Strategy
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderStrategyDetails = () => {
-    if (strategyType === "predefined") {
-      if (!selectedCategory) {
-        return (
-          <div className="space-y-6">
-            <h3 className="text-white font-medium">Select Strategy Category</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <Button
-                variant="outline"
-                className="h-16 bg-gray-800 border-gray-700 text-white"
-                onClick={() => setSelectedCategory("intraday")}
-              >
-                Intraday
-              </Button>
-              <Button
-                variant="outline"
-                className="h-16 bg-gray-800 border-gray-700 text-white"
-                onClick={() => setSelectedCategory("btst")}
-              >
-                BTST
-              </Button>
-              <Button
-                variant="outline"
-                className="h-16 bg-gray-800 border-gray-700 text-white"
-                onClick={() => setSelectedCategory("positional")}
-              >
-                Positional
-              </Button>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-gray-300">Select Strategy</Label>
-            <Select 
-              value={formData.strategy} 
-              onValueChange={(value) => {
-                handleInputChange("strategy", value);
-                handleInputChange("strategyDescription", strategyDescriptions[value as keyof typeof strategyDescriptions] || "");
-              }}
-            >
-              <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
-                <SelectValue placeholder="Choose strategy" />
-              </SelectTrigger>
-              <SelectContent>
-                {strategies[selectedCategory].map(strategy => (
-                  <SelectItem key={strategy} value={strategy}>{strategy}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {formData.strategyDescription && (
-            <div className="space-y-2">
-              <Label className="text-gray-300">Strategy Details</Label>
-              <Textarea
-                value={formData.strategyDescription}
-                readOnly
-                className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
-              />
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-gray-300">Strategy Name</Label>
-          <Input
-            value={formData.strategy}
-            onChange={(e) => handleInputChange("strategy", e.target.value)}
-            className="bg-gray-800 border-gray-700 text-white"
-            placeholder="Enter strategy name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-gray-300">Strategy Description</Label>
-          <Textarea
-            value={formData.strategyDescription}
-            onChange={(e) => handleInputChange("strategyDescription", e.target.value)}
-            className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
-            placeholder="Describe your strategy..."
-          />
-        </div>
-      </div>
-    );
   };
 
   const renderPositionDetails = () => (
@@ -380,9 +218,22 @@ const StrategyBuilder = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case STEPS.STRATEGY_TYPE:
-        return renderStrategyTypeSelection();
+        return (
+          <StrategyTypeStep
+            strategyType={strategyType}
+            onStrategyTypeChange={setStrategyType}
+          />
+        );
       case STEPS.STRATEGY_DETAILS:
-        return renderStrategyDetails();
+        return (
+          <StrategyDetailsStep
+            strategyType={strategyType}
+            selectedCategory={selectedCategory}
+            formData={formData}
+            onCategorySelect={setSelectedCategory}
+            onInputChange={handleInputChange}
+          />
+        );
       case STEPS.POSITION:
         return renderPositionDetails();
       case STEPS.OPTIONS:
@@ -447,7 +298,7 @@ const StrategyBuilder = () => {
               {renderStepContent()}
               
               <div className="flex justify-between mt-6">
-                {currentStep > STEPS.BASIC && (
+                {currentStep > STEPS.STRATEGY_TYPE && (
                   <Button
                     variant="outline"
                     onClick={handleBack}
