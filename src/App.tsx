@@ -19,6 +19,7 @@ import BacktestReport from "./pages/BacktestReport";
 import LiveTrading from "./pages/LiveTrading";
 import Alerts from "./pages/Alerts";
 import Subscription from "./pages/Subscription";
+import CommunityLearning from "./pages/CommunityLearning";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/subscription" element={<Subscription />} />
+          <Route path="/community" element={<CommunityLearning />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
