@@ -4,15 +4,24 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const LiveTrading = () => {
-  const [selectedStock, setSelectedStock] = useState("RELIANCE");
+  const [selectedStock, setSelectedStock] = useState("NIFTY");
   const [timeFrame, setTimeFrame] = useState("1D");
   const [isActive, setIsActive] = useState(false);
 
   const handleTradingToggle = () => {
     setIsActive(!isActive);
   };
+
+  const instruments = ["NIFTY", "BANKNIFTY", "FINNIFTY", "SENSEX", "MIDCPNIFTY"];
 
   return (
     <div className="bg-gray-900 min-h-screen">
@@ -48,10 +57,22 @@ const LiveTrading = () => {
               
               <div className="flex items-center justify-between">
                 <span className="text-gray-300 text-sm">Selected Instrument</span>
-                <div className="flex items-center gap-2 text-white">
-                  <span>{selectedStock}</span>
-                  <i className="fa-solid fa-chevron-down text-xs text-gray-400"></i>
-                </div>
+                <Select value={selectedStock} onValueChange={setSelectedStock}>
+                  <SelectTrigger className="w-[140px] bg-transparent border-0 text-white focus:ring-0">
+                    <SelectValue placeholder="Select Instrument" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {instruments.map((instrument) => (
+                      <SelectItem 
+                        key={instrument} 
+                        value={instrument}
+                        className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                      >
+                        {instrument}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center justify-between">
