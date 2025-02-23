@@ -11,6 +11,7 @@ import Blog from "./pages/Blog";
 import Support from "./pages/Support";
 import Auth from "./pages/Auth";
 import Registration from "./pages/Registration";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/support" element={<Support />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/registration" element={<Registration />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
