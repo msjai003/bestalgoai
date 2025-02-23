@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -8,30 +7,42 @@ import { ChevronDown, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 
 const STEPS = {
-  BASIC: 0,
-  POSITION: 1,
-  OPTIONS: 2,
-  PARAMETERS: 3,
-  BROKER: 4
+  STRATEGY_TYPE: 0,
+  STRATEGY_DETAILS: 1,
+  POSITION: 2,
+  OPTIONS: 3,
+  PARAMETERS: 4,
+  BROKER: 5
 };
 
-const strategies = [
-  "Moving Average Crossover",
-  "RSI Strategy",
-  "MACD Strategy",
-  "Bollinger Bands",
-  "Supertrend"
-];
+const strategies = {
+  intraday: [
+    "Short Straddle",
+    "Combined Short Straddle",
+    "Straddle Spread",
+    "Supertrend"
+  ],
+  btst: [
+    "Overnight Momentum",
+    "Gap Up Strategy",
+    "Trend Following BTST"
+  ],
+  positional: [
+    "Swing Trading",
+    "Position Trading",
+    "Trend Following"
+  ]
+};
 
 const indices = ["Nifty", "Sensex"];
-const strategyTypes = ["Intraday", "BTST", "Positional"];
 const positionTypes = ["Buy", "Sell"];
 const optionTypes = ["Call", "Put"];
 const expiryTypes = ["Weekly", "Next Weekly", "Monthly"];
 const brokers = ["Zerodha", "Aliceblue", "Angel One"];
+const highLowTypes = ["High", "Low"];
 
 const strikeTypes = [
   "OTM10", "OTM9", "OTM8", "OTM7", "OTM6", "OTM5", "OTM4", "OTM3", "OTM2", "OTM1",
@@ -39,12 +50,21 @@ const strikeTypes = [
   "ITM1", "ITM2", "ITM3", "ITM4", "ITM5", "ITM6", "ITM7", "ITM8", "ITM9", "ITM10"
 ];
 
+const strategyDescriptions = {
+  "Short Straddle": "A neutral options strategy that involves simultaneously selling a put and a call of the same strike price and expiration date.",
+  "Combined Short Straddle": "An advanced version of short straddle with additional hedging positions.",
+  "Straddle Spread": "Involves buying and selling straddles at different strike prices.",
+  "Supertrend": "A trend-following indicator that shows buy and sell signals based on volatility and momentum."
+};
+
 const StrategyBuilder = () => {
-  const [currentStep, setCurrentStep] = useState(STEPS.BASIC);
+  const [currentStep, setCurrentStep] = useState(STEPS.STRATEGY_TYPE);
+  const [strategyType, setStrategyType] = useState<"predefined" | "custom">("predefined");
+  const [selectedCategory, setSelectedCategory] = useState<"intraday" | "btst" | "positional" | null>(null);
   const [formData, setFormData] = useState({
     strategy: "",
+    strategyDescription: "",
     index: "",
-    strategyType: "",
     entryTime: "",
     exitTime: "",
     quantity: "",
@@ -56,84 +76,134 @@ const StrategyBuilder = () => {
     stoploss: "",
     entryMomentum: "",
     rangeBreakout: "",
-    highLowRange: [0],
+    highLow: "",
     instrument: "",
-    broker: ""
+    broker: "",
+    apiKey: "",
+    accessToken: ""
   });
 
-  const handleInputChange = (field: string, value: string | number | number[]) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const renderBasicDetails = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label className="text-gray-300">Select Strategy</Label>
-        <Select value={formData.strategy} onValueChange={(value) => handleInputChange("strategy", value)}>
-          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Choose strategy" />
-          </SelectTrigger>
-          <SelectContent>
-            {strategies.map(strategy => (
-              <SelectItem key={strategy} value={strategy}>{strategy}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-300">Index</Label>
-        <Select value={formData.index} onValueChange={(value) => handleInputChange("index", value)}>
-          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Select index" />
-          </SelectTrigger>
-          <SelectContent>
-            {indices.map(index => (
-              <SelectItem key={index} value={index}>{index}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-300">Strategy Type</Label>
-        <Select value={formData.strategyType} onValueChange={(value) => handleInputChange("strategyType", value)}>
-          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            {strategyTypes.map(type => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
+  const renderStrategyTypeSelection = () => (
+    <div className="space-y-6">
+      <h3 className="text-white font-medium">Choose Strategy Type</h3>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-gray-300">Entry Time</Label>
-          <Input 
-            type="time" 
-            className="bg-gray-800 border-gray-700 text-white"
-            value={formData.entryTime}
-            onChange={(e) => handleInputChange("entryTime", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-gray-300">Exit Time</Label>
-          <Input 
-            type="time"
-            className="bg-gray-800 border-gray-700 text-white"
-            value={formData.exitTime}
-            onChange={(e) => handleInputChange("exitTime", e.target.value)}
-          />
-        </div>
+        <Button
+          variant={strategyType === "predefined" ? "default" : "outline"}
+          className={`h-24 ${strategyType === "predefined" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
+          onClick={() => setStrategyType("predefined")}
+        >
+          Predefined Strategies
+        </Button>
+        <Button
+          variant={strategyType === "custom" ? "default" : "outline"}
+          className={`h-24 ${strategyType === "custom" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
+          onClick={() => setStrategyType("custom")}
+        >
+          Custom Strategy
+        </Button>
       </div>
     </div>
   );
+
+  const renderStrategyDetails = () => {
+    if (strategyType === "predefined") {
+      if (!selectedCategory) {
+        return (
+          <div className="space-y-6">
+            <h3 className="text-white font-medium">Select Strategy Category</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <Button
+                variant="outline"
+                className="h-16 bg-gray-800 border-gray-700 text-white"
+                onClick={() => setSelectedCategory("intraday")}
+              >
+                Intraday
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 bg-gray-800 border-gray-700 text-white"
+                onClick={() => setSelectedCategory("btst")}
+              >
+                BTST
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 bg-gray-800 border-gray-700 text-white"
+                onClick={() => setSelectedCategory("positional")}
+              >
+                Positional
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-gray-300">Select Strategy</Label>
+            <Select 
+              value={formData.strategy} 
+              onValueChange={(value) => {
+                handleInputChange("strategy", value);
+                handleInputChange("strategyDescription", strategyDescriptions[value as keyof typeof strategyDescriptions] || "");
+              }}
+            >
+              <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
+                <SelectValue placeholder="Choose strategy" />
+              </SelectTrigger>
+              <SelectContent>
+                {strategies[selectedCategory].map(strategy => (
+                  <SelectItem key={strategy} value={strategy}>{strategy}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.strategyDescription && (
+            <div className="space-y-2">
+              <Label className="text-gray-300">Strategy Details</Label>
+              <Textarea
+                value={formData.strategyDescription}
+                readOnly
+                className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
+              />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-gray-300">Strategy Name</Label>
+          <Input
+            value={formData.strategy}
+            onChange={(e) => handleInputChange("strategy", e.target.value)}
+            className="bg-gray-800 border-gray-700 text-white"
+            placeholder="Enter strategy name"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-gray-300">Strategy Description</Label>
+          <Textarea
+            value={formData.strategyDescription}
+            onChange={(e) => handleInputChange("strategyDescription", e.target.value)}
+            className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
+            placeholder="Describe your strategy..."
+          />
+        </div>
+      </div>
+    );
+  };
 
   const renderPositionDetails = () => (
     <div className="space-y-4">
@@ -252,15 +322,17 @@ const StrategyBuilder = () => {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-gray-300">High/Low Range</Label>
-        <Slider
-          defaultValue={[0]}
-          max={100}
-          step={1}
-          value={formData.highLowRange as number[]}
-          onValueChange={(value) => handleInputChange("highLowRange", value)}
-          className="w-full"
-        />
+        <Label className="text-gray-300">High/Low</Label>
+        <Select value={formData.highLow} onValueChange={(value) => handleInputChange("highLow", value)}>
+          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
+            <SelectValue placeholder="Select High/Low" />
+          </SelectTrigger>
+          <SelectContent>
+            {highLowTypes.map(type => (
+              <SelectItem key={type} value={type}>{type}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
@@ -280,13 +352,37 @@ const StrategyBuilder = () => {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-300">API Key</Label>
+        <Input 
+          type="text"
+          className="bg-gray-800 border-gray-700 text-white"
+          value={formData.apiKey}
+          onChange={(e) => handleInputChange("apiKey", e.target.value)}
+          placeholder="Enter your API key"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-300">Access Token (Optional)</Label>
+        <Input 
+          type="text"
+          className="bg-gray-800 border-gray-700 text-white"
+          value={formData.accessToken}
+          onChange={(e) => handleInputChange("accessToken", e.target.value)}
+          placeholder="Enter your access token"
+        />
+      </div>
     </div>
   );
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case STEPS.BASIC:
-        return renderBasicDetails();
+      case STEPS.STRATEGY_TYPE:
+        return renderStrategyTypeSelection();
+      case STEPS.STRATEGY_DETAILS:
+        return renderStrategyDetails();
       case STEPS.POSITION:
         return renderPositionDetails();
       case STEPS.OPTIONS:
@@ -301,13 +397,20 @@ const StrategyBuilder = () => {
   };
 
   const handleNext = () => {
+    if (currentStep === STEPS.STRATEGY_TYPE && strategyType === "predefined" && !selectedCategory) {
+      return;
+    }
     if (currentStep < STEPS.BROKER) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    if (currentStep > STEPS.BASIC) {
+    if (currentStep > STEPS.STRATEGY_TYPE) {
+      if (currentStep === STEPS.STRATEGY_DETAILS && strategyType === "predefined" && selectedCategory) {
+        setSelectedCategory(null);
+        return;
+      }
       setCurrentStep(currentStep - 1);
     }
   };
