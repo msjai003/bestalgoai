@@ -40,7 +40,7 @@ const Dashboard = () => {
             <QuickActionButton icon="fa-chart-line" label="Strategies" />
             <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
             <QuickActionButton icon="fa-shield-halved" label="Risk" />
-            <Link to="/subscription" className="block">
+            <Link to="/community" className="block">
               <QuickActionButton icon="fa-star" label="Premium" />
             </Link>
           </div>
