@@ -1,9 +1,15 @@
 
 const FeatureCard = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
-  <div className="p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:bg-gray-800/70 transition-all duration-300 transform hover:-translate-y-1">
-    <i className={`${icon} text-[#FF00D4] text-3xl mb-4`}></i>
-    <h3 className="text-xl font-semibold mb-3 text-white">{title}</h3>
-    <p className="text-gray-300">{description}</p>
+  <div className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl border border-gray-700 shadow-lg">
+    <div className="flex items-start gap-4">
+      <div className="bg-[#FF00D4]/10 p-3 rounded-xl">
+        <i className={`${icon} text-[#FF00D4] text-2xl`}></i>
+      </div>
+      <div>
+        <h3 className="font-semibold text-lg mb-2">{title}</h3>
+        <p className="text-gray-400 text-sm">{description}</p>
+      </div>
+    </div>
   </div>
 );
 
@@ -11,32 +17,22 @@ export const Features = () => {
   const features = [
     {
       icon: "fa-solid fa-robot",
-      title: "AI-Powered Strategies",
-      description: "Advanced algorithms that adapt to market conditions in real-time"
+      title: "AI-Powered Trading",
+      description: "Advanced algorithms that analyze market patterns and execute trades automatically"
     },
     {
       icon: "fa-solid fa-shield-halved",
-      title: "SEBI Compliant",
-      description: "Fully regulated and secure trading platform"
-    },
-    {
-      icon: "fa-solid fa-gauge-high",
-      title: "Low Latency Execution",
-      description: "Lightning-fast order execution for optimal results"
+      title: "Risk Management",
+      description: "Built-in safeguards and real-time monitoring to protect your investments"
     }
   ];
 
   return (
-    <section className="px-4 py-20 bg-gray-900">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-white">
-          Why Choose BestAlgo.ai?
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <FeatureCard key={index} {...feature} />
-          ))}
-        </div>
+    <section className="px-4 py-8">
+      <div className="space-y-4">
+        {features.map((feature, index) => (
+          <FeatureCard key={index} {...feature} />
+        ))}
       </div>
     </section>
   );

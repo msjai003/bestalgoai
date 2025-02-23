@@ -31,8 +31,14 @@
     @apply border-border;
   }
 
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   html {
