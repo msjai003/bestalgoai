@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ChevronLeft } from 'lucide-react';
@@ -18,6 +17,7 @@ interface RegistrationData {
 
 const Registration = () => {
   const [step, setStep] = useState(1);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<RegistrationData>({
     fullName: '',
     email: '',
@@ -39,6 +39,8 @@ const Registration = () => {
   const handleBack = () => {
     if (step > 1) {
       setStep(prev => prev - 1);
+    } else {
+      navigate('/auth');
     }
   };
 
@@ -133,7 +135,7 @@ const Registration = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={step > 1 ? handleBack : () => {}}
+          onClick={handleBack}
           className="p-2 text-gray-400"
         >
           <ChevronLeft className="h-6 w-6" />
