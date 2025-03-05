@@ -32,17 +32,31 @@ export const useBrokerConnection = (selectedBroker: any) => {
       return;
     }
 
-    setConnectionStep("verification");
-    toast.info("Verifying credentials...");
-    
-    setTimeout(() => {
-      if (credentials.twoFactorCode === "123456" || credentials.twoFactorCode === "") {
-        setConnectionStep("settings");
-        toast.success("Credentials verified successfully");
-      } else {
-        toast.error("Invalid verification code. Please try again.");
+    // If currently on credentials step, move to verification
+    if (connectionStep === "credentials") {
+      setConnectionStep("verification");
+      toast.info("Please enter the verification code sent to your email");
+      return;
+    }
+
+    // If on verification step, validate the 2FA code
+    if (connectionStep === "verification") {
+      if (!credentials.twoFactorCode || credentials.twoFactorCode.length !== 6) {
+        toast.error("Please enter a valid 6-digit verification code");
+        return;
       }
-    }, 1500);
+
+      toast.info("Verifying code...");
+      
+      setTimeout(() => {
+        if (credentials.twoFactorCode === "123456") {
+          setConnectionStep("settings");
+          toast.success("Verification successful");
+        } else {
+          toast.error("Invalid verification code. Please try again.");
+        }
+      }, 1500);
+    }
   };
 
   const handleSettingsSubmit = () => {
