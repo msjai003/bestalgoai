@@ -33,6 +33,18 @@ const BrokerIntegration = () => {
       name: "Upstox",
       description: "Low brokerage fees",
       logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg",
+    },
+    {
+      id: 5,
+      name: "Aliceblue",
+      description: "Advanced trading tools",
+      logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg",
+    },
+    {
+      id: 6,
+      name: "Angelone",
+      description: "Comprehensive trading platform",
+      logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg",
     }
   ];
 
