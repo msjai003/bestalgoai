@@ -93,6 +93,7 @@ const Settings = () => {
                 <SettingsLink 
                   icon={<Bell className="w-5 h-5 text-pink-500" />} 
                   label="Notifications" 
+                  onClick={() => navigate("/notifications")}
                 />
               </div>
             </div>

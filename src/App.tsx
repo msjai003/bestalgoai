@@ -19,6 +19,7 @@ import BacktestReport from "./pages/BacktestReport";
 import LiveTrading from "./pages/LiveTrading";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 import Subscription from "./pages/Subscription";
 import CommunityLearning from "./pages/CommunityLearning";
 import Logout from "./pages/Logout";
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/community" element={<CommunityLearning />} />
           <Route path="/logout" element={<Logout />} />
