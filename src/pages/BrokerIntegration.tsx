@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ const BrokerIntegration = () => {
     username: "",
     password: "",
     apiKey: "",
-    apiSecret: "",
+    twoFactorSecret: "",
     twoFactorCode: ""
   });
   const [showApiFields, setShowApiFields] = useState(false);
@@ -110,22 +109,19 @@ const BrokerIntegration = () => {
   };
 
   const handleCredentialsSubmit = () => {
-    // Validate credentials (in a real implementation, this would call an API)
     if (!credentials.username || !credentials.password) {
       toast.error("Please enter your username and password");
       return;
     }
 
-    if (showApiFields && (!credentials.apiKey || !credentials.apiSecret)) {
-      toast.error("API Key and Secret are required for this broker");
+    if (showApiFields && (!credentials.apiKey || !credentials.twoFactorSecret)) {
+      toast.error("API Key and 2FA Secret are required for this broker");
       return;
     }
 
-    // In a real implementation, you would validate the credentials with the broker's API
     setConnectionStep("verification");
     toast.info("Verifying credentials...");
     
-    // Simulate verification delay
     setTimeout(() => {
       if (credentials.twoFactorCode === "123456" || credentials.twoFactorCode === "") {
         setConnectionStep("settings");
@@ -137,7 +133,6 @@ const BrokerIntegration = () => {
   };
 
   const handleSettingsSubmit = () => {
-    // In a real implementation, this would save the user's preferences
     if (!selectedAccount) {
       toast.error("Please select an account type");
       return;
@@ -153,7 +148,6 @@ const BrokerIntegration = () => {
     navigate('/dashboard');
   };
 
-  // Reset to broker selection
   const handleReset = () => {
     setSelectedBrokerId(null);
     setConnectionStep("selection");
@@ -161,7 +155,7 @@ const BrokerIntegration = () => {
       username: "",
       password: "",
       apiKey: "",
-      apiSecret: "",
+      twoFactorSecret: "",
       twoFactorCode: ""
     });
     setShowApiFields(false);
@@ -292,26 +286,29 @@ const BrokerIntegration = () => {
             </div>
 
             <div>
-              <Label htmlFor="apiSecret" className="text-gray-300 flex items-center gap-2">
-                <Shield className="w-4 h-4" /> API Secret
+              <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
+                <Shield className="w-4 h-4" /> 2FA Secret
               </Label>
               <Input 
-                id="apiSecret"
+                id="twoFactorSecret"
                 type="password"
-                placeholder="Enter your API secret"
+                placeholder="Enter your 2FA secret"
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                value={credentials.apiSecret}
-                onChange={(e) => setCredentials({...credentials, apiSecret: e.target.value})}
+                value={credentials.twoFactorSecret}
+                onChange={(e) => setCredentials({...credentials, twoFactorSecret: e.target.value})}
               />
             </div>
           </>
         )}
+      </div>
 
-        <div className="pt-3 pb-1">
-          <div className="flex items-center">
-            <Shield className="w-5 h-5 text-gray-400 mr-2" />
-            <p className="text-sm text-gray-400">
-              Your credentials are securely encrypted and never stored on our servers.
+      <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 mt-6">
+        <div className="flex items-center">
+          <Shield className="w-5 h-5 text-pink-500 mr-2" />
+          <div>
+            <h4 className="font-medium text-white">Security Assurance</h4>
+            <p className="text-sm text-gray-300 mt-1">
+              Your credentials are securely encrypted and never stored on our servers. We use industry-standard encryption to protect your information.
             </p>
           </div>
         </div>
@@ -460,7 +457,6 @@ const BrokerIntegration = () => {
     </section>
   );
 
-  // Determine which step to display
   const renderCurrentStep = () => {
     switch (connectionStep) {
       case "selection":
@@ -472,13 +468,12 @@ const BrokerIntegration = () => {
       case "settings":
         return renderAccountSettings();
       case "success":
-        return renderBrokerSelection(); // Go back to selection after success
+        return renderBrokerSelection();
       default:
         return renderBrokerSelection();
     }
   };
 
-  // Determine which buttons to display at the bottom
   const renderActionButtons = () => {
     switch (connectionStep) {
       case "selection":
@@ -602,7 +597,6 @@ const BrokerIntegration = () => {
         </div>
       </section>
 
-      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="bg-gray-800 border-gray-700 text-gray-100">
           <DialogHeader>
