@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Bell, Building, TrendingUp, Shield } from "lucide-react";
+import { Bell, Building, TrendingUp, Shield, User } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 
 const Settings = () => {
@@ -50,6 +50,11 @@ const Settings = () => {
             <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
               <h3 className="text-sm font-medium text-gray-400 mb-3">Account Settings</h3>
               <div className="space-y-3">
+                <SettingsLink 
+                  icon={<User className="w-5 h-5 text-pink-500" />} 
+                  label="Personal Details" 
+                  onClick={() => console.log("Personal Details clicked")}
+                />
                 <SettingsLink 
                   icon={<Shield className="w-5 h-5 text-pink-500" />} 
                   label="Security Settings" 
