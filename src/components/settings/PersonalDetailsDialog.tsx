@@ -34,15 +34,15 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 text-white border border-gray-700 sm:max-w-md max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="bg-gray-800 text-white border border-gray-700 sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="pb-2">
           <DialogTitle className="text-xl">Personal Details</DialogTitle>
           <DialogDescription className="text-gray-400">
             Update your personal information below
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="pr-4 max-h-[60vh]">
+        <ScrollArea className="flex-1 pr-4 overflow-y-auto">
           <div className="space-y-4 py-3">
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
@@ -98,7 +98,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
           </div>
         </ScrollArea>
         
-        <DialogFooter className="sm:justify-between gap-3">
+        <DialogFooter className="mt-4 pt-2 border-t border-gray-700 flex flex-row sm:justify-between gap-3">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
