@@ -13,7 +13,7 @@ const Settings = () => {
           <Button 
             variant="ghost" 
             className="p-2"
-            onClick={() => navigate('/subscription')}
+            onClick={() => navigate('/dashboard')}
           >
             <i className="fa-solid fa-arrow-left text-lg"></i>
           </Button>
