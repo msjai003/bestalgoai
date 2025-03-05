@@ -50,7 +50,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
                 id="fullName"
                 value={formData.fullName}
                 onChange={(e) => handleChange("fullName", e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:outline-none focus-visible:ring-0 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
@@ -61,7 +61,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:outline-none focus-visible:ring-0 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
@@ -71,7 +71,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:outline-none focus-visible:ring-0 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
@@ -81,7 +81,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:outline-none focus-visible:ring-0 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
@@ -91,7 +91,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
                 id="bio"
                 value={formData.bio}
                 onChange={(e) => handleChange("bio", e.target.value)}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:outline-none focus-visible:ring-0 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
                 rows={3}
               />
             </div>
