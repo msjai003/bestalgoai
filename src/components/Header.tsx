@@ -1,42 +1,63 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Menu, X, Info, BookOpen, HelpCircle, Bell } from 'lucide-react';
+import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Latest notifications data
 const latestNotifications = [
   {
     id: 1,
     title: "Trade Executed",
-    message: "Buy order for RELIANCE completed",
+    message: "Your order #12345 has been executed successfully",
     time: "2 min ago"
   },
   {
     id: 2,
     title: "Price Alert",
-    message: "HDFC Bank reached target price",
+    message: "HDFC Bank reached target price of ₹1,680",
     time: "15 min ago"
   },
   {
     id: 3,
     title: "AI Strategy Update",
-    message: "Your strategy has been optimized",
+    message: "Your strategy has been optimized based on market conditions",
     time: "1 hour ago"
+  },
+  {
+    id: 4,
+    title: "Account Security",
+    message: "Your account security settings were updated",
+    time: "2 hours ago"
+  },
+  {
+    id: 5,
+    title: "New Feature",
+    message: "Enhanced risk management tools are now available!",
+    time: "1 day ago"
   }
 ];
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState(latestNotifications);
+  const [isAllRead, setIsAllRead] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
+  
+  const markAllAsRead = () => {
+    setIsAllRead(true);
+  };
+
+  const hasUnreadNotifications = !isAllRead && notifications.length > 0;
 
   return (
     <header className="fixed w-full top-0 z-50 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800">
@@ -60,43 +81,73 @@ export const Header = () => {
         </Link>
 
         <div className="flex items-center space-x-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link to="/alerts">
-                  <Button variant="ghost" size="icon" className="p-2 relative">
-                    <Bell className="w-5 h-5 text-gray-300" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF00D4] rounded-full"></span>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent 
-                side="bottom" 
-                align="end" 
-                className="w-72 p-0 bg-gray-800 border-gray-700 text-gray-100"
-              >
-                <div className="flex flex-col">
-                  <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center">
-                    <h3 className="font-medium text-sm">Recent Notifications</h3>
-                    <Link to="/alerts" className="text-[#FF00D4] text-xs hover:underline">
-                      View All
-                    </Link>
-                  </div>
-                  <div className="max-h-72 overflow-y-auto">
-                    {latestNotifications.map((notification) => (
-                      <div key={notification.id} className="px-4 py-3 border-b border-gray-700/50 hover:bg-gray-700/30">
-                        <div className="flex justify-between">
-                          <h4 className="text-sm font-medium">{notification.title}</h4>
-                          <span className="text-xs text-gray-400">{notification.time}</span>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1">{notification.message}</p>
-                      </div>
-                    ))}
+          <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="p-2 relative">
+                <Bell className="w-5 h-5 text-gray-300" />
+                {hasUnreadNotifications && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF00D4] rounded-full"></span>
+                )}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md p-0 bg-gray-900 border-gray-800 text-white">
+              <div className="flex flex-col max-h-[80vh]">
+                <div className="sticky top-0 px-6 py-4 border-b border-gray-800 bg-gray-900 z-10">
+                  <div className="flex justify-between items-center">
+                    <h2 className="font-bold text-lg">Notifications</h2>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-gray-400 hover:text-white"
+                        onClick={markAllAsRead}
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        <span className="text-xs">Mark all as read</span>
+                      </Button>
+                      <Link to="/settings">
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                
+                {notifications.length > 0 ? (
+                  <ScrollArea className="flex-1 max-h-[60vh]">
+                    <div className="divide-y divide-gray-800">
+                      {notifications.map((notification) => (
+                        <div key={notification.id} className="px-6 py-4 hover:bg-gray-800/50 transition-colors">
+                          <div className="flex justify-between">
+                            <h4 className="text-sm font-medium">{notification.title}</h4>
+                            <span className="text-xs text-gray-400">{notification.time}</span>
+                          </div>
+                          <p className="text-sm text-gray-300 mt-1">{notification.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-4">
+                      <Check className="w-6 h-6 text-[#FF00D4]" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">You're all caught up!</h3>
+                    <p className="text-sm text-gray-400">No new notifications.</p>
+                  </div>
+                )}
+                
+                <div className="sticky bottom-0 border-t border-gray-800 p-4 bg-gray-900">
+                  <Link to="/alerts">
+                    <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 hover:text-white">
+                      View All Notifications
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <img 
             src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
             alt="Profile" 
