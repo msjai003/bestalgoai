@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings } from 'lucide-react';
+import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -177,6 +177,30 @@ export const Header = () => {
                 to="/support" 
                 icon={<HelpCircle className="w-5 h-5" />} 
                 label="Support" 
+                onClick={() => setIsOpen(false)} 
+              />
+              <MenuLink 
+                to="/products" 
+                icon={<Package className="w-5 h-5" />} 
+                label="Products" 
+                onClick={() => setIsOpen(false)} 
+              />
+              <MenuLink 
+                to="/partners" 
+                icon={<Users className="w-5 h-5" />} 
+                label="Partners" 
+                onClick={() => setIsOpen(false)} 
+              />
+              <MenuLink 
+                to="/terms" 
+                icon={<FileText className="w-5 h-5" />} 
+                label="Legal / Terms & Privacy" 
+                onClick={() => setIsOpen(false)} 
+              />
+              <MenuLink 
+                to="/logout" 
+                icon={<LogOut className="w-5 h-5" />} 
+                label="Logout" 
                 onClick={() => setIsOpen(false)} 
               />
             </ul>
