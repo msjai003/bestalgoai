@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 interface PersonalDetailsDialogProps {
@@ -18,14 +19,22 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
     email: "rahul.s@gmail.com",
     phone: "+91 9876543210",
     address: "123 Trading Street, Mumbai 400001",
-    bio: "Professional trader specializing in algorithmic trading strategies for 5+ years."
+    bio: "Professional trader specializing in algorithmic trading strategies for 5+ years.",
+    isResearchAnalyst: false,
+    certificationNumber: ""
   });
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = () => {
+    // Validate certification number if research analyst is selected
+    if (formData.isResearchAnalyst && !formData.certificationNumber.trim()) {
+      toast.error("Please enter your Research Analyst certification number");
+      return;
+    }
+    
     // Here you would typically save the data to an API or state management
     toast.success("Personal details updated successfully");
     onOpenChange(false);
@@ -93,6 +102,31 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
               rows={3}
             />
           </div>
+          
+          {/* Research Analyst toggle */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="research-analyst" className="cursor-pointer">Are you a Research Analyst?</Label>
+            <Switch
+              id="research-analyst"
+              checked={formData.isResearchAnalyst}
+              onCheckedChange={(checked) => handleChange("isResearchAnalyst", checked)}
+              className="bg-gray-700 data-[state=checked]:bg-pink-600"
+            />
+          </div>
+          
+          {/* Conditionally render certification number input */}
+          {formData.isResearchAnalyst && (
+            <div className="space-y-2 pt-2">
+              <Label htmlFor="certification">RA Certification Number</Label>
+              <Input
+                id="certification"
+                value={formData.certificationNumber}
+                onChange={(e) => handleChange("certificationNumber", e.target.value)}
+                placeholder="Enter your certification number"
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+              />
+            </div>
+          )}
         </div>
         
         <DialogFooter className="sm:justify-between gap-3">
