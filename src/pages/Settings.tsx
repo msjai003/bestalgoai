@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { User, Lock, Bell, Building, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { User, Lock, Bell, Building, TrendingUp, Shield } from "lucide-react";
 import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
+import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -57,8 +57,9 @@ const Settings = () => {
                   onClick={() => setActiveDialog("personalDetails")}
                 />
                 <SettingsLink 
-                  icon={<Lock className="w-5 h-5 text-pink-500" />} 
+                  icon={<Shield className="w-5 h-5 text-pink-500" />} 
                   label="Security Settings" 
+                  onClick={() => setActiveDialog("securitySettings")}
                 />
                 <SettingsLink 
                   icon={<Bell className="w-5 h-5 text-pink-500" />} 
@@ -97,6 +98,10 @@ const Settings = () => {
       <PersonalDetailsDialog 
         open={activeDialog === "personalDetails"} 
         onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
+      />
+      <SecuritySettingsDialog
+        open={activeDialog === "securitySettings"}
+        onOpenChange={(open) => setActiveDialog(open ? "securitySettings" : null)}
       />
     </div>
   );
