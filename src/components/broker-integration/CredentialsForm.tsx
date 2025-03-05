@@ -29,19 +29,6 @@ export const CredentialsForm = ({
         <h1 className="text-2xl font-bold">Broker Credentials</h1>
       </div>
 
-      {/* Enhanced Security Notice - Made even more prominent with pulse effect and bolder styling */}
-      <div className="mb-8 p-5 bg-gradient-to-r from-pink-900/50 to-purple-900/50 rounded-xl border-2 border-pink-600/60 shadow-lg animate-pulse-slow">
-        <div className="flex items-center">
-          <Shield className="w-8 h-8 text-pink-400 mr-4 flex-shrink-0" />
-          <div>
-            <h3 className="font-bold text-white text-lg">YOUR SECURITY IS OUR PRIORITY</h3>
-            <p className="text-base text-gray-200 mt-2 leading-relaxed">
-              Your credentials are <span className="font-bold text-pink-300 uppercase">never stored on our servers</span> and are securely encrypted using bank-level encryption. We use industry-standard security protocols to protect your information at all times.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {selectedBroker && (
         <div className="mb-6 p-4 bg-gray-800/30 rounded-xl border border-gray-700">
           <div className="flex items-center">
@@ -126,6 +113,19 @@ export const CredentialsForm = ({
             </div>
           </>
         )}
+      </div>
+
+      {/* Security Notice - Moved to bottom and made smaller */}
+      <div className="mt-8 p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-lg border border-pink-600/40 text-sm">
+        <div className="flex items-center">
+          <Shield className="w-5 h-5 text-pink-400 mr-2 flex-shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-sm">YOUR SECURITY IS OUR PRIORITY</h3>
+            <p className="text-xs text-gray-300 mt-1">
+              Your credentials are <span className="font-medium text-pink-300">never stored</span> on our servers and are securely encrypted using bank-level encryption.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
