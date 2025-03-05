@@ -24,6 +24,7 @@ import Subscription from "./pages/Subscription";
 import CommunityLearning from "./pages/CommunityLearning";
 import Logout from "./pages/Logout";
 import RiskManagement from "./pages/RiskManagement";
+import BrokerIntegration from "./pages/BrokerIntegration";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/community" element={<CommunityLearning />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/risk-management" element={<RiskManagement />} />
+          <Route path="/broker-integration" element={<BrokerIntegration />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
