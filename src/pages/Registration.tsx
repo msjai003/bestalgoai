@@ -1,9 +1,12 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ChevronLeft } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 interface RegistrationData {
   fullName: string;
@@ -13,6 +16,8 @@ interface RegistrationData {
   confirmPassword: string;
   tradingExperience: string;
   preferredMarkets: string[];
+  isResearchAnalyst: boolean;
+  certificationNumber: string;
 }
 
 const Registration = () => {
@@ -26,9 +31,11 @@ const Registration = () => {
     confirmPassword: '',
     tradingExperience: '',
     preferredMarkets: [],
+    isResearchAnalyst: false,
+    certificationNumber: '',
   });
 
-  const handleChange = (field: keyof RegistrationData, value: string) => {
+  const handleChange = (field: keyof RegistrationData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -42,6 +49,19 @@ const Registration = () => {
     } else {
       navigate('/auth');
     }
+  };
+
+  const handleCompleteRegistration = () => {
+    // Validate certification number if research analyst is selected
+    if (formData.isResearchAnalyst && !formData.certificationNumber.trim()) {
+      toast.error("Please enter your Research Analyst certification number");
+      return;
+    }
+    
+    // Here you would typically handle registration submission
+    console.log("Registration data:", formData);
+    toast.success("Registration completed successfully!");
+    navigate('/dashboard');
   };
 
   const renderRegistrationStep = () => {
@@ -122,6 +142,32 @@ const Registration = () => {
                 <option value="advanced">Advanced</option>
               </select>
             </div>
+            
+            {/* Research Analyst toggle */}
+            <div className="flex items-center justify-between pt-3">
+              <Label htmlFor="research-analyst" className="text-sm text-gray-300 cursor-pointer">
+                Are you a Research Analyst?
+              </Label>
+              <Switch
+                id="research-analyst"
+                checked={formData.isResearchAnalyst}
+                onCheckedChange={(checked) => handleChange('isResearchAnalyst', checked)}
+                className="bg-gray-700 data-[state=checked]:bg-[#FF00D4]"
+              />
+            </div>
+            
+            {/* Conditionally render certification number input */}
+            {formData.isResearchAnalyst && (
+              <div className="space-y-2 pt-2">
+                <Label className="text-sm text-gray-300">RA Certification Number</Label>
+                <Input
+                  placeholder="Enter your certification number"
+                  value={formData.certificationNumber}
+                  onChange={(e) => handleChange('certificationNumber', e.target.value)}
+                  className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+                />
+              </div>
+            )}
           </div>
         );
       default:
@@ -172,7 +218,7 @@ const Registration = () => {
         </div>
 
         <Button
-          onClick={step === 3 ? () => {} : handleNext}
+          onClick={step === 3 ? handleCompleteRegistration : handleNext}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
         >
           {step === 3 ? 'Complete Registration' : 'Next Step'}
