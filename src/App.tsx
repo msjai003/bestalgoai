@@ -15,6 +15,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import StrategyBuilder from "./pages/StrategyBuilder";
+import StrategySelection from "./pages/StrategySelection";
 import BacktestReport from "./pages/BacktestReport";
 import LiveTrading from "./pages/LiveTrading";
 import Alerts from "./pages/Alerts";
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/strategy-builder" element={<StrategyBuilder />} />
+          <Route path="/strategy-selection" element={<StrategySelection />} />
           <Route path="/backtest" element={<BacktestReport />} />
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/alerts" element={<Alerts />} />

@@ -37,7 +37,9 @@ const Dashboard = () => {
 
         <section id="quick-actions" className="px-4 mt-6">
           <div className="grid grid-cols-4 gap-4">
-            <QuickActionButton icon="fa-chart-line" label="Strategies" />
+            <Link to="/strategy-selection" className="block">
+              <QuickActionButton icon="fa-chart-line" label="Strategies" />
+            </Link>
             <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
             <Link to="/subscription" className="block">
               <QuickActionButton icon="fa-star" label="Premium" />
