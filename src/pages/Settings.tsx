@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Bell, Building, TrendingUp, Shield, User, Pencil } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
+import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
 import { 
   Tooltip,
   TooltipContent,
@@ -82,7 +83,7 @@ const Settings = () => {
                 <SettingsLink 
                   icon={<User className="w-5 h-5 text-pink-500" />} 
                   label="Personal Details" 
-                  onClick={() => console.log("Personal Details clicked")}
+                  onClick={() => setActiveDialog("personalDetails")}
                 />
                 <SettingsLink 
                   icon={<Shield className="w-5 h-5 text-pink-500" />} 
@@ -126,6 +127,10 @@ const Settings = () => {
       <SecuritySettingsDialog
         open={activeDialog === "securitySettings"}
         onOpenChange={(open) => setActiveDialog(open ? "securitySettings" : null)}
+      />
+      <PersonalDetailsDialog
+        open={activeDialog === "personalDetails"}
+        onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
       />
     </div>
   );
