@@ -1,5 +1,4 @@
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
@@ -31,13 +30,24 @@ const plans = [
 ];
 
 const Subscription = () => {
+  const navigate = useNavigate();
+  
+  const handleBackClick = () => {
+    // Check if we came from dashboard (premium icon) or settings
+    const fromPath = document.referrer.includes('/dashboard') ? '/dashboard' : '/settings';
+    navigate(fromPath);
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen text-white">
       <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/settings" className="p-2">
+          <Button
+            onClick={() => navigate('/dashboard')}
+            className="p-2"
+          >
             <i className="fa-solid fa-arrow-left text-gray-400"></i>
-          </Link>
+          </Button>
           <h1 className="text-lg font-semibold">Subscription & Billing</h1>
           <button className="p-2">
             <i className="fa-solid fa-gear text-gray-400"></i>
