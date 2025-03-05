@@ -1,9 +1,37 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Menu, X, Info, BookOpen, HelpCircle } from 'lucide-react';
+import { Menu, X, Info, BookOpen, HelpCircle, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// Latest notifications data
+const latestNotifications = [
+  {
+    id: 1,
+    title: "Trade Executed",
+    message: "Buy order for RELIANCE completed",
+    time: "2 min ago"
+  },
+  {
+    id: 2,
+    title: "Price Alert",
+    message: "HDFC Bank reached target price",
+    time: "15 min ago"
+  },
+  {
+    id: 3,
+    title: "AI Strategy Update",
+    message: "Your strategy has been optimized",
+    time: "1 hour ago"
+  }
+];
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +60,43 @@ export const Header = () => {
         </Link>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="p-2 relative">
-            <i className="fa-regular fa-bell text-gray-300"></i>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF00D4] rounded-full"></span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/alerts">
+                  <Button variant="ghost" size="icon" className="p-2 relative">
+                    <Bell className="w-5 h-5 text-gray-300" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF00D4] rounded-full"></span>
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="bottom" 
+                align="end" 
+                className="w-72 p-0 bg-gray-800 border-gray-700 text-gray-100"
+              >
+                <div className="flex flex-col">
+                  <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+                    <h3 className="font-medium text-sm">Recent Notifications</h3>
+                    <Link to="/alerts" className="text-[#FF00D4] text-xs hover:underline">
+                      View All
+                    </Link>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {latestNotifications.map((notification) => (
+                      <div key={notification.id} className="px-4 py-3 border-b border-gray-700/50 hover:bg-gray-700/30">
+                        <div className="flex justify-between">
+                          <h4 className="text-sm font-medium">{notification.title}</h4>
+                          <span className="text-xs text-gray-400">{notification.time}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">{notification.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <img 
             src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
             alt="Profile" 
