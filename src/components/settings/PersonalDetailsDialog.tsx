@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PersonalDetailsDialogProps {
   open: boolean;
@@ -33,7 +34,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 text-white border border-gray-700 sm:max-w-md">
+      <DialogContent className="bg-gray-800 text-white border border-gray-700 sm:max-w-md max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-xl">Personal Details</DialogTitle>
           <DialogDescription className="text-gray-400">
@@ -41,59 +42,61 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-3">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              value={formData.fullName}
-              onChange={(e) => handleChange("fullName", e.target.value)}
-              className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
-            />
+        <ScrollArea className="pr-4 max-h-[60vh]">
+          <div className="space-y-4 py-3">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => handleChange("fullName", e.target.value)}
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                value={formData.bio}
+                onChange={(e) => handleChange("bio", e.target.value)}
+                className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+                rows={3}
+              />
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-              className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => handleChange("bio", e.target.value)}
-              className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
-              rows={3}
-            />
-          </div>
-        </div>
+        </ScrollArea>
         
         <DialogFooter className="sm:justify-between gap-3">
           <Button 
