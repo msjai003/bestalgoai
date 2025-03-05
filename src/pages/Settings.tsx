@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Bell, Building, TrendingUp, Shield, User } from "lucide-react";
+import { Bell, Building, TrendingUp, Shield, User, HelpCircle } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
 import { ProfilePictureUpload } from "@/components/settings/ProfilePictureUpload";
@@ -33,9 +33,18 @@ const Settings = () => {
             <i className="fa-solid fa-arrow-left text-lg"></i>
           </Button>
           <h1 className="text-lg font-semibold">Settings</h1>
-          <Button variant="ghost" className="p-2">
-            <i className="fa-solid fa-circle-question text-lg"></i>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" className="p-2">
+                  <HelpCircle className="w-5 h-5 text-gray-400" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-[250px] bg-gray-800 text-gray-100 border-gray-700">
+                <p className="text-sm">Need help? Hover over any setting to learn more, or visit our Help Center for detailed guidance.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </header>
 
