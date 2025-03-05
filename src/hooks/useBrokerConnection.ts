@@ -57,7 +57,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
 
   const handleComplete = () => {
     setShowSuccessDialog(false);
-    toast.success(`${selectedBroker.name} broker connected successfully`);
+    toast.success(`Your request has been submitted to our technical team`);
     navigate('/dashboard');
   };
 
