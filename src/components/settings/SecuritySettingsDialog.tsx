@@ -58,7 +58,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                   id="currentPassword"
                   type="password"
                   placeholder="Enter current password"
-                  className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+                  className="bg-gray-900/50 border-0 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50"
                 />
               </div>
               
@@ -70,7 +70,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                   placeholder="Enter new password"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
-                  className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+                  className="bg-gray-900/50 border-0 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50"
                 />
               </div>
               
@@ -82,7 +82,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                   placeholder="Confirm new password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                  className="bg-gray-900/50 border-gray-700 focus:border-pink-600"
+                  className="bg-gray-900/50 border-0 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50"
                 />
               </div>
             </div>
