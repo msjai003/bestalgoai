@@ -53,3 +53,19 @@
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF00D4] to-purple-600;
 }
+
+/* Add custom animation for security banner */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.97;
+    transform: scale(1.005);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s infinite ease-in-out;
+}

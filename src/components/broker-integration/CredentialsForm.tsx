@@ -29,6 +29,19 @@ export const CredentialsForm = ({
         <h1 className="text-2xl font-bold">Broker Credentials</h1>
       </div>
 
+      {/* Enhanced Security Notice - Made even more prominent with pulse effect and bolder styling */}
+      <div className="mb-8 p-5 bg-gradient-to-r from-pink-900/50 to-purple-900/50 rounded-xl border-2 border-pink-600/60 shadow-lg animate-pulse-slow">
+        <div className="flex items-center">
+          <Shield className="w-8 h-8 text-pink-400 mr-4 flex-shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-lg">YOUR SECURITY IS OUR PRIORITY</h3>
+            <p className="text-base text-gray-200 mt-2 leading-relaxed">
+              Your credentials are <span className="font-bold text-pink-300 uppercase">never stored on our servers</span> and are securely encrypted using bank-level encryption. We use industry-standard security protocols to protect your information at all times.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {selectedBroker && (
         <div className="mb-6 p-4 bg-gray-800/30 rounded-xl border border-gray-700">
           <div className="flex items-center">
@@ -50,19 +63,6 @@ export const CredentialsForm = ({
           </div>
         </div>
       )}
-
-      {/* Enhanced Security Notice - Positioned at the top for visibility */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-pink-900/40 to-purple-900/40 rounded-xl border border-pink-700/50 shadow-lg">
-        <div className="flex items-center">
-          <Shield className="w-6 h-6 text-pink-500 mr-3 flex-shrink-0" />
-          <div>
-            <h4 className="font-semibold text-white text-base">Your Security Is Our Priority</h4>
-            <p className="text-sm text-gray-300 mt-1">
-              Your credentials are securely encrypted using bank-level encryption and are <span className="font-semibold text-pink-300">never stored on our servers</span>. We use industry-standard encryption protocols to protect your information at all times.
-            </p>
-          </div>
-        </div>
-      </div>
 
       <div className="space-y-4">
         <div>
@@ -130,4 +130,3 @@ export const CredentialsForm = ({
     </section>
   );
 };
-
