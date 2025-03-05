@@ -51,6 +51,19 @@ export const CredentialsForm = ({
         </div>
       )}
 
+      {/* Enhanced Security Notice - Positioned at the top for visibility */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-pink-900/40 to-purple-900/40 rounded-xl border border-pink-700/50 shadow-lg">
+        <div className="flex items-center">
+          <Shield className="w-6 h-6 text-pink-500 mr-3 flex-shrink-0" />
+          <div>
+            <h4 className="font-semibold text-white text-base">Your Security Is Our Priority</h4>
+            <p className="text-sm text-gray-300 mt-1">
+              Your credentials are securely encrypted using bank-level encryption and are <span className="font-semibold text-pink-300">never stored on our servers</span>. We use industry-standard encryption protocols to protect your information at all times.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div>
           <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
@@ -114,18 +127,7 @@ export const CredentialsForm = ({
           </>
         )}
       </div>
-
-      <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-4 mt-6">
-        <div className="flex items-center">
-          <Shield className="w-5 h-5 text-pink-500 mr-2" />
-          <div>
-            <h4 className="font-medium text-white">Security Assurance</h4>
-            <p className="text-sm text-gray-300 mt-1">
-              Your credentials are securely encrypted and never stored on our servers. We use industry-standard encryption to protect your information.
-            </p>
-          </div>
-        </div>
-      </div>
     </section>
   );
 };
+
