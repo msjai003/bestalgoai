@@ -1,10 +1,14 @@
 
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { User, Lock, Bell, Building, TrendingUp } from "lucide-react";
+import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const [activeDialog, setActiveDialog] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
@@ -47,17 +51,33 @@ const Settings = () => {
             <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
               <h3 className="text-sm font-medium text-gray-400 mb-3">Account Settings</h3>
               <div className="space-y-3">
-                <SettingsLink icon="fa-regular fa-user" label="Personal Details" />
-                <SettingsLink icon="fa-solid fa-lock" label="Security Settings" />
-                <SettingsLink icon="fa-solid fa-bell" label="Notifications" />
+                <SettingsLink 
+                  icon={<User className="w-5 h-5 text-pink-500" />} 
+                  label="Personal Details" 
+                  onClick={() => setActiveDialog("personalDetails")}
+                />
+                <SettingsLink 
+                  icon={<Lock className="w-5 h-5 text-pink-500" />} 
+                  label="Security Settings" 
+                />
+                <SettingsLink 
+                  icon={<Bell className="w-5 h-5 text-pink-500" />} 
+                  label="Notifications" 
+                />
               </div>
             </div>
 
             <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
               <h3 className="text-sm font-medium text-gray-400 mb-3">Trading Settings</h3>
               <div className="space-y-3">
-                <SettingsLink icon="fa-solid fa-building-columns" label="Broker Integration" />
-                <SettingsLink icon="fa-solid fa-chart-line" label="Risk Management" />
+                <SettingsLink 
+                  icon={<Building className="w-5 h-5 text-pink-500" />} 
+                  label="Broker Integration" 
+                />
+                <SettingsLink 
+                  icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
+                  label="Risk Management" 
+                />
               </div>
             </div>
           </div>
@@ -72,18 +92,35 @@ const Settings = () => {
           </Button>
         </section>
       </main>
+
+      {/* Dialogs */}
+      <PersonalDetailsDialog 
+        open={activeDialog === "personalDetails"} 
+        onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
+      />
     </div>
   );
 };
 
-const SettingsLink = ({ icon, label }: { icon: string; label: string }) => (
-  <Link to="#" className="flex items-center justify-between py-2">
+const SettingsLink = ({ 
+  icon, 
+  label, 
+  onClick 
+}: { 
+  icon: React.ReactNode; 
+  label: string; 
+  onClick?: () => void;
+}) => (
+  <button 
+    className="flex items-center justify-between py-2 w-full text-left"
+    onClick={onClick}
+  >
     <div className="flex items-center space-x-3">
-      <i className={`${icon} text-pink-500`}></i>
+      {icon}
       <span>{label}</span>
     </div>
     <i className="fa-solid fa-chevron-right text-gray-500"></i>
-  </Link>
+  </button>
 );
 
 export default Settings;
