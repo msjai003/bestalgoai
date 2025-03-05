@@ -2,12 +2,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Bell, Building, TrendingUp, Shield, User } from "lucide-react";
+import { Bell, Building, TrendingUp, Shield, User, Pencil } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
+
+  const handleEditProfilePicture = () => {
+    // This would typically open a file picker or image upload dialog
+    toast.info("Profile picture edit functionality will be added later");
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
@@ -30,11 +42,28 @@ const Settings = () => {
       <main className="pt-16 pb-24">
         <section className="px-4 py-6">
           <div className="flex items-center space-x-4">
-            <img 
-              src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
-              alt="Profile" 
-              className="w-16 h-16 rounded-full border-2 border-pink-600"
-            />
+            <div className="relative group">
+              <img 
+                src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
+                alt="Profile" 
+                className="w-16 h-16 rounded-full border-2 border-pink-600 transition-opacity group-hover:opacity-80"
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleEditProfilePicture}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Pencil className="w-5 h-5 text-white" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Profile Picture</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div>
               <h2 className="text-lg font-semibold">Rahul Sharma</h2>
               <p className="text-sm text-gray-400">rahul.s@gmail.com</p>
