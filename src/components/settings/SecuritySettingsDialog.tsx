@@ -76,7 +76,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="h-[60vh] pr-4">
+        <ScrollArea className="h-[60vh] pr-4 mt-2">
           {currentPage === 1 && (
             <div className="space-y-4">
               {/* Password Management Section */}
@@ -85,7 +85,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                 
                 <form onSubmit={handlePasswordUpdate} className="space-y-4">
                   <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="current-password" className="text-xs sm:text-sm text-gray-400">
+                    <Label htmlFor="current-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       Current Password
                     </Label>
                     <div className="pl-4">
@@ -95,13 +95,13 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Enter current password"
-                        className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
                       />
                     </div>
                   </div>
                   
                   <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="new-password" className="text-xs sm:text-sm text-gray-400">
+                    <Label htmlFor="new-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       New Password
                     </Label>
                     <div className="pl-4">
@@ -111,13 +111,13 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Enter new password"
-                        className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
                       />
                     </div>
                   </div>
                   
                   <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="confirm-password" className="text-xs sm:text-sm text-gray-400">
+                    <Label htmlFor="confirm-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       Confirm New Password
                     </Label>
                     <div className="pl-4">
@@ -127,7 +127,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
                       />
                     </div>
                   </div>
@@ -214,7 +214,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
             onClick={goToNextPage} 
             disabled={currentPage === totalPages}
             variant="ghost" 
-            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''}`}
+            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''} z-10`}
           >
             Next <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
