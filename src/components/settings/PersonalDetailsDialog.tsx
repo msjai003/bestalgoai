@@ -40,92 +40,100 @@ export const PersonalDetailsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 text-gray-100 p-6 rounded-xl max-w-md w-[90%] shadow-xl">
+      <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 text-gray-100 p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold mb-4">Personal Details</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-semibold mb-4">Personal Details</DialogTitle>
         </DialogHeader>
         
-        <div className="relative w-24 h-24 mx-auto mb-8">
-          <img 
-            src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
-            alt="Profile" 
-            className="rounded-full w-full h-full object-cover border-2 border-pink-500"
-          />
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6">
+          <div className="group relative w-full h-full">
+            <img 
+              src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
+              alt="Profile" 
+              className="rounded-full w-full h-full object-cover border-2 border-pink-500 transition-opacity group-hover:opacity-80"
+            />
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              onClick={handleChangeProfilePicture}
+            >
+              <Camera className="h-6 w-6 text-white" />
+            </div>
+          </div>
           <button 
             onClick={handleChangeProfilePicture}
-            className="absolute bottom-0 right-0 bg-pink-500 rounded-full p-2 shadow-lg"
+            className="absolute -bottom-1 -right-1 bg-pink-500 rounded-full p-1.5 sm:p-2 shadow-lg"
           >
-            <Camera className="h-4 w-4 text-white" />
+            <Camera className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
           </button>
         </div>
         
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-xl border border-gray-700">
-            <Label htmlFor="fullName" className="text-sm text-gray-400">Full Name</Label>
+        <div className="space-y-3 sm:space-y-4">
+          <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+            <Label htmlFor="fullName" className="text-xs sm:text-sm text-gray-400">Full Name</Label>
             <Input
               id="fullName"
               value={formState.fullName}
               onChange={(e) => setFormState({...formState, fullName: e.target.value})}
-              className="w-full bg-transparent border-none mt-1 focus:outline-none text-white"
+              className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
             />
           </div>
           
-          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-xl border border-gray-700">
-            <Label htmlFor="email" className="text-sm text-gray-400">Email</Label>
+          <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+            <Label htmlFor="email" className="text-xs sm:text-sm text-gray-400">Email</Label>
             <Input
               id="email"
               type="email"
               value={formState.email}
               onChange={(e) => setFormState({...formState, email: e.target.value})}
-              className="w-full bg-transparent border-none mt-1 focus:outline-none text-white"
+              className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
             />
           </div>
           
-          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-xl border border-gray-700">
-            <Label htmlFor="phone" className="text-sm text-gray-400">Phone</Label>
+          <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+            <Label htmlFor="phone" className="text-xs sm:text-sm text-gray-400">Phone</Label>
             <Input
               id="phone"
               type="tel"
               value={formState.phone}
               onChange={(e) => setFormState({...formState, phone: e.target.value})}
-              className="w-full bg-transparent border-none mt-1 focus:outline-none text-white"
+              className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
             />
           </div>
           
-          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-xl border border-gray-700">
-            <Label htmlFor="dateOfBirth" className="text-sm text-gray-400">Date of Birth</Label>
+          <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+            <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm text-gray-400">Date of Birth</Label>
             <Input
               id="dateOfBirth"
               value={formState.dateOfBirth}
               onChange={(e) => setFormState({...formState, dateOfBirth: e.target.value})}
-              className="w-full bg-transparent border-none mt-1 focus:outline-none text-white"
+              className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
             />
           </div>
           
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
             <Button 
               onClick={handleSaveChanges}
-              className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-6 rounded-xl font-medium shadow-xl border-0"
+              className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
             >
               Save Changes
             </Button>
             <DialogClose asChild>
               <Button 
                 variant="outline" 
-                className="w-full border border-gray-700 bg-transparent text-white py-6 rounded-xl font-medium"
+                className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium"
               >
                 Cancel
               </Button>
             </DialogClose>
           </div>
           
-          <div className="mt-6 flex flex-col items-center gap-4">
-            <button className="text-pink-500 flex items-center gap-2">
-              <Lock className="h-4 w-4" />
+          <div className="mt-5 sm:mt-6 flex flex-col items-center gap-3 sm:gap-4">
+            <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
+              <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
               Change Password
             </button>
-            <button className="text-pink-500 flex items-center gap-2">
-              <Bell className="h-4 w-4" />
+            <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
+              <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
               Notification Settings
             </button>
           </div>
