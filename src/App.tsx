@@ -23,6 +23,7 @@ import Notifications from "./pages/Notifications";
 import Subscription from "./pages/Subscription";
 import CommunityLearning from "./pages/CommunityLearning";
 import Logout from "./pages/Logout";
+import RiskManagement from "./pages/RiskManagement";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/community" element={<CommunityLearning />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/risk-management" element={<RiskManagement />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -108,6 +108,7 @@ const Settings = () => {
                 <SettingsLink 
                   icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
                   label="Risk Management" 
+                  onClick={() => navigate("/risk-management")}
                 />
               </div>
             </div>
