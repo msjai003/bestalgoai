@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Menu, X, Info, TrendingUp, HelpCircle } from 'lucide-react';
+import { Menu, X, Info, BookOpen, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -57,8 +57,8 @@ export const Header = () => {
               />
               <MenuLink 
                 to="/blog" 
-                icon={<TrendingUp className="w-5 h-5" />} 
-                label="Trading Insights" 
+                icon={<BookOpen className="w-5 h-5" />} 
+                label="Blogs" 
                 onClick={() => setIsOpen(false)} 
               />
               <MenuLink 

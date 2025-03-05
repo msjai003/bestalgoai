@@ -37,7 +37,7 @@ const BlogPage = () => {
       <Header />
       <main className="pt-16 px-4">
         <section className="py-8">
-          <h1 className="text-3xl font-bold mb-2">Trading Insights</h1>
+          <h1 className="text-3xl font-bold mb-2">Blogs</h1>
           <p className="text-gray-400">Latest updates on algo trading strategies and market analysis</p>
         </section>
 
