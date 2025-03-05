@@ -140,7 +140,7 @@ export const Header = () => {
                 
                 <div className="sticky bottom-0 border-t border-gray-800 p-4 bg-gray-900">
                   <Link to="/alerts">
-                    <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 hover:text-white">
+                    <Button className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white hover:opacity-90 transition-opacity">
                       View All Notifications
                     </Button>
                   </Link>

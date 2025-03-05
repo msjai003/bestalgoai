@@ -37,7 +37,7 @@ export const ConnectionStepActions = ({
   return (
     <div className="flex flex-col gap-3">
       <Button
-        className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+        className="w-full h-12 bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
         onClick={onSubmit}
       >
         {getButtonText()}

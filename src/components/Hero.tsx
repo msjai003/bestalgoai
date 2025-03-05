@@ -6,7 +6,7 @@ export const Hero = () => {
       <div className="relative">
         <h1 className="text-3xl font-bold mb-3">AI-Powered Algo Trading for Everyone</h1>
         <p className="text-gray-300 mb-6">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
-        <button className="w-full py-3 px-6 bg-gradient-to-r from-[#FF00D4] to-purple-600 rounded-xl font-semibold shadow-lg shadow-[#FF00D4]/20">
+        <button className="w-full py-3 px-6 bg-gradient-to-r from-[#FF00D4] to-purple-600 rounded-xl text-white font-semibold shadow-lg shadow-[#FF00D4]/20 hover:opacity-90 transition-opacity">
           Start Trading Now
         </button>
       </div>

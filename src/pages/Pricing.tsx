@@ -77,7 +77,7 @@ const PricingPage = () => {
                 ))}
               </ul>
               <Button 
-                className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 font-semibold shadow-lg hover:shadow-[#FF00D4]/20"
+                className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
               >
                 Get Started
               </Button>
