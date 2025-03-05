@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, Bell, Building, TrendingUp, Shield } from "lucide-react";
-import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
+import { Bell, Building, TrendingUp, Shield } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 
 const Settings = () => {
@@ -52,11 +51,6 @@ const Settings = () => {
               <h3 className="text-sm font-medium text-gray-400 mb-3">Account Settings</h3>
               <div className="space-y-3">
                 <SettingsLink 
-                  icon={<User className="w-5 h-5 text-pink-500" />} 
-                  label="Personal Details" 
-                  onClick={() => setActiveDialog("personalDetails")}
-                />
-                <SettingsLink 
                   icon={<Shield className="w-5 h-5 text-pink-500" />} 
                   label="Security Settings" 
                   onClick={() => setActiveDialog("securitySettings")}
@@ -95,10 +89,6 @@ const Settings = () => {
       </main>
 
       {/* Dialogs */}
-      <PersonalDetailsDialog 
-        open={activeDialog === "personalDetails"} 
-        onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
-      />
       <SecuritySettingsDialog
         open={activeDialog === "securitySettings"}
         onOpenChange={(open) => setActiveDialog(open ? "securitySettings" : null)}
