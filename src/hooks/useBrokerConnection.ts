@@ -58,7 +58,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const handleComplete = () => {
     setShowSuccessDialog(false);
     toast.success(`Your request has been submitted to our technical team`);
-    navigate('/dashboard');
+    navigate('/'); // Changed from '/dashboard' to '/' to navigate to home page
   };
 
   const handleBack = () => {
