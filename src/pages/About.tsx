@@ -47,7 +47,7 @@ const AboutPage = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-gray-900/20 to-gray-900"></div>
             <div className="relative h-full flex flex-col justify-end p-6">
-              <h1 className="text-3xl font-bold mb-2">About BestAlgo.ai</h1>
+              <h1 className="text-3xl font-bold mb-2">About us</h1>
               <p className="text-gray-300">Empowering Indian traders with AI-driven algorithmic trading solutions</p>
             </div>
           </div>
