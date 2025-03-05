@@ -34,9 +34,9 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 text-white border border-gray-700 sm:max-w-md max-h-[90vh] flex flex-col">
+      <DialogContent className="bg-gray-900 text-white border border-gray-800 sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl">Personal Details</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Personal Details</DialogTitle>
           <DialogDescription className="text-gray-400">
             Update your personal information below
           </DialogDescription>
@@ -45,70 +45,70 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
         <ScrollArea className="flex-1 pr-4 overflow-y-auto">
           <div className="space-y-4 py-3">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName" className="text-sm text-gray-300">Full Name</Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
                 onChange={(e) => handleChange("fullName", e.target.value)}
-                className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500 focus:bg-gray-700 focus:text-white focus:border-pink-500 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50 focus-visible:border-pink-500"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="text-sm text-gray-300">Email Address</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500 focus:bg-gray-700 focus:text-white focus:border-pink-500 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50 focus-visible:border-pink-500"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone" className="text-sm text-gray-300">Phone Number</Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500 focus:bg-gray-700 focus:text-white focus:border-pink-500 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50 focus-visible:border-pink-500"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address" className="text-sm text-gray-300">Address</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500 focus:bg-gray-700 focus:text-white focus:border-pink-500 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50 focus-visible:border-pink-500"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio" className="text-sm text-gray-300">Bio</Label>
               <Textarea
                 id="bio"
                 value={formData.bio}
                 onChange={(e) => handleChange("bio", e.target.value)}
-                className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500 focus:bg-gray-700 focus:text-white focus:border-pink-500 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-opacity-50 focus-visible:border-pink-500"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:bg-gray-700 focus:text-white focus:border-[#FF00D4] focus-visible:ring-2 focus-visible:ring-[#FF00D4] focus-visible:ring-opacity-50 focus-visible:border-[#FF00D4] hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
                 rows={3}
               />
             </div>
           </div>
         </ScrollArea>
         
-        <DialogFooter className="mt-4 pt-2 border-t border-gray-700 flex flex-row sm:justify-between gap-3">
+        <DialogFooter className="mt-4 pt-4 border-t border-gray-800 flex flex-col sm:flex-row sm:justify-between gap-3">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
-            className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-pink-500"
+            className="w-full sm:w-auto bg-gray-900/50 border border-gray-700 rounded-lg text-white hover:bg-gray-700 hover:text-white hover:border-[#FF00D4]"
           >
             Cancel
           </Button>
           <Button 
             onClick={handleSave}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+            className="w-full sm:w-auto bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-lg shadow-lg hover:from-[#FF00D4] hover:to-purple-700"
           >
             Save Changes
           </Button>
