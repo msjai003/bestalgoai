@@ -102,7 +102,7 @@ export function PersonalDetailsDialog({ open, onOpenChange }: PersonalDetailsDia
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
-            className="border-gray-700 text-gray-300 hover:bg-gray-700"
+            className="bg-gray-900/70 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
           >
             Cancel
           </Button>
