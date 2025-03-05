@@ -99,14 +99,14 @@ export const Header = () => {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="text-gray-400 hover:text-white"
+                        className="text-gray-400 hover:text-[#FF00D4] transition-colors"
                         onClick={markAllAsRead}
                       >
                         <Check className="w-4 h-4 mr-1" />
                         <span className="text-xs">Mark all as read</span>
                       </Button>
                       <Link to="/settings">
-                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#FF00D4]">
                           <Settings className="w-4 h-4" />
                         </Button>
                       </Link>
