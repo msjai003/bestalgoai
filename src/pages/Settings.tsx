@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +85,7 @@ const Settings = () => {
                 <SettingsLink 
                   icon={<Building className="w-5 h-5 text-pink-500" />} 
                   label="Broker Integration" 
+                  onClick={() => navigate("/broker-integration")}
                 />
                 <SettingsLink 
                   icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
