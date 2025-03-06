@@ -99,7 +99,7 @@ const StrategyManagement = () => {
                 <Button 
                   onClick={() => navigate('/strategy-selection')}
                   variant="outline"
-                  className="text-green-500 hover:text-green-400 border-gray-700 hover:bg-gray-800"
+                  className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
                 >
                   Browse Strategies
                 </Button>
