@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, User, Plus } from "lucide-react";
@@ -130,21 +131,21 @@ const StrategyManagement = () => {
         <section className="py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-bold text-white">Strategy Management</h1>
-            <Button
-              variant="outline"
-              className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
-              onClick={handleCreateNewStrategy}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Strategy
-            </Button>
+            <h2 className="text-xl font-bold text-white bg-pink-500/20 px-4 py-2 rounded-lg border border-pink-500">My Wishlist</h2>
           </div>
         </section>
 
         <section className="mb-6">
           <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
             <div className="flex items-center mb-4">
-              <h2 className="text-xl font-bold text-white bg-pink-500/20 px-4 py-2 rounded-lg border border-pink-500">My Wishlist</h2>
+              <Button
+                variant="outline"
+                className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
+                onClick={handleCreateNewStrategy}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Strategy
+              </Button>
             </div>
             
             <TooltipProvider>
