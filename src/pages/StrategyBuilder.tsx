@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
@@ -10,6 +9,11 @@ import { STEPS, FormData, StrategyType, StrategyCategory, StepType } from "@/typ
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+
+const addStrategyToWishlist = (strategyName: string, mode: 'paper' | 'real') => {
+  console.log(`Adding strategy "${strategyName}" to wishlist in ${mode} mode`);
+  return Math.floor(Math.random() * 1000) + 1;
+};
 
 const StrategyBuilder = () => {
   const navigate = useNavigate();
@@ -62,11 +66,14 @@ const StrategyBuilder = () => {
   };
 
   const handleCustomStrategySubmit = () => {
+    const strategyId = addStrategyToWishlist("Custom Strategy", "paper");
+    
     toast({
       title: "Strategy Deployed",
-      description: "Your custom strategy has been successfully deployed.",
+      description: "Your custom strategy has been successfully deployed and added to your wishlist.",
       duration: 5000,
     });
+    
     navigate("/backtest");
   };
 

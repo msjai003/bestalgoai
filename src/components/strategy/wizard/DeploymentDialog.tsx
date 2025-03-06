@@ -7,18 +7,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeploymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDeployStrategy: (mode: "paper" | "real") => void;
+  strategyName: string;
 }
 
 export const DeploymentDialog = ({
   open,
   onOpenChange,
   onDeployStrategy,
+  strategyName,
 }: DeploymentDialogProps) => {
+  const { toast } = useToast();
+
+  const handleDeployStrategy = (mode: "paper" | "real") => {
+    // Add the strategy to Custom Strategy wishlist
+    toast({
+      title: "Strategy Added to Wishlist",
+      description: `${strategyName} has been added to your Custom Strategy wishlist in ${mode === "paper" ? "Paper Trade" : "Real"} mode.`,
+      duration: 3000,
+    });
+    
+    onDeployStrategy(mode);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto rounded-xl">
@@ -31,7 +47,7 @@ export const DeploymentDialog = ({
         <div className="grid grid-cols-2 gap-4 mt-4">
           <Button 
             variant="outline" 
-            onClick={() => onDeployStrategy("paper")}
+            onClick={() => handleDeployStrategy("paper")}
             className="h-24 w-full flex flex-col items-center justify-center bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
           >
             <span className="text-lg mb-1">📝</span>
@@ -39,7 +55,7 @@ export const DeploymentDialog = ({
             <span className="text-xs text-gray-400 mt-1 text-center w-full px-3">Simulation Only</span>
           </Button>
           <Button 
-            onClick={() => onDeployStrategy("real")}
+            onClick={() => handleDeployStrategy("real")}
             className="h-24 w-full flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl"
           >
             <span className="text-lg mb-1">💰</span>

@@ -135,6 +135,8 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setDeploymentMode(mode);
     setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
+    
+    // This will be handled in the StrategyBuilder.tsx now
     onSubmit();
   };
 
@@ -178,6 +180,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         open={showDeploymentDialog}
         onOpenChange={setShowDeploymentDialog}
         onDeployStrategy={handleDeployStrategy}
+        strategyName={strategyName}
       />
     </div>
   );
