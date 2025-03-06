@@ -1,15 +1,19 @@
 
+import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Phone, Mail, ChevronDown } from 'lucide-react';
+import { Mail, ChevronDown } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from '@/components/ui/use-toast';
 
 const faqItems = [
   {
@@ -27,6 +31,28 @@ const faqItems = [
 ];
 
 const SupportPage = () => {
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate sending email
+    setTimeout(() => {
+      toast({
+        title: "Email sent",
+        description: "We've received your message and will respond shortly.",
+      });
+      setEmail('');
+      setSubject('');
+      setMessage('');
+      setIsSubmitting(false);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Header />
@@ -56,29 +82,55 @@ const SupportPage = () => {
         </section>
 
         <section className="px-4 py-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#FF00D4]/20">
-          <h2 className="text-xl font-bold mb-4">Get in touch</h2>
-          <div className="grid gap-3">
+          <h2 className="text-xl font-bold mb-4">Email Support</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm mb-1">Your Email</label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="your.email@example.com"
+                className="w-full bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div>
+              <label htmlFor="subject" className="block text-sm mb-1">Subject</label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required
+                placeholder="How can we help you?"
+                className="w-full bg-gray-800 border-gray-700"
+              />
+            </div>
+            <div>
+              <label htmlFor="message" className="block text-sm mb-1">Message</label>
+              <Textarea
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+                placeholder="Describe your issue or question in detail..."
+                className="w-full bg-gray-800 border-gray-700"
+                rows={5}
+              />
+            </div>
             <Button
+              type="submit"
+              disabled={isSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl"
             >
-              <MessageSquare className="w-5 h-5" />
-              <span>Chat with Us</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 p-6 rounded-xl border border-gray-700"
-            >
-              <Phone className="w-5 h-5" />
-              <span>Call Support</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 p-6 rounded-xl border border-gray-700"
-            >
               <Mail className="w-5 h-5" />
-              <span>Email Support</span>
+              <span>{isSubmitting ? "Sending..." : "Send Email"}</span>
             </Button>
-          </div>
+            <div className="text-center text-sm text-gray-400 mt-2">
+              Default support email: support@bestalgo.ai
+            </div>
+          </form>
         </section>
       </main>
       <Footer />
