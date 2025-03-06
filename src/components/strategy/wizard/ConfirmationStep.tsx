@@ -93,13 +93,13 @@ export const ConfirmationStep = ({
             <Button 
               onClick={handleFinishStrategy}
               variant="outline"
-              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl" // Added rounded-xl
             >
               <X className="mr-2 h-4 w-4" /> No
             </Button>
             <Button 
               onClick={handleAddAnotherLeg}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl" // Added rounded-xl
             >
               <Check className="mr-2 h-4 w-4" /> Yes
             </Button>
