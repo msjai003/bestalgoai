@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
@@ -18,6 +19,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const StrategySelection = () => {
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
@@ -29,7 +31,7 @@ const StrategySelection = () => {
 
   const handleDeployStrategy = () => {
     // Navigate to backtest or live trading
-    window.location.href = "/backtest";
+    navigate("/backtest");
   };
 
   return (
@@ -86,7 +88,7 @@ const StrategySelection = () => {
       
       {/* Strategy Details Dialog */}
       <Dialog open={showStrategyDetails} onOpenChange={setShowStrategyDetails}>
-        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-[90%] rounded-xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-[90%] rounded-xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-white text-xl">{selectedStrategy?.name}</DialogTitle>
             <DialogDescription className="text-gray-400">
@@ -94,7 +96,7 @@ const StrategySelection = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <ScrollArea className="py-2 max-h-[60vh]">
+          <ScrollArea className="py-2 flex-1 max-h-[50vh]">
             <div className="space-y-3 pr-4">
               <p className="text-gray-300">{selectedStrategy?.description}</p>
               
@@ -135,17 +137,17 @@ const StrategySelection = () => {
             </div>
           </ScrollArea>
           
-          <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-700 mt-2">
+          <DialogFooter className="flex-shrink-0 flex sm:flex-row justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-700 mt-2">
             <Button 
               variant="outline" 
               onClick={() => setShowStrategyDetails(false)}
-              className="w-full sm:w-auto bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
             >
               Cancel
             </Button>
             <Button 
               onClick={handleDeployStrategy}
-              className="w-full sm:w-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70"
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70"
             >
               Use for Live Trading
             </Button>
