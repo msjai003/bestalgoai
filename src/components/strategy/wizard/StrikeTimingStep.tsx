@@ -50,51 +50,34 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px]">
                   {/* ITM options - ordered from ITM20 down to ITM1 */}
-                  <SelectItem value="ITM20">ITM20</SelectItem>
-                  <SelectItem value="ITM19">ITM19</SelectItem>
-                  <SelectItem value="ITM18">ITM18</SelectItem>
-                  <SelectItem value="ITM17">ITM17</SelectItem>
-                  <SelectItem value="ITM16">ITM16</SelectItem>
-                  <SelectItem value="ITM15">ITM15</SelectItem>
-                  <SelectItem value="ITM14">ITM14</SelectItem>
-                  <SelectItem value="ITM13">ITM13</SelectItem>
-                  <SelectItem value="ITM12">ITM12</SelectItem>
-                  <SelectItem value="ITM11">ITM11</SelectItem>
-                  <SelectItem value="ITM10">ITM10</SelectItem>
-                  <SelectItem value="ITM9">ITM9</SelectItem>
-                  <SelectItem value="ITM8">ITM8</SelectItem>
-                  <SelectItem value="ITM7">ITM7</SelectItem>
-                  <SelectItem value="ITM6">ITM6</SelectItem>
-                  <SelectItem value="ITM5">ITM5</SelectItem>
-                  <SelectItem value="ITM4">ITM4</SelectItem>
-                  <SelectItem value="ITM3">ITM3</SelectItem>
-                  <SelectItem value="ITM2">ITM2</SelectItem>
-                  <SelectItem value="ITM1">ITM1</SelectItem>
+                  {Array.from({ length: 20 }, (_, i) => 20 - i).map((num) => (
+                    <SelectItem 
+                      key={`ITM${num}`} 
+                      value={`ITM${num}`}
+                      className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium"
+                    >
+                      ITM{num}
+                    </SelectItem>
+                  ))}
                   
                   {/* ATM option - in the center */}
-                  <SelectItem value="ATM" className="bg-gray-700 font-medium">ATM</SelectItem>
+                  <SelectItem 
+                    value="ATM" 
+                    className="bg-[#FF00D4]/10 text-white font-bold border-y border-[#FF00D4]/30 my-1 py-2"
+                  >
+                    ATM
+                  </SelectItem>
                   
                   {/* OTM options - ordered from OTM1 down to OTM20 */}
-                  <SelectItem value="OTM1">OTM1</SelectItem>
-                  <SelectItem value="OTM2">OTM2</SelectItem>
-                  <SelectItem value="OTM3">OTM3</SelectItem>
-                  <SelectItem value="OTM4">OTM4</SelectItem>
-                  <SelectItem value="OTM5">OTM5</SelectItem>
-                  <SelectItem value="OTM6">OTM6</SelectItem>
-                  <SelectItem value="OTM7">OTM7</SelectItem>
-                  <SelectItem value="OTM8">OTM8</SelectItem>
-                  <SelectItem value="OTM9">OTM9</SelectItem>
-                  <SelectItem value="OTM10">OTM10</SelectItem>
-                  <SelectItem value="OTM11">OTM11</SelectItem>
-                  <SelectItem value="OTM12">OTM12</SelectItem>
-                  <SelectItem value="OTM13">OTM13</SelectItem>
-                  <SelectItem value="OTM14">OTM14</SelectItem>
-                  <SelectItem value="OTM15">OTM15</SelectItem>
-                  <SelectItem value="OTM16">OTM16</SelectItem>
-                  <SelectItem value="OTM17">OTM17</SelectItem>
-                  <SelectItem value="OTM18">OTM18</SelectItem>
-                  <SelectItem value="OTM19">OTM19</SelectItem>
-                  <SelectItem value="OTM20">OTM20</SelectItem>
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                    <SelectItem 
+                      key={`OTM${num}`} 
+                      value={`OTM${num}`}
+                      className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium"
+                    >
+                      OTM{num}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
