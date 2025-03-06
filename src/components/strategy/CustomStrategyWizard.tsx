@@ -239,7 +239,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
 
       {/* Strategy Details Dialog */}
       <Dialog open={showStrategyDetails} onOpenChange={setShowStrategyDetails}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-4xl mx-auto">
+        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-4xl mx-auto rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">
               {strategyName || "Strategy"} Details
@@ -378,17 +378,17 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             </div>
           </div>
           
-          <DialogFooter className="mt-6">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 mt-6 sm:justify-end">
             <Button 
               variant="outline" 
               onClick={() => setShowStrategyDetails(false)}
-              className="bg-gray-700 border-gray-600 text-white"
+              className="bg-gray-700 border-gray-600 text-white rounded-xl w-full sm:w-auto"
             >
               Back to Edit
             </Button>
             <Button 
               onClick={() => setShowDeploymentDialog(true)}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl mb-2 sm:mb-0 w-full sm:w-auto"
             >
               Deploy Strategy
             </Button>
@@ -398,7 +398,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
 
       {/* Deployment Mode Dialog */}
       <Dialog open={showDeploymentDialog} onOpenChange={setShowDeploymentDialog}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto">
+        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">Select Deployment Mode</DialogTitle>
             <DialogDescription className="text-gray-300 mt-2">
@@ -409,18 +409,18 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             <Button 
               variant="outline" 
               onClick={() => handleDeployStrategy("paper")}
-              className="h-20 flex flex-col items-center justify-center bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+              className="h-20 flex flex-col items-center justify-center bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
             >
               <span className="text-lg mb-1">📝</span>
-              <span>Paper Trade</span>
+              <span className="text-base font-medium">Paper Trade</span>
               <span className="text-xs text-gray-400 mt-1">Simulation Only</span>
             </Button>
             <Button 
               onClick={() => handleDeployStrategy("real")}
-              className="h-20 flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+              className="h-20 flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
             >
               <span className="text-lg mb-1">💰</span>
-              <span>Real Mode</span>
+              <span className="text-base font-medium">Real Mode</span>
               <span className="text-xs text-gray-200 mt-1">Live Execution</span>
             </Button>
           </div>
