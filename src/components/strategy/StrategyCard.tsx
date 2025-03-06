@@ -1,5 +1,5 @@
 
-import { ChevronRight, Heart } from "lucide-react";
+import { ChevronRight, Heart, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +9,7 @@ interface StrategyCardProps {
     name: string;
     description: string;
     isWishlisted?: boolean;
+    isLive?: boolean;
     performance?: {
       winRate: string;
       avgProfit: string;
@@ -16,10 +17,16 @@ interface StrategyCardProps {
     };
   };
   onWishlist?: (id: number) => void;
+  onLiveMode?: (id: number) => void;
   onSelect?: () => void;
 }
 
-export const StrategyCard = ({ strategy, onWishlist, onSelect }: StrategyCardProps) => {
+export const StrategyCard = ({ 
+  strategy, 
+  onWishlist, 
+  onLiveMode, 
+  onSelect 
+}: StrategyCardProps) => {
   const navigate = useNavigate();
   
   const handleStrategySelect = () => {
@@ -53,12 +60,15 @@ export const StrategyCard = ({ strategy, onWishlist, onSelect }: StrategyCardPro
           <Button 
             size="icon" 
             variant="ghost" 
+            className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-500`}
             onClick={(e) => {
               e.stopPropagation();
-              handleStrategySelect();
+              if (onLiveMode) {
+                onLiveMode(strategy.id);
+              }
             }}
           >
-            <ChevronRight className="h-5 w-5 text-gray-400" />
+            <Play className="h-5 w-5" />
           </Button>
         </div>
       </div>

@@ -35,7 +35,7 @@ const StrategyManagement = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/dashboard')}
                 className="text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="h-5 w-5" />

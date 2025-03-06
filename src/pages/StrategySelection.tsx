@@ -17,7 +17,8 @@ const StrategySelection = () => {
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [strategies, setStrategies] = useState(predefinedStrategies.map(strategy => ({
     ...strategy,
-    isWishlisted: false
+    isWishlisted: false,
+    isLive: false
   })));
 
   const handleDeployStrategy = () => {
@@ -30,13 +31,35 @@ const StrategySelection = () => {
         if (strategy.id === id) {
           const newStatus = !strategy.isWishlisted;
           
-          // Show toast notification
           toast({
             title: newStatus ? "Added to wishlist" : "Removed from wishlist",
             description: `Strategy has been ${newStatus ? 'added to' : 'removed from'} your wishlist`
           });
           
           return { ...strategy, isWishlisted: newStatus };
+        }
+        return strategy;
+      })
+    );
+  };
+
+  const handleToggleLiveMode = (id: number) => {
+    setStrategies(prev => 
+      prev.map(strategy => {
+        if (strategy.id === id) {
+          const newStatus = !strategy.isLive;
+          
+          toast({
+            title: newStatus ? "Strategy set to live mode" : "Strategy set to paper mode",
+            description: `Strategy is now in ${newStatus ? 'live' : 'paper'} trading mode`,
+          });
+          
+          if (newStatus) {
+            // Navigate to live trading when set to live mode
+            navigate("/live-trading");
+          }
+          
+          return { ...strategy, isLive: newStatus };
         }
         return strategy;
       })
@@ -81,24 +104,12 @@ const StrategySelection = () => {
             {selectedTab === "predefined" ? (
               <div className="grid grid-cols-1 gap-3 pb-4">
                 {strategies.map((strategy) => (
-                  <div key={strategy.id} className="relative">
-                    <button 
-                      className={`absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-800/70 ${
-                        strategy.isWishlisted 
-                          ? "text-pink-500 hover:text-pink-400" 
-                          : "text-gray-400 hover:text-pink-500"
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleWishlist(strategy.id);
-                      }}
-                    >
-                      <Heart className="h-4 w-4" fill={strategy.isWishlisted ? "currentColor" : "none"} />
-                    </button>
-                    <StrategyCard 
-                      strategy={strategy}
-                    />
-                  </div>
+                  <StrategyCard 
+                    key={strategy.id}
+                    strategy={strategy}
+                    onWishlist={handleToggleWishlist}
+                    onLiveMode={handleToggleLiveMode}
+                  />
                 ))}
               </div>
             ) : (
