@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Play, Trash, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Heart, Play, Trash, AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
@@ -119,7 +120,18 @@ const StrategyManagement = () => {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">My Wishlist</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">My Wishlist</h2>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
+              onClick={() => navigate('/strategy-selection')}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Strategy
+            </Button>
+          </div>
           
           <div className="space-y-4">
             {wishlistedStrategies.length === 0 ? (
