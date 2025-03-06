@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Bell, Building, TrendingUp, Shield, User, HelpCircle } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
-import { PersonalDetailsDialog } from "@/components/settings/PersonalDetailsDialog";
+import { PersonalDetailsDialog } from "@/components/settings/PersonalDetails/PersonalDetailsDialog";
 import { ProfilePictureUpload } from "@/components/settings/ProfilePictureUpload";
 import { 
   Tooltip,
