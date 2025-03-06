@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,40 +29,42 @@ import BrokerCredentials from "./pages/BrokerCredentials";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/registration" element={<Registration />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/strategy-builder" element={<StrategyBuilder />} />
-          <Route path="/strategy-selection" element={<StrategySelection />} />
-          <Route path="/backtest" element={<BacktestReport />} />
-          <Route path="/live-trading" element={<LiveTrading />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/community" element={<CommunityLearning />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/risk-management" element={<RiskManagement />} />
-          <Route path="/broker-integration" element={<BrokerIntegration />} />
-          <Route path="/broker-credentials" element={<BrokerCredentials />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/strategy-builder" element={<StrategyBuilder />} />
+            <Route path="/strategy-selection" element={<StrategySelection />} />
+            <Route path="/backtest" element={<BacktestReport />} />
+            <Route path="/live-trading" element={<LiveTrading />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/community" element={<CommunityLearning />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/risk-management" element={<RiskManagement />} />
+            <Route path="/broker-integration" element={<BrokerIntegration />} />
+            <Route path="/broker-credentials" element={<BrokerCredentials />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
