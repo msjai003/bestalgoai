@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, Play, Trash } from "lucide-react";
@@ -143,14 +144,20 @@ const StrategyManagement = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      {strategy.performance && (
-                        <>
-                          <span className="text-gray-400">Win Rate:</span>
-                          <span className="text-green-400">{strategy.performance.winRate}</span>
-                        </>
-                      )}
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        {strategy.performance && (
+                          <>
+                            <span className="text-gray-400">Win Rate:</span>
+                            <span className="text-green-400">{strategy.performance.winRate}</span>
+                          </>
+                        )}
+                      </div>
+                      
+                      <div className={`${strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'} px-2 py-1 rounded-md text-xs font-medium`}>
+                        {strategy.isLive ? 'Live Trading' : 'Paper Trading'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -159,7 +166,9 @@ const StrategyManagement = () => {
           </div>
         </section>
       </main>
-      <BottomNav />
+      <TooltipProvider>
+        <BottomNav />
+      </TooltipProvider>
     </div>
   );
 };
