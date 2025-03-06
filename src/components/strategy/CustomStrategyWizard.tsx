@@ -22,7 +22,7 @@ const INITIAL_LEG: StrategyLeg = {
   id: uuidv4(),
   strategyType: "intraday",
   instrument: "NIFTY",
-  segment: "futures",
+  segment: "options",
   underlying: "cash",
   positionType: "sell",
   expiryType: "weekly",

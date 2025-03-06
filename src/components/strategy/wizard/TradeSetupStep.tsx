@@ -1,4 +1,7 @@
 
+// No changes needed here since the component already handles the selected segment properly.
+// The UI will automatically show the selected segment based on the leg.segment value.
+
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
