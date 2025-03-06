@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,32 +15,80 @@ const StrategySelection = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
-  const [strategies, setStrategies] = useState(predefinedStrategies.map(strategy => ({
-    ...strategy,
-    isWishlisted: false,
-    isLive: false
-  })));
+  const [strategies, setStrategies] = useState<any[]>([]);
+
+  // Load strategies with wishlist status from localStorage
+  useEffect(() => {
+    const storedWishlist = localStorage.getItem('wishlistedStrategies');
+    let wishlistedIds: number[] = [];
+    
+    if (storedWishlist) {
+      try {
+        const parsed = JSON.parse(storedWishlist);
+        wishlistedIds = parsed.map((s: any) => s.id);
+      } catch (error) {
+        console.error("Error parsing wishlisted strategies:", error);
+      }
+    }
+    
+    // Map predefined strategies with wishlist status
+    setStrategies(predefinedStrategies.map(strategy => ({
+      ...strategy,
+      isWishlisted: wishlistedIds.includes(strategy.id),
+      isLive: false
+    })));
+  }, []);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
   };
 
   const handleToggleWishlist = (id: number) => {
-    setStrategies(prev => 
-      prev.map(strategy => {
-        if (strategy.id === id) {
-          const newStatus = !strategy.isWishlisted;
-          
-          toast({
-            title: newStatus ? "Added to wishlist" : "Removed from wishlist",
-            description: `Strategy has been ${newStatus ? 'added to' : 'removed from'} your wishlist`
-          });
-          
-          return { ...strategy, isWishlisted: newStatus };
+    // Update UI state
+    const updatedStrategies = strategies.map(strategy => {
+      if (strategy.id === id) {
+        return { ...strategy, isWishlisted: !strategy.isWishlisted };
+      }
+      return strategy;
+    });
+    setStrategies(updatedStrategies);
+    
+    // Determine if we're adding or removing from wishlist
+    const strategy = strategies.find(s => s.id === id);
+    const newWishlistStatus = !strategy?.isWishlisted;
+    
+    // Show toast
+    toast({
+      title: newWishlistStatus ? "Added to wishlist" : "Removed from wishlist",
+      description: `Strategy has been ${newWishlistStatus ? 'added to' : 'removed from'} your wishlist`
+    });
+    
+    // Update localStorage
+    const storedWishlist = localStorage.getItem('wishlistedStrategies');
+    let wishlistedStrategies: any[] = [];
+    
+    if (storedWishlist) {
+      try {
+        wishlistedStrategies = JSON.parse(storedWishlist);
+      } catch (error) {
+        console.error("Error parsing wishlisted strategies:", error);
+      }
+    }
+    
+    if (newWishlistStatus) {
+      // Add to wishlist if not already there
+      if (!wishlistedStrategies.some(s => s.id === id)) {
+        const strategyToAdd = strategies.find(s => s.id === id);
+        if (strategyToAdd) {
+          wishlistedStrategies.push({...strategyToAdd, isWishlisted: true});
         }
-        return strategy;
-      })
-    );
+      }
+    } else {
+      // Remove from wishlist
+      wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== id);
+    }
+    
+    localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
   };
 
   const handleToggleLiveMode = (id: number) => {
