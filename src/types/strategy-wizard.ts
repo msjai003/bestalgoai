@@ -5,6 +5,7 @@ export type UnderlyingType = "cash" | "futures";
 export type PositionType = "buy" | "sell";
 export type ExpiryType = "weekly" | "monthly";
 export type StrikeCriteriaType = "strike" | "premium";
+export type OptionType = "call" | "put";
 export type StrikeLevel = 
   | "ATM"
   | "ITM1" | "ITM2" | "ITM3" | "ITM4" | "ITM5" 
@@ -33,6 +34,7 @@ export interface StrategyLeg {
   expiryType: ExpiryType;
   strikeCriteria: StrikeCriteriaType;
   strikeLevel?: StrikeLevel;
+  optionType?: OptionType;
   entryTime: string;
   exitTime: string;
   stopLoss: string;

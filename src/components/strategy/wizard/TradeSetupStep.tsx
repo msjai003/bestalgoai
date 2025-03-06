@@ -32,22 +32,44 @@ export const TradeSetupStep = ({ leg, updateLeg }: TradeSetupStepProps) => {
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="instrument" className="text-gray-300 block mb-2">Instrument Selection</Label>
-        <Select
-          value={leg.instrument}
-          onValueChange={(value) => updateLeg({ instrument: value })}
-        >
-          <SelectTrigger id="instrument" className="w-full bg-gray-700 border-gray-600 text-white">
-            <SelectValue placeholder="Select Instrument" />
-          </SelectTrigger>
-          <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white">
-            <SelectItem value="SENSEX">SENSEX</SelectItem>
-            <SelectItem value="NIFTY">NIFTY</SelectItem>
-            <SelectItem value="BANKNIFTY">BANK NIFTY</SelectItem>
-            <SelectItem value="FINNIFTY">FIN NIFTY</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="instrument" className="text-gray-300 block mb-2">Instrument Selection</Label>
+          <Select
+            value={leg.instrument}
+            onValueChange={(value) => updateLeg({ instrument: value })}
+          >
+            <SelectTrigger id="instrument" className="w-full bg-gray-700 border-gray-600 text-white">
+              <SelectValue placeholder="Select Instrument" />
+            </SelectTrigger>
+            <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white">
+              <SelectItem value="NIFTY">NIFTY</SelectItem>
+              <SelectItem value="SENSEX">SENSEX</SelectItem>
+              <SelectItem value="BANKNIFTY">BANK NIFTY</SelectItem>
+              <SelectItem value="FINNIFTY">FIN NIFTY</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <h4 className="text-white font-medium mb-2">Underlying Selection</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {["cash", "futures"].map((type) => (
+              <Button
+                key={type}
+                variant={leg.underlying === type ? "default" : "outline"}
+                className={`${
+                  leg.underlying === type
+                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    : "bg-gray-700 border-gray-600 text-white"
+                }`}
+                onClick={() => updateLeg({ underlying: type as any })}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div>
@@ -70,25 +92,27 @@ export const TradeSetupStep = ({ leg, updateLeg }: TradeSetupStepProps) => {
         </div>
       </div>
 
-      <div>
-        <h4 className="text-white font-medium mb-2">Underlying Selection</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {["cash", "futures"].map((type) => (
-            <Button
-              key={type}
-              variant={leg.underlying === type ? "default" : "outline"}
-              className={`${
-                leg.underlying === type
-                  ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
-                  : "bg-gray-700 border-gray-600 text-white"
-              }`}
-              onClick={() => updateLeg({ underlying: type as any })}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </Button>
-          ))}
+      {leg.segment === "options" && (
+        <div>
+          <h4 className="text-white font-medium mb-2">Option Type</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {["call", "put"].map((type) => (
+              <Button
+                key={type}
+                variant={leg.optionType === type ? "default" : "outline"}
+                className={`${
+                  leg.optionType === type
+                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    : "bg-gray-700 border-gray-600 text-white"
+                }`}
+                onClick={() => updateLeg({ optionType: type as any })}
+              >
+                {type === "call" ? "Call (CE)" : "Put (PE)"}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <h4 className="text-white font-medium mb-2">Position Type</h4>
