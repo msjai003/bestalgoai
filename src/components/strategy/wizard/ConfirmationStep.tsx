@@ -21,6 +21,7 @@ interface ConfirmationStepProps {
   onAddLeg: () => void;
   strategyName: string;
   updateLegByIndex: (index: number, updates: Partial<StrategyLeg>) => void;
+  onShowStrategyDetails: () => void;
 }
 
 export const ConfirmationStep = ({ 
@@ -28,7 +29,8 @@ export const ConfirmationStep = ({
   onSelectLeg, 
   onAddLeg,
   strategyName,
-  updateLegByIndex
+  updateLegByIndex,
+  onShowStrategyDetails
 }: ConfirmationStepProps) => {
   const [showAddLegDialog, setShowAddLegDialog] = useState(false);
   const [selectedLegIndex, setSelectedLegIndex] = useState<number | null>(null);
@@ -53,7 +55,7 @@ export const ConfirmationStep = ({
       duration: 3000,
     });
     
-    document.dispatchEvent(new CustomEvent('showStrategyDetails'));
+    onShowStrategyDetails();
   };
 
   return (

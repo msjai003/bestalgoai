@@ -15,7 +15,8 @@ interface WizardContentProps {
   strategyName: string;
   setStrategyName: (name: string) => void;
   updateLegByIndex: (index: number, updates: Partial<StrategyLeg>) => void;
-  isDuplicateName?: boolean;
+  isDuplicateName: boolean;
+  onShowStrategyDetails: () => void;
 }
 
 export const WizardContent = ({
@@ -28,33 +29,33 @@ export const WizardContent = ({
   strategyName,
   setStrategyName,
   updateLegByIndex,
-  isDuplicateName = false
+  isDuplicateName,
+  onShowStrategyDetails
 }: WizardContentProps) => {
-  
   switch (currentStep) {
     case WizardStep.TRADE_SETUP:
       return (
         <TradeSetupStep 
-          leg={currentLeg}
-          updateLeg={updateCurrentLeg}
           strategyName={strategyName}
           setStrategyName={setStrategyName}
-          isFirstLeg={formData.legs.length === 1 && formData.currentLegIndex === 0}
+          currentLeg={currentLeg}
+          updateCurrentLeg={updateCurrentLeg}
+          isFirstLeg={formData.currentLegIndex === 0}
           isDuplicateName={isDuplicateName}
         />
       );
     case WizardStep.STRIKE_TIMING:
       return (
         <StrikeTimingStep 
-          leg={currentLeg}
-          updateLeg={updateCurrentLeg}
+          currentLeg={currentLeg}
+          updateCurrentLeg={updateCurrentLeg}
         />
       );
     case WizardStep.RISK_MANAGEMENT:
       return (
         <RiskManagementStep 
-          leg={currentLeg}
-          updateLeg={updateCurrentLeg}
+          currentLeg={currentLeg}
+          updateCurrentLeg={updateCurrentLeg}
         />
       );
     case WizardStep.CONFIRMATION:
@@ -65,6 +66,7 @@ export const WizardContent = ({
           onAddLeg={handleAddLeg}
           strategyName={strategyName}
           updateLegByIndex={updateLegByIndex}
+          onShowStrategyDetails={onShowStrategyDetails}
         />
       );
     default:

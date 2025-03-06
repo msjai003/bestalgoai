@@ -57,18 +57,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const currentLeg = formData.legs[formData.currentLegIndex];
 
   useEffect(() => {
-    const handleShowStrategyDetails = () => {
-      setShowStrategyDetails(true);
-    };
-
-    document.addEventListener('showStrategyDetails', handleShowStrategyDetails);
-
-    return () => {
-      document.removeEventListener('showStrategyDetails', handleShowStrategyDetails);
-    };
-  }, []);
-
-  useEffect(() => {
     if (strategyName.trim() === "") {
       setIsDuplicateName(false);
       return;
@@ -178,6 +166,10 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setCurrentStep(WizardStep.TRADE_SETUP);
   };
 
+  const handleShowStrategyDetails = () => {
+    setShowStrategyDetails(true);
+  };
+
   const handleDeployStrategy = (mode: "paper" | "real") => {
     if (isDuplicateName) {
       toast({
@@ -218,6 +210,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           setStrategyName={setStrategyName}
           updateLegByIndex={updateLegByIndex}
           isDuplicateName={isDuplicateName}
+          onShowStrategyDetails={handleShowStrategyDetails}
         />
       </div>
       
