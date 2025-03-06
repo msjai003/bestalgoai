@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, PenSquare, ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,13 +11,15 @@ interface ConfirmationStepProps {
   onSelectLeg: (index: number) => void;
   onAddLeg: () => void;
   strategyName: string;
+  updateLegByIndex: (index: number, updates: Partial<StrategyLeg>) => void;
 }
 
 export const ConfirmationStep = ({ 
   formData, 
   onSelectLeg, 
   onAddLeg,
-  strategyName
+  strategyName,
+  updateLegByIndex
 }: ConfirmationStepProps) => {
   return (
     <div className="space-y-6">
@@ -37,12 +38,7 @@ export const ConfirmationStep = ({
             index={index} 
             isActive={index === formData.currentLegIndex} 
             onSelect={() => onSelectLeg(index)} 
-            updateLeg={(updates) => {
-              // Note: This doesn't actually update the leg as the updateLeg function
-              // isn't passed down from the parent component. We'll need to modify
-              // the CustomStrategyWizard component to pass this function.
-              console.log("Leg updates:", updates);
-            }}
+            updateLeg={(updates) => updateLegByIndex(index, updates)}
           />
         ))}
         
