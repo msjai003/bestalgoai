@@ -73,6 +73,20 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     });
   };
 
+  // Add a new function to update any leg by index
+  const updateLegByIndex = (index: number, updates: Partial<StrategyLeg>) => {
+    const updatedLegs = [...formData.legs];
+    updatedLegs[index] = {
+      ...updatedLegs[index],
+      ...updates
+    };
+    
+    setFormData({
+      ...formData,
+      legs: updatedLegs
+    });
+  };
+
   const handleNext = () => {
     if (currentStep < WizardStep.CONFIRMATION) {
       setCurrentStep(currentStep + 1);
@@ -148,6 +162,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             onSelectLeg={handleSelectLeg}
             onAddLeg={handleAddLeg}
             strategyName={strategyName}
+            updateLegByIndex={updateLegByIndex}
           />
         );
       default:

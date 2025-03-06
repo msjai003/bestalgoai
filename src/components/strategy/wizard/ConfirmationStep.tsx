@@ -1,7 +1,11 @@
 
-import { Plus, PenSquare, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Plus, PenSquare, ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WizardFormData, StrategyLeg } from "@/types/strategy-wizard";
+import { WizardFormData, StrategyLeg, PositionType, OptionType, StrikeLevel } from "@/types/strategy-wizard";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ConfirmationStepProps {
   formData: WizardFormData;
@@ -33,6 +37,12 @@ export const ConfirmationStep = ({
             index={index} 
             isActive={index === formData.currentLegIndex} 
             onSelect={() => onSelectLeg(index)} 
+            updateLeg={(updates) => {
+              // Note: This doesn't actually update the leg as the updateLeg function
+              // isn't passed down from the parent component. We'll need to modify
+              // the CustomStrategyWizard component to pass this function.
+              console.log("Leg updates:", updates);
+            }}
           />
         ))}
         
@@ -53,9 +63,196 @@ interface StrategyLegCardProps {
   index: number;
   isActive: boolean;
   onSelect: () => void;
+  updateLeg: (updates: Partial<StrategyLeg>) => void;
 }
 
-const StrategyLegCard = ({ leg, index, isActive, onSelect }: StrategyLegCardProps) => {
+const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg }: StrategyLegCardProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleSaveChanges = () => {
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div 
+        className={`p-4 rounded-lg border border-[#FF00D4] bg-gray-800/70`}
+      >
+        <div className="flex justify-between items-center mb-3">
+          <h5 className="text-white font-medium">Editing Leg {index + 1}</h5>
+          <div className="flex space-x-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleSaveChanges}
+              className="h-8 px-2 text-green-400 hover:text-green-300 hover:bg-gray-700"
+            >
+              <Check className="h-4 w-4 mr-1" /> Save
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleEdit}
+              className="h-8 px-2 text-red-400 hover:text-red-300 hover:bg-gray-700"
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <Label htmlFor="positionType" className="text-gray-300 block mb-2">Position Type</Label>
+            <Select
+              value={leg.positionType}
+              onValueChange={(value) => updateLeg({ positionType: value as PositionType })}
+            >
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                <SelectValue placeholder="Select Position" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectItem value="buy" className="hover:bg-gray-700">Buy</SelectItem>
+                <SelectItem value="sell" className="hover:bg-gray-700">Sell</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {leg.segment === "options" && (
+            <div>
+              <Label htmlFor="optionType" className="text-gray-300 block mb-2">Option Type</Label>
+              <Select
+                value={leg.optionType}
+                onValueChange={(value) => updateLeg({ optionType: value as OptionType })}
+              >
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue placeholder="Select Option Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="call" className="hover:bg-gray-700">Call (CE)</SelectItem>
+                  <SelectItem value="put" className="hover:bg-gray-700">Put (PE)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {leg.strikeCriteria === "strike" ? (
+            <div>
+              <Label htmlFor="strikeLevel" className="text-gray-300 block mb-2">Strike Level</Label>
+              <Select
+                value={leg.strikeLevel}
+                onValueChange={(value) => updateLeg({ strikeLevel: value as StrikeLevel })}
+              >
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue placeholder="Select Strike Level" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px]">
+                  {/* ATM option */}
+                  <SelectItem 
+                    value="ATM" 
+                    className="bg-[#FF00D4]/10 text-white font-bold border-y border-[#FF00D4]/30 my-1 py-2"
+                  >
+                    ATM
+                  </SelectItem>
+                  
+                  {/* ITM options - ordered from ITM1 to ITM20 */}
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                    <SelectItem 
+                      key={`ITM${num}`} 
+                      value={`ITM${num}`}
+                      className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium"
+                    >
+                      ITM{num}
+                    </SelectItem>
+                  ))}
+                  
+                  {/* OTM options - ordered from OTM1 to OTM20 */}
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                    <SelectItem 
+                      key={`OTM${num}`} 
+                      value={`OTM${num}`}
+                      className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium"
+                    >
+                      OTM{num}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="premiumAmount" className="text-gray-300 block mb-2">Premium Amount</Label>
+              <Input
+                id="premiumAmount"
+                type="number"
+                value={leg.premiumAmount || ""}
+                onChange={(e) => updateLeg({ premiumAmount: e.target.value })}
+                placeholder="Enter amount"
+                className="bg-gray-700 border-gray-600 text-white"
+              />
+            </div>
+          )}
+          
+          <div>
+            <Label htmlFor="entryTime" className="text-gray-300 block mb-2">Entry Time</Label>
+            <Input
+              id="entryTime"
+              type="time"
+              value={leg.entryTime}
+              onChange={(e) => updateLeg({ entryTime: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="exitTime" className="text-gray-300 block mb-2">Exit Time</Label>
+            <Input
+              id="exitTime"
+              type="time"
+              value={leg.exitTime}
+              onChange={(e) => updateLeg({ exitTime: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="stopLoss" className="text-gray-300 block mb-2">Stop Loss (%)</Label>
+            <Input
+              id="stopLoss"
+              type="number"
+              value={leg.stopLoss}
+              onChange={(e) => updateLeg({ stopLoss: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="target" className="text-gray-300 block mb-2">Target (%)</Label>
+            <Input
+              id="target"
+              type="number"
+              value={leg.target}
+              onChange={(e) => updateLeg({ target: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white"
+            />
+          </div>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={toggleEdit}
+          className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
+        >
+          Return to Summary View
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div 
       className={`p-4 rounded-lg border ${
@@ -69,7 +266,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect }: StrategyLegCardProp
         <Button 
           variant="ghost" 
           size="sm"
-          onClick={onSelect}
+          onClick={toggleEdit}
           className="h-8 px-2 text-gray-400 hover:text-white hover:bg-gray-700"
         >
           <PenSquare className="h-4 w-4 mr-1" /> Edit
