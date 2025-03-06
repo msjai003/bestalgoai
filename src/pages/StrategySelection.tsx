@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 const StrategySelection = () => {
@@ -87,6 +88,9 @@ const StrategySelection = () => {
         <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-[90%] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-white text-xl">{selectedStrategy?.name}</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Review strategy details before deployment
+            </DialogDescription>
           </DialogHeader>
           
           <div className="py-4 space-y-4 overflow-auto max-h-[60vh]">
@@ -128,7 +132,7 @@ const StrategySelection = () => {
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-4 border-t border-gray-700">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t border-gray-700 mt-2">
             <Button 
               variant="outline" 
               onClick={() => setShowStrategyDetails(false)}
