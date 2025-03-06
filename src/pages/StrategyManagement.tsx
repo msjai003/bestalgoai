@@ -118,7 +118,7 @@ const StrategyManagement = () => {
         <section className="mb-6">
           <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
             <div className="flex items-center mb-4">
-              <h2 className="text-xl font-bold text-white">My Wishlist</h2>
+              <h2 className="text-xl font-bold text-white bg-pink-500/20 px-4 py-2 rounded-lg border border-pink-500">My Wishlist</h2>
             </div>
             
             <StrategySection 
