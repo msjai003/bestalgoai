@@ -1,6 +1,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface StrategyCardProps {
   strategy: {
@@ -13,20 +14,29 @@ interface StrategyCardProps {
       drawdown: string;
     };
   };
-  onSelect: () => void;
+  onSelect?: () => void;
 }
 
 export const StrategyCard = ({ strategy, onSelect }: StrategyCardProps) => {
+  const navigate = useNavigate();
+  
+  const handleStrategySelect = () => {
+    navigate(`/strategy-details/${strategy.id}`);
+    if (onSelect) {
+      onSelect();
+    }
+  };
+
   return (
     <div 
       className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 hover:border-pink-500 transition-colors cursor-pointer"
-      onClick={onSelect}
+      onClick={handleStrategySelect}
     >
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-semibold text-white">{strategy.name}</h3>
         <Button size="icon" variant="ghost" onClick={(e) => {
           e.stopPropagation();
-          onSelect();
+          handleStrategySelect();
         }}>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </Button>

@@ -14,13 +14,7 @@ const StrategySelection = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
 
-  const handleStrategySelect = (strategy: any) => {
-    // Navigate to the strategy details page with the strategy id
-    navigate(`/strategy-details/${strategy.id}`);
-  };
-
   const handleDeployStrategy = () => {
-    // Navigate to backtest or live trading
     navigate("/backtest");
   };
 
@@ -65,7 +59,6 @@ const StrategySelection = () => {
                   <StrategyCard 
                     key={strategy.id}
                     strategy={strategy}
-                    onSelect={() => handleStrategySelect(strategy)}
                   />
                 ))}
               </div>
