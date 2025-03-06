@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
-import { CustomStrategyForm } from "@/components/strategy/CustomStrategyForm";
+import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
 import { predefinedStrategies } from "@/constants/strategy-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -63,7 +63,7 @@ const StrategySelection = () => {
                 ))}
               </div>
             ) : (
-              <CustomStrategyForm onSubmit={handleDeployStrategy} />
+              <CustomStrategyWizard onSubmit={handleDeployStrategy} />
             )}
           </div>
         </section>
