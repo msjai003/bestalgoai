@@ -1,21 +1,12 @@
+
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TradeSetupStep } from "./wizard/TradeSetupStep";
-import { StrikeTimingStep } from "./wizard/StrikeTimingStep";
-import { RiskManagementStep } from "./wizard/RiskManagementStep";
-import { ConfirmationStep } from "./wizard/ConfirmationStep";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
+import { WizardStepIndicator } from "./wizard/WizardStepIndicator";
+import { WizardContent } from "./wizard/WizardContent";
+import { WizardControls } from "./wizard/WizardControls";
+import { StrategyDetailsDialog } from "./wizard/StrategyDetailsDialog";
+import { DeploymentDialog } from "./wizard/DeploymentDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const INITIAL_LEG: StrategyLeg = {
@@ -147,302 +138,47 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     onSubmit();
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case WizardStep.TRADE_SETUP:
-        return (
-          <TradeSetupStep 
-            leg={currentLeg}
-            updateLeg={updateCurrentLeg}
-            strategyName={strategyName}
-            setStrategyName={setStrategyName}
-            isFirstLeg={formData.legs.length === 1 && formData.currentLegIndex === 0}
-          />
-        );
-      case WizardStep.STRIKE_TIMING:
-        return (
-          <StrikeTimingStep 
-            leg={currentLeg}
-            updateLeg={updateCurrentLeg}
-          />
-        );
-      case WizardStep.RISK_MANAGEMENT:
-        return (
-          <RiskManagementStep 
-            leg={currentLeg}
-            updateLeg={updateCurrentLeg}
-          />
-        );
-      case WizardStep.CONFIRMATION:
-        return (
-          <ConfirmationStep 
-            formData={formData}
-            onSelectLeg={handleSelectLeg}
-            onAddLeg={handleAddLeg}
-            strategyName={strategyName}
-            updateLegByIndex={updateLegByIndex}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const renderStepIndicator = () => (
-    <div className="flex justify-between mb-6">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="flex flex-col items-center">
-          <div 
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              currentStep >= index 
-                ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
-                : "bg-gray-700 text-gray-400"
-            }`}
-          >
-            {index + 1}
-          </div>
-          <div className="text-xs mt-1 text-gray-400">
-            {index === 0 ? "Setup" : 
-             index === 1 ? "Strike" : 
-             index === 2 ? "Risk" : "Review"}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <div className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-gray-700">
       <h3 className="text-lg font-medium text-white mb-4">Custom Strategy Configuration</h3>
       
-      {renderStepIndicator()}
+      <WizardStepIndicator currentStep={currentStep} />
       
       <div className="min-h-[450px]">
-        {renderStepContent()}
+        <WizardContent 
+          currentStep={currentStep}
+          currentLeg={currentLeg}
+          updateCurrentLeg={updateCurrentLeg}
+          formData={formData}
+          handleSelectLeg={handleSelectLeg}
+          handleAddLeg={handleAddLeg}
+          strategyName={strategyName}
+          setStrategyName={setStrategyName}
+          updateLegByIndex={updateLegByIndex}
+        />
       </div>
       
-      <div className="flex justify-between pt-4">
-        {currentStep > 0 && (
-          <Button 
-            variant="outline" 
-            onClick={handlePrevious}
-            className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
-        )}
-        
-        {currentStep < WizardStep.CONFIRMATION && (
-          <Button 
-            onClick={handleNext}
-            className="ml-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
-          >
-            Next <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
-        
-        {currentStep === WizardStep.CONFIRMATION && (
-          <Button 
-            onClick={handleNext}
-            className="ml-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
-          >
-            Strategy Details
-          </Button>
-        )}
-      </div>
+      <WizardControls 
+        currentStep={currentStep}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
 
       {/* Strategy Details Dialog */}
-      <Dialog open={showStrategyDetails} onOpenChange={setShowStrategyDetails}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-4xl mx-auto rounded-xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">
-              {strategyName || "Strategy"} Details
-            </DialogTitle>
-            <DialogDescription className="text-gray-300 mt-2">
-              Summary of all configured legs and settings
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2">
-            <div className="space-y-4">
-              {formData.legs.map((leg, index) => (
-                <div key={leg.id} className="p-4 bg-gray-700/40 rounded-lg border border-gray-600">
-                  <h4 className="text-white font-medium text-lg mb-3">Leg {index + 1}</h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <h5 className="text-gray-300 font-medium mb-2">Basic Setup</h5>
-                      <ul className="space-y-2">
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Strategy Type:</span>
-                          <span className="text-white capitalize">{leg.strategyType}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Instrument:</span>
-                          <span className="text-white">{leg.instrument}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Underlying:</span>
-                          <span className="text-white capitalize">{leg.underlying}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Segment:</span>
-                          <span className="text-white capitalize">{leg.segment}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Position:</span>
-                          <span className="text-white capitalize">{leg.positionType}</span>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    {leg.segment === "options" && (
-                      <div>
-                        <h5 className="text-gray-300 font-medium mb-2">Option Details</h5>
-                        <ul className="space-y-2">
-                          <li className="flex justify-between">
-                            <span className="text-gray-400">Option Type:</span>
-                            <span className="text-white">
-                              {leg.optionType === "call" ? "Call (CE)" : "Put (PE)"}
-                            </span>
-                          </li>
-                          <li className="flex justify-between">
-                            <span className="text-gray-400">Expiry:</span>
-                            <span className="text-white capitalize">{leg.expiryType}</span>
-                          </li>
-                          <li className="flex justify-between">
-                            <span className="text-gray-400">Strike Criteria:</span>
-                            <span className="text-white capitalize">{leg.strikeCriteria}</span>
-                          </li>
-                          {leg.strikeCriteria === "strike" ? (
-                            <li className="flex justify-between">
-                              <span className="text-gray-400">Strike Level:</span>
-                              <span className="text-white">{leg.strikeLevel}</span>
-                            </li>
-                          ) : (
-                            <li className="flex justify-between">
-                              <span className="text-gray-400">Premium Amount:</span>
-                              <span className="text-white">{leg.premiumAmount || "Not set"}</span>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    <div>
-                      <h5 className="text-gray-300 font-medium mb-2">Timing & Risk</h5>
-                      <ul className="space-y-2">
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Entry Time:</span>
-                          <span className="text-white">{leg.entryTime}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Exit Time:</span>
-                          <span className="text-white">{leg.exitTime}</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Stop Loss:</span>
-                          <span className="text-white">{leg.stopLoss}%</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-gray-400">Target:</span>
-                          <span className="text-white">{leg.target}%</span>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    {(leg.reEntryOnSL || leg.reEntryOnTarget || leg.trailingEnabled) && (
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <h5 className="text-gray-300 font-medium mb-2">Advanced Settings</h5>
-                        <ul className="space-y-2">
-                          {leg.reEntryOnSL && (
-                            <li className="flex justify-between">
-                              <span className="text-gray-400">Re-entry on SL:</span>
-                              <span className="text-white">Yes, {leg.reEntryOnSLCount} times</span>
-                            </li>
-                          )}
-                          {leg.reEntryOnTarget && (
-                            <li className="flex justify-between">
-                              <span className="text-gray-400">Re-entry on Target:</span>
-                              <span className="text-white">Yes, {leg.reEntryOnTargetCount} times</span>
-                            </li>
-                          )}
-                          {leg.trailingEnabled && (
-                            <>
-                              <li className="flex justify-between">
-                                <span className="text-gray-400">Trailing Enabled:</span>
-                                <span className="text-white">Yes</span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-gray-400">Lock Profit At:</span>
-                                <span className="text-white">{leg.trailingLockProfit}%</span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-gray-400">If Profit Reaches:</span>
-                                <span className="text-white">{leg.trailingLockAt}%</span>
-                              </li>
-                            </>
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <DialogFooter className="flex flex-row justify-end items-center mt-6 gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowStrategyDetails(false)}
-              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl h-11 px-5"
-            >
-              Back to Edit
-            </Button>
-            <Button 
-              onClick={() => setShowDeploymentDialog(true)}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl h-11 px-5"
-            >
-              Deploy Strategy
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <StrategyDetailsDialog 
+        open={showStrategyDetails}
+        onOpenChange={setShowStrategyDetails}
+        formData={formData}
+        strategyName={strategyName}
+        onShowDeploymentDialog={() => setShowDeploymentDialog(true)}
+      />
 
       {/* Deployment Mode Dialog */}
-      <Dialog open={showDeploymentDialog} onOpenChange={setShowDeploymentDialog}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto rounded-xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">Select Deployment Mode</DialogTitle>
-            <DialogDescription className="text-gray-300 mt-2">
-              Would you like to deploy in Paper Trade mode or Real Mode?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => handleDeployStrategy("paper")}
-              className="h-24 w-full flex flex-col items-center justify-center bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
-            >
-              <span className="text-lg mb-1">📝</span>
-              <span className="text-base font-medium">Paper Trade</span>
-              <span className="text-xs text-gray-400 mt-1 text-center w-full px-3">Simulation Only</span>
-            </Button>
-            <Button 
-              onClick={() => handleDeployStrategy("real")}
-              className="h-24 w-full flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl"
-            >
-              <span className="text-lg mb-1">💰</span>
-              <span className="text-base font-medium">Real Mode</span>
-              <span className="text-xs text-gray-200 mt-1 text-center w-full px-3">Live Execution</span>
-            </Button>
-          </div>
-          <div className="mt-4 p-4 bg-gray-700/50 rounded-lg text-gray-300 text-sm">
-            <p>Real Mode will execute actual trades based on your configured strategy. Please ensure your brokerage account is connected and properly configured.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeploymentDialog 
+        open={showDeploymentDialog}
+        onOpenChange={setShowDeploymentDialog}
+        onDeployStrategy={handleDeployStrategy}
+      />
     </div>
   );
 };
