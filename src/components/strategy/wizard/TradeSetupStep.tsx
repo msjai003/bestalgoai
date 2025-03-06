@@ -1,3 +1,4 @@
+
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -51,11 +52,17 @@ export const TradeSetupStep = ({
                   : "bg-gray-700 border-gray-600 text-white"
               }`}
               onClick={() => updateLeg({ strategyType: type as any })}
+              disabled={!isFirstLeg}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </Button>
           ))}
         </div>
+        {!isFirstLeg && (
+          <p className="text-xs text-gray-400 mt-1">
+            Strategy type must be consistent across all legs
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -64,8 +71,9 @@ export const TradeSetupStep = ({
           <Select
             value={leg.instrument}
             onValueChange={(value) => updateLeg({ instrument: value })}
+            disabled={!isFirstLeg}
           >
-            <SelectTrigger id="instrument" className="w-full bg-gray-700 border-gray-600 text-white">
+            <SelectTrigger id="instrument" className={`w-full bg-gray-700 border-gray-600 text-white ${!isFirstLeg ? "opacity-75" : ""}`}>
               <SelectValue placeholder="Select Instrument" />
             </SelectTrigger>
             <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white">
@@ -75,6 +83,11 @@ export const TradeSetupStep = ({
               <SelectItem value="FINNIFTY">FIN NIFTY</SelectItem>
             </SelectContent>
           </Select>
+          {!isFirstLeg && (
+            <p className="text-xs text-gray-400 mt-1">
+              Instrument must be consistent across all legs
+            </p>
+          )}
         </div>
 
         <div>
@@ -90,11 +103,17 @@ export const TradeSetupStep = ({
                     : "bg-gray-700 border-gray-600 text-white"
                 }`}
                 onClick={() => updateLeg({ underlying: type as any })}
+                disabled={!isFirstLeg}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             ))}
           </div>
+          {!isFirstLeg && (
+            <p className="text-xs text-gray-400 mt-1">
+              Underlying must be consistent across all legs
+            </p>
+          )}
         </div>
       </div>
 
@@ -111,11 +130,17 @@ export const TradeSetupStep = ({
                   : "bg-gray-700 border-gray-600 text-white"
               }`}
               onClick={() => updateLeg({ segment: segment as any })}
+              disabled={!isFirstLeg}
             >
               {segment.charAt(0).toUpperCase() + segment.slice(1)}
             </Button>
           ))}
         </div>
+        {!isFirstLeg && (
+          <p className="text-xs text-gray-400 mt-1">
+            Segment must be consistent across all legs
+          </p>
+        )}
       </div>
 
       {leg.segment === "options" && (

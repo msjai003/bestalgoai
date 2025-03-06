@@ -100,9 +100,14 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   };
 
   const handleAddLeg = () => {
+    const firstLeg = formData.legs[0];
     const newLeg = {
       ...INITIAL_LEG,
-      id: uuidv4()
+      id: uuidv4(),
+      strategyType: firstLeg.strategyType,
+      instrument: firstLeg.instrument,
+      underlying: firstLeg.underlying,
+      segment: firstLeg.segment
     };
     
     setFormData({
