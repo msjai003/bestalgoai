@@ -74,46 +74,21 @@ const StrategyManagement = () => {
           </div>
           
           <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-none">
-            <button 
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm ${
-                activeType === "All" 
-                  ? "bg-gray-800/50 border border-[#FF00D4]/30" 
-                  : "bg-gray-800/50 border border-gray-700"
-              }`}
-              onClick={() => handleTypeSelect("All")}
-            >
-              All Strategies
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm ${
-                activeType === "Intraday" 
-                  ? "bg-gray-800/50 border border-[#FF00D4]/30" 
-                  : "bg-gray-800/50 border border-gray-700"
-              }`}
-              onClick={() => handleTypeSelect("Intraday")}
-            >
-              Intraday
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm ${
-                activeType === "BTST" 
-                  ? "bg-gray-800/50 border border-[#FF00D4]/30" 
-                  : "bg-gray-800/50 border border-gray-700"
-              }`}
-              onClick={() => handleTypeSelect("BTST")}
-            >
-              BTST
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm ${
-                activeType === "Positional" 
-                  ? "bg-gray-800/50 border border-[#FF00D4]/30" 
-                  : "bg-gray-800/50 border border-gray-700"
-              }`}
-              onClick={() => handleTypeSelect("Positional")}
-            >
-              Positional
-            </button>
+            {["All", "Intraday", "BTST", "Positional"].map((type) => (
+              <Button
+                key={type}
+                variant="outline"
+                size="sm"
+                className={`rounded-full whitespace-nowrap ${
+                  activeType === type 
+                    ? "bg-gray-800/50 border-[#FF00D4]/30 text-white" 
+                    : "bg-gray-800/50 border-gray-700 text-gray-400 hover:text-white hover:border-[#FF00D4]/20"
+                }`}
+                onClick={() => handleTypeSelect(type as StrategyType)}
+              >
+                {type === "All" ? "All Strategies" : type}
+              </Button>
+            ))}
           </div>
         </section>
         
