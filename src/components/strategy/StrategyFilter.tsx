@@ -15,16 +15,16 @@ export const StrategyFilter = ({
   onFilterChange,
 }: StrategyFilterProps) => {
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-gray-800/30 rounded-lg border border-gray-700/50">
       <Button
         variant="outline"
         size="sm"
         onClick={() => onFilterChange("all")}
         className={cn(
-          "text-sm font-medium border-gray-700 bg-gray-800/50",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedFilter === "all"
-            ? "bg-gray-700 text-white border-gray-600"
-            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-gray-700 text-white shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
         All
@@ -34,10 +34,10 @@ export const StrategyFilter = ({
         size="sm"
         onClick={() => onFilterChange("intraday")}
         className={cn(
-          "text-sm font-medium border-gray-700 bg-gray-800/50",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedFilter === "intraday"
-            ? "bg-blue-900/50 text-blue-400 border-blue-800"
-            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-blue-900/50 text-blue-400 shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
         Intraday
@@ -47,10 +47,10 @@ export const StrategyFilter = ({
         size="sm"
         onClick={() => onFilterChange("btst")}
         className={cn(
-          "text-sm font-medium border-gray-700 bg-gray-800/50",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedFilter === "btst"
-            ? "bg-purple-900/50 text-purple-400 border-purple-800"
-            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-purple-900/50 text-purple-400 shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
         BTST
@@ -60,10 +60,10 @@ export const StrategyFilter = ({
         size="sm"
         onClick={() => onFilterChange("positional")}
         className={cn(
-          "text-sm font-medium border-gray-700 bg-gray-800/50",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedFilter === "positional"
-            ? "bg-green-900/50 text-green-400 border-green-800"
-            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-green-900/50 text-green-400 shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
         Positional
