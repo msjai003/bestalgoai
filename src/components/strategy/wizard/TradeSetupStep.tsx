@@ -1,9 +1,9 @@
-
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect } from "react";
 
 interface TradeSetupStepProps {
   leg: StrategyLeg;
@@ -20,18 +20,43 @@ export const TradeSetupStep = ({
   setStrategyName,
   isFirstLeg 
 }: TradeSetupStepProps) => {
+  const [nameError, setNameError] = useState<string>("");
+
+  useEffect(() => {
+    if (isFirstLeg && strategyName.trim() === "") {
+      setNameError("Strategy name is required");
+    } else {
+      setNameError("");
+    }
+  }, [strategyName, isFirstLeg]);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStrategyName(e.target.value);
+    if (e.target.value.trim() === "") {
+      setNameError("Strategy name is required");
+    } else {
+      setNameError("");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <Label htmlFor="strategyName" className="text-gray-300 block mb-2">Strategy Name</Label>
+        <Label htmlFor="strategyName" className="text-gray-300 block mb-2">
+          Strategy Name <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="strategyName"
           value={strategyName}
-          onChange={(e) => setStrategyName(e.target.value)}
+          onChange={handleNameChange}
           placeholder="Enter strategy name"
-          className="bg-gray-700 border-gray-600 text-white"
+          className={`bg-gray-700 border-gray-600 text-white ${nameError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
           disabled={!isFirstLeg}
+          required
         />
+        {nameError && (
+          <p className="text-xs text-red-500 mt-1">{nameError}</p>
+        )}
         {!isFirstLeg && (
           <p className="text-xs text-gray-400 mt-1">
             Strategy name cannot be changed when adding additional legs

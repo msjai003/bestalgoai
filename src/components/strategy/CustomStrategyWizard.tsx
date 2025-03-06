@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -17,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const INITIAL_LEG: StrategyLeg = {
   id: uuidv4(),
@@ -57,6 +57,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const [deploymentMode, setDeploymentMode] = useState<"paper" | "real" | null>(null);
   const [showDeploymentDialog, setShowDeploymentDialog] = useState(false);
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
+  const { toast } = useToast();
 
   const currentLeg = formData.legs[formData.currentLegIndex];
 
@@ -87,6 +88,18 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   };
 
   const handleNext = () => {
+    if (currentStep === WizardStep.TRADE_SETUP && 
+        formData.currentLegIndex === 0 && 
+        strategyName.trim() === "") {
+      toast({
+        title: "Strategy Name Required",
+        description: "Please enter a name for your strategy before proceeding.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
     if (currentStep < WizardStep.CONFIRMATION) {
       setCurrentStep(currentStep + 1);
     } else {
