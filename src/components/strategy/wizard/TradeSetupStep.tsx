@@ -46,8 +46,6 @@ export const TradeSetupStep = ({ leg, updateLeg }: TradeSetupStepProps) => {
             <SelectItem value="NIFTY">NIFTY</SelectItem>
             <SelectItem value="BANKNIFTY">BANK NIFTY</SelectItem>
             <SelectItem value="FINNIFTY">FIN NIFTY</SelectItem>
-            <SelectItem value="STOCKS">STOCKS</SelectItem>
-            <SelectItem value="CUSTOM">CUSTOM</SelectItem>
           </SelectContent>
         </Select>
       </div>
