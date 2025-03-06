@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, User } from "lucide-react";
@@ -121,29 +120,31 @@ const StrategyManagement = () => {
               <h2 className="text-xl font-bold text-white bg-pink-500/20 px-4 py-2 rounded-lg border border-pink-500">My Wishlist</h2>
             </div>
             
-            <StrategySection 
-              title="Predefined Strategies"
-              icon={<Star className="h-5 w-5 text-yellow-500" />}
-              strategies={predefinedWishlistedStrategies}
-              emptyMessage="No predefined strategies in your wishlist"
-              actionButtonText="Add Strategy"
-              actionButtonPath="/strategy-selection"
-              onDeleteStrategy={handleDeleteStrategy}
-              onToggleLiveMode={handleToggleLiveMode}
-              showEmptyStateButton={true}
-            />
+            <TooltipProvider>
+              <StrategySection 
+                title="Predefined Strategies"
+                icon={<Star className="h-5 w-5 text-yellow-500" />}
+                strategies={predefinedWishlistedStrategies}
+                emptyMessage="No predefined strategies in your wishlist"
+                actionButtonText="Add Strategy"
+                actionButtonPath="/strategy-selection"
+                onDeleteStrategy={handleDeleteStrategy}
+                onToggleLiveMode={handleToggleLiveMode}
+                showEmptyStateButton={true}
+              />
 
-            <StrategySection 
-              title="Custom Strategies"
-              icon={<User className="h-5 w-5 text-blue-500" />}
-              strategies={customWishlistedStrategies}
-              emptyMessage="No custom strategies in your wishlist"
-              actionButtonText="Create Strategy"
-              actionButtonPath="/strategy-builder"
-              onDeleteStrategy={handleDeleteStrategy}
-              onToggleLiveMode={handleToggleLiveMode}
-              showEmptyStateButton={false}
-            />
+              <StrategySection 
+                title="Custom Strategies"
+                icon={<User className="h-5 w-5 text-blue-500" />}
+                strategies={customWishlistedStrategies}
+                emptyMessage="No custom strategies in your wishlist"
+                actionButtonText="Create Strategy"
+                actionButtonPath="/strategy-builder"
+                onDeleteStrategy={handleDeleteStrategy}
+                onToggleLiveMode={handleToggleLiveMode}
+                showEmptyStateButton={false}
+              />
+            </TooltipProvider>
           </div>
         </section>
       </main>
@@ -156,9 +157,7 @@ const StrategyManagement = () => {
         onCancel={cancelModeChange}
       />
 
-      <TooltipProvider>
-        <BottomNav />
-      </TooltipProvider>
+      <BottomNav />
     </div>
   );
 };

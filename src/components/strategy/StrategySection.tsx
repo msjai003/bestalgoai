@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Play, Trash } from "lucide-react";
+import { Plus, Play, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StrategySectionProps {
@@ -80,11 +80,12 @@ export const StrategySection = ({
                         variant="ghost" 
                         className="text-pink-500 hover:text-pink-400"
                         onClick={() => onDeleteStrategy(strategy.id)}
+                        aria-label="Remove strategy"
                       >
-                        <Trash className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top">
                       <p>Remove from wishlist</p>
                     </TooltipContent>
                   </Tooltip>
@@ -96,11 +97,12 @@ export const StrategySection = ({
                         variant="ghost" 
                         className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-500`}
                         onClick={() => onToggleLiveMode(strategy.id)}
+                        aria-label={strategy.isLive ? 'Switch to paper trading' : 'Switch to live trading'}
                       >
                         <Play className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top">
                       <p>{strategy.isLive ? 'Switch to paper trading' : 'Click to live trade'}</p>
                     </TooltipContent>
                   </Tooltip>
