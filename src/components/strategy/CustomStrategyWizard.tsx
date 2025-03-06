@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -378,17 +379,17 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 mt-6 sm:justify-end">
+          <DialogFooter className="flex flex-row justify-end items-center mt-6 gap-4">
             <Button 
               variant="outline" 
               onClick={() => setShowStrategyDetails(false)}
-              className="bg-gray-700 border-gray-600 text-white rounded-xl w-full sm:w-auto"
+              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl h-11 px-5"
             >
               Back to Edit
             </Button>
             <Button 
               onClick={() => setShowDeploymentDialog(true)}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl mb-2 sm:mb-0 w-full sm:w-auto"
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl h-11 px-5"
             >
               Deploy Strategy
             </Button>
@@ -417,7 +418,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             </Button>
             <Button 
               onClick={() => handleDeployStrategy("real")}
-              className="h-20 flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
+              className="h-20 flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl"
             >
               <span className="text-lg mb-1">💰</span>
               <span className="text-base font-medium">Real Mode</span>

@@ -125,7 +125,7 @@ const StrategyDetails = () => {
       <div className="fixed bottom-16 left-0 right-0 p-4 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
         <Button 
           onClick={handleDeployStrategy}
-          className="w-full py-6 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70"
+          className="w-full py-6 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl"
         >
           Use for Live Trading
         </Button>
@@ -141,17 +141,17 @@ const StrategyDetails = () => {
               You are about to implement this strategy for live trading using your selected default brokerage account. Please review your settings before proceeding. Live execution will follow the defined parameters and risk controls.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 mt-6 sm:justify-end">
+          <DialogFooter className="flex flex-row justify-end items-center gap-4 mt-6">
             <Button 
               variant="outline" 
               onClick={handleCancelDeploy}
-              className="border-gray-700 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white w-full sm:w-auto rounded-xl"
+              className="border-gray-700 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white rounded-xl h-11 px-5"
             >
               <X className="mr-2 h-4 w-4" /> Cancel
             </Button>
             <Button 
               onClick={handleConfirmDeploy}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 w-full sm:w-auto rounded-xl mb-2 sm:mb-0"
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl h-11 px-5"
             >
               <Check className="mr-2 h-4 w-4" /> Confirm & Deploy
             </Button>
