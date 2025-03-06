@@ -4,9 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Plus, PenSquare, Copy, Trash } from "lucide-react";
+import { Plus, PenSquare, Copy, Trash, Heart, Play, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { predefinedStrategies } from "@/constants/strategy-data";
 
 type StrategyType = "All" | "Intraday" | "BTST" | "Positional";
+type DeploymentMode = "Paper" | "Real";
 
 // Sample strategies data
 const allStrategies = [
@@ -19,7 +23,8 @@ const allStrategies = [
     performance: {
       percentage: "+12.5%",
       trending: "up"
-    }
+    },
+    isWishlisted: false
   },
   {
     id: 102,
@@ -30,7 +35,8 @@ const allStrategies = [
     performance: {
       percentage: "-2.3%",
       trending: "down"
-    }
+    },
+    isWishlisted: true
   },
   {
     id: 103,
@@ -41,7 +47,8 @@ const allStrategies = [
     performance: {
       percentage: "+8.7%",
       trending: "up"
-    }
+    },
+    isWishlisted: false
   }
 ];
 
@@ -49,6 +56,11 @@ const StrategyManagement = () => {
   const navigate = useNavigate();
   const [activeType, setActiveType] = useState<StrategyType>("All");
   const [filteredStrategies, setFilteredStrategies] = useState(allStrategies);
+  const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
+  const [showStrategyDialog, setShowStrategyDialog] = useState(false);
+  const [showDeploymentDialog, setShowDeploymentDialog] = useState(false);
+  const [deploymentMode, setDeploymentMode] = useState<DeploymentMode>("Paper");
+  const [selectedStrategySource, setSelectedStrategySource] = useState<"predefined" | "custom">("predefined");
 
   useEffect(() => {
     if (activeType === "All") {
@@ -59,7 +71,17 @@ const StrategyManagement = () => {
   }, [activeType]);
 
   const handleCreateStrategy = () => {
-    navigate("/strategy-builder");
+    setShowStrategyDialog(true);
+  };
+
+  const handleStrategySourceSelect = (source: "predefined" | "custom") => {
+    setSelectedStrategySource(source);
+    if (source === "predefined") {
+      navigate("/strategy-selection");
+    } else {
+      navigate("/strategy-builder");
+    }
+    setShowStrategyDialog(false);
   };
 
   const handleTypeSelect = (type: StrategyType) => {
@@ -78,6 +100,35 @@ const StrategyManagement = () => {
   const handleDeleteStrategy = (id: number) => {
     // TODO: Implement delete functionality
     console.log(`Deleting strategy ${id}`);
+  };
+
+  const handleDeployStrategy = (strategy: any) => {
+    setSelectedStrategy(strategy);
+    setShowDeploymentDialog(true);
+  };
+
+  const handleDeployConfirm = () => {
+    console.log(`Deploying strategy ${selectedStrategy.id} in ${deploymentMode} mode`);
+    setShowDeploymentDialog(false);
+    navigate("/live-trading");
+  };
+
+  const handleToggleWishlist = (id: number) => {
+    const updatedStrategies = allStrategies.map(strategy => {
+      if (strategy.id === id) {
+        return { ...strategy, isWishlisted: !strategy.isWishlisted };
+      }
+      return strategy;
+    });
+    
+    // Update the local state
+    setFilteredStrategies(
+      activeType === "All" 
+        ? updatedStrategies 
+        : updatedStrategies.filter(strategy => strategy.type === activeType)
+    );
+    
+    console.log(`${updatedStrategies.find(s => s.id === id)?.isWishlisted ? 'Added to' : 'Removed from'} wishlist: ${id}`);
   };
 
   return (
@@ -157,6 +208,17 @@ const StrategyManagement = () => {
                   </div>
                   <div className="flex space-x-3">
                     <button 
+                      className={`${
+                        strategy.isWishlisted 
+                          ? "text-pink-500 hover:text-pink-400" 
+                          : "text-gray-400 hover:text-pink-500"
+                      }`}
+                      onClick={() => handleToggleWishlist(strategy.id)}
+                      title={strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                    >
+                      <Heart className="h-4 w-4" fill={strategy.isWishlisted ? "currentColor" : "none"} />
+                    </button>
+                    <button 
                       className="text-gray-400 hover:text-white"
                       onClick={() => handleEditStrategy(strategy.id)}
                     >
@@ -174,6 +236,13 @@ const StrategyManagement = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </button>
+                    <button 
+                      className="text-gray-400 hover:text-green-400"
+                      onClick={() => handleDeployStrategy(strategy)}
+                      title="Deploy strategy"
+                    >
+                      <Play className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -182,6 +251,74 @@ const StrategyManagement = () => {
         </section>
       </main>
       <BottomNav />
+
+      {/* Strategy Selection Dialog */}
+      <Dialog open={showStrategyDialog} onOpenChange={setShowStrategyDialog}>
+        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Select Strategy Type</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Would you like to use a predefined strategy or create a custom one?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 pt-4">
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col items-center justify-center gap-2 bg-gray-700/50 border-gray-600 hover:bg-gray-700 hover:border-[#FF00D4]"
+              onClick={() => handleStrategySourceSelect("predefined")}
+            >
+              <FileText className="h-6 w-6" />
+              <span>Predefined Strategy</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col items-center justify-center gap-2 bg-gray-700/50 border-gray-600 hover:bg-gray-700 hover:border-[#FF00D4]"
+              onClick={() => handleStrategySourceSelect("custom")}
+            >
+              <PenSquare className="h-6 w-6" />
+              <span>Custom Strategy</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deployment Mode Dialog */}
+      <Dialog open={showDeploymentDialog} onOpenChange={setShowDeploymentDialog}>
+        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Select Deployment Mode</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Would you like to deploy in Paper Trade mode or Real Mode?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select value={deploymentMode} onValueChange={(value) => setDeploymentMode(value as DeploymentMode)}>
+              <SelectTrigger className="w-full bg-gray-700 border-gray-600 text-white">
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-700 border-gray-600 text-white">
+                <SelectItem value="Paper">Paper Trading (Simulated)</SelectItem>
+                <SelectItem value="Real">Real Trading (Live Market)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              onClick={() => setShowDeploymentDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-[#FF00D4] to-purple-500 text-white"
+              onClick={handleDeployConfirm}
+            >
+              Deploy Strategy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
