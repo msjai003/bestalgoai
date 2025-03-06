@@ -102,10 +102,9 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
                 className="bg-gray-700 border-gray-600 text-white pl-10"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Clock className="h-5 w-5 text-[#FF00D4]" />
+                <Clock className="h-5 w-5 text-gray-400" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Default: 09:35</p>
           </div>
           
           <div>
@@ -121,7 +120,7 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
                 className="bg-gray-700 border-gray-600 text-white pl-10"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Clock className="h-5 w-5 text-[#FF00D4]" />
+                <Clock className="h-5 w-5 text-gray-400" />
               </div>
             </div>
           </div>
