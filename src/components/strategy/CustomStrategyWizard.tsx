@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
@@ -57,7 +56,18 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
 
   const currentLeg = formData.legs[formData.currentLegIndex];
 
-  // Check if strategy name already exists in wishlist
+  useEffect(() => {
+    const handleShowStrategyDetails = () => {
+      setShowStrategyDetails(true);
+    };
+
+    document.addEventListener('showStrategyDetails', handleShowStrategyDetails);
+
+    return () => {
+      document.removeEventListener('showStrategyDetails', handleShowStrategyDetails);
+    };
+  }, []);
+
   useEffect(() => {
     if (strategyName.trim() === "") {
       setIsDuplicateName(false);
@@ -183,7 +193,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
     
-    // Pass the strategy data to the parent component
     onSubmit({
       name: strategyName,
       formData: formData,
@@ -218,7 +227,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         onNext={handleNext}
       />
 
-      {/* Strategy Details Dialog */}
       <StrategyDetailsDialog 
         open={showStrategyDetails}
         onOpenChange={setShowStrategyDetails}
@@ -227,7 +235,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         onShowDeploymentDialog={() => setShowDeploymentDialog(true)}
       />
 
-      {/* Deployment Mode Dialog */}
       <DeploymentDialog 
         open={showDeploymentDialog}
         onOpenChange={setShowDeploymentDialog}

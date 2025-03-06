@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,14 +46,14 @@ export const ConfirmationStep = ({
 
   const handleFinishStrategy = () => {
     setShowAddLegDialog(false);
-    // Show toast notification that leg details are stored
+    
     toast({
       title: "Leg details stored",
       description: `Selected leg details stored in strategy "${strategyName || 'Unnamed Strategy'}"`,
       duration: 3000,
     });
-    // Here we would typically save the strategy and navigate to strategy details
-    // This functionality would be implemented in the parent component
+    
+    document.dispatchEvent(new CustomEvent('showStrategyDetails'));
   };
 
   return (
@@ -88,7 +87,6 @@ export const ConfirmationStep = ({
         </Button>
       </div>
 
-      {/* Add Leg Confirmation Dialog */}
       <Dialog open={showAddLegDialog} onOpenChange={setShowAddLegDialog}>
         <DialogContent className="bg-gray-800 border-gray-700 text-white">
           <DialogHeader>
