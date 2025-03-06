@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
-import { BrokerHeader } from "@/components/broker-integration/BrokerHeader";
+import { Header } from "@/components/Header";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
 import { CustomStrategyForm } from "@/components/strategy/CustomStrategyForm";
 import { predefinedStrategies } from "@/constants/strategy-data";
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog";
 
 const StrategySelection = () => {
-  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
@@ -33,15 +32,13 @@ const StrategySelection = () => {
     window.location.href = "/backtest";
   };
 
-  const handleBack = () => {
-    navigate(-1); // Navigate to previous page in history
-  };
-
   return (
     <div className="bg-gray-900 min-h-screen">
-      <BrokerHeader onBack={handleBack} title="Strategy Selection" />
+      <Header />
       <main className="pt-16 pb-20">
         <section className="px-4 py-4">
+          <h1 className="text-2xl font-bold text-white mb-4">Strategy Selection</h1>
+          
           {/* Tab Selection */}
           <div className="bg-gray-800/50 p-1 rounded-xl mb-6">
             <div className="grid grid-cols-2 gap-1">
