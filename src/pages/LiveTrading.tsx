@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -250,7 +251,7 @@ const LiveTrading = () => {
                     className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-lg font-medium shadow-lg hover:opacity-90 transition-opacity"
                     onClick={handleTradingToggle}
                   >
-                    Start All Trading
+                    Square off all
                   </Button>
                 ) : (
                   <Button 
