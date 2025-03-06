@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft } from "lucide-react";
+import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WizardFormData, StrategyLeg, PositionType, OptionType, StrikeLevel } from "@/types/strategy-wizard";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ConfirmationStepProps {
   formData: WizardFormData;
@@ -32,6 +33,7 @@ export const ConfirmationStep = ({
 }: ConfirmationStepProps) => {
   const [showAddLegDialog, setShowAddLegDialog] = useState(false);
   const [selectedLegIndex, setSelectedLegIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const handleSaveLeg = (index: number) => {
     setSelectedLegIndex(index);
@@ -45,6 +47,12 @@ export const ConfirmationStep = ({
 
   const handleFinishStrategy = () => {
     setShowAddLegDialog(false);
+    // Show toast notification that leg details are stored
+    toast({
+      title: "Leg details stored",
+      description: `Selected leg details stored in strategy "${strategyName || 'Unnamed Strategy'}"`,
+      duration: 3000,
+    });
     // Here we would typically save the strategy and navigate to strategy details
     // This functionality would be implemented in the parent component
   };
@@ -93,13 +101,13 @@ export const ConfirmationStep = ({
             <Button 
               onClick={handleFinishStrategy}
               variant="outline"
-              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl" // Added rounded-xl
+              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
             >
               <X className="mr-2 h-4 w-4" /> No
             </Button>
             <Button 
               onClick={handleAddAnotherLeg}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl" // Added rounded-xl
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
             >
               <Check className="mr-2 h-4 w-4" /> Yes
             </Button>
