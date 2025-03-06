@@ -8,6 +8,7 @@ interface StrategyCardProps {
     id: number;
     name: string;
     description: string;
+    isWishlisted?: boolean;
     performance?: {
       winRate: string;
       avgProfit: string;

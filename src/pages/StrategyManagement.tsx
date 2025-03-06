@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, PenSquare, Copy, Trash, Heart, Play, FileText } from "lucide-react";
+import { ArrowLeft, Plus, PenSquare, Trash, Heart, Play, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { predefinedStrategies } from "@/constants/strategy-data";
+import { useToast } from "@/hooks/use-toast";
 
 type StrategyType = "All" | "Intraday" | "BTST" | "Positional";
 type DeploymentMode = "Paper" | "Real";
@@ -52,8 +54,10 @@ const allStrategies = [
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeType, setActiveType] = useState<StrategyType>("All");
   const [filteredStrategies, setFilteredStrategies] = useState(allStrategies);
+  const [wishlistedStrategies, setWishlistedStrategies] = useState<typeof allStrategies>([]);
   const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
   const [showStrategyDialog, setShowStrategyDialog] = useState(false);
   const [showDeploymentDialog, setShowDeploymentDialog] = useState(false);
@@ -66,7 +70,10 @@ const StrategyManagement = () => {
     } else {
       setFilteredStrategies(allStrategies.filter(strategy => strategy.type === activeType));
     }
-  }, [activeType]);
+
+    // Filter wishlisted strategies
+    setWishlistedStrategies(allStrategies.filter(strategy => strategy.isWishlisted));
+  }, [activeType, allStrategies]);
 
   const handleCreateStrategy = () => {
     setShowStrategyDialog(true);
@@ -90,12 +97,24 @@ const StrategyManagement = () => {
     navigate(`/strategy-details/${id}`);
   };
 
-  const handleCopyStrategy = (id: number) => {
-    console.log(`Copying strategy ${id}`);
-  };
-
   const handleDeleteStrategy = (id: number) => {
     console.log(`Deleting strategy ${id}`);
+    
+    // Remove the strategy from the arrays
+    const updatedStrategies = allStrategies.filter(strategy => strategy.id !== id);
+    
+    setFilteredStrategies(
+      activeType === "All" 
+        ? updatedStrategies 
+        : updatedStrategies.filter(strategy => strategy.type === activeType)
+    );
+    
+    setWishlistedStrategies(updatedStrategies.filter(strategy => strategy.isWishlisted));
+    
+    toast({
+      title: "Strategy deleted",
+      description: "The strategy has been deleted successfully",
+    });
   };
 
   const handleDeployStrategy = (strategy: any) => {
@@ -123,7 +142,13 @@ const StrategyManagement = () => {
         : updatedStrategies.filter(strategy => strategy.type === activeType)
     );
     
-    console.log(`${updatedStrategies.find(s => s.id === id)?.isWishlisted ? 'Added to' : 'Removed from'} wishlist: ${id}`);
+    setWishlistedStrategies(updatedStrategies.filter(strategy => strategy.isWishlisted));
+    
+    const isWishlisted = updatedStrategies.find(s => s.id === id)?.isWishlisted;
+    toast({
+      title: isWishlisted ? "Added to wishlist" : "Removed from wishlist",
+      description: `Strategy has been ${isWishlisted ? 'added to' : 'removed from'} your wishlist`,
+    });
   };
 
   return (
@@ -221,19 +246,15 @@ const StrategyManagement = () => {
                       onClick={() => handleToggleWishlist(strategy.id)}
                       title={strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                     >
-                      <Heart className="h-4 w-4" fill={strategy.isWishlisted ? "currentColor" : "none"} />
+                      <Heart className="h-4 w-4" 
+                             fill={strategy.isWishlisted ? "currentColor" : "none"} 
+                             color={strategy.status === "Live" ? "#ec4899" : "currentColor"} />
                     </button>
                     <button 
                       className="text-gray-400 hover:text-white"
                       onClick={() => handleEditStrategy(strategy.id)}
                     >
                       <PenSquare className="h-4 w-4" />
-                    </button>
-                    <button 
-                      className="text-gray-400 hover:text-white"
-                      onClick={() => handleCopyStrategy(strategy.id)}
-                    >
-                      <Copy className="h-4 w-4" />
                     </button>
                     <button 
                       className="text-gray-400 hover:text-red-400"
@@ -253,6 +274,87 @@ const StrategyManagement = () => {
               </div>
             ))
           )}
+        </section>
+
+        {/* My Wishlist Section */}
+        <section className="mt-8">
+          <h2 className="text-xl font-bold text-white mb-4">My Wishlist</h2>
+          
+          <div className="space-y-4">
+            {wishlistedStrategies.length === 0 ? (
+              <div className="bg-gray-800/50 rounded-xl p-8 border border-gray-700 flex flex-col items-center justify-center">
+                <p className="text-gray-400 mb-4">No strategies in your wishlist</p>
+                <Button 
+                  onClick={() => navigate('/strategy-selection')}
+                  variant="outline"
+                  className="border-[#FF00D4]/30 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Add Strategies
+                </Button>
+              </div>
+            ) : (
+              wishlistedStrategies.map((strategy) => (
+                <div key={strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-white">{strategy.name}</h3>
+                      <span className="text-sm text-gray-400">{strategy.description}</span>
+                    </div>
+                    <div className={`px-2 py-1 rounded-full ${
+                      strategy.status === "Live" 
+                        ? "bg-green-500/20" 
+                        : "bg-blue-500/20"
+                    }`}>
+                      <span className={`text-xs ${
+                        strategy.status === "Live" 
+                          ? "text-green-400" 
+                          : "text-blue-400"
+                      }`}>{strategy.status}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center">
+                      <i className="fa-solid fa-chart-line text-[#FF00D4] mr-2"></i>
+                      <span className={`${
+                        strategy.performance.trending === "up" 
+                          ? "text-green-400" 
+                          : "text-red-400"
+                      }`}>{strategy.performance.percentage}</span>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button 
+                        className="text-pink-500 hover:text-pink-400"
+                        onClick={() => handleToggleWishlist(strategy.id)}
+                        title="Remove from wishlist"
+                      >
+                        <Heart className="h-4 w-4" fill="currentColor" />
+                      </button>
+                      <button 
+                        className="text-gray-400 hover:text-white"
+                        onClick={() => handleEditStrategy(strategy.id)}
+                      >
+                        <PenSquare className="h-4 w-4" />
+                      </button>
+                      <button 
+                        className="text-gray-400 hover:text-red-400"
+                        onClick={() => handleDeleteStrategy(strategy.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                      <button 
+                        className="text-gray-400 hover:text-green-400"
+                        onClick={() => handleDeployStrategy(strategy)}
+                        title="Deploy strategy"
+                      >
+                        <Play className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
       </main>
       <BottomNav />
