@@ -89,7 +89,7 @@ export const ConfirmationStep = ({
               Would you like to add another leg to your strategy?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex justify-between mt-4 space-x-4">
+          <DialogFooter className="flex flex-row justify-end items-center mt-4 gap-4">
             <Button 
               onClick={handleFinishStrategy}
               variant="outline"
