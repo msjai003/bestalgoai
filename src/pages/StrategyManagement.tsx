@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, User, Plus } from "lucide-react";
@@ -130,7 +131,11 @@ const StrategyManagement = () => {
         <section className="py-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-bold text-white">Strategy Management</h1>
-            <h2 className="text-lg font-bold text-white bg-pink-500/20 px-3 py-1.5 rounded-lg border border-pink-500">My Wishlist</h2>
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-400 uppercase tracking-wide bg-gray-800/70 px-3 py-1.5 rounded-lg border border-gray-700">
+                My Wishlist
+              </span>
+            </div>
           </div>
         </section>
 
