@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import StrategyBuilder from "./pages/StrategyBuilder";
 import StrategySelection from "./pages/StrategySelection";
 import StrategyDetails from "./pages/StrategyDetails";
+import StrategyManagement from "./pages/StrategyManagement";
 import BacktestReport from "./pages/BacktestReport";
 import LiveTrading from "./pages/LiveTrading";
 import Alerts from "./pages/Alerts";
@@ -51,6 +52,7 @@ function App() {
             <Route path="/strategy-builder" element={<StrategyBuilder />} />
             <Route path="/strategy-selection" element={<StrategySelection />} />
             <Route path="/strategy-details/:id" element={<StrategyDetails />} />
+            <Route path="/strategy-management" element={<StrategyManagement />} />
             <Route path="/backtest" element={<BacktestReport />} />
             <Route path="/live-trading" element={<LiveTrading />} />
             <Route path="/alerts" element={<Alerts />} />

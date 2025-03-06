@@ -11,13 +11,13 @@ export const BottomNav = () => {
           <i className={`fa-solid fa-house ${location.pathname === '/dashboard' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
           <span className="text-xs text-gray-400 mt-1">Home</span>
         </Link>
-        <Link to="/live-trading" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-chart-simple ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Trade</span>
+        <Link to="/strategy-management" className="flex flex-col items-center p-2">
+          <i className={`fa-solid fa-chart-simple ${location.pathname === '/strategy-management' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
+          <span className="text-xs text-gray-400 mt-1">Strategies</span>
         </Link>
-        <Link to="/alerts" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-bell ${location.pathname === '/alerts' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Alerts</span>
+        <Link to="/live-trading" className="flex flex-col items-center p-2">
+          <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
+          <span className="text-xs text-gray-400 mt-1">Trading</span>
         </Link>
         <Link to="/settings" className="flex flex-col items-center p-2">
           <i className={`fa-solid fa-gear ${location.pathname === '/settings' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
