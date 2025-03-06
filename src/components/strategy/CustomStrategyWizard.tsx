@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -422,7 +421,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             >
               <span className="text-lg mb-1">💰</span>
               <span className="text-base font-medium">Real Mode</span>
-              <span className="text-xs text-gray-200 mt-1">Live Execution</span>
+              <span className="text-xs text-gray-200 mt-1 px-2 text-center">Live Execution</span>
             </Button>
           </div>
           <div className="mt-4 p-4 bg-gray-700/50 rounded-lg text-gray-300 text-sm">
