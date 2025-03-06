@@ -116,33 +116,35 @@ const StrategyManagement = () => {
         </section>
 
         <section className="mb-6">
-          <div className="flex items-center mb-4">
-            <h2 className="text-xl font-bold text-white">My Wishlist</h2>
-          </div>
-          
-          <StrategySection 
-            title="Predefined Strategies"
-            icon={<Star className="h-5 w-5 text-yellow-500" />}
-            strategies={predefinedWishlistedStrategies}
-            emptyMessage="No predefined strategies in your wishlist"
-            actionButtonText="Add Strategy"
-            actionButtonPath="/strategy-selection"
-            onDeleteStrategy={handleDeleteStrategy}
-            onToggleLiveMode={handleToggleLiveMode}
-            showEmptyStateButton={true}
-          />
+          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+            <div className="flex items-center mb-4">
+              <h2 className="text-xl font-bold text-white">My Wishlist</h2>
+            </div>
+            
+            <StrategySection 
+              title="Predefined Strategies"
+              icon={<Star className="h-5 w-5 text-yellow-500" />}
+              strategies={predefinedWishlistedStrategies}
+              emptyMessage="No predefined strategies in your wishlist"
+              actionButtonText="Add Strategy"
+              actionButtonPath="/strategy-selection"
+              onDeleteStrategy={handleDeleteStrategy}
+              onToggleLiveMode={handleToggleLiveMode}
+              showEmptyStateButton={true}
+            />
 
-          <StrategySection 
-            title="Custom Strategies"
-            icon={<User className="h-5 w-5 text-blue-500" />}
-            strategies={customWishlistedStrategies}
-            emptyMessage="No custom strategies in your wishlist"
-            actionButtonText="Create Strategy"
-            actionButtonPath="/strategy-builder"
-            onDeleteStrategy={handleDeleteStrategy}
-            onToggleLiveMode={handleToggleLiveMode}
-            showEmptyStateButton={false}
-          />
+            <StrategySection 
+              title="Custom Strategies"
+              icon={<User className="h-5 w-5 text-blue-500" />}
+              strategies={customWishlistedStrategies}
+              emptyMessage="No custom strategies in your wishlist"
+              actionButtonText="Create Strategy"
+              actionButtonPath="/strategy-builder"
+              onDeleteStrategy={handleDeleteStrategy}
+              onToggleLiveMode={handleToggleLiveMode}
+              showEmptyStateButton={false}
+            />
+          </div>
         </section>
       </main>
       
