@@ -98,8 +98,8 @@ const StrategyManagement = () => {
                 <p className="text-gray-400 mb-4">No strategies in your wishlist</p>
                 <Button 
                   onClick={() => navigate('/strategy-selection')}
-                  variant="default"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white"
                 >
                   Browse Strategies
                 </Button>
