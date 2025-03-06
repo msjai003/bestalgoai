@@ -38,8 +38,8 @@ export const WizardContent = ({
         <TradeSetupStep 
           strategyName={strategyName}
           setStrategyName={setStrategyName}
-          currentLeg={currentLeg}
-          updateCurrentLeg={updateCurrentLeg}
+          leg={currentLeg}
+          updateLeg={updateCurrentLeg}
           isFirstLeg={formData.currentLegIndex === 0}
           isDuplicateName={isDuplicateName}
         />
@@ -47,15 +47,15 @@ export const WizardContent = ({
     case WizardStep.STRIKE_TIMING:
       return (
         <StrikeTimingStep 
-          currentLeg={currentLeg}
-          updateCurrentLeg={updateCurrentLeg}
+          leg={currentLeg}
+          updateLeg={updateCurrentLeg}
         />
       );
     case WizardStep.RISK_MANAGEMENT:
       return (
         <RiskManagementStep 
-          currentLeg={currentLeg}
-          updateCurrentLeg={updateCurrentLeg}
+          leg={currentLeg}
+          updateLeg={updateCurrentLeg}
         />
       );
     case WizardStep.CONFIRMATION:
