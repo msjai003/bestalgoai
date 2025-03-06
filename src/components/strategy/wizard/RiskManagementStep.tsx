@@ -156,9 +156,9 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
           </div>
           
           {leg.trailingEnabled && (
-            <div className="grid grid-cols-2 gap-4 pl-8 pt-2">
-              <div>
-                <Label htmlFor="trailingLockProfit" className="text-gray-300 block mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="trailingLockProfit" className="text-gray-300 block">
                   Lock Profit at (%)
                 </Label>
                 <div className="relative">
@@ -176,8 +176,8 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
                   </div>
                 </div>
               </div>
-              <div>
-                <Label htmlFor="trailingLockAt" className="text-gray-300 block mb-2">
+              <div className="space-y-2">
+                <Label htmlFor="trailingLockAt" className="text-gray-300 block">
                   if Profit Reaches (%)
                 </Label>
                 <div className="relative">
