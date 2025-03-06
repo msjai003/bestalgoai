@@ -145,7 +145,7 @@ const StrategyDetails = () => {
             <Button 
               variant="outline" 
               onClick={handleCancelDeploy}
-              className="border-gray-600 text-white hover:bg-gray-700 w-full sm:w-auto"
+              className="border-gray-700 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white w-full sm:w-auto"
             >
               <X className="mr-2 h-4 w-4" /> Cancel
             </Button>
