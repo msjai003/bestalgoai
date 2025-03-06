@@ -35,7 +35,11 @@ const INITIAL_LEG: StrategyLeg = {
 };
 
 interface CustomStrategyWizardProps {
-  onSubmit: () => void;
+  onSubmit: (strategyData: {
+    name: string;
+    formData: WizardFormData;
+    mode: "paper" | "real" | null;
+  }) => void;
 }
 
 export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) => {
@@ -136,8 +140,12 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
     
-    // This will be handled in the StrategyBuilder.tsx now
-    onSubmit();
+    // Pass the strategy data to the parent component
+    onSubmit({
+      name: strategyName,
+      formData: formData,
+      mode: mode
+    });
   };
 
   return (

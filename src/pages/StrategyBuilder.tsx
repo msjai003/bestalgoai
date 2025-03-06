@@ -9,10 +9,49 @@ import { STEPS, FormData, StrategyType, StrategyCategory, StepType } from "@/typ
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { WizardFormData } from "@/types/strategy-wizard";
+import { v4 as uuidv4 } from "uuid";
 
-const addStrategyToWishlist = (strategyName: string, mode: 'paper' | 'real') => {
+const addStrategyToWishlist = (
+  strategyName: string, 
+  mode: 'paper' | 'real', 
+  formData?: WizardFormData, 
+  isCustom: boolean = false
+) => {
+  const storedStrategies = localStorage.getItem('wishlistedStrategies');
+  let wishlistedStrategies = [];
+  
+  if (storedStrategies) {
+    try {
+      wishlistedStrategies = JSON.parse(storedStrategies);
+    } catch (error) {
+      console.error("Error parsing wishlisted strategies:", error);
+    }
+  }
+  
+  const newStrategy = {
+    id: Math.floor(Math.random() * 1000) + 1,
+    name: strategyName,
+    description: isCustom 
+      ? `Custom ${formData?.legs[0].strategyType || 'intraday'} strategy with ${formData?.legs.length || 1} leg(s)`
+      : "Predefined strategy",
+    isCustom: isCustom,
+    isLive: mode === 'real',
+    isWishlisted: true,
+    legs: formData?.legs || [],
+    performance: {
+      winRate: "N/A",
+      avgProfit: "N/A",
+      drawdown: "N/A"
+    }
+  };
+  
+  wishlistedStrategies.push(newStrategy);
+  
+  localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
+  
   console.log(`Adding strategy "${strategyName}" to wishlist in ${mode} mode`);
-  return Math.floor(Math.random() * 1000) + 1;
+  return newStrategy.id;
 };
 
 const StrategyBuilder = () => {
@@ -65,16 +104,27 @@ const StrategyBuilder = () => {
     navigate("/backtest");
   };
 
-  const handleCustomStrategySubmit = () => {
-    const strategyId = addStrategyToWishlist("Custom Strategy", "paper");
+  const handleCustomStrategySubmit = ({ name, formData, mode }: {
+    name: string;
+    formData: WizardFormData;
+    mode: "paper" | "real" | null;
+  }) => {
+    if (!mode) return;
+    
+    const strategyId = addStrategyToWishlist(
+      name, 
+      mode, 
+      formData,
+      true
+    );
     
     toast({
       title: "Strategy Deployed",
-      description: "Your custom strategy has been successfully deployed and added to your wishlist.",
+      description: `${name} has been successfully deployed and added to your wishlist in ${mode === "paper" ? "Paper Trading" : "Real"} mode.`,
       duration: 5000,
     });
     
-    navigate("/backtest");
+    navigate("/strategy-management");
   };
 
   const renderConfirmationDialog = () => (
