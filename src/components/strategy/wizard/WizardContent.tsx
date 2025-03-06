@@ -15,6 +15,7 @@ interface WizardContentProps {
   strategyName: string;
   setStrategyName: (name: string) => void;
   updateLegByIndex: (index: number, updates: Partial<StrategyLeg>) => void;
+  isDuplicateName?: boolean;
 }
 
 export const WizardContent = ({
@@ -26,7 +27,8 @@ export const WizardContent = ({
   handleAddLeg,
   strategyName,
   setStrategyName,
-  updateLegByIndex
+  updateLegByIndex,
+  isDuplicateName = false
 }: WizardContentProps) => {
   
   switch (currentStep) {
@@ -38,6 +40,7 @@ export const WizardContent = ({
           strategyName={strategyName}
           setStrategyName={setStrategyName}
           isFirstLeg={formData.legs.length === 1 && formData.currentLegIndex === 0}
+          isDuplicateName={isDuplicateName}
         />
       );
     case WizardStep.STRIKE_TIMING:

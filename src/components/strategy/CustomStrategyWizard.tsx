@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
 import { WizardStepIndicator } from "./wizard/WizardStepIndicator";
@@ -52,9 +52,31 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const [deploymentMode, setDeploymentMode] = useState<"paper" | "real" | null>(null);
   const [showDeploymentDialog, setShowDeploymentDialog] = useState(false);
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
+  const [isDuplicateName, setIsDuplicateName] = useState(false);
   const { toast } = useToast();
 
   const currentLeg = formData.legs[formData.currentLegIndex];
+
+  // Check if strategy name already exists in wishlist
+  useEffect(() => {
+    if (strategyName.trim() === "") {
+      setIsDuplicateName(false);
+      return;
+    }
+
+    const storedStrategies = localStorage.getItem('wishlistedStrategies');
+    if (storedStrategies) {
+      try {
+        const parsedStrategies = JSON.parse(storedStrategies);
+        const isDuplicate = parsedStrategies.some(
+          (strategy: any) => strategy.name?.toLowerCase() === strategyName.trim().toLowerCase()
+        );
+        setIsDuplicateName(isDuplicate);
+      } catch (error) {
+        console.error("Error checking strategy names:", error);
+      }
+    }
+  }, [strategyName]);
 
   const updateCurrentLeg = (updates: Partial<StrategyLeg>) => {
     const updatedLegs = [...formData.legs];
@@ -84,15 +106,26 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
 
   const handleNext = () => {
     if (currentStep === WizardStep.TRADE_SETUP && 
-        formData.currentLegIndex === 0 && 
-        strategyName.trim() === "") {
-      toast({
-        title: "Strategy Name Required",
-        description: "Please enter a name for your strategy before proceeding.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
+        formData.currentLegIndex === 0) {
+      if (strategyName.trim() === "") {
+        toast({
+          title: "Strategy Name Required",
+          description: "Please enter a name for your strategy before proceeding.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+      
+      if (isDuplicateName) {
+        toast({
+          title: "Duplicate Strategy Name",
+          description: "A strategy with this name already exists in your wishlist. Please choose a different name.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
     }
 
     if (currentStep < WizardStep.CONFIRMATION) {
@@ -136,6 +169,16 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   };
 
   const handleDeployStrategy = (mode: "paper" | "real") => {
+    if (isDuplicateName) {
+      toast({
+        title: "Duplicate Strategy Name",
+        description: "A strategy with this name already exists in your wishlist. Please choose a different name.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
     setDeploymentMode(mode);
     setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
@@ -165,6 +208,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           strategyName={strategyName}
           setStrategyName={setStrategyName}
           updateLegByIndex={updateLegByIndex}
+          isDuplicateName={isDuplicateName}
         />
       </div>
       

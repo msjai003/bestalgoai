@@ -1,3 +1,4 @@
+
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ interface TradeSetupStepProps {
   strategyName: string;
   setStrategyName: (name: string) => void;
   isFirstLeg: boolean;
+  isDuplicateName?: boolean;
 }
 
 export const TradeSetupStep = ({ 
@@ -18,23 +20,27 @@ export const TradeSetupStep = ({
   updateLeg, 
   strategyName, 
   setStrategyName,
-  isFirstLeg 
+  isFirstLeg,
+  isDuplicateName = false
 }: TradeSetupStepProps) => {
   const [nameError, setNameError] = useState<string>("");
 
   useEffect(() => {
     if (isFirstLeg && strategyName.trim() === "") {
       setNameError("Strategy name is required");
+    } else if (isDuplicateName) {
+      setNameError("A strategy with this name already exists");
     } else {
       setNameError("");
     }
-  }, [strategyName, isFirstLeg]);
+  }, [strategyName, isFirstLeg, isDuplicateName]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStrategyName(e.target.value);
     if (e.target.value.trim() === "") {
       setNameError("Strategy name is required");
     } else {
+      // Only check for duplicate if not empty - the useEffect will handle the duplicate check
       setNameError("");
     }
   };
