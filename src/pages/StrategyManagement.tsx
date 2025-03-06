@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Play, Trash } from "lucide-react";
+import { ArrowLeft, Heart, Play, Trash, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
@@ -9,11 +9,22 @@ import { useToast } from "@/hooks/use-toast";
 import { predefinedStrategies } from "@/constants/strategy-data";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
+  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
 
   useEffect(() => {
     const storedStrategies = localStorage.getItem('wishlistedStrategies');
@@ -36,6 +47,7 @@ const StrategyManagement = () => {
     toast({
       title: "Strategy deleted",
       description: "The strategy has been removed from your wishlist",
+      variant: "destructive"
     });
   };
 
@@ -44,13 +56,26 @@ const StrategyManagement = () => {
   };
 
   const handleToggleLiveMode = (id: number) => {
+    const strategy = wishlistedStrategies.find(s => s.id === id);
+    if (!strategy) return;
+    
+    // Setting up for confirmation dialog
+    setCurrentStrategyId(id);
+    setTargetMode(strategy.isLive ? "paper" : "live");
+    setConfirmationOpen(true);
+  };
+
+  const confirmModeChange = () => {
+    if (currentStrategyId === null || targetMode === null) return;
+    
     const updatedStrategies = wishlistedStrategies.map(strategy => {
-      if (strategy.id === id) {
-        const newLiveStatus = !strategy.isLive;
+      if (strategy.id === currentStrategyId) {
+        const newLiveStatus = targetMode === "live";
         
         toast({
           title: newLiveStatus ? "Strategy set to live mode" : "Strategy set to paper mode",
           description: `Strategy is now in ${newLiveStatus ? 'live' : 'paper'} trading mode`,
+          variant: "default",
         });
         
         if (newLiveStatus) {
@@ -64,6 +89,15 @@ const StrategyManagement = () => {
     
     setWishlistedStrategies(updatedStrategies);
     localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
+    setConfirmationOpen(false);
+    setCurrentStrategyId(null);
+    setTargetMode(null);
+  };
+
+  const cancelModeChange = () => {
+    setConfirmationOpen(false);
+    setCurrentStrategyId(null);
+    setTargetMode(null);
   };
 
   return (
@@ -166,6 +200,40 @@ const StrategyManagement = () => {
           </div>
         </section>
       </main>
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent className="bg-gray-800 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Confirm Trading Mode Change
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              {targetMode === "live" 
+                ? "Are you sure you want to switch to live trading? This will use real funds for trading operations."
+                : "Are you sure you want to switch to paper trading? This will use simulated funds for trading operations."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-end">
+            <Button 
+              variant="outline" 
+              className="border-gray-700 text-white hover:bg-gray-700"
+              onClick={cancelModeChange}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant={targetMode === "live" ? "destructive" : "default"}
+              className={targetMode === "live" ? "" : "bg-blue-600 hover:bg-blue-700"}
+              onClick={confirmModeChange}
+            >
+              {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <TooltipProvider>
         <BottomNav />
       </TooltipProvider>
