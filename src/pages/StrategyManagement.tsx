@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, Play, Trash, AlertTriangle } from "lucide-react";
@@ -59,7 +58,6 @@ const StrategyManagement = () => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
-    // Setting up for confirmation dialog
     setCurrentStrategyId(id);
     setTargetMode(strategy.isLive ? "paper" : "live");
     setConfirmationOpen(true);
@@ -201,7 +199,6 @@ const StrategyManagement = () => {
         </section>
       </main>
       
-      {/* Confirmation Dialog */}
       <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
         <DialogContent className="bg-gray-800 border-gray-700 text-white">
           <DialogHeader>
@@ -217,8 +214,8 @@ const StrategyManagement = () => {
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:justify-end">
             <Button 
-              variant="outline" 
-              className="border-gray-700 text-white hover:bg-gray-700"
+              variant="secondary" 
+              className="bg-gray-700 hover:bg-gray-600 text-gray-200"
               onClick={cancelModeChange}
             >
               Cancel
