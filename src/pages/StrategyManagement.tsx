@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Plus, PenToSquare, Copy, Trash } from "lucide-react";
+import { Plus, PenSquare, Copy, Trash } from "lucide-react";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
 
 // Sample strategies data
@@ -153,7 +153,7 @@ const StrategyManagement = () => {
                     className="text-gray-400 hover:text-white"
                     onClick={() => handleEditStrategy(strategy.id)}
                   >
-                    <PenToSquare className="h-4 w-4" />
+                    <PenSquare className="h-4 w-4" />
                   </button>
                   <button 
                     className="text-gray-400 hover:text-white"
