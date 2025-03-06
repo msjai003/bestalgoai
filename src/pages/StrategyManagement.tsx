@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, User } from "lucide-react";
+import { Star, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
@@ -49,7 +48,6 @@ const StrategyManagement = () => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
-    // Instead of deleting immediately, open the confirmation dialog
     setStrategyToDelete({ id, name: strategy.name });
     setDeleteConfirmOpen(true);
   };
@@ -68,7 +66,6 @@ const StrategyManagement = () => {
       variant: "destructive"
     });
     
-    // Close the dialog and reset the strategy to delete
     setDeleteConfirmOpen(false);
     setStrategyToDelete(null);
   };
@@ -122,23 +119,25 @@ const StrategyManagement = () => {
     setTargetMode(null);
   };
 
+  const handleCreateNewStrategy = () => {
+    navigate('/strategy-builder');
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col">
       <Header />
       <main className="pt-16 pb-20 px-4 flex-1">
         <section className="py-6">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/dashboard')}
-                className="text-gray-400 hover:text-white"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-bold text-white">Strategy Management</h1>
-            </div>
+            <h1 className="text-xl font-bold text-white">Strategy Management</h1>
+            <Button
+              variant="outline"
+              className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
+              onClick={handleCreateNewStrategy}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Strategy
+            </Button>
           </div>
         </section>
 
@@ -177,7 +176,6 @@ const StrategyManagement = () => {
         </section>
       </main>
       
-      {/* Trading Mode Confirmation Dialog */}
       <TradingModeConfirmationDialog 
         open={confirmationOpen}
         onOpenChange={setConfirmationOpen}
@@ -186,7 +184,6 @@ const StrategyManagement = () => {
         onCancel={cancelModeChange}
       />
       
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
