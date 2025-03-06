@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, User } from "lucide-react";
@@ -8,14 +9,21 @@ import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StrategySection } from "@/components/strategy/StrategySection";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
+import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
+  
+  // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
+  
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
 
   useEffect(() => {
     const storedStrategies = localStorage.getItem('wishlistedStrategies');
@@ -38,7 +46,18 @@ const StrategyManagement = () => {
   );
 
   const handleDeleteStrategy = (id: number) => {
-    const updatedStrategies = wishlistedStrategies.filter(strategy => strategy.id !== id);
+    const strategy = wishlistedStrategies.find(s => s.id === id);
+    if (!strategy) return;
+    
+    // Instead of deleting immediately, open the confirmation dialog
+    setStrategyToDelete({ id, name: strategy.name });
+    setDeleteConfirmOpen(true);
+  };
+  
+  const confirmDeleteStrategy = () => {
+    if (!strategyToDelete) return;
+    
+    const updatedStrategies = wishlistedStrategies.filter(strategy => strategy.id !== strategyToDelete.id);
     setWishlistedStrategies(updatedStrategies);
     
     localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
@@ -48,6 +67,15 @@ const StrategyManagement = () => {
       description: "The strategy has been removed from your wishlist",
       variant: "destructive"
     });
+    
+    // Close the dialog and reset the strategy to delete
+    setDeleteConfirmOpen(false);
+    setStrategyToDelete(null);
+  };
+  
+  const cancelDeleteStrategy = () => {
+    setDeleteConfirmOpen(false);
+    setStrategyToDelete(null);
   };
 
   const handleToggleLiveMode = (id: number) => {
@@ -149,12 +177,22 @@ const StrategyManagement = () => {
         </section>
       </main>
       
+      {/* Trading Mode Confirmation Dialog */}
       <TradingModeConfirmationDialog 
         open={confirmationOpen}
         onOpenChange={setConfirmationOpen}
         targetMode={targetMode}
         onConfirm={confirmModeChange}
         onCancel={cancelModeChange}
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        strategyName={strategyToDelete?.name || ""}
+        onConfirm={confirmDeleteStrategy}
+        onCancel={cancelDeleteStrategy}
       />
 
       <BottomNav />
