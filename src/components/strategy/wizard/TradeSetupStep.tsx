@@ -38,10 +38,10 @@ export const TradeSetupStep = ({ leg, updateLeg }: TradeSetupStepProps) => {
           value={leg.instrument}
           onValueChange={(value) => updateLeg({ instrument: value })}
         >
-          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+          <SelectTrigger id="instrument" className="w-full bg-gray-700 border-gray-600 text-white">
             <SelectValue placeholder="Select Instrument" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700">
+          <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white">
             <SelectItem value="SENSEX">SENSEX</SelectItem>
             <SelectItem value="NIFTY">NIFTY</SelectItem>
             <SelectItem value="BANKNIFTY">BANK NIFTY</SelectItem>
