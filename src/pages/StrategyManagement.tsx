@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, User, Plus } from "lucide-react";
@@ -137,18 +136,6 @@ const StrategyManagement = () => {
 
         <section className="mb-6">
           <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-            <div className="flex items-center mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-green-500 hover:text-green-400 border-gray-700 bg-transparent hover:bg-gray-800"
-                onClick={handleCreateNewStrategy}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Strategy
-              </Button>
-            </div>
-            
             <TooltipProvider>
               <StrategySection 
                 title="Predefined Strategies"
