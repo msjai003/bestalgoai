@@ -4,14 +4,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { Info, ArrowLeft } from "lucide-react";
+import { Info, ArrowLeft, Check, X } from "lucide-react";
 import { predefinedStrategies } from "@/constants/strategy-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 
 const StrategyDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [strategy, setStrategy] = useState<any>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -29,7 +38,17 @@ const StrategyDetails = () => {
   }, [id, navigate]);
 
   const handleDeployStrategy = () => {
-    navigate("/backtest");
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmDeploy = () => {
+    setShowConfirmation(false);
+    // Proceed with live trading implementation
+    navigate("/live-trading");
+  };
+
+  const handleCancelDeploy = () => {
+    setShowConfirmation(false);
   };
 
   const handleBack = () => {
@@ -112,6 +131,33 @@ const StrategyDetails = () => {
         </Button>
       </div>
       <BottomNav />
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">Confirm Strategy Deployment</DialogTitle>
+            <DialogDescription className="text-gray-300 mt-2">
+              You are about to implement this strategy for live trading using your selected default brokerage account. Please review your settings before proceeding. Live execution will follow the defined parameters and risk controls.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={handleCancelDeploy}
+              className="border-gray-600 text-white hover:bg-gray-700 w-full sm:w-auto"
+            >
+              <X className="mr-2 h-4 w-4" /> Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmDeploy}
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 w-full sm:w-auto"
+            >
+              <Check className="mr-2 h-4 w-4" /> Confirm & Deploy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
