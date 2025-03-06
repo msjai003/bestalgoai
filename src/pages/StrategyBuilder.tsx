@@ -1,15 +1,19 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { StrategyTypeStep } from "@/components/strategy/StrategyTypeStep";
 import { StrategyDetailsStep } from "@/components/strategy/StrategyDetailsStep";
+import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
 import { STEPS, FormData, StrategyType, StrategyCategory, StepType } from "@/types/strategy";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 const StrategyBuilder = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<StepType>(STEPS.STRATEGY_TYPE);
   const [strategyType, setStrategyType] = useState<StrategyType>("predefined");
   const [selectedCategory, setSelectedCategory] = useState<StrategyCategory | null>(null);
@@ -54,7 +58,16 @@ const StrategyBuilder = () => {
 
   const handleConfirmStrategy = () => {
     setShowConfirmation(false);
-    window.location.href = "/backtest";
+    navigate("/backtest");
+  };
+
+  const handleCustomStrategySubmit = () => {
+    toast({
+      title: "Strategy Deployed",
+      description: "Your custom strategy has been successfully deployed.",
+      duration: 5000,
+    });
+    navigate("/backtest");
   };
 
   const renderConfirmationDialog = () => (
@@ -129,6 +142,10 @@ const StrategyBuilder = () => {
   );
 
   const renderStepContent = () => {
+    if (strategyType === "custom") {
+      return <CustomStrategyWizard onSubmit={handleCustomStrategySubmit} />;
+    }
+    
     switch (currentStep) {
       case STEPS.STRATEGY_TYPE:
         return (
