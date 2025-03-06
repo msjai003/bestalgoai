@@ -49,27 +49,32 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
                   <SelectValue placeholder="Select Strike Level" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px]">
-                  <SelectItem value="ATM">ATM</SelectItem>
-                  <SelectItem value="ITM1">ITM1</SelectItem>
-                  <SelectItem value="ITM2">ITM2</SelectItem>
-                  <SelectItem value="ITM3">ITM3</SelectItem>
-                  <SelectItem value="ITM4">ITM4</SelectItem>
-                  <SelectItem value="ITM5">ITM5</SelectItem>
-                  <SelectItem value="ITM6">ITM6</SelectItem>
-                  <SelectItem value="ITM7">ITM7</SelectItem>
-                  <SelectItem value="ITM8">ITM8</SelectItem>
-                  <SelectItem value="ITM9">ITM9</SelectItem>
-                  <SelectItem value="ITM10">ITM10</SelectItem>
-                  <SelectItem value="ITM11">ITM11</SelectItem>
-                  <SelectItem value="ITM12">ITM12</SelectItem>
-                  <SelectItem value="ITM13">ITM13</SelectItem>
-                  <SelectItem value="ITM14">ITM14</SelectItem>
-                  <SelectItem value="ITM15">ITM15</SelectItem>
-                  <SelectItem value="ITM16">ITM16</SelectItem>
-                  <SelectItem value="ITM17">ITM17</SelectItem>
-                  <SelectItem value="ITM18">ITM18</SelectItem>
-                  <SelectItem value="ITM19">ITM19</SelectItem>
+                  {/* ITM options - ordered from ITM20 down to ITM1 */}
                   <SelectItem value="ITM20">ITM20</SelectItem>
+                  <SelectItem value="ITM19">ITM19</SelectItem>
+                  <SelectItem value="ITM18">ITM18</SelectItem>
+                  <SelectItem value="ITM17">ITM17</SelectItem>
+                  <SelectItem value="ITM16">ITM16</SelectItem>
+                  <SelectItem value="ITM15">ITM15</SelectItem>
+                  <SelectItem value="ITM14">ITM14</SelectItem>
+                  <SelectItem value="ITM13">ITM13</SelectItem>
+                  <SelectItem value="ITM12">ITM12</SelectItem>
+                  <SelectItem value="ITM11">ITM11</SelectItem>
+                  <SelectItem value="ITM10">ITM10</SelectItem>
+                  <SelectItem value="ITM9">ITM9</SelectItem>
+                  <SelectItem value="ITM8">ITM8</SelectItem>
+                  <SelectItem value="ITM7">ITM7</SelectItem>
+                  <SelectItem value="ITM6">ITM6</SelectItem>
+                  <SelectItem value="ITM5">ITM5</SelectItem>
+                  <SelectItem value="ITM4">ITM4</SelectItem>
+                  <SelectItem value="ITM3">ITM3</SelectItem>
+                  <SelectItem value="ITM2">ITM2</SelectItem>
+                  <SelectItem value="ITM1">ITM1</SelectItem>
+                  
+                  {/* ATM option - in the center */}
+                  <SelectItem value="ATM" className="bg-gray-700 font-medium">ATM</SelectItem>
+                  
+                  {/* OTM options - ordered from OTM1 down to OTM20 */}
                   <SelectItem value="OTM1">OTM1</SelectItem>
                   <SelectItem value="OTM2">OTM2</SelectItem>
                   <SelectItem value="OTM3">OTM3</SelectItem>
