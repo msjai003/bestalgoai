@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3 } from "lucide-react";
@@ -129,17 +128,17 @@ const StrategySelection = () => {
             </div>
           </div>
           
-          <DialogFooter className="flex justify-end space-x-2">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-4 border-t border-gray-700">
             <Button 
               variant="outline" 
               onClick={() => setShowStrategyDetails(false)}
-              className="bg-gray-700 border-gray-600 text-white"
+              className="w-full sm:w-auto bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
             >
               Cancel
             </Button>
             <Button 
               onClick={handleDeployStrategy}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+              className="w-full sm:w-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70"
             >
               Use for Live Trading
             </Button>
