@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -90,24 +91,24 @@ export const ConfirmationStep = ({
       </div>
 
       <Dialog open={showAddLegDialog} onOpenChange={setShowAddLegDialog}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-white">Add Another Leg?</DialogTitle>
-            <DialogDescription className="text-gray-300">
+        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-sm mx-auto">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-white text-xl">Add Another Leg?</DialogTitle>
+            <DialogDescription className="text-gray-300 mt-2">
               Would you like to add another leg to your strategy?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-end items-center mt-4 gap-4">
+          <DialogFooter className="flex flex-row justify-between items-center space-x-4 pt-4">
             <Button 
               onClick={handleFinishStrategy}
               variant="outline"
-              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
+              className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
             >
               <X className="mr-2 h-4 w-4" /> No
             </Button>
             <Button 
               onClick={handleAddAnotherLeg}
-              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
+              className="flex-1 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
             >
               <Check className="mr-2 h-4 w-4" /> Yes
             </Button>
