@@ -129,6 +129,7 @@ const StrategyManagement = () => {
             actionButtonPath="/strategy-selection"
             onDeleteStrategy={handleDeleteStrategy}
             onToggleLiveMode={handleToggleLiveMode}
+            showEmptyStateButton={true}
           />
 
           <StrategySection 
@@ -140,6 +141,7 @@ const StrategyManagement = () => {
             actionButtonPath="/strategy-builder"
             onDeleteStrategy={handleDeleteStrategy}
             onToggleLiveMode={handleToggleLiveMode}
+            showEmptyStateButton={false}
           />
         </section>
       </main>
