@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Plus, PenSquare, ChevronRight, ChevronDown, Check, X } from "lucide-react";
+import { Plus, PenSquare, ChevronRight, Save, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WizardFormData, StrategyLeg, PositionType, OptionType, StrikeLevel } from "@/types/strategy-wizard";
 import { Label } from "@/components/ui/label";
@@ -370,7 +371,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg }: Strategy
         onClick={onSelect}
         className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
       >
-        View Entered Leg Details <ChevronRight className="h-4 w-4 ml-1" />
+        <Save className="h-4 w-4 mr-1" /> Save Leg
       </Button>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,9 +9,16 @@ interface TradeSetupStepProps {
   updateLeg: (updates: Partial<StrategyLeg>) => void;
   strategyName: string;
   setStrategyName: (name: string) => void;
+  isFirstLeg: boolean;
 }
 
-export const TradeSetupStep = ({ leg, updateLeg, strategyName, setStrategyName }: TradeSetupStepProps) => {
+export const TradeSetupStep = ({ 
+  leg, 
+  updateLeg, 
+  strategyName, 
+  setStrategyName,
+  isFirstLeg 
+}: TradeSetupStepProps) => {
   return (
     <div className="space-y-6">
       <div>
@@ -23,7 +29,13 @@ export const TradeSetupStep = ({ leg, updateLeg, strategyName, setStrategyName }
           onChange={(e) => setStrategyName(e.target.value)}
           placeholder="Enter strategy name"
           className="bg-gray-700 border-gray-600 text-white"
+          disabled={!isFirstLeg}
         />
+        {!isFirstLeg && (
+          <p className="text-xs text-gray-400 mt-1">
+            Strategy name cannot be changed when adding additional legs
+          </p>
+        )}
       </div>
 
       <div>

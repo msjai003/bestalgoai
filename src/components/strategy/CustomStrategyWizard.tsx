@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -73,7 +72,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     });
   };
 
-  // Add a new function to update any leg by index
   const updateLegByIndex = (index: number, updates: Partial<StrategyLeg>) => {
     const updatedLegs = [...formData.legs];
     updatedLegs[index] = {
@@ -139,6 +137,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             updateLeg={updateCurrentLeg}
             strategyName={strategyName}
             setStrategyName={setStrategyName}
+            isFirstLeg={formData.legs.length === 1 && formData.currentLegIndex === 0}
           />
         );
       case WizardStep.STRIKE_TIMING:
