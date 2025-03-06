@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, Play, Trash } from "lucide-react";
@@ -8,13 +7,13 @@ import { Header } from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
 import { predefinedStrategies } from "@/constants/strategy-data";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
 
-  // Load wishlisted strategies from localStorage on component mount
   useEffect(() => {
     const storedStrategies = localStorage.getItem('wishlistedStrategies');
     if (storedStrategies) {
@@ -28,11 +27,9 @@ const StrategyManagement = () => {
   }, []);
 
   const handleDeleteStrategy = (id: number) => {
-    // Remove from state
     const updatedStrategies = wishlistedStrategies.filter(strategy => strategy.id !== id);
     setWishlistedStrategies(updatedStrategies);
     
-    // Update localStorage
     localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
     
     toast({
@@ -88,7 +85,6 @@ const StrategyManagement = () => {
           </div>
         </section>
 
-        {/* My Wishlist Section */}
         <section>
           <h2 className="text-xl font-bold text-white mb-4">My Wishlist</h2>
           
@@ -113,24 +109,37 @@ const StrategyManagement = () => {
                       <p className="text-sm text-gray-400">{strategy.description}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="text-pink-500 hover:text-pink-400"
-                        onClick={() => handleDeleteStrategy(strategy.id)}
-                        title="Remove from wishlist"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-500`}
-                        onClick={() => handleToggleLiveMode(strategy.id)}
-                        title={strategy.isLive ? "Set to paper mode" : "Deploy to live trading"}
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="text-pink-500 hover:text-pink-400"
+                            onClick={() => handleDeleteStrategy(strategy.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remove from wishlist</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-500`}
+                            onClick={() => handleToggleLiveMode(strategy.id)}
+                          >
+                            <Play className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{strategy.isLive ? 'Switch to paper trading' : 'Click to live trade'}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
                   
