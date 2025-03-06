@@ -102,9 +102,8 @@ export const PersonalDetailsDialog = ({
                   id="fullName"
                   value={formState.fullName}
                   onChange={(e) => setFormState({...formState, fullName: e.target.value})}
-                  className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                  className={`w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 ${!editMode.fullName ? 'cursor-not-allowed opacity-80' : ''}`}
                   readOnly={!editMode.fullName}
-                  style={{ opacity: editMode.fullName ? 1 : 0.8 }}
                 />
               </div>
               
@@ -125,9 +124,8 @@ export const PersonalDetailsDialog = ({
                   type="email"
                   value={formState.email}
                   onChange={(e) => setFormState({...formState, email: e.target.value})}
-                  className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                  className={`w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 ${!editMode.email ? 'cursor-not-allowed opacity-80' : ''}`}
                   readOnly={!editMode.email}
-                  style={{ opacity: editMode.email ? 1 : 0.8 }}
                 />
               </div>
             </div>
@@ -219,3 +217,4 @@ export const PersonalDetailsDialog = ({
     </Dialog>
   );
 };
+
