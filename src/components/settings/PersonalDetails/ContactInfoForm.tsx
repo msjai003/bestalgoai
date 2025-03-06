@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Pencil, Bell, Lock } from "lucide-react";
 import { DialogClose } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface ContactInfoFormProps {
   phone: string;
@@ -15,6 +16,7 @@ interface ContactInfoFormProps {
   onToggleEditMode: (field: "phone" | "dateOfBirth") => void;
   onFieldChange: (field: "phone" | "dateOfBirth", value: string) => void;
   onSaveChanges: () => void;
+  onOpenSecuritySettings: () => void;
 }
 
 export const ContactInfoForm = ({
@@ -24,7 +26,10 @@ export const ContactInfoForm = ({
   onToggleEditMode,
   onFieldChange,
   onSaveChanges,
+  onOpenSecuritySettings,
 }: ContactInfoFormProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-4">
       <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
@@ -88,11 +93,17 @@ export const ContactInfoForm = ({
       </div>
       
       <div className="mt-5 sm:mt-6 flex flex-col items-center gap-3 sm:gap-4">
-        <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
+        <button 
+          className="text-pink-500 flex items-center gap-2 text-sm sm:text-base"
+          onClick={onOpenSecuritySettings}
+        >
           <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
           Change Password
         </button>
-        <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
+        <button 
+          className="text-pink-500 flex items-center gap-2 text-sm sm:text-base"
+          onClick={() => navigate('/notifications')}
+        >
           <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
           Notification Settings
         </button>

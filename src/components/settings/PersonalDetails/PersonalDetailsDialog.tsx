@@ -15,11 +15,13 @@ import { DialogNavigation } from "./DialogNavigation";
 interface PersonalDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenSecuritySettings?: () => void;
 }
 
 export const PersonalDetailsDialog = ({
   open,
   onOpenChange,
+  onOpenSecuritySettings,
 }: PersonalDetailsDialogProps) => {
   const [formState, setFormState] = useState({
     fullName: "Rahul Sharma",
@@ -71,6 +73,18 @@ export const PersonalDetailsDialog = ({
     }
   };
 
+  // Function to handle opening the security settings dialog
+  const handleOpenSecuritySettings = () => {
+    // Close the current dialog first
+    onOpenChange(false);
+    // Then open the security settings dialog
+    if (onOpenSecuritySettings) {
+      setTimeout(() => {
+        onOpenSecuritySettings();
+      }, 100); // Small delay to ensure proper dialog transition
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 text-gray-100 p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl max-h-[90vh] overflow-hidden">
@@ -107,6 +121,7 @@ export const PersonalDetailsDialog = ({
               onToggleEditMode={(field) => toggleEditMode(field)}
               onFieldChange={handleFieldChange}
               onSaveChanges={handleSaveChanges}
+              onOpenSecuritySettings={handleOpenSecuritySettings}
             />
           )}
         </ScrollArea>

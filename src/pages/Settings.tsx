@@ -20,6 +20,10 @@ const Settings = () => {
     "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
   );
 
+  const openSecuritySettings = () => {
+    setActiveDialog("securitySettings");
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
       <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
@@ -123,6 +127,7 @@ const Settings = () => {
       <PersonalDetailsDialog
         open={activeDialog === "personalDetails"}
         onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
+        onOpenSecuritySettings={openSecuritySettings}
       />
     </div>
   );
