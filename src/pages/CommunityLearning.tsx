@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -73,8 +72,7 @@ const CommunityLearning = () => {
                 Join Discussion
               </Button>
               <Button 
-                variant="outline" 
-                className="border-gray-700 text-white hover:bg-gray-800 w-full sm:w-auto"
+                className="bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 w-full sm:w-auto"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Browse Courses
