@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
@@ -154,11 +153,11 @@ const StrategyManagement = () => {
                 size="sm"
                 className={activeType === type 
                   ? "bg-gradient-to-r from-[#FF00D4] to-purple-500 text-white border-none"
-                  : "bg-gray-800/50 border-gray-700 text-gray-400 hover:text-white hover:border-[#FF00D4]/20"
+                  : "bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gradient-to-r hover:from-[#FF00D4]/20 hover:to-purple-500/20 hover:text-white hover:border-[#FF00D4]"
                 }
                 onClick={() => handleTypeSelect(type as StrategyType)}
               >
-                {type === "All" ? "All" : type}
+                {type}
               </Button>
             ))}
           </div>
