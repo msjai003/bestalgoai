@@ -10,9 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Bell, Lock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, Lock, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ProfilePictureUpload } from "./ProfilePictureUpload";
 
 interface PersonalDetailsDialogProps {
   open: boolean;
@@ -32,9 +33,21 @@ export const PersonalDetailsDialog = ({
   
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 2;
+  const [profilePicture, setProfilePicture] = useState<string>(
+    "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+  );
+  const [editMode, setEditMode] = useState({
+    fullName: false,
+    email: false,
+    phone: true,
+    dateOfBirth: true
+  });
 
-  const handleChangeProfilePicture = () => {
-    toast.info("Profile picture upload functionality will be added later");
+  const toggleEditMode = (field: keyof typeof editMode) => {
+    setEditMode(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   const handleSaveChanges = () => {
@@ -66,46 +79,55 @@ export const PersonalDetailsDialog = ({
         <ScrollArea className="h-[60vh] pr-4">
           {currentPage === 1 && (
             <div className="space-y-4">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6">
-                <div className="group relative w-full h-full">
-                  <img 
-                    src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
-                    alt="Profile" 
-                    className="rounded-full w-full h-full object-cover border-2 border-pink-500 transition-opacity group-hover:opacity-80"
-                  />
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    onClick={handleChangeProfilePicture}
-                  >
-                    <Camera className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-                <button 
-                  onClick={handleChangeProfilePicture}
-                  className="absolute -bottom-1 -right-1 bg-pink-500 rounded-full p-1.5 sm:p-2 shadow-lg"
-                >
-                  <Camera className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                </button>
+              <div className="flex justify-center mb-6">
+                <ProfilePictureUpload 
+                  currentImageUrl={profilePicture}
+                  onImageChange={setProfilePicture}
+                />
               </div>
 
               <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                <Label htmlFor="fullName" className="text-xs sm:text-sm text-gray-400">Full Name</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="fullName" className="text-xs sm:text-sm text-gray-400">Full Name</Label>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 text-gray-400 hover:text-white"
+                    onClick={() => toggleEditMode('fullName')}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
                 <Input
                   id="fullName"
                   value={formState.fullName}
                   onChange={(e) => setFormState({...formState, fullName: e.target.value})}
                   className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                  readOnly={!editMode.fullName}
+                  style={{ opacity: editMode.fullName ? 1 : 0.8 }}
                 />
               </div>
               
               <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                <Label htmlFor="email" className="text-xs sm:text-sm text-gray-400">Email</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="email" className="text-xs sm:text-sm text-gray-400">Email</Label>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 text-gray-400 hover:text-white"
+                    onClick={() => toggleEditMode('email')}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
                 <Input
                   id="email"
                   type="email"
                   value={formState.email}
                   onChange={(e) => setFormState({...formState, email: e.target.value})}
                   className="w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                  readOnly={!editMode.email}
+                  style={{ opacity: editMode.email ? 1 : 0.8 }}
                 />
               </div>
             </div>
