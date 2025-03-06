@@ -38,7 +38,7 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
             </div>
           </div>
           
-          {leg.strikeCriteria === "strike" && (
+          {leg.strikeCriteria === "strike" ? (
             <div>
               <Label htmlFor="strikeLevel" className="text-gray-300 block mb-2">Strike Level</Label>
               <Select
@@ -80,6 +80,18 @@ export const StrikeTimingStep = ({ leg, updateLeg }: StrikeTimingStepProps) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="premiumAmount" className="text-gray-300 block mb-2">Enter Premium Amount</Label>
+              <Input
+                id="premiumAmount"
+                type="number"
+                value={leg.premiumAmount || ""}
+                onChange={(e) => updateLeg({ premiumAmount: e.target.value })}
+                placeholder="Enter amount"
+                className="bg-gray-700 border-gray-600 text-white"
+              />
             </div>
           )}
         </div>

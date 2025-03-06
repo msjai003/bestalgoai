@@ -1,20 +1,31 @@
 
-// No changes needed here since the component already handles the selected segment properly.
-// The UI will automatically show the selected segment based on the leg.segment value.
-
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TradeSetupStepProps {
   leg: StrategyLeg;
   updateLeg: (updates: Partial<StrategyLeg>) => void;
+  strategyName: string;
+  setStrategyName: (name: string) => void;
 }
 
-export const TradeSetupStep = ({ leg, updateLeg }: TradeSetupStepProps) => {
+export const TradeSetupStep = ({ leg, updateLeg, strategyName, setStrategyName }: TradeSetupStepProps) => {
   return (
     <div className="space-y-6">
+      <div>
+        <Label htmlFor="strategyName" className="text-gray-300 block mb-2">Strategy Name</Label>
+        <Input
+          id="strategyName"
+          value={strategyName}
+          onChange={(e) => setStrategyName(e.target.value)}
+          placeholder="Enter strategy name"
+          className="bg-gray-700 border-gray-600 text-white"
+        />
+      </div>
+
       <div>
         <h4 className="text-white font-medium mb-4">Strategy Type Selection</h4>
         <div className="grid grid-cols-3 gap-2">

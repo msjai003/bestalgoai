@@ -7,16 +7,23 @@ interface ConfirmationStepProps {
   formData: WizardFormData;
   onSelectLeg: (index: number) => void;
   onAddLeg: () => void;
+  strategyName: string;
 }
 
 export const ConfirmationStep = ({ 
   formData, 
   onSelectLeg, 
-  onAddLeg 
+  onAddLeg,
+  strategyName
 }: ConfirmationStepProps) => {
   return (
     <div className="space-y-6">
       <h4 className="text-white font-medium mb-4">Review Strategy Configuration</h4>
+      
+      <div className="mb-4 p-4 rounded-lg border border-gray-700 bg-gray-800/30">
+        <h5 className="text-white font-medium mb-2">Strategy Name</h5>
+        <p className="text-gray-300">{strategyName || "Unnamed Strategy"}</p>
+      </div>
       
       <div className="space-y-4">
         {formData.legs.map((leg, index) => (
@@ -86,17 +93,36 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect }: StrategyLegCardProp
           <span className="text-gray-400">Position:</span>
           <p className="text-white capitalize">{leg.positionType}</p>
         </div>
+        <div>
+          <span className="text-gray-400">Underlying:</span>
+          <p className="text-white capitalize">{leg.underlying}</p>
+        </div>
         
         {leg.segment === "options" && (
           <>
+            <div>
+              <span className="text-gray-400">Option Type:</span>
+              <p className="text-white capitalize">{leg.optionType === "call" ? "Call (CE)" : "Put (PE)"}</p>
+            </div>
             <div>
               <span className="text-gray-400">Expiry:</span>
               <p className="text-white capitalize">{leg.expiryType}</p>
             </div>
             <div>
-              <span className="text-gray-400">Strike:</span>
-              <p className="text-white">{leg.strikeLevel}</p>
+              <span className="text-gray-400">Strike Criteria:</span>
+              <p className="text-white capitalize">{leg.strikeCriteria}</p>
             </div>
+            {leg.strikeCriteria === "strike" ? (
+              <div>
+                <span className="text-gray-400">Strike Level:</span>
+                <p className="text-white">{leg.strikeLevel}</p>
+              </div>
+            ) : (
+              <div>
+                <span className="text-gray-400">Premium Amount:</span>
+                <p className="text-white">{leg.premiumAmount || "Not set"}</p>
+              </div>
+            )}
           </>
         )}
         
@@ -116,6 +142,33 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect }: StrategyLegCardProp
           <span className="text-gray-400">Target:</span>
           <p className="text-white">{leg.target}%</p>
         </div>
+        
+        {leg.reEntryOnSL && (
+          <div>
+            <span className="text-gray-400">Re-entry on SL:</span>
+            <p className="text-white">Yes, {leg.reEntryOnSLCount} times</p>
+          </div>
+        )}
+        
+        {leg.reEntryOnTarget && (
+          <div>
+            <span className="text-gray-400">Re-entry on Target:</span>
+            <p className="text-white">Yes, {leg.reEntryOnTargetCount} times</p>
+          </div>
+        )}
+        
+        {leg.trailingEnabled && (
+          <>
+            <div>
+              <span className="text-gray-400">Trailing Lock Profit:</span>
+              <p className="text-white">{leg.trailingLockProfit}%</p>
+            </div>
+            <div>
+              <span className="text-gray-400">Lock At Profit:</span>
+              <p className="text-white">{leg.trailingLockAt}%</p>
+            </div>
+          </>
+        )}
       </div>
       
       <Button 
@@ -124,7 +177,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect }: StrategyLegCardProp
         onClick={onSelect}
         className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
       >
-        View Full Details <ChevronRight className="h-4 w-4 ml-1" />
+        View Entered Leg Details <ChevronRight className="h-4 w-4 ml-1" />
       </Button>
     </div>
   );

@@ -34,6 +34,7 @@ export interface StrategyLeg {
   expiryType: ExpiryType;
   strikeCriteria: StrikeCriteriaType;
   strikeLevel?: StrikeLevel;
+  premiumAmount?: string;
   optionType?: OptionType;
   entryTime: string;
   exitTime: string;
