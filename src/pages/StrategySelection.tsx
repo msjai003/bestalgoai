@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3, Heart } from "lucide-react";
@@ -10,6 +9,7 @@ import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard
 import { predefinedStrategies } from "@/constants/strategy-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ const StrategySelection = () => {
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [strategies, setStrategies] = useState<any[]>([]);
 
-  // Load strategies with wishlist status from localStorage
   useEffect(() => {
     const storedWishlist = localStorage.getItem('wishlistedStrategies');
     let wishlistedIds: number[] = [];
@@ -31,7 +30,6 @@ const StrategySelection = () => {
       }
     }
     
-    // Map predefined strategies with wishlist status
     setStrategies(predefinedStrategies.map(strategy => ({
       ...strategy,
       isWishlisted: wishlistedIds.includes(strategy.id),
@@ -44,7 +42,6 @@ const StrategySelection = () => {
   };
 
   const handleToggleWishlist = (id: number) => {
-    // Update UI state
     const updatedStrategies = strategies.map(strategy => {
       if (strategy.id === id) {
         return { ...strategy, isWishlisted: !strategy.isWishlisted };
@@ -53,17 +50,14 @@ const StrategySelection = () => {
     });
     setStrategies(updatedStrategies);
     
-    // Determine if we're adding or removing from wishlist
     const strategy = strategies.find(s => s.id === id);
     const newWishlistStatus = !strategy?.isWishlisted;
     
-    // Show toast
     toast({
       title: newWishlistStatus ? "Added to wishlist" : "Removed from wishlist",
       description: `Strategy has been ${newWishlistStatus ? 'added to' : 'removed from'} your wishlist`
     });
     
-    // Update localStorage
     const storedWishlist = localStorage.getItem('wishlistedStrategies');
     let wishlistedStrategies: any[] = [];
     
@@ -76,7 +70,6 @@ const StrategySelection = () => {
     }
     
     if (newWishlistStatus) {
-      // Add to wishlist if not already there
       if (!wishlistedStrategies.some(s => s.id === id)) {
         const strategyToAdd = strategies.find(s => s.id === id);
         if (strategyToAdd) {
@@ -84,7 +77,6 @@ const StrategySelection = () => {
         }
       }
     } else {
-      // Remove from wishlist
       wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== id);
     }
     
@@ -103,7 +95,6 @@ const StrategySelection = () => {
           });
           
           if (newStatus) {
-            // Navigate to live trading when set to live mode
             navigate("/live-trading");
           }
           
@@ -117,55 +108,55 @@ const StrategySelection = () => {
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col">
       <Header />
-      <main className="pt-14 pb-16 flex-1 overflow-hidden">
-        <section className="px-4 py-2 h-full flex flex-col">
-          <h1 className="text-2xl font-bold text-white mb-3">Strategy Selection</h1>
-          
-          {/* Tab Selection */}
-          <div className="bg-gray-800/50 p-1 rounded-xl mb-3">
-            <div className="grid grid-cols-2 gap-1">
-              <button 
-                className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
-                  selectedTab === "predefined" 
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
-                    : "text-gray-400"
-                }`}
-                onClick={() => setSelectedTab("predefined")}
-              >
-                Predefined Strategies
-              </button>
-              <button 
-                className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
-                  selectedTab === "custom" 
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
-                    : "text-gray-400"
-                }`}
-                onClick={() => setSelectedTab("custom")}
-              >
-                Custom Strategy
-              </button>
-            </div>
-          </div>
-          
-          {/* Strategy Content */}
-          <div className="flex-1 overflow-auto scrollbar-none">
-            {selectedTab === "predefined" ? (
-              <div className="grid grid-cols-1 gap-3 pb-4">
-                {strategies.map((strategy) => (
-                  <StrategyCard 
-                    key={strategy.id}
-                    strategy={strategy}
-                    onWishlist={handleToggleWishlist}
-                    onLiveMode={handleToggleLiveMode}
-                  />
-                ))}
+      <TooltipProvider>
+        <main className="pt-14 pb-16 flex-1 overflow-hidden">
+          <section className="px-4 py-2 h-full flex flex-col">
+            <h1 className="text-2xl font-bold text-white mb-3">Strategy Selection</h1>
+            
+            <div className="bg-gray-800/50 p-1 rounded-xl mb-3">
+              <div className="grid grid-cols-2 gap-1">
+                <button 
+                  className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
+                    selectedTab === "predefined" 
+                      ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
+                      : "text-gray-400"
+                  }`}
+                  onClick={() => setSelectedTab("predefined")}
+                >
+                  Predefined Strategies
+                </button>
+                <button 
+                  className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
+                    selectedTab === "custom" 
+                      ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
+                      : "text-gray-400"
+                  }`}
+                  onClick={() => setSelectedTab("custom")}
+                >
+                  Custom Strategy
+                </button>
               </div>
-            ) : (
-              <CustomStrategyWizard onSubmit={handleDeployStrategy} />
-            )}
-          </div>
-        </section>
-      </main>
+            </div>
+            
+            <div className="flex-1 overflow-auto scrollbar-none">
+              {selectedTab === "predefined" ? (
+                <div className="grid grid-cols-1 gap-3 pb-4">
+                  {strategies.map((strategy) => (
+                    <StrategyCard 
+                      key={strategy.id}
+                      strategy={strategy}
+                      onWishlist={handleToggleWishlist}
+                      onLiveMode={handleToggleLiveMode}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <CustomStrategyWizard onSubmit={handleDeployStrategy} />
+              )}
+            </div>
+          </section>
+        </main>
+      </TooltipProvider>
       
       <BottomNav />
     </div>
