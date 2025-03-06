@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Plus, PenSquare, Copy, Trash, Heart, Play, FileText } from "lucide-react";
+import { ArrowLeft, Plus, PenSquare, Copy, Trash, Heart, Play, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { predefinedStrategies } from "@/constants/strategy-data";
@@ -11,7 +11,6 @@ import { predefinedStrategies } from "@/constants/strategy-data";
 type StrategyType = "All" | "Intraday" | "BTST" | "Positional";
 type DeploymentMode = "Paper" | "Real";
 
-// Sample strategies data
 const allStrategies = [
   {
     id: 101,
@@ -92,12 +91,10 @@ const StrategyManagement = () => {
   };
 
   const handleCopyStrategy = (id: number) => {
-    // TODO: Implement copy functionality
     console.log(`Copying strategy ${id}`);
   };
 
   const handleDeleteStrategy = (id: number) => {
-    // TODO: Implement delete functionality
     console.log(`Deleting strategy ${id}`);
   };
 
@@ -120,7 +117,6 @@ const StrategyManagement = () => {
       return strategy;
     });
     
-    // Update the local state
     setFilteredStrategies(
       activeType === "All" 
         ? updatedStrategies 
@@ -136,7 +132,17 @@ const StrategyManagement = () => {
       <main className="pt-16 pb-20 px-4 flex-1">
         <section className="py-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-bold text-white">Strategy Management</h1>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-white"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-xl font-bold text-white">Strategy Management</h1>
+            </div>
             <Button 
               onClick={handleCreateStrategy}
               className="bg-gradient-to-r from-[#FF00D4] to-purple-500 text-white hover:from-[#FF00D4]/90 hover:to-purple-500/90"
@@ -251,7 +257,6 @@ const StrategyManagement = () => {
       </main>
       <BottomNav />
 
-      {/* Strategy Selection Dialog */}
       <Dialog open={showStrategyDialog} onOpenChange={setShowStrategyDialog}>
         <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md mx-auto">
           <DialogHeader>
@@ -281,7 +286,6 @@ const StrategyManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Deployment Mode Dialog */}
       <Dialog open={showDeploymentDialog} onOpenChange={setShowDeploymentDialog}>
         <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md mx-auto">
           <DialogHeader>
