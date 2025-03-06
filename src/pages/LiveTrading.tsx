@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { TradingModeFilter } from "@/components/strategy/TradingModeFilter";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -19,6 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast";
+import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
+import { ToggleLeft, ToggleRight } from "lucide-react";
 
 type TradingModeOption = "all" | "live" | "paper";
 
@@ -30,8 +32,10 @@ const LiveTrading = () => {
   const [strategies, setStrategies] = useState<any[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [targetStrategyId, setTargetStrategyId] = useState<number | null>(null);
+  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
 
-  // Load strategies from localStorage on component mount
   useEffect(() => {
     const storedStrategies = localStorage.getItem('wishlistedStrategies');
     if (storedStrategies) {
@@ -59,9 +63,20 @@ const LiveTrading = () => {
   };
 
   const handleToggleLiveMode = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    if (strategy) {
+      setTargetStrategyId(id);
+      setTargetMode(strategy.isLive ? 'paper' : 'live');
+      setShowConfirmationDialog(true);
+    }
+  };
+
+  const confirmModeChange = () => {
+    if (targetStrategyId === null || targetMode === null) return;
+    
     const updatedStrategies = strategies.map(strategy => {
-      if (strategy.id === id) {
-        const newLiveStatus = !strategy.isLive;
+      if (strategy.id === targetStrategyId) {
+        const newLiveStatus = targetMode === 'live';
         return { ...strategy, isLive: newLiveStatus };
       }
       return strategy;
@@ -70,18 +85,27 @@ const LiveTrading = () => {
     setStrategies(updatedStrategies);
     localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
     
-    const strategy = strategies.find(s => s.id === id);
+    const strategy = strategies.find(s => s.id === targetStrategyId);
     if (strategy) {
       toast({
-        title: !strategy.isLive ? "Switched to live trading" : "Switched to paper trading",
-        description: `Strategy "${strategy.name}" is now in ${!strategy.isLive ? 'live' : 'paper'} trading mode`,
+        title: targetMode === 'live' ? "Switched to live trading" : "Switched to paper trading",
+        description: `Strategy "${strategy.name}" is now in ${targetMode} trading mode`,
       });
     }
+    
+    setShowConfirmationDialog(false);
+    setTargetStrategyId(null);
+    setTargetMode(null);
+  };
+
+  const cancelModeChange = () => {
+    setShowConfirmationDialog(false);
+    setTargetStrategyId(null);
+    setTargetMode(null);
   };
 
   const instruments = ["NIFTY", "BANKNIFTY", "FINNIFTY", "SENSEX", "MIDCPNIFTY"];
 
-  // Filter strategies based on selected mode
   const filteredStrategies = selectedMode === "all" 
     ? strategies 
     : strategies.filter(strategy => 
@@ -169,14 +193,38 @@ const LiveTrading = () => {
                   </div>
                 </div>
                 
-                <div className="mt-4">
-                  <Button
-                    variant={strategy.isLive ? "outline" : "default"}
-                    className={`w-full ${strategy.isLive ? 'border-gray-700 text-gray-400' : 'bg-gradient-to-r from-green-500 to-green-600 text-white'}`}
-                    onClick={() => handleToggleLiveMode(strategy.id)}
-                  >
-                    {strategy.isLive ? "Switch to Paper Trading" : "Switch to Live Trading"}
-                  </Button>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-300 text-sm">Paper Trading</span>
+                    <Switch
+                      id={`mode-switch-${strategy.id}`}
+                      checked={strategy.isLive}
+                      onCheckedChange={() => handleToggleLiveMode(strategy.id)}
+                      className={`${strategy.isLive ? 'bg-green-500' : 'bg-blue-500'} data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-blue-500`}
+                    />
+                    <span className="text-gray-300 text-sm">Live Trading</span>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleLiveMode(strategy.id)}
+                          className="text-gray-400 hover:text-white"
+                        >
+                          {strategy.isLive ? (
+                            <ToggleRight className="w-5 h-5 text-green-400" />
+                          ) : (
+                            <ToggleLeft className="w-5 h-5 text-blue-400" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Switch to {strategy.isLive ? 'paper' : 'live'} trading</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             ))
@@ -219,6 +267,14 @@ const LiveTrading = () => {
         )}
       </main>
       <BottomNav />
+      
+      <TradingModeConfirmationDialog
+        open={showConfirmationDialog}
+        onOpenChange={setShowConfirmationDialog}
+        targetMode={targetMode}
+        onConfirm={confirmModeChange}
+        onCancel={cancelModeChange}
+      />
     </div>
   );
 };
