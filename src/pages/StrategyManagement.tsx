@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, User, Plus } from "lucide-react";
@@ -10,11 +9,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { StrategySection } from "@/components/strategy/StrategySection";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
+import { StrategyFilter } from "@/components/strategy/StrategyFilter";
+
+type FilterOption = "all" | "intraday" | "btst" | "positional";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   
   // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -37,12 +40,19 @@ const StrategyManagement = () => {
     }
   }, []);
 
-  const predefinedWishlistedStrategies = wishlistedStrategies.filter(
-    strategy => !strategy.isCustom
+  const filterStrategies = (strategies: any[]) => {
+    if (selectedFilter === "all") {
+      return strategies;
+    }
+    return strategies.filter(strategy => strategy.category === selectedFilter);
+  };
+
+  const predefinedWishlistedStrategies = filterStrategies(
+    wishlistedStrategies.filter(strategy => !strategy.isCustom)
   );
 
-  const customWishlistedStrategies = wishlistedStrategies.filter(
-    strategy => strategy.isCustom
+  const customWishlistedStrategies = filterStrategies(
+    wishlistedStrategies.filter(strategy => strategy.isCustom)
   );
 
   const handleDeleteStrategy = (id: number) => {
@@ -137,6 +147,11 @@ const StrategyManagement = () => {
               </span>
             </div>
           </div>
+          
+          <StrategyFilter 
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+          />
         </section>
 
         <section className="mb-6">
