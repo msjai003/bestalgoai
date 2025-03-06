@@ -1,11 +1,19 @@
 
 import { useState } from "react";
-import { Plus, PenSquare, ChevronRight, Save, Check, X } from "lucide-react";
+import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WizardFormData, StrategyLeg, PositionType, OptionType, StrikeLevel } from "@/types/strategy-wizard";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ConfirmationStepProps {
   formData: WizardFormData;
@@ -22,6 +30,25 @@ export const ConfirmationStep = ({
   strategyName,
   updateLegByIndex
 }: ConfirmationStepProps) => {
+  const [showAddLegDialog, setShowAddLegDialog] = useState(false);
+  const [selectedLegIndex, setSelectedLegIndex] = useState<number | null>(null);
+
+  const handleSaveLeg = (index: number) => {
+    setSelectedLegIndex(index);
+    setShowAddLegDialog(true);
+  };
+
+  const handleAddAnotherLeg = () => {
+    setShowAddLegDialog(false);
+    onAddLeg();
+  };
+
+  const handleFinishStrategy = () => {
+    setShowAddLegDialog(false);
+    // Here we would typically save the strategy and navigate to strategy details
+    // This functionality would be implemented in the parent component
+  };
+
   return (
     <div className="space-y-6">
       <h4 className="text-white font-medium mb-4">Review Strategy Configuration</h4>
@@ -40,6 +67,7 @@ export const ConfirmationStep = ({
             isActive={index === formData.currentLegIndex} 
             onSelect={() => onSelectLeg(index)} 
             updateLeg={(updates) => updateLegByIndex(index, updates)}
+            onSave={() => handleSaveLeg(index)}
           />
         ))}
         
@@ -51,6 +79,33 @@ export const ConfirmationStep = ({
           <Plus className="mr-2 h-4 w-4" /> Add Another Leg
         </Button>
       </div>
+
+      {/* Add Leg Confirmation Dialog */}
+      <Dialog open={showAddLegDialog} onOpenChange={setShowAddLegDialog}>
+        <DialogContent className="bg-gray-800 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Add Another Leg?</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Would you like to add another leg to your strategy?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-between mt-4 space-x-4">
+            <Button 
+              onClick={handleFinishStrategy}
+              variant="outline"
+              className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+            >
+              <X className="mr-2 h-4 w-4" /> No
+            </Button>
+            <Button 
+              onClick={handleAddAnotherLeg}
+              className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+            >
+              <Check className="mr-2 h-4 w-4" /> Yes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -61,9 +116,10 @@ interface StrategyLegCardProps {
   isActive: boolean;
   onSelect: () => void;
   updateLeg: (updates: Partial<StrategyLeg>) => void;
+  onSave: () => void;
 }
 
-const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg }: StrategyLegCardProps) => {
+const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: StrategyLegCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const toggleEdit = () => {
@@ -244,7 +300,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg }: Strategy
           onClick={toggleEdit}
           className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
         >
-          Return to Summary View
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
       </div>
     );
@@ -368,7 +424,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg }: Strategy
       <Button 
         variant="ghost" 
         size="sm" 
-        onClick={onSelect}
+        onClick={onSave}
         className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
       >
         <Save className="h-4 w-4 mr-1" /> Save Leg
