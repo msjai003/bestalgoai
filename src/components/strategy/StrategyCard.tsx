@@ -19,7 +19,7 @@ interface StrategyCardProps {
 export const StrategyCard = ({ strategy, onSelect }: StrategyCardProps) => {
   return (
     <div 
-      className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 hover:border-pink-500 transition-colors"
+      className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 hover:border-pink-500 transition-colors cursor-pointer"
       onClick={onSelect}
     >
       <div className="flex justify-between items-start mb-2">

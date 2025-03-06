@@ -86,7 +86,7 @@ const StrategySelection = () => {
       
       {/* Strategy Details Dialog */}
       <Dialog open={showStrategyDetails} onOpenChange={setShowStrategyDetails}>
-        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-[90%] max-h-[90vh]">
+        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-[90%] rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-white text-xl">{selectedStrategy?.name}</DialogTitle>
             <DialogDescription className="text-gray-400">
