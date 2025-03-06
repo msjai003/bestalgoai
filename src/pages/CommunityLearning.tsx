@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -66,7 +67,7 @@ const CommunityLearning = () => {
             <p className="text-gray-400 mb-4">Connect with traders and master algo trading</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="bg-white text-gray-900 hover:bg-gray-200 w-full sm:w-auto"
+                className="bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 w-full sm:w-auto"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Join Discussion
@@ -85,7 +86,7 @@ const CommunityLearning = () => {
         {/* Create Post Button */}
         <section className="mb-8">
           <Button 
-            className="w-full bg-white text-gray-900 hover:bg-gray-200 flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
+            className="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
             onClick={() => navigate("/create-post")}
           >
             <PlusCircle className="w-5 h-5" />
@@ -136,8 +137,7 @@ const CommunityLearning = () => {
                 </div>
                 <p className="text-sm text-gray-400 mb-4">{group.description}</p>
                 <Button 
-                  variant="outline" 
-                  className="w-full border-gray-700 text-white hover:bg-gray-800"
+                  className="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700"
                 >
                   Join Group
                 </Button>
