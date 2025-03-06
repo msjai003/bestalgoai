@@ -16,6 +16,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const StrategySelection = () => {
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
@@ -33,10 +34,10 @@ const StrategySelection = () => {
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen">
+    <div className="bg-gray-900 min-h-screen flex flex-col">
       <Header />
-      <main className="pt-16 pb-20">
-        <section className="px-4 py-4">
+      <main className="pt-16 pb-20 flex-1 overflow-hidden">
+        <section className="px-4 py-4 h-full">
           <h1 className="text-2xl font-bold text-white mb-4">Strategy Selection</h1>
           
           {/* Tab Selection */}
@@ -66,7 +67,7 @@ const StrategySelection = () => {
           </div>
           
           {/* Strategy Content */}
-          <div className="space-y-4">
+          <div className="h-[calc(100vh-220px)] overflow-auto scrollbar-none">
             {selectedTab === "predefined" ? (
               <div className="grid grid-cols-1 gap-4">
                 {predefinedStrategies.map((strategy) => (
@@ -94,44 +95,46 @@ const StrategySelection = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-4 space-y-4 overflow-auto max-h-[60vh]">
-            <p className="text-gray-300">{selectedStrategy?.description}</p>
-            
-            <div className="mt-4">
-              <h4 className="text-white font-medium mb-2">Performance Summary</h4>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-gray-700/50 p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Win Rate</p>
-                  <p className="text-white font-semibold">{selectedStrategy?.performance?.winRate}</p>
-                </div>
-                <div className="bg-gray-700/50 p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Avg Profit</p>
-                  <p className="text-green-400 font-semibold">{selectedStrategy?.performance?.avgProfit}</p>
-                </div>
-                <div className="bg-gray-700/50 p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Drawdown</p>
-                  <p className="text-red-400 font-semibold">{selectedStrategy?.performance?.drawdown}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-4">
-              <h4 className="text-white font-medium mb-2">Parameters</h4>
-              <div className="space-y-2">
-                {selectedStrategy?.parameters?.map((param: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-gray-300 text-sm">{param.name}</span>
-                    <span className="text-white">{param.value}</span>
+          <ScrollArea className="py-4 max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <p className="text-gray-300">{selectedStrategy?.description}</p>
+              
+              <div className="mt-4">
+                <h4 className="text-white font-medium mb-2">Performance Summary</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-700/50 p-3 rounded-lg">
+                    <p className="text-gray-400 text-xs">Win Rate</p>
+                    <p className="text-white font-semibold">{selectedStrategy?.performance?.winRate}</p>
                   </div>
-                ))}
+                  <div className="bg-gray-700/50 p-3 rounded-lg">
+                    <p className="text-gray-400 text-xs">Avg Profit</p>
+                    <p className="text-green-400 font-semibold">{selectedStrategy?.performance?.avgProfit}</p>
+                  </div>
+                  <div className="bg-gray-700/50 p-3 rounded-lg">
+                    <p className="text-gray-400 text-xs">Drawdown</p>
+                    <p className="text-red-400 font-semibold">{selectedStrategy?.performance?.drawdown}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <h4 className="text-white font-medium mb-2">Parameters</h4>
+                <div className="space-y-2">
+                  {selectedStrategy?.parameters?.map((param: any, index: number) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <span className="text-gray-300 text-sm">{param.name}</span>
+                      <span className="text-white">{param.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-6 flex items-center gap-2 bg-gray-700/30 p-3 rounded-lg">
+                <Info className="h-5 w-5 text-blue-400" />
+                <p className="text-gray-300 text-sm">This strategy uses machine learning algorithms to identify market trends and execute trades accordingly.</p>
               </div>
             </div>
-            
-            <div className="mt-6 flex items-center gap-2 bg-gray-700/30 p-3 rounded-lg">
-              <Info className="h-5 w-5 text-blue-400" />
-              <p className="text-gray-300 text-sm">This strategy uses machine learning algorithms to identify market trends and execute trades accordingly.</p>
-            </div>
-          </div>
+          </ScrollArea>
           
           <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t border-gray-700 mt-2">
             <Button 
