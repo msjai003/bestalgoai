@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { X, ChevronLeft, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { supabase, testSupabaseConnection, directSignUp, offlineSignup } from '@/lib/supabase';
+import { supabase, testSupabaseConnection, directSignUp, offlineSignup, getCurrentUser } from '@/lib/supabase';
 
 interface RegistrationData {
   fullName: string;
@@ -38,9 +37,19 @@ const Registration = () => {
     certificationNumber: '',
   });
 
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        navigate('/dashboard');
+      }
+    };
+    
+    checkAuthStatus();
+  }, [navigate]);
+
   const handleChange = (field: keyof RegistrationData, value: string | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear connection error when user makes changes
     if (connectionError) setConnectionError(null);
   };
 
@@ -109,14 +118,10 @@ const Registration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // First, test the connection to Supabase
       const connectionTest = await testSupabaseConnection();
       
       if (!connectionTest.success) {
-        console.error("Connection test failed:", connectionTest);
-        
         if (connectionTest.isCorsOrCookieIssue) {
-          // Check if we're in incognito/private mode
           const isPrivateMode = !window.localStorage || connectionTest.browserInfo?.isPrivateMode;
           
           if (isPrivateMode) {
@@ -124,7 +129,6 @@ const Registration = () => {
               "You appear to be in private/incognito mode. Please try again in a regular browser window."
             );
             
-            // Offer to save registration for later
             const offlineResult = await offlineSignup(formData.email, formData.password, userData);
             if (offlineResult.success) {
               toast.info("Your registration details have been saved. Please try again in a regular browser window.");
@@ -149,12 +153,14 @@ const Registration = () => {
         }
       }
       
-      // If connection test passed, proceed with signup
-      const { data: authData, error: authError } = await directSignUp(
-        formData.email,
-        formData.password,
-        userData
-      );
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: userData,
+          emailRedirectTo: window.location.origin + '/auth'
+        }
+      });
       
       if (authError) {
         console.error("Auth error details:", authError);
@@ -166,24 +172,6 @@ const Registration = () => {
       }
       
       console.log("User created successfully:", authData?.user?.id);
-      
-      if (authData?.user?.id) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            user_id: authData.user.id,
-            full_name: formData.fullName,
-            email: formData.email,
-            mobile: formData.mobile,
-            trading_experience: formData.tradingExperience,
-            is_research_analyst: formData.isResearchAnalyst,
-            certification_number: formData.certificationNumber || null,
-          });
-        
-        if (profileError) {
-          console.error("Error saving profile data:", profileError);
-        }
-      }
       
       toast.success("Registration completed successfully! Please check your email to verify your account.");
       navigate('/auth');

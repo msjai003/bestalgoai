@@ -1,18 +1,31 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, getCurrentUser } from '@/lib/supabase';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if already logged in
+    const checkAuthStatus = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        navigate('/dashboard');
+      }
+    };
+    
+    checkAuthStatus();
+  }, [navigate]);
 
   const handleSignUpClick = () => {
     navigate('/registration');
@@ -21,6 +34,7 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setAuthError(null);
 
     try {
       if (isLogin) {
@@ -37,6 +51,18 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
+      
+      // Handle specific error messages
+      if (error.message?.includes('Invalid login credentials')) {
+        setAuthError('Invalid email or password. Please try again.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setAuthError('Please confirm your email before logging in.');
+      } else if (error.message?.includes('Failed to fetch')) {
+        setAuthError('Connection error. Please check your internet connection or try a different browser.');
+      } else {
+        setAuthError(error.message || 'Authentication failed');
+      }
+      
       toast.error(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
@@ -45,7 +71,7 @@ const Auth = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black">
-      <div className="px-4 py-8 pb-32"> {/* Added padding bottom to prevent overlap */}
+      <div className="px-4 py-8 pb-32">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <Link to="/" className="text-gray-400">
@@ -62,7 +88,9 @@ const Auth = () => {
         </div>
 
         <div className="flex flex-col items-center mt-12">
-          <h1 className="text-2xl font-bold text-white mb-8">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-white mb-8">
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h1>
 
           <div className="bg-gray-800/50 p-1 rounded-xl mb-8">
             <div className="flex">
@@ -89,6 +117,13 @@ const Auth = () => {
               </Button>
             </div>
           </div>
+
+          {authError && (
+            <div className="w-full mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
+              <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+              <p className="text-red-200 text-sm">{authError}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="w-full space-y-4">
             <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">

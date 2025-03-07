@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -22,11 +21,8 @@ export const supabase = createClient(
       },
       fetch: (url: string, options?: RequestInit) => {
         const fetchOptions = options || {};
-        // Set cache policy to no-store to avoid caching issues
         fetchOptions.cache = 'no-store';
-        // Ensure credentials are included
         fetchOptions.credentials = 'include';
-        // Add CORS mode
         fetchOptions.mode = 'cors';
         return fetch(url, fetchOptions);
       }
@@ -138,5 +134,65 @@ export const offlineSignup = async (email, password, userData) => {
   } catch (e) {
     console.error("Failed to save local signup data:", e);
     return { success: false, error: e };
+  }
+};
+
+// Add new function to handle authentication state
+export const getCurrentUser = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error fetching session:', error);
+      return null;
+    }
+    
+    if (!session) {
+      return null;
+    }
+    
+    return session.user;
+  } catch (error) {
+    console.error('Error in getCurrentUser:', error);
+    return null;
+  }
+};
+
+// Add function to sign out
+export const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Exception during sign out:', error);
+    return { success: false, error };
+  }
+};
+
+// Add function to get user profile
+export const getUserProfile = async () => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return null;
+    
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception fetching profile:', error);
+    return null;
   }
 };
