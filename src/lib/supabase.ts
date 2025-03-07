@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -287,13 +288,16 @@ export const directSignUp = async (email, password, userData) => {
       };
     }
     
-    // Prepare the signUp options with explicit localhost:3000 redirect
+    // Get the redirect URL from our helper function
+    const redirectUrl = getSiteUrl() + '/auth';
+    
+    // Prepare the signUp options
     const signUpOptions = {
       email,
       password,
       options: {
         data: userData,
-        emailRedirectTo: 'http://localhost:3000/auth'
+        emailRedirectTo: redirectUrl
       }
     };
     
