@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -205,14 +204,14 @@ export const getUserProfile = async () => {
 // Add a function to get browser-specific instructions for Firefox
 export const getFirefoxInstructions = () => {
   return {
-    title: "Firefox Privacy Settings",
+    title: "Browser Privacy Settings",
     steps: [
-      "Click the shield icon in the address bar",
-      "Turn off 'Enhanced Tracking Protection' for this site",
-      "Reload the page and try again",
-      "If that doesn't work, go to Settings > Privacy & Security > Cookies and Site Data",
-      "Make sure 'Delete cookies and site data when Firefox is closed' is unchecked",
-      "Add this website to the exceptions list for cookies"
+      "Try using a different browser like Chrome or Edge",
+      "If using Firefox: Click the shield icon in the address bar and turn off 'Enhanced Tracking Protection'",
+      "If using Safari: Go to Preferences > Privacy and uncheck 'Prevent Cross-Site Tracking'",
+      "Make sure cookies are enabled in your browser settings",
+      "Try disabling any ad-blockers or privacy extensions temporarily",
+      "If possible, try using a non-private/non-incognito window"
     ]
   };
 };
@@ -220,7 +219,7 @@ export const getFirefoxInstructions = () => {
 // Add a function to check for common Firefox issues
 export const checkFirefoxCompatibility = () => {
   const isFirefox = navigator.userAgent.indexOf("Firefox") > -1;
-  if (!isFirefox) return { isFirefox: false };
+  const isSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1;
   
   // Check if cookies are enabled
   const cookiesEnabled = navigator.cookieEnabled;
@@ -235,9 +234,10 @@ export const checkFirefoxCompatibility = () => {
   }
   
   return {
-    isFirefox: true,
+    isFirefox,
+    isSafari,
     cookiesEnabled,
     isPrivate,
-    hasETP: true // Assume ETP is on by default in Firefox
+    hasETP: isFirefox // Assume ETP is on by default in Firefox
   };
 };

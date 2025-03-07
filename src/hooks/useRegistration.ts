@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -51,10 +50,12 @@ export const useRegistration = () => {
     
     checkAuthStatus();
     
-    // Check for Firefox-specific issues
-    const ffCheck = checkFirefoxCompatibility();
-    if (ffCheck.isFirefox) {
-      setBrowserIssue(ffCheck);
+    // Check for browser-specific issues
+    const browserCheck = checkFirefoxCompatibility();
+    if (browserCheck.isFirefox || browserCheck.isSafari || !browserCheck.cookiesEnabled) {
+      setBrowserIssue(browserCheck);
+      // Show help by default for browsers with known issues
+      setShowFirefoxHelp(true);
     }
   }, [navigate]);
 
@@ -128,84 +129,38 @@ export const useRegistration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // Check if using Firefox first
-      const ffCheck = checkFirefoxCompatibility();
-      if (ffCheck.isFirefox) {
-        // Try direct signup for Firefox without the connection test
-        const { data: authData, error: authError } = await directSignUp(
-          formData.email, 
-          formData.password, 
-          userData
-        );
-        
-        if (authError) {
-          // If direct signup fails, provide Firefox-specific guidance
-          setShowFirefoxHelp(true);
-          setConnectionError(
-            "Your browser's privacy settings are blocking our authentication service. Please see the Firefox instructions below."
-          );
-          throw new Error("Firefox privacy settings are preventing authentication. Please see instructions below.");
-        }
-        
-        console.log("User created successfully:", authData?.user?.id);
-        toast.success("Registration completed successfully! Please check your email to verify your account.");
-        navigate('/auth');
-        return;
-      }
-      
-      // For other browsers, proceed with connection test first
-      const connectionTest = await testSupabaseConnection();
-      
-      if (!connectionTest.success) {
-        if (connectionTest.isCorsOrCookieIssue) {
-          const isPrivateMode = !window.localStorage || connectionTest.browserInfo?.isPrivateMode;
-          
-          if (isPrivateMode) {
-            setConnectionError(
-              "You appear to be in private/incognito mode. Please try again in a regular browser window."
-            );
-            
-            const offlineResult = await offlineSignup(formData.email, formData.password, userData);
-            if (offlineResult.success) {
-              toast.info("Your registration details have been saved. Please try again in a regular browser window.");
-            }
-            
-            throw new Error("Registration cannot be completed in private/incognito mode.");
-          } else {
-            const browser = connectionTest.browserInfo?.browser || "your browser";
-            if (browser === "Firefox") {
-              setShowFirefoxHelp(true);
-            }
-            setConnectionError(
-              `${browser} is blocking the connection to our servers. Please check your privacy settings.`
-            );
-            throw new Error(
-              "Browser privacy settings are preventing the connection. Please try:" +
-              "\n- Disable tracking prevention if using Safari" +
-              "\n- Allow third-party cookies for this site" +
-              "\n- Try a non-incognito window" +
-              "\n- Try a different browser"
-            );
-          }
-        } else {
-          throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
-        }
-      }
-      
-      // Attempt registration
+      // Always attempt a direct signup first, regardless of browser
       const { data: authData, error: authError } = await directSignUp(
-        formData.email,
-        formData.password,
+        formData.email, 
+        formData.password, 
         userData
       );
       
       if (authError) {
         console.error("Auth error details:", authError);
         
+        // Show browser-specific help based on the error
+        const browserCheck = checkFirefoxCompatibility();
+        setShowFirefoxHelp(true);
+        
         if (authError.message?.includes("already registered")) {
           throw new Error("This email is already registered. Please try signing in instead.");
         }
-        throw authError;
+        
+        // Generic connection error for all browsers
+        setConnectionError(
+          "Your browser's privacy settings may be blocking our authentication service. Please try the suggestions below."
+        );
+        
+        // Try to save registration data offline if possible
+        try {
+          await offlineSignup(formData.email, formData.password, userData);
+          toast.info("Your registration details have been saved locally. Please try again after adjusting your browser settings.");
+        } catch (e) {
+          console.error("Failed to save offline data", e);
+        }
+        
+        throw new Error("Browser privacy settings are preventing authentication. Please try the suggestions below.");
       }
       
       console.log("User created successfully:", authData?.user?.id);
@@ -223,7 +178,7 @@ export const useRegistration = () => {
       } else if (error.message?.includes("Failed to fetch") || 
           error.message?.includes("NetworkError") ||
           error.message?.includes("Unable to connect")) {
-        toast.error("Connection error: Please try registering in a regular browser window (not incognito/private mode).");
+        toast.error("Connection error: Please try registering with a different browser or check your internet connection.");
       } else if (error.message?.includes("already registered")) {
         toast.error("This email is already registered. Please try signing in instead.");
       } else if (error.status === 429) {
