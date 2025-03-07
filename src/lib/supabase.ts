@@ -8,6 +8,29 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Test if the URL is reachable without Supabase
 export const testDirectConnection = async () => {
   try {
+    // First try to check internet connectivity in general
+    const onlineStatus = navigator.onLine;
+    if (!onlineStatus) {
+      return { 
+        success: false, 
+        status: 'offline',
+        statusText: 'No internet connection',
+        isOffline: true 
+      };
+    }
+    
+    // Try connecting to a reliable service as a fallback test
+    try {
+      const googleResponse = await fetch('https://www.google.com', { 
+        method: 'HEAD', 
+        mode: 'no-cors',
+        cache: 'no-store'
+      });
+      console.log('Google connectivity test:', googleResponse.type);
+    } catch (e) {
+      console.log('Unable to reach Google either, might be a network issue');
+    }
+    
     // Use a simple fetch to test direct URL access
     const response = await fetch(`${supabaseUrl}/auth/v1/`, {
       method: 'HEAD',
@@ -75,7 +98,8 @@ export const testSupabaseConnection = async () => {
       return {
         success: false,
         error: new Error("You appear to be offline. Please check your internet connection."),
-        isNetworkIssue: true
+        isNetworkIssue: true,
+        isOffline: true
       };
     }
     
@@ -83,6 +107,31 @@ export const testSupabaseConnection = async () => {
     const directTest = await testDirectConnection();
     if (!directTest.success) {
       console.log("Direct connection to Supabase URL failed:", directTest);
+      
+      // Try a different domain to test general internet connectivity
+      try {
+        const fallbackTest = await fetch('https://www.cloudflare.com', { 
+          method: 'HEAD', 
+          mode: 'no-cors',
+          cache: 'no-store'
+        });
+        console.log('Fallback connectivity test:', fallbackTest.type);
+        
+        // If we can reach cloudflare but not Supabase, it might be a CORS/firewall issue
+        return {
+          success: false,
+          error: new Error("Cannot reach Supabase, but other websites work. This suggests a CORS or network restriction specific to Supabase."),
+          directTest,
+          isNetworkIssue: false,
+          isCorsOrCookieIssue: true,
+          isSpecificDomainBlocked: true,
+          browserInfo: detectBrowserInfo()
+        };
+      } catch (e) {
+        // If we can't reach cloudflare either, it's likely a general network issue
+        console.log('Fallback test also failed:', e);
+      }
+      
       return {
         success: false,
         error: new Error("Cannot reach Supabase URL directly. This may indicate network restrictions."),
@@ -167,6 +216,35 @@ function detectBrowserInfo() {
   };
 }
 
+// Check if there's cached session data even if Supabase is unreachable
+export const getCachedSession = () => {
+  try {
+    // Try to get the session from localStorage
+    const sessionStr = localStorage.getItem('sb-' + supabaseUrl.replace('https://', '') + '-auth-token');
+    if (!sessionStr) return null;
+    
+    const session = JSON.parse(sessionStr);
+    if (!session) return null;
+    
+    // Check if the session hasn't expired
+    const expiresAt = session.expires_at || 0;
+    const now = Math.floor(Date.now() / 1000);
+    
+    if (expiresAt < now) {
+      console.log('Cached session has expired');
+      return null;
+    }
+    
+    return {
+      user: session.user,
+      session: session
+    };
+  } catch (error) {
+    console.error('Error getting cached session:', error);
+    return null;
+  }
+};
+
 // Direct signup function to bypass connection test if needed
 export const directSignUp = async (email, password, userData) => {
   try {
@@ -216,13 +294,66 @@ export const offlineSignup = async (email, password, userData) => {
   }
 };
 
+// Function to attempt synchronization of offline data when online
+export const syncOfflineData = async () => {
+  if (!navigator.onLine) {
+    return { success: false, message: "Still offline" };
+  }
+  
+  // Check for pending signups
+  const pendingSignupStr = localStorage.getItem('pendingSignup');
+  if (pendingSignupStr) {
+    try {
+      const signupData = JSON.parse(pendingSignupStr);
+      
+      // Only attempt if it's been less than 3 days
+      const ageHours = (Date.now() - signupData.timestamp) / (1000 * 60 * 60);
+      if (ageHours < 72) {
+        const { data, error } = await directSignUp(
+          signupData.email,
+          atob(signupData.password),
+          signupData.userData
+        );
+        
+        if (!error) {
+          // Success, remove from pending
+          localStorage.removeItem('pendingSignup');
+          return { success: true, message: "Synchronized pending signup" };
+        }
+      } else {
+        // Too old, discard
+        localStorage.removeItem('pendingSignup');
+      }
+    } catch (e) {
+      console.error("Error processing pending signup:", e);
+    }
+  }
+  
+  return { success: false, message: "No pending data to sync" };
+};
+
 // Add new function to handle authentication state
 export const getCurrentUser = async () => {
   try {
+    // First check if we're offline and have a cached session
+    if (!navigator.onLine) {
+      const cachedSession = getCachedSession();
+      if (cachedSession) {
+        return cachedSession.user;
+      }
+      return null;
+    }
+    
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
       console.error('Error fetching session:', error);
+      
+      // Fall back to cached session if API call fails
+      const cachedSession = getCachedSession();
+      if (cachedSession) {
+        return cachedSession.user;
+      }
       return null;
     }
     
@@ -233,6 +364,12 @@ export const getCurrentUser = async () => {
     return session.user;
   } catch (error) {
     console.error('Error in getCurrentUser:', error);
+    
+    // Fall back to cached session on exception
+    const cachedSession = getCachedSession();
+    if (cachedSession) {
+      return cachedSession.user;
+    }
     return null;
   }
 };
@@ -258,6 +395,15 @@ export const getUserProfile = async () => {
     const user = await getCurrentUser();
     if (!user) return null;
     
+    // If offline, try to get from localStorage
+    if (!navigator.onLine) {
+      const profileStr = localStorage.getItem('userProfile_' + user.id);
+      if (profileStr) {
+        return JSON.parse(profileStr);
+      }
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
@@ -269,10 +415,42 @@ export const getUserProfile = async () => {
       return null;
     }
     
+    // Cache the profile for offline use
+    localStorage.setItem('userProfile_' + user.id, JSON.stringify(data));
+    
     return data;
   } catch (error) {
     console.error('Exception fetching profile:', error);
     return null;
+  }
+};
+
+// Add an offline authentication attempt function
+export const offlineLogin = (email, password) => {
+  try {
+    // Check if we have a cached session
+    const cachedSession = getCachedSession();
+    if (cachedSession && cachedSession.user.email === email) {
+      // We found a matching cached session
+      return { 
+        success: true, 
+        message: "Logged in from cached session", 
+        user: cachedSession.user 
+      };
+    }
+    
+    // No matching cached session
+    return { 
+      success: false, 
+      message: "Cannot verify credentials while offline" 
+    };
+  } catch (error) {
+    console.error('Exception during offline login:', error);
+    return { 
+      success: false, 
+      error, 
+      message: "Error during offline login attempt" 
+    };
   }
 };
 

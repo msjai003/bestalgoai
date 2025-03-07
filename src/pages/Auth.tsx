@@ -3,9 +3,19 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink, Shield } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink, Shield, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
+import { 
+  supabase, 
+  getCurrentUser, 
+  checkFirefoxCompatibility, 
+  getFirefoxInstructions, 
+  testSupabaseConnection, 
+  testDirectConnection, 
+  offlineLogin,
+  syncOfflineData,
+  getCachedSession
+} from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
 
@@ -17,9 +27,10 @@ const Auth = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
+  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error' | 'offline'>('untested');
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
   const [directConnectionStatus, setDirectConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
+  const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +50,34 @@ const Auth = () => {
       // Don't show by default, only after an error
       setShowConnectionHelp(false);
     }
+    
+    // Check if offline
+    setIsOfflineMode(!navigator.onLine);
+    
+    // Set up online/offline event listeners
+    const handleOnline = () => {
+      setIsOfflineMode(false);
+      toast.success("You're back online!");
+      syncOfflineData();
+    };
+    
+    const handleOffline = () => {
+      setIsOfflineMode(true);
+      toast.error("You're offline. Limited functionality available.");
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Try to sync any pending data if we're online
+    if (navigator.onLine) {
+      syncOfflineData();
+    }
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [navigate]);
 
   const handleSignUpClick = () => {
@@ -53,7 +92,19 @@ const Auth = () => {
     try {
       // Check if we're online
       if (!navigator.onLine) {
-        throw new Error("You appear to be offline. Please check your internet connection.");
+        if (isLogin) {
+          // Try offline login
+          const offlineResult = offlineLogin(email, password);
+          if (offlineResult.success) {
+            toast.success('Logged in with cached credentials');
+            navigate('/dashboard');
+            return;
+          } else {
+            throw new Error("Cannot verify credentials while offline. Please try again when you're back online.");
+          }
+        } else {
+          throw new Error("You appear to be offline. Please check your internet connection.");
+        }
       }
       
       if (isLogin) {
@@ -81,6 +132,7 @@ const Auth = () => {
                 !navigator.onLine) {
         setAuthError('Connection error. Please check your internet connection or try a different browser.');
         setShowConnectionHelp(true);
+        setConnectionStatus('offline');
       } else {
         setAuthError(error.message || 'Authentication failed');
       }
@@ -101,9 +153,10 @@ const Auth = () => {
     try {
       // First check if we're online at all
       if (!navigator.onLine) {
-        setConnectionStatus('error');
+        setConnectionStatus('offline');
         setAuthError('You appear to be offline. Please check your internet connection.');
         setShowConnectionHelp(true);
+        setTestingConnection(false);
         return;
       }
 
@@ -187,6 +240,23 @@ const Auth = () => {
             </div>
           </div>
 
+          {isOfflineMode && (
+            <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700 rounded-lg flex items-start">
+              <WifiOff className="text-amber-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-amber-200 text-sm font-medium">You're currently offline</p>
+                <p className="text-amber-200/80 text-xs mt-1">
+                  {isLogin 
+                    ? "You can still log in if you've previously logged in on this device." 
+                    : "You need to be online to create a new account. Please check your connection."}
+                </p>
+                {getCachedSession() && (
+                  <p className="text-green-300 text-xs mt-1">A previously authenticated session is available.</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {authError && (
             <FirefoxHelpSection 
               connectionError={authError} 
@@ -213,6 +283,9 @@ const Auth = () => {
                 <li>Direct URL Access: {directConnectionStatus === 'success' ? 'Success' : 'Failed'}</li>
                 <li>CORS/Cookie Issue: {connectionDetails.isCorsOrCookieIssue ? 'Likely' : 'Unknown'}</li>
                 <li>Network Issue: {connectionDetails.isNetworkIssue ? 'Detected' : 'Unknown'}</li>
+                {connectionDetails.isSpecificDomainBlocked && (
+                  <li className="text-red-300">Specific Domain Blocked: Supabase URL is likely blocked by your network</li>
+                )}
               </ul>
               
               <div className="mt-4 p-3 bg-amber-900/40 border border-amber-700/50 rounded-lg">
@@ -226,6 +299,9 @@ const Auth = () => {
                   )}
                   {connectionDetails.browserInfo?.browser !== 'Chrome' && (
                     <li>• Try using Chrome browser which has better compatibility with Supabase.</li>
+                  )}
+                  {isLogin && getCachedSession() && (
+                    <li className="text-green-300">• Offline login is available with your cached credentials.</li>
                   )}
                 </ul>
               </div>
@@ -261,23 +337,34 @@ const Auth = () => {
 
             <Button 
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (!navigator.onLine && !isLogin)}
               className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
             >
-              {isLoading ? "Processing..." : "Login"}
+              {isLoading ? "Processing..." : (
+                isOfflineMode && isLogin ? "Login (Offline Mode)" : "Login"
+              )}
             </Button>
 
             <Button
               type="button"
               onClick={handleTestConnection}
-              disabled={testingConnection}
+              disabled={testingConnection || !navigator.onLine}
               className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl"
             >
-              <ServerCrash className="mr-2 h-4 w-4" />
-              {testingConnection ? "Testing Connection..." : "Test Supabase Connection"}
+              {!navigator.onLine ? (
+                <>
+                  <WifiOff className="mr-2 h-4 w-4" />
+                  Offline Mode (Connection Test Unavailable)
+                </>
+              ) : (
+                <>
+                  <ServerCrash className="mr-2 h-4 w-4" />
+                  {testingConnection ? "Testing Connection..." : "Test Supabase Connection"}
+                </>
+              )}
             </Button>
 
-            {(showConnectionHelp || connectionStatus === 'error') && !isLoading && (
+            {(showConnectionHelp || connectionStatus === 'error' || isOfflineMode) && !isLoading && (
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={() => window.location.reload()}
@@ -287,13 +374,15 @@ const Auth = () => {
                   Reload Page
                 </Button>
                 
-                <Button
-                  onClick={() => window.open('https://www.google.com/chrome/', '_blank')}
-                  className="w-full bg-transparent border border-gray-600 text-gray-300 py-2 rounded-xl"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Try Different Browser (Chrome)
-                </Button>
+                {!isOfflineMode && (
+                  <Button
+                    onClick={() => window.open('https://www.google.com/chrome/', '_blank')}
+                    className="w-full bg-transparent border border-gray-600 text-gray-300 py-2 rounded-xl"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Try Different Browser (Chrome)
+                  </Button>
+                )}
               </div>
             )}
 
@@ -301,18 +390,21 @@ const Auth = () => {
               <Button
                 variant="outline"
                 className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+                disabled={isOfflineMode}
               >
                 <i className="fa-brands fa-google text-white"></i>
               </Button>
               <Button
                 variant="outline"
                 className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+                disabled={isOfflineMode}
               >
                 <i className="fa-brands fa-apple text-white"></i>
               </Button>
               <Button
                 variant="outline"
                 className="bg-gray-800/30 p-4 rounded-xl border border-gray-700 h-auto"
+                disabled={isOfflineMode}
               >
                 <i className="fa-brands fa-facebook text-white"></i>
               </Button>
