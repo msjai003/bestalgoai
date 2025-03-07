@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, Refresh, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection } from '@/lib/supabase';
+import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 
 const Auth = () => {
@@ -18,6 +18,7 @@ const Auth = () => {
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
+  const [directConnectionStatus, setDirectConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -94,6 +95,7 @@ const Auth = () => {
     setConnectionStatus('untested');
     setAuthError(null);
     setConnectionDetails(null);
+    setDirectConnectionStatus('untested');
     
     try {
       // First check if we're online at all
@@ -104,6 +106,10 @@ const Auth = () => {
         return;
       }
 
+      // Test direct connection to Supabase URL
+      const directResult = await testDirectConnection();
+      setDirectConnectionStatus(directResult.success ? 'success' : 'error');
+      
       const result = await testSupabaseConnection();
       console.log('Connection test result:', result);
       setConnectionDetails(result);
@@ -200,6 +206,8 @@ const Auth = () => {
               <ul className="list-disc list-inside text-sm text-amber-200 space-y-1">
                 <li>Browser: {connectionDetails.browserInfo?.browser || 'Unknown'}</li>
                 <li>Online Status: {navigator.onLine ? 'Online' : 'Offline'}</li>
+                <li>Cookies Enabled: {connectionDetails.browserInfo?.cookiesEnabled ? 'Yes' : 'No'}</li>
+                <li>Direct URL Access: {directConnectionStatus === 'success' ? 'Success' : 'Failed'}</li>
                 <li>CORS/Cookie Issue: {connectionDetails.isCorsOrCookieIssue ? 'Likely' : 'Unknown'}</li>
                 <li>Network Issue: {connectionDetails.isNetworkIssue ? 'Detected' : 'Unknown'}</li>
               </ul>
@@ -251,14 +259,24 @@ const Auth = () => {
               {testingConnection ? "Testing Connection..." : "Test Supabase Connection"}
             </Button>
 
-            {showConnectionHelp && !isLoading && (
-              <Button
-                onClick={() => window.location.reload()}
-                className="w-full bg-transparent border border-[#FF00D4] text-[#FF00D4] py-2 rounded-xl"
-              >
-                <Globe className="mr-2 h-4 w-4" />
-                Reload Page
-              </Button>
+            {(showConnectionHelp || connectionStatus === 'error') && !isLoading && (
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-transparent border border-[#FF00D4] text-[#FF00D4] py-2 rounded-xl"
+                >
+                  <Refresh className="mr-2 h-4 w-4" />
+                  Reload Page
+                </Button>
+                
+                <Button
+                  onClick={() => window.open('https://www.google.com/chrome/', '_blank')}
+                  className="w-full bg-transparent border border-gray-600 text-gray-300 py-2 rounded-xl"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Try Different Browser (Chrome)
+                </Button>
+              </div>
             )}
 
             <div className="flex items-center gap-4 justify-center mt-6">

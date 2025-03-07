@@ -1,8 +1,34 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
 const supabaseUrl = 'https://vdvcqnqsykhsftkqsqvi.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkdmNxbnFzeWtoc2Z0a3FzcXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4NTExNDMsImV4cCI6MjAyNTQyNzE0M30.MaKfkmcAkUYe0NfWz9NfRj1THwQIAHh5hTDrrI4-W1s';
+
+// Test if the URL is reachable without Supabase
+export const testDirectConnection = async () => {
+  try {
+    // Use a simple fetch to test direct URL access
+    const response = await fetch(supabaseUrl, {
+      method: 'HEAD',
+      mode: 'cors',
+      credentials: 'include',
+      cache: 'no-store'
+    });
+    return { 
+      success: response.ok, 
+      status: response.status,
+      statusText: response.statusText
+    };
+  } catch (error) {
+    console.error('Direct connection test error:', error);
+    return { 
+      success: false, 
+      error,
+      isFetchError: true
+    };
+  }
+};
 
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
@@ -48,6 +74,20 @@ export const testSupabaseConnection = async () => {
       };
     }
     
+    // Test direct access to the Supabase URL first
+    const directTest = await testDirectConnection();
+    if (!directTest.success) {
+      console.log("Direct connection to Supabase URL failed:", directTest);
+      return {
+        success: false,
+        error: new Error("Cannot reach Supabase URL directly. This may indicate network restrictions."),
+        directTest,
+        isNetworkIssue: true,
+        isCorsOrCookieIssue: true,
+        browserInfo: detectBrowserInfo()
+      };
+    }
+    
     // Simple ping-style query that should always work
     const { data, error } = await supabase.from('user_profiles').select('count');
     
@@ -60,7 +100,12 @@ export const testSupabaseConnection = async () => {
           success: false, 
           error, 
           isCorsOrCookieIssue: true,
-          browserInfo: detectBrowserInfo()
+          browserInfo: detectBrowserInfo(),
+          networkDetails: {
+            onLine: navigator.onLine,
+            userAgent: navigator.userAgent,
+            cookiesEnabled: navigator.cookieEnabled
+          }
         };
       }
       
@@ -84,7 +129,12 @@ export const testSupabaseConnection = async () => {
       error,
       isCorsOrCookieIssue: isFetchError,
       isNetworkIssue: isFetchError,
-      browserInfo: detectBrowserInfo()
+      browserInfo: detectBrowserInfo(),
+      networkDetails: {
+        onLine: navigator.onLine,
+        userAgent: navigator.userAgent,
+        cookiesEnabled: navigator.cookieEnabled
+      }
     };
   }
 };
@@ -107,7 +157,8 @@ function detectBrowserInfo() {
   return {
     browser: browserName,
     isPrivateMode: isPrivateMode,
-    userAgent: userAgent
+    userAgent: userAgent,
+    cookiesEnabled: navigator.cookieEnabled
   };
 }
 
