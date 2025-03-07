@@ -39,6 +39,15 @@ export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
     
+    // First check if we're online at all
+    if (!navigator.onLine) {
+      return {
+        success: false,
+        error: new Error("You appear to be offline. Please check your internet connection."),
+        isNetworkIssue: true
+      };
+    }
+    
     // Simple ping-style query that should always work
     const { data, error } = await supabase.from('user_profiles').select('count');
     
@@ -67,12 +76,14 @@ export const testSupabaseConnection = async () => {
     const isFetchError = error instanceof Error && 
       (error.message?.includes('fetch') || 
        error.message?.includes('network') ||
-       error.message?.includes('Failed to fetch'));
+       error.message?.includes('Failed to fetch') ||
+       error.message?.includes('NetworkError'));
        
     return { 
       success: false, 
       error,
       isCorsOrCookieIssue: isFetchError,
+      isNetworkIssue: isFetchError,
       browserInfo: detectBrowserInfo()
     };
   }
@@ -105,7 +116,15 @@ export const directSignUp = async (email, password, userData) => {
   try {
     console.log("Attempting direct signup with:", { email, userData });
     
-    // Try raw fetch approach first if normal method fails
+    // Check network connectivity first
+    if (!navigator.onLine) {
+      return { 
+        data: null, 
+        error: new Error("You appear to be offline. Please check your internet connection.") 
+      };
+    }
+    
+    // Try with simple auth signUp method
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -204,13 +223,15 @@ export const getUserProfile = async () => {
 // Add a function to get browser-specific instructions for Firefox
 export const getFirefoxInstructions = () => {
   return {
-    title: "Browser Privacy Settings",
+    title: "Connection Issues",
     steps: [
-      "Try using a different browser like Chrome or Edge",
+      "Check your internet connection and make sure you're online",
+      "Try reloading the page",
       "If using Firefox: Click the shield icon in the address bar and turn off 'Enhanced Tracking Protection'",
+      "If using Chrome/Edge: Try disabling any extensions that might block requests",
       "If using Safari: Go to Preferences > Privacy and uncheck 'Prevent Cross-Site Tracking'",
+      "Try using a different browser like Chrome or Edge",
       "Make sure cookies are enabled in your browser settings",
-      "Try disabling any ad-blockers or privacy extensions temporarily",
       "If possible, try using a non-private/non-incognito window"
     ]
   };

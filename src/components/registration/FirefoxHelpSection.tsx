@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Settings, ExternalLink } from 'lucide-react';
+import { AlertCircle, Settings, ExternalLink, Wifi, Globe } from 'lucide-react';
 import { getFirefoxInstructions } from '@/lib/supabase';
 
 interface FirefoxHelpSectionProps {
@@ -27,7 +27,7 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
         <p className="text-red-200 text-sm">{connectionError}</p>
         {showFirefoxHelp && (
           <div className="mt-3 space-y-2">
-            <p className="text-red-300 font-semibold">Browser Privacy Instructions:</p>
+            <p className="text-red-300 font-semibold">Connection Troubleshooting:</p>
             <ol className="list-decimal list-inside space-y-1 text-red-200 text-sm">
               {getFirefoxInstructions().steps.map((step, index) => (
                 <li key={index}>{step}</li>
@@ -41,7 +41,7 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
                 onClick={openBrowserSettings}
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Open Browser Help
+                Browser Settings
               </Button>
               <Button
                 variant="outline"
@@ -51,6 +51,15 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Try Chrome Browser
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-500 text-red-400 hover:bg-red-950"
+                onClick={() => window.location.reload()}
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                Reload Page
               </Button>
             </div>
           </div>
