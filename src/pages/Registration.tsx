@@ -97,6 +97,9 @@ const Registration = () => {
     setIsLoading(true);
     
     try {
+      console.log("Starting registration process...");
+      console.log("Using Supabase URL:", supabase.supabaseUrl);
+      
       // Register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -112,24 +115,32 @@ const Registration = () => {
         }
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error details:", authError);
+        throw authError;
+      }
       
-      // Store additional user profile data in a custom table if needed
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: authData.user?.id,
-          full_name: formData.fullName,
-          email: formData.email,
-          mobile: formData.mobile,
-          trading_experience: formData.tradingExperience,
-          is_research_analyst: formData.isResearchAnalyst,
-          certification_number: formData.certificationNumber || null,
-        });
+      console.log("User created successfully:", authData?.user?.id);
       
-      if (profileError) {
-        console.error("Error saving profile data:", profileError);
-        // We continue anyway since the auth record was created
+      // Only attempt to insert profile data if a user was created
+      if (authData?.user?.id) {
+        // Store additional user profile data in a custom table if needed
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: authData.user.id,
+            full_name: formData.fullName,
+            email: formData.email,
+            mobile: formData.mobile,
+            trading_experience: formData.tradingExperience,
+            is_research_analyst: formData.isResearchAnalyst,
+            certification_number: formData.certificationNumber || null,
+          });
+        
+        if (profileError) {
+          console.error("Error saving profile data:", profileError);
+          // We continue anyway since the auth record was created
+        }
       }
       
       toast.success("Registration completed successfully! Please check your email to verify your account.");
@@ -137,7 +148,11 @@ const Registration = () => {
       
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed");
+      if (error.message === "Failed to fetch") {
+        toast.error("Network error: Could not connect to Supabase. Please check your internet connection or contact support.");
+      } else {
+        toast.error(error.message || "Registration failed");
+      }
     } finally {
       setIsLoading(false);
     }
