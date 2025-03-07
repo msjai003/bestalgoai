@@ -98,7 +98,8 @@ const Registration = () => {
     
     try {
       console.log("Starting registration process...");
-      console.log("Using Supabase URL:", supabase.supabaseUrl);
+      // Using config() to access the URL safely
+      console.log("Connecting to Supabase...");
       
       // Register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
