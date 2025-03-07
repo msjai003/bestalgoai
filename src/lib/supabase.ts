@@ -1,9 +1,22 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
 const supabaseUrl = 'https://fzvrozrjtvflksumiqsk.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI';
+
+// Get the current site URL for redirects
+export const getSiteUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Check if running on localhost, common development patterns
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:3000';
+    }
+    // Otherwise use the current origin
+    return window.location.origin;
+  }
+  // Fallback for SSR or non-browser environments
+  return 'http://localhost:3000';
+};
 
 // Test if the URL is reachable without Supabase
 export const testDirectConnection = async () => {
@@ -66,8 +79,11 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true,
       storageKey: 'session',
+      flowType: 'pkce',
+      // Use the dynamic site URL for redirects
+      redirectTo: getSiteUrl() + '/auth',
     },
     global: {
       headers: {
@@ -264,7 +280,7 @@ export const directSignUp = async (email, password, userData) => {
       password,
       options: {
         data: userData,
-        emailRedirectTo: window.location.origin + '/auth'
+        emailRedirectTo: getSiteUrl() + '/auth'
       }
     });
     
@@ -496,3 +512,8 @@ export const checkFirefoxCompatibility = () => {
     hasETP: isFirefox // Assume ETP is on by default in Firefox
   };
 };
+
+// Log the current site URL on load for debugging
+if (typeof window !== 'undefined') {
+  console.log('Current site URL for redirects:', getSiteUrl());
+}
