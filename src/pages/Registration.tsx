@@ -98,8 +98,20 @@ const Registration = () => {
     
     try {
       console.log("Starting registration process...");
-      // Using config() to access the URL safely
       console.log("Connecting to Supabase...");
+      
+      // Test the connection first with a simple query
+      try {
+        const { error: connectionTestError } = await supabase.from('user_profiles').select('count', { count: 'exact', head: true });
+        
+        if (connectionTestError) {
+          console.error("Connection test error:", connectionTestError);
+          throw new Error("Could not connect to Supabase database");
+        }
+      } catch (connectionError) {
+        console.error("Connection test failed:", connectionError);
+        throw new Error("Network error: Could not connect to Supabase");
+      }
       
       // Register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -149,10 +161,12 @@ const Registration = () => {
       
     } catch (error: any) {
       console.error("Registration error:", error);
-      if (error.message === "Failed to fetch") {
+      if (error.message?.includes("Network error") || error.message === "Failed to fetch") {
         toast.error("Network error: Could not connect to Supabase. Please check your internet connection or contact support.");
+      } else if (error.message?.includes("already registered")) {
+        toast.error("This email is already registered. Please try signing in instead.");
       } else {
-        toast.error(error.message || "Registration failed");
+        toast.error(error.message || "Registration failed. Please try again later.");
       }
     } finally {
       setIsLoading(false);
