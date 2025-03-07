@@ -17,6 +17,7 @@ const Auth = () => {
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
+  const [connectionDetails, setConnectionDetails] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,10 +93,20 @@ const Auth = () => {
     setTestingConnection(true);
     setConnectionStatus('untested');
     setAuthError(null);
+    setConnectionDetails(null);
     
     try {
+      // First check if we're online at all
+      if (!navigator.onLine) {
+        setConnectionStatus('error');
+        setAuthError('You appear to be offline. Please check your internet connection.');
+        setShowConnectionHelp(true);
+        return;
+      }
+
       const result = await testSupabaseConnection();
       console.log('Connection test result:', result);
+      setConnectionDetails(result);
       
       if (result.success) {
         setConnectionStatus('success');
@@ -180,6 +191,18 @@ const Auth = () => {
             <div className="mb-4 p-4 bg-green-900/30 border border-green-700 rounded-lg flex items-start">
               <Wifi className="text-green-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
               <p className="text-green-200 text-sm">Successfully connected to Supabase! You can now log in.</p>
+            </div>
+          )}
+
+          {connectionDetails && connectionStatus === 'error' && (
+            <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700 rounded-lg">
+              <h3 className="text-amber-300 font-medium mb-2">Connection Details:</h3>
+              <ul className="list-disc list-inside text-sm text-amber-200 space-y-1">
+                <li>Browser: {connectionDetails.browserInfo?.browser || 'Unknown'}</li>
+                <li>Online Status: {navigator.onLine ? 'Online' : 'Offline'}</li>
+                <li>CORS/Cookie Issue: {connectionDetails.isCorsOrCookieIssue ? 'Likely' : 'Unknown'}</li>
+                <li>Network Issue: {connectionDetails.isNetworkIssue ? 'Detected' : 'Unknown'}</li>
+              </ul>
             </div>
           )}
 
