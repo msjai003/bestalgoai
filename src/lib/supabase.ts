@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -82,8 +83,6 @@ export const supabase = createClient(
       detectSessionInUrl: true,
       storageKey: 'session',
       flowType: 'pkce',
-      // Use the dynamic site URL for redirects
-      redirectTo: getSiteUrl() + '/auth',
     },
     global: {
       headers: {
@@ -280,6 +279,7 @@ export const directSignUp = async (email, password, userData) => {
       password,
       options: {
         data: userData,
+        // This is the correct way to set the redirect URL
         emailRedirectTo: getSiteUrl() + '/auth'
       }
     });
