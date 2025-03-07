@@ -6,7 +6,7 @@ import { X, ChevronLeft } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { supabase, testSupabaseConnection } from '@/lib/supabase';
+import { supabase, testSupabaseConnection, directSignUp } from '@/lib/supabase';
 
 interface RegistrationData {
   fullName: string;
@@ -96,28 +96,41 @@ const Registration = () => {
     try {
       console.log("Starting registration process...");
       
-      const connectionTest = await testSupabaseConnection();
-      if (!connectionTest.success) {
-        console.error("Connection test failed:", connectionTest.error);
-        throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
-      }
+      const userData = {
+        full_name: formData.fullName,
+        mobile: formData.mobile,
+        trading_experience: formData.tradingExperience,
+        is_research_analyst: formData.isResearchAnalyst,
+        certification_number: formData.certificationNumber || null,
+      };
       
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            mobile: formData.mobile,
-            trading_experience: formData.tradingExperience,
-            is_research_analyst: formData.isResearchAnalyst,
-            certification_number: formData.certificationNumber || null,
-          }
-        }
-      });
+      const { data: authData, error: authError } = await directSignUp(
+        formData.email,
+        formData.password,
+        userData
+      );
       
       if (authError) {
         console.error("Auth error details:", authError);
+        
+        const connectionTest = await testSupabaseConnection();
+        
+        if (!connectionTest.success) {
+          console.error("Connection test failed:", connectionTest.error);
+          
+          if (connectionTest.isCorsOrCookieIssue) {
+            throw new Error(
+              "Browser privacy settings are preventing the connection. Please try:" +
+              "\n- Disable tracking prevention if using Safari" +
+              "\n- Allow third-party cookies for this site" +
+              "\n- Try a non-incognito window" +
+              "\n- Try a different browser"
+            );
+          } else {
+            throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
+          }
+        }
+        
         if (authError.message.includes("already registered")) {
           throw new Error("This email is already registered. Please try signing in instead.");
         }
@@ -150,10 +163,14 @@ const Registration = () => {
     } catch (error: any) {
       console.error("Registration error:", error);
       
-      if (error.message?.includes("Failed to fetch") || 
+      if (error.message?.includes("browser privacy") || 
+          error.message?.includes("third-party cookies") ||
+          error.message?.includes("incognito")) {
+        toast.error(error.message);
+      } else if (error.message?.includes("Failed to fetch") || 
           error.message?.includes("NetworkError") ||
           error.message?.includes("Unable to connect")) {
-        toast.error("Connection error: Please check if your browser is blocking third-party cookies or try using a different network.");
+        toast.error("Connection error: Please exit incognito mode or adjust your browser privacy settings to allow this connection.");
       } else if (error.message?.includes("already registered")) {
         toast.error("This email is already registered. Please try signing in instead.");
       } else if (error.status === 429) {
