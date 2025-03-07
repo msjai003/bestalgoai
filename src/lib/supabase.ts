@@ -13,7 +13,7 @@ export const supabase = createClient(
     },
     // Add additional client options if needed
     global: {
-      fetch: (...args) => fetch(...args)
+      fetch: (url: string, options?: RequestInit) => fetch(url, options)
     }
   }
 );
