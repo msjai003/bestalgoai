@@ -1,17 +1,32 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const Logout = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCancel = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleLogout = () => {
-    // Add logout logic here
-    navigate('/auth');
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success("Logged out successfully");
+      navigate('/auth');
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      toast.error(error.message || "Error logging out");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,12 +59,14 @@ const Logout = () => {
             <Button 
               className="w-full py-6 bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-xl font-medium shadow-lg shadow-[#FF00D4]/20 hover:opacity-90 transition-opacity"
               onClick={handleLogout}
+              disabled={isLoading}
             >
-              Logout
+              {isLoading ? "Processing..." : "Logout"}
             </Button>
             <Button 
               className="w-full py-6 bg-gray-700/50 rounded-xl font-medium border border-gray-600 hover:bg-gray-700 transition-colors"
               onClick={handleCancel}
+              disabled={isLoading}
             >
               Cancel
             </Button>
