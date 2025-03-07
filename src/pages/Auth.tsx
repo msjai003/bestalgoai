@@ -6,6 +6,7 @@ import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, Exter
 import { toast } from 'sonner';
 import { 
   supabase, 
+  supabaseUrl,
   getCurrentUser, 
   checkFirefoxCompatibility, 
   getFirefoxInstructions, 
