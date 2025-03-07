@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -82,8 +83,10 @@ export const supabase = createClient(
       detectSessionInUrl: true, 
       storageKey: 'session',
       flowType: 'pkce',
-      // Explicitly set the redirect URL to match what you have in Supabase dashboard
-      redirectTo: 'http://localhost:3000/auth'
+      // Configure redirect using the proper structure - auth.url
+      url: {
+        redirectTo: 'http://localhost:3000/auth'
+      }
     },
     global: {
       headers: {
