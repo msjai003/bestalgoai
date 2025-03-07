@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,8 @@ import {
   testDirectConnection, 
   offlineLogin,
   syncOfflineData,
-  getCachedSession
+  getCachedSession,
+  directLogin
 } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
@@ -31,10 +31,10 @@ const Auth = () => {
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
   const [directConnectionStatus, setDirectConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if already logged in
     const checkAuthStatus = async () => {
       const user = await getCurrentUser();
       if (user) {
@@ -44,17 +44,13 @@ const Auth = () => {
     
     checkAuthStatus();
     
-    // Check for browser-specific issues
     const browserCheck = checkFirefoxCompatibility();
     if (browserCheck.isFirefox || browserCheck.isSafari || !browserCheck.cookiesEnabled) {
-      // Don't show by default, only after an error
       setShowConnectionHelp(false);
     }
     
-    // Check if offline
     setIsOfflineMode(!navigator.onLine);
     
-    // Set up online/offline event listeners
     const handleOnline = () => {
       setIsOfflineMode(false);
       toast.success("You're back online!");
@@ -69,7 +65,6 @@ const Auth = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     
-    // Try to sync any pending data if we're online
     if (navigator.onLine) {
       syncOfflineData();
     }
@@ -88,12 +83,11 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     setAuthError(null);
+    setLoginAttempts(prev => prev + 1);
 
     try {
-      // Check if we're online
       if (!navigator.onLine) {
         if (isLogin) {
-          // Try offline login
           const offlineResult = offlineLogin(email, password);
           if (offlineResult.success) {
             toast.success('Logged in with cached credentials');
@@ -108,11 +102,7 @@ const Auth = () => {
       }
       
       if (isLogin) {
-        // Handle login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data, error } = await directLogin(email, password);
 
         if (error) throw error;
         
@@ -122,7 +112,6 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      // Handle specific error messages
       if (error.message?.includes('Invalid login credentials')) {
         setAuthError('Invalid email or password. Please try again.');
       } else if (error.message?.includes('Email not confirmed')) {
@@ -130,7 +119,22 @@ const Auth = () => {
       } else if (error.message?.includes('Failed to fetch') || 
                 error.message?.includes('NetworkError') || 
                 !navigator.onLine) {
-        setAuthError('Connection error. Please check your internet connection or try a different browser.');
+        if (loginAttempts === 1) {
+          try {
+            await supabase.auth.refreshSession();
+            const { error: refreshError } = await directLogin(email, password);
+            if (!refreshError) {
+              toast.success('Login successful after session refresh!');
+              navigate('/dashboard');
+              setIsLoading(false);
+              return;
+            }
+          } catch (refreshError) {
+            console.error("Refresh attempt failed:", refreshError);
+          }
+        }
+        
+        setAuthError('Connection error. We are having trouble reaching our authentication service. This might be due to your network settings or browser configuration.');
         setShowConnectionHelp(true);
         setConnectionStatus('offline');
       } else {
@@ -151,7 +155,6 @@ const Auth = () => {
     setDirectConnectionStatus('untested');
     
     try {
-      // First check if we're online at all
       if (!navigator.onLine) {
         setConnectionStatus('offline');
         setAuthError('You appear to be offline. Please check your internet connection.');
@@ -160,9 +163,24 @@ const Auth = () => {
         return;
       }
 
-      // Test direct connection to Supabase URL
       const directResult = await testDirectConnection();
       setDirectConnectionStatus(directResult.success ? 'success' : 'error');
+      
+      if (!directResult.success) {
+        try {
+          const simpleTest = await fetch(`${supabaseUrl}/`, {
+            method: 'HEAD',
+            mode: 'no-cors'
+          });
+          console.log("Simple CORS test result:", simpleTest.type);
+          
+          if (simpleTest.type === 'opaque') {
+            toast.info("Basic connectivity to Supabase exists, but CORS policy is preventing full access");
+          }
+        } catch (e) {
+          console.error("Even no-cors test failed:", e);
+        }
+      }
       
       const result = await testSupabaseConnection();
       console.log('Connection test result:', result);
@@ -413,7 +431,6 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Fixed footer with terms and privacy policy */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm p-6">
         <p className="text-gray-500 text-sm">
           By continuing, you agree to our{' '}
@@ -427,7 +444,6 @@ const Auth = () => {
         </p>
       </div>
       
-      {/* Install Prompt for mobile devices */}
       <InstallPrompt />
     </div>
   );

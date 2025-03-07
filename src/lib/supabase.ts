@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -93,11 +92,26 @@ export const supabase = createClient(
         fetchOptions.cache = 'no-store';
         fetchOptions.credentials = 'include';
         fetchOptions.mode = 'cors';
+        
+        // Add extra headers that might help with CORS issues
+        if (fetchOptions.headers) {
+          (fetchOptions.headers as Record<string, string>)['Origin'] = window.location.origin;
+          (fetchOptions.headers as Record<string, string>)['Referer'] = window.location.origin;
+        }
+        
         // Add SameSite attribute to cookies for Firefox compatibility
         if (typeof document !== 'undefined') {
           document.cookie = "SameSite=None; Secure";
+          document.cookie = "Path=/; SameSite=None; Secure";
         }
-        return fetch(url, fetchOptions);
+        
+        console.log(`Fetch request to: ${url}`);
+        
+        return fetch(url, fetchOptions)
+          .catch(error => {
+            console.error(`Fetch error for ${url}:`, error);
+            throw error;
+          });
       }
     }
   }
@@ -208,7 +222,7 @@ export const testSupabaseConnection = async () => {
   }
 };
 
-// Function to get browser information for better error messages
+// Function to detect browser information for better error messages
 function detectBrowserInfo() {
   const userAgent = navigator.userAgent;
   const isChrome = userAgent.indexOf("Chrome") > -1;
@@ -260,7 +274,7 @@ export const getCachedSession = () => {
   }
 };
 
-// Direct signup function to bypass connection test if needed
+// Direct signup function with improved error handling
 export const directSignUp = async (email, password, userData) => {
   try {
     console.log("Attempting direct signup with:", { email, userData });
@@ -273,8 +287,8 @@ export const directSignUp = async (email, password, userData) => {
       };
     }
     
-    // Try with simple auth signUp method
-    const { data, error } = await supabase.auth.signUp({
+    // Prepare the signUp options
+    const signUpOptions = {
       email,
       password,
       options: {
@@ -282,11 +296,113 @@ export const directSignUp = async (email, password, userData) => {
         // This is the correct way to set the redirect URL
         emailRedirectTo: getSiteUrl() + '/auth'
       }
-    });
+    };
+    
+    console.log("SignUp options:", JSON.stringify(signUpOptions, null, 2));
+    
+    // Try with manual fetch first if experiencing CORS issues
+    try {
+      // Only attempt if CORS is suspected
+      if (localStorage.getItem('tryCORSBypass') === 'true') {
+        const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseAnonKey,
+            'X-Client-Info': 'supabase-js-web/2.49.1'
+          },
+          body: JSON.stringify(signUpOptions)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return { data, error: null };
+        }
+      }
+    } catch (e) {
+      console.log("Manual fetch attempt failed, falling back to Supabase client:", e);
+    }
+    
+    // Try with simple auth signUp method
+    const { data, error } = await supabase.auth.signUp(signUpOptions);
+    
+    // If successful, clear any CORS bypass flag
+    if (!error) {
+      localStorage.removeItem('tryCORSBypass');
+    }
     
     return { data, error };
   } catch (error) {
     console.error('Direct signup error:', error);
+    
+    // If it seems like a CORS issue, set flag to try bypass next time
+    if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      localStorage.setItem('tryCORSBypass', 'true');
+    }
+    
+    return { data: null, error };
+  }
+};
+
+// Function to handle login with improved error handling and fallbacks
+export const directLogin = async (email, password) => {
+  try {
+    console.log("Attempting direct login with:", email);
+    
+    // Check if we're offline
+    if (!navigator.onLine) {
+      const offlineResult = offlineLogin(email, password);
+      if (offlineResult.success) {
+        return { data: offlineResult.user, error: null };
+      }
+      return { 
+        data: null, 
+        error: new Error("Cannot verify credentials while offline. Please try again when you're back online.") 
+      };
+    }
+    
+    // Try manual login first if experiencing CORS issues
+    try {
+      if (localStorage.getItem('tryCORSBypass') === 'true') {
+        const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseAnonKey,
+            'X-Client-Info': 'supabase-js-web/2.49.1'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return { data, error: null };
+        }
+      }
+    } catch (e) {
+      console.log("Manual login attempt failed, falling back to Supabase client:", e);
+    }
+    
+    // Fall back to standard Supabase login
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    // If successful, clear any CORS bypass flag
+    if (!error) {
+      localStorage.removeItem('tryCORSBypass');
+    }
+    
+    return { data, error };
+  } catch (error) {
+    console.error('Direct login error:', error);
+    
+    // If it seems like a CORS issue, set flag to try bypass next time
+    if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      localStorage.setItem('tryCORSBypass', 'true');
+    }
+    
     return { data: null, error };
   }
 };
@@ -516,4 +632,7 @@ export const checkFirefoxCompatibility = () => {
 // Log the current site URL on load for debugging
 if (typeof window !== 'undefined') {
   console.log('Current site URL for redirects:', getSiteUrl());
+  console.log('Browser: ', navigator.userAgent);
+  console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
+  console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
 }
