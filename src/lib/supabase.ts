@@ -9,12 +9,17 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 export const testDirectConnection = async () => {
   try {
     // Use a simple fetch to test direct URL access
-    const response = await fetch(supabaseUrl, {
+    const response = await fetch(`${supabaseUrl}/auth/v1/`, {
       method: 'HEAD',
       mode: 'cors',
       credentials: 'include',
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Content-Type': 'application/json'
+      }
     });
+    
     return { 
       success: response.ok, 
       status: response.status,

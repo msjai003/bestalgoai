@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
@@ -202,7 +202,9 @@ const Auth = () => {
 
           {connectionDetails && connectionStatus === 'error' && (
             <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700 rounded-lg">
-              <h3 className="text-amber-300 font-medium mb-2">Connection Details:</h3>
+              <h3 className="text-amber-300 font-medium mb-2 flex items-center">
+                <Shield className="h-4 w-4 mr-1" /> Connection Details:
+              </h3>
               <ul className="list-disc list-inside text-sm text-amber-200 space-y-1">
                 <li>Browser: {connectionDetails.browserInfo?.browser || 'Unknown'}</li>
                 <li>Online Status: {navigator.onLine ? 'Online' : 'Offline'}</li>
@@ -211,6 +213,21 @@ const Auth = () => {
                 <li>CORS/Cookie Issue: {connectionDetails.isCorsOrCookieIssue ? 'Likely' : 'Unknown'}</li>
                 <li>Network Issue: {connectionDetails.isNetworkIssue ? 'Detected' : 'Unknown'}</li>
               </ul>
+              
+              <div className="mt-4 p-3 bg-amber-900/40 border border-amber-700/50 rounded-lg">
+                <h4 className="text-amber-300 text-sm font-medium mb-1">Recommended Actions:</h4>
+                <ul className="text-xs text-amber-200 space-y-1">
+                  {directConnectionStatus === 'error' && (
+                    <li>• Your network may be blocking direct access to Supabase. Try a different network or VPN.</li>
+                  )}
+                  {connectionDetails.isCorsOrCookieIssue && (
+                    <li>• Browser security settings may be blocking the connection. Try disabling extensions or using incognito mode.</li>
+                  )}
+                  {connectionDetails.browserInfo?.browser !== 'Chrome' && (
+                    <li>• Try using Chrome browser which has better compatibility with Supabase.</li>
+                  )}
+                </ul>
+              </div>
             </div>
           )}
 
