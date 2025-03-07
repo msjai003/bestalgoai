@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, Refresh, ExternalLink } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
@@ -265,7 +265,7 @@ const Auth = () => {
                   onClick={() => window.location.reload()}
                   className="w-full bg-transparent border border-[#FF00D4] text-[#FF00D4] py-2 rounded-xl"
                 >
-                  <Refresh className="mr-2 h-4 w-4" />
+                  <RefreshCw className="mr-2 h-4 w-4" />
                   Reload Page
                 </Button>
                 
