@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions } from '@/lib/supabase';
+import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 
 const Auth = () => {
@@ -15,6 +15,8 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,6 +88,38 @@ const Auth = () => {
     }
   };
 
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    setConnectionStatus('untested');
+    setAuthError(null);
+    
+    try {
+      const result = await testSupabaseConnection();
+      console.log('Connection test result:', result);
+      
+      if (result.success) {
+        setConnectionStatus('success');
+        toast.success('Successfully connected to Supabase!');
+      } else {
+        setConnectionStatus('error');
+        if (result.isCorsOrCookieIssue || result.isNetworkIssue) {
+          setAuthError('Connection issue detected. This could be related to network settings, cookies, or browser configuration.');
+          setShowConnectionHelp(true);
+        } else {
+          setAuthError(result.error?.message || 'Failed to connect to Supabase');
+        }
+        toast.error('Failed to connect to Supabase');
+      }
+    } catch (error: any) {
+      console.error('Connection test error:', error);
+      setConnectionStatus('error');
+      setAuthError('An unexpected error occurred while testing the connection');
+      toast.error('Connection test failed');
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <div className="px-4 py-8 pb-32">
@@ -142,6 +176,13 @@ const Auth = () => {
             />
           )}
 
+          {connectionStatus === 'success' && !authError && (
+            <div className="mb-4 p-4 bg-green-900/30 border border-green-700 rounded-lg flex items-start">
+              <Wifi className="text-green-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+              <p className="text-green-200 text-sm">Successfully connected to Supabase! You can now log in.</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="w-full space-y-4">
             <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
               <Input
@@ -168,12 +209,23 @@ const Auth = () => {
                 Forgot Password?
               </Button>
             </div>
+
             <Button 
               type="submit"
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
             >
               {isLoading ? "Processing..." : "Login"}
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handleTestConnection}
+              disabled={testingConnection}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl"
+            >
+              <ServerCrash className="mr-2 h-4 w-4" />
+              {testingConnection ? "Testing Connection..." : "Test Supabase Connection"}
             </Button>
 
             {showConnectionHelp && !isLoading && (
