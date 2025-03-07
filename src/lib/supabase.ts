@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -8,15 +7,15 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Get the current site URL for redirects - more explicit for localhost
 export const getSiteUrl = () => {
   if (typeof window !== 'undefined') {
-    // Always use explicit port 3000 for localhost development
+    // Support HTTPS for localhost development
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://localhost:3000';
+      return 'https://localhost:3000';
     }
     // Otherwise use the current origin
     return window.location.origin;
   }
   // Fallback for SSR or non-browser environments
-  return 'http://localhost:3000';
+  return 'https://localhost:3000';
 };
 
 // Test if the URL is reachable without Supabase
@@ -639,3 +638,4 @@ if (typeof window !== 'undefined') {
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
 }
+
