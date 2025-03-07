@@ -81,9 +81,7 @@ export const supabase = createClient(
       autoRefreshToken: true,
       detectSessionInUrl: true, 
       storageKey: 'session',
-      flowType: 'pkce',
-      // Directly set redirectTo - this is the correct property name based on the error
-      redirectTo: 'http://localhost:3000/auth'
+      flowType: 'pkce'
     },
     global: {
       headers: {
@@ -295,7 +293,6 @@ export const directSignUp = async (email, password, userData) => {
       password,
       options: {
         data: userData,
-        // This is the correct way to set the redirect URL for localhost
         emailRedirectTo: 'http://localhost:3000/auth'
       }
     };
