@@ -47,10 +47,7 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
                 variant="outline"
                 size="sm"
                 className="border-red-500 text-red-400 hover:bg-red-950"
-                as="a"
-                href="https://www.google.com/chrome/" 
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => window.open('https://www.google.com/chrome/', '_blank')}
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Try Chrome Browser
