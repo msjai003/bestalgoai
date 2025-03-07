@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, Globe } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, getCurrentUser } from '@/lib/supabase';
+import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions } from '@/lib/supabase';
+import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +14,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showConnectionHelp, setShowConnectionHelp] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +27,13 @@ const Auth = () => {
     };
     
     checkAuthStatus();
+    
+    // Check for browser-specific issues
+    const browserCheck = checkFirefoxCompatibility();
+    if (browserCheck.isFirefox || browserCheck.isSafari || !browserCheck.cookiesEnabled) {
+      // Don't show by default, only after an error
+      setShowConnectionHelp(false);
+    }
   }, [navigate]);
 
   const handleSignUpClick = () => {
@@ -37,6 +46,11 @@ const Auth = () => {
     setAuthError(null);
 
     try {
+      // Check if we're online
+      if (!navigator.onLine) {
+        throw new Error("You appear to be offline. Please check your internet connection.");
+      }
+      
       if (isLogin) {
         // Handle login
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -57,8 +71,11 @@ const Auth = () => {
         setAuthError('Invalid email or password. Please try again.');
       } else if (error.message?.includes('Email not confirmed')) {
         setAuthError('Please confirm your email before logging in.');
-      } else if (error.message?.includes('Failed to fetch')) {
+      } else if (error.message?.includes('Failed to fetch') || 
+                error.message?.includes('NetworkError') || 
+                !navigator.onLine) {
         setAuthError('Connection error. Please check your internet connection or try a different browser.');
+        setShowConnectionHelp(true);
       } else {
         setAuthError(error.message || 'Authentication failed');
       }
@@ -119,10 +136,10 @@ const Auth = () => {
           </div>
 
           {authError && (
-            <div className="w-full mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
-              <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
-              <p className="text-red-200 text-sm">{authError}</p>
-            </div>
+            <FirefoxHelpSection 
+              connectionError={authError} 
+              showFirefoxHelp={showConnectionHelp} 
+            />
           )}
 
           <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -158,6 +175,16 @@ const Auth = () => {
             >
               {isLoading ? "Processing..." : "Login"}
             </Button>
+
+            {showConnectionHelp && !isLoading && (
+              <Button
+                onClick={() => window.location.reload()}
+                className="w-full bg-transparent border border-[#FF00D4] text-[#FF00D4] py-2 rounded-xl"
+              >
+                <Globe className="mr-2 h-4 w-4" />
+                Reload Page
+              </Button>
+            )}
 
             <div className="flex items-center gap-4 justify-center mt-6">
               <Button
