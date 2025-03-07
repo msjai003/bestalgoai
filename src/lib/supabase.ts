@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -10,7 +11,7 @@ export const supabase = createClient(
   supabaseAnonKey,
   {
     auth: {
-      persistSession: true, // Try to persist session to handle page refreshes
+      persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
       storageKey: 'session',
@@ -24,6 +25,10 @@ export const supabase = createClient(
         fetchOptions.cache = 'no-store';
         fetchOptions.credentials = 'include';
         fetchOptions.mode = 'cors';
+        // Add SameSite attribute to cookies for Firefox compatibility
+        if (typeof document !== 'undefined') {
+          document.cookie = "SameSite=None; Secure";
+        }
         return fetch(url, fetchOptions);
       }
     }
@@ -195,4 +200,44 @@ export const getUserProfile = async () => {
     console.error('Exception fetching profile:', error);
     return null;
   }
+};
+
+// Add a function to get browser-specific instructions for Firefox
+export const getFirefoxInstructions = () => {
+  return {
+    title: "Firefox Privacy Settings",
+    steps: [
+      "Click the shield icon in the address bar",
+      "Turn off 'Enhanced Tracking Protection' for this site",
+      "Reload the page and try again",
+      "If that doesn't work, go to Settings > Privacy & Security > Cookies and Site Data",
+      "Make sure 'Delete cookies and site data when Firefox is closed' is unchecked",
+      "Add this website to the exceptions list for cookies"
+    ]
+  };
+};
+
+// Add a function to check for common Firefox issues
+export const checkFirefoxCompatibility = () => {
+  const isFirefox = navigator.userAgent.indexOf("Firefox") > -1;
+  if (!isFirefox) return { isFirefox: false };
+  
+  // Check if cookies are enabled
+  const cookiesEnabled = navigator.cookieEnabled;
+  
+  // Check if in private browsing (approximate detection)
+  let isPrivate = false;
+  try {
+    localStorage.setItem("test", "test");
+    localStorage.removeItem("test");
+  } catch (e) {
+    isPrivate = true;
+  }
+  
+  return {
+    isFirefox: true,
+    cookiesEnabled,
+    isPrivate,
+    hasETP: true // Assume ETP is on by default in Firefox
+  };
 };

@@ -1,12 +1,21 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Settings } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { supabase, testSupabaseConnection, directSignUp, offlineSignup, getCurrentUser } from '@/lib/supabase';
+import { 
+  supabase, 
+  testSupabaseConnection, 
+  directSignUp, 
+  offlineSignup, 
+  getCurrentUser,
+  getFirefoxInstructions,
+  checkFirefoxCompatibility
+} from '@/lib/supabase';
 
 interface RegistrationData {
   fullName: string;
@@ -25,6 +34,8 @@ const Registration = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [browserIssue, setBrowserIssue] = useState<any>(null);
+  const [showFirefoxHelp, setShowFirefoxHelp] = useState(false);
   const [formData, setFormData] = useState<RegistrationData>({
     fullName: '',
     email: '',
@@ -46,6 +57,12 @@ const Registration = () => {
     };
     
     checkAuthStatus();
+    
+    // Check for Firefox-specific issues
+    const ffCheck = checkFirefoxCompatibility();
+    if (ffCheck.isFirefox) {
+      setBrowserIssue(ffCheck);
+    }
   }, [navigate]);
 
   const handleChange = (field: keyof RegistrationData, value: string | boolean | string[]) => {
@@ -118,6 +135,32 @@ const Registration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
+      // Check if using Firefox first
+      const ffCheck = checkFirefoxCompatibility();
+      if (ffCheck.isFirefox) {
+        // Try direct signup for Firefox without the connection test
+        const { data: authData, error: authError } = await directSignUp(
+          formData.email, 
+          formData.password, 
+          userData
+        );
+        
+        if (authError) {
+          // If direct signup fails, provide Firefox-specific guidance
+          setShowFirefoxHelp(true);
+          setConnectionError(
+            "Your browser's privacy settings are blocking our authentication service. Please see the Firefox instructions below."
+          );
+          throw new Error("Firefox privacy settings are preventing authentication. Please see instructions below.");
+        }
+        
+        console.log("User created successfully:", authData?.user?.id);
+        toast.success("Registration completed successfully! Please check your email to verify your account.");
+        navigate('/auth');
+        return;
+      }
+      
+      // For other browsers, proceed with connection test first
       const connectionTest = await testSupabaseConnection();
       
       if (!connectionTest.success) {
@@ -137,6 +180,9 @@ const Registration = () => {
             throw new Error("Registration cannot be completed in private/incognito mode.");
           } else {
             const browser = connectionTest.browserInfo?.browser || "your browser";
+            if (browser === "Firefox") {
+              setShowFirefoxHelp(true);
+            }
             setConnectionError(
               `${browser} is blocking the connection to our servers. Please check your privacy settings.`
             );
@@ -350,7 +396,25 @@ const Registration = () => {
           <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-red-200 text-sm">{connectionError}</p>
-            <p className="text-red-300 text-xs mt-1">Try using a regular browser window instead of incognito/private mode.</p>
+            {showFirefoxHelp && (
+              <div className="mt-3 space-y-2">
+                <p className="text-red-300 font-semibold">Firefox Instructions:</p>
+                <ol className="list-decimal list-inside space-y-1 text-red-200 text-sm">
+                  {getFirefoxInstructions().steps.map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ol>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 border-red-500 text-red-400 hover:bg-red-950"
+                  onClick={() => window.open('about:preferences#privacy', '_blank')}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Open Firefox Privacy Settings
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
