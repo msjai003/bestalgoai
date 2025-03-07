@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -83,10 +82,8 @@ export const supabase = createClient(
       detectSessionInUrl: true, 
       storageKey: 'session',
       flowType: 'pkce',
-      // Configure redirect using the proper structure - auth.url
-      url: {
-        redirectTo: 'http://localhost:3000/auth'
-      }
+      // Directly set redirectTo - this is the correct property name based on the error
+      redirectTo: 'http://localhost:3000/auth'
     },
     global: {
       headers: {
