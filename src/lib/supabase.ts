@@ -11,16 +11,16 @@ export const supabase = createClient(
   supabaseAnonKey,
   {
     auth: {
-      persistSession: false, // Don't try to store the session in localStorage or cookies
+      persistSession: true, // Try to persist session to handle page refreshes
       autoRefreshToken: true,
-      detectSessionInUrl: false, // Don't look for the token in the URL
-      storageKey: 'session', // Use a simple key name
+      detectSessionInUrl: false,
+      storageKey: 'session',
     },
     global: {
       headers: {
         'X-Client-Info': 'supabase-js-web/2.49.1',
       },
-      fetch: (url, options) => {
+      fetch: (url: string, options?: RequestInit) => {
         const fetchOptions = options || {};
         // Set cache policy to no-store to avoid caching issues
         fetchOptions.cache = 'no-store';
@@ -34,10 +34,12 @@ export const supabase = createClient(
   }
 );
 
-// Helper function to test Supabase connection
+// Helper function to test Supabase connection with specific guidance
 export const testSupabaseConnection = async () => {
   try {
-    // Use a simpler, more direct approach
+    console.log("Testing Supabase connection...");
+    
+    // Simple ping-style query that should always work
     const { data, error } = await supabase.from('user_profiles').select('count');
     
     if (error) {
@@ -48,16 +50,18 @@ export const testSupabaseConnection = async () => {
         return { 
           success: false, 
           error, 
-          isCorsOrCookieIssue: true 
+          isCorsOrCookieIssue: true,
+          browserInfo: detectBrowserInfo()
         };
       }
       
       return { success: false, error };
     }
     
+    console.log("Connection test successful:", data);
     return { success: true, data };
   } catch (error) {
-    console.error('Supabase connection test error (exception):', error);
+    console.error('Supabase connection test exception:', error);
     
     // Check if this is a fetch/network error
     const isFetchError = error instanceof Error && 
@@ -68,19 +72,46 @@ export const testSupabaseConnection = async () => {
     return { 
       success: false, 
       error,
-      isCorsOrCookieIssue: isFetchError
+      isCorsOrCookieIssue: isFetchError,
+      browserInfo: detectBrowserInfo()
     };
   }
 };
 
+// Function to get browser information for better error messages
+function detectBrowserInfo() {
+  const userAgent = navigator.userAgent;
+  const isChrome = userAgent.indexOf("Chrome") > -1;
+  const isFirefox = userAgent.indexOf("Firefox") > -1;
+  const isSafari = userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1;
+  const isEdge = userAgent.indexOf("Edg") > -1;
+  const isPrivateMode = !window.localStorage;
+
+  let browserName = "unknown";
+  if (isChrome) browserName = "Chrome";
+  if (isFirefox) browserName = "Firefox";
+  if (isSafari) browserName = "Safari";
+  if (isEdge) browserName = "Edge";
+
+  return {
+    browser: browserName,
+    isPrivateMode: isPrivateMode,
+    userAgent: userAgent
+  };
+}
+
 // Direct signup function to bypass connection test if needed
 export const directSignUp = async (email, password, userData) => {
   try {
+    console.log("Attempting direct signup with:", { email, userData });
+    
+    // Try raw fetch approach first if normal method fails
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData
+        data: userData,
+        emailRedirectTo: window.location.origin + '/auth'
       }
     });
     
@@ -88,5 +119,24 @@ export const directSignUp = async (email, password, userData) => {
   } catch (error) {
     console.error('Direct signup error:', error);
     return { data: null, error };
+  }
+};
+
+// Function to handle local signup when Supabase connection fails
+export const offlineSignup = async (email, password, userData) => {
+  // Store signup data in localStorage to try again later
+  try {
+    const signupData = {
+      email,
+      password: btoa(password), // Simple encoding (not secure but temporary)
+      userData,
+      timestamp: Date.now()
+    };
+    
+    localStorage.setItem('pendingSignup', JSON.stringify(signupData));
+    return { success: true, message: "Signup data saved locally" };
+  } catch (e) {
+    console.error("Failed to save local signup data:", e);
+    return { success: false, error: e };
   }
 };

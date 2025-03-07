@@ -1,12 +1,13 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { supabase, testSupabaseConnection, directSignUp } from '@/lib/supabase';
+import { supabase, testSupabaseConnection, directSignUp, offlineSignup } from '@/lib/supabase';
 
 interface RegistrationData {
   fullName: string;
@@ -24,6 +25,7 @@ const Registration = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [formData, setFormData] = useState<RegistrationData>({
     fullName: '',
     email: '',
@@ -38,6 +40,8 @@ const Registration = () => {
 
   const handleChange = (field: keyof RegistrationData, value: string | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear connection error when user makes changes
+    if (connectionError) setConnectionError(null);
   };
 
   const handleNext = () => {
@@ -92,6 +96,7 @@ const Registration = () => {
     }
     
     setIsLoading(true);
+    setConnectionError(null);
     
     try {
       console.log("Starting registration process...");
@@ -104,6 +109,47 @@ const Registration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
+      // First, test the connection to Supabase
+      const connectionTest = await testSupabaseConnection();
+      
+      if (!connectionTest.success) {
+        console.error("Connection test failed:", connectionTest);
+        
+        if (connectionTest.isCorsOrCookieIssue) {
+          // Check if we're in incognito/private mode
+          const isPrivateMode = !window.localStorage || connectionTest.browserInfo?.isPrivateMode;
+          
+          if (isPrivateMode) {
+            setConnectionError(
+              "You appear to be in private/incognito mode. Please try again in a regular browser window."
+            );
+            
+            // Offer to save registration for later
+            const offlineResult = await offlineSignup(formData.email, formData.password, userData);
+            if (offlineResult.success) {
+              toast.info("Your registration details have been saved. Please try again in a regular browser window.");
+            }
+            
+            throw new Error("Registration cannot be completed in private/incognito mode.");
+          } else {
+            const browser = connectionTest.browserInfo?.browser || "your browser";
+            setConnectionError(
+              `${browser} is blocking the connection to our servers. Please check your privacy settings.`
+            );
+            throw new Error(
+              "Browser privacy settings are preventing the connection. Please try:" +
+              "\n- Disable tracking prevention if using Safari" +
+              "\n- Allow third-party cookies for this site" +
+              "\n- Try a non-incognito window" +
+              "\n- Try a different browser"
+            );
+          }
+        } else {
+          throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
+        }
+      }
+      
+      // If connection test passed, proceed with signup
       const { data: authData, error: authError } = await directSignUp(
         formData.email,
         formData.password,
@@ -113,25 +159,7 @@ const Registration = () => {
       if (authError) {
         console.error("Auth error details:", authError);
         
-        const connectionTest = await testSupabaseConnection();
-        
-        if (!connectionTest.success) {
-          console.error("Connection test failed:", connectionTest.error);
-          
-          if (connectionTest.isCorsOrCookieIssue) {
-            throw new Error(
-              "Browser privacy settings are preventing the connection. Please try:" +
-              "\n- Disable tracking prevention if using Safari" +
-              "\n- Allow third-party cookies for this site" +
-              "\n- Try a non-incognito window" +
-              "\n- Try a different browser"
-            );
-          } else {
-            throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
-          }
-        }
-        
-        if (authError.message.includes("already registered")) {
+        if (authError.message?.includes("already registered")) {
           throw new Error("This email is already registered. Please try signing in instead.");
         }
         throw authError;
@@ -170,7 +198,7 @@ const Registration = () => {
       } else if (error.message?.includes("Failed to fetch") || 
           error.message?.includes("NetworkError") ||
           error.message?.includes("Unable to connect")) {
-        toast.error("Connection error: Please exit incognito mode or adjust your browser privacy settings to allow this connection.");
+        toast.error("Connection error: Please try registering in a regular browser window (not incognito/private mode).");
       } else if (error.message?.includes("already registered")) {
         toast.error("This email is already registered. Please try signing in instead.");
       } else if (error.status === 429) {
@@ -328,6 +356,16 @@ const Registration = () => {
         </div>
         <p className="text-gray-400 text-sm">Step {step} of 3</p>
       </section>
+
+      {connectionError && (
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
+          <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-red-200 text-sm">{connectionError}</p>
+            <p className="text-red-300 text-xs mt-1">Try using a regular browser window instead of incognito/private mode.</p>
+          </div>
+        </div>
+      )}
 
       <section className="space-y-6">
         <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700">
