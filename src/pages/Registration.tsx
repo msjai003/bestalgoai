@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { X, ChevronLeft } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, testSupabaseConnection } from '@/lib/supabase';
 
 interface RegistrationData {
   fullName: string;
@@ -42,7 +41,6 @@ const Registration = () => {
   };
 
   const handleNext = () => {
-    // Validate current step
     if (step === 1) {
       if (!formData.fullName || !formData.email || !formData.mobile) {
         toast.error("Please fill all required fields");
@@ -83,7 +81,6 @@ const Registration = () => {
   };
 
   const handleCompleteRegistration = async () => {
-    // Validate certification number if research analyst is selected
     if (formData.isResearchAnalyst && !formData.certificationNumber.trim()) {
       toast.error("Please enter your Research Analyst certification number");
       return;
@@ -98,22 +95,13 @@ const Registration = () => {
     
     try {
       console.log("Starting registration process...");
-      console.log("Connecting to Supabase...");
       
-      // Test the connection first with a simple query
-      try {
-        const { error: connectionTestError } = await supabase.from('user_profiles').select('count', { count: 'exact', head: true });
-        
-        if (connectionTestError) {
-          console.error("Connection test error:", connectionTestError);
-          throw new Error("Could not connect to Supabase database");
-        }
-      } catch (connectionError) {
-        console.error("Connection test failed:", connectionError);
-        throw new Error("Network error: Could not connect to Supabase");
+      const connectionTest = await testSupabaseConnection();
+      if (!connectionTest.success) {
+        console.error("Connection test failed:", connectionTest.error);
+        throw new Error("Unable to connect to our servers. This could be due to network issues or server maintenance.");
       }
       
-      // Register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -130,14 +118,15 @@ const Registration = () => {
       
       if (authError) {
         console.error("Auth error details:", authError);
+        if (authError.message.includes("already registered")) {
+          throw new Error("This email is already registered. Please try signing in instead.");
+        }
         throw authError;
       }
       
       console.log("User created successfully:", authData?.user?.id);
       
-      // Only attempt to insert profile data if a user was created
       if (authData?.user?.id) {
-        // Store additional user profile data in a custom table if needed
         const { error: profileError } = await supabase
           .from('user_profiles')
           .insert({
@@ -152,7 +141,6 @@ const Registration = () => {
         
         if (profileError) {
           console.error("Error saving profile data:", profileError);
-          // We continue anyway since the auth record was created
         }
       }
       
@@ -161,10 +149,15 @@ const Registration = () => {
       
     } catch (error: any) {
       console.error("Registration error:", error);
-      if (error.message?.includes("Network error") || error.message === "Failed to fetch") {
-        toast.error("Network error: Could not connect to Supabase. Please check your internet connection or contact support.");
+      
+      if (error.message?.includes("Failed to fetch") || 
+          error.message?.includes("NetworkError") ||
+          error.message?.includes("Unable to connect")) {
+        toast.error("Connection error: Please check if your browser is blocking third-party cookies or try using a different network.");
       } else if (error.message?.includes("already registered")) {
         toast.error("This email is already registered. Please try signing in instead.");
+      } else if (error.status === 429) {
+        toast.error("Too many requests. Please wait a moment before trying again.");
       } else {
         toast.error(error.message || "Registration failed. Please try again later.");
       }
@@ -252,7 +245,6 @@ const Registration = () => {
               </select>
             </div>
             
-            {/* Research Analyst toggle */}
             <div className="flex items-center justify-between pt-3">
               <Label htmlFor="research-analyst" className="text-sm text-gray-300 cursor-pointer">
                 Are you a Research Analyst?
@@ -265,7 +257,6 @@ const Registration = () => {
               />
             </div>
             
-            {/* Conditionally render certification number input */}
             {formData.isResearchAnalyst && (
               <div className="space-y-2 pt-2">
                 <Label className="text-sm text-gray-300">RA Certification Number</Label>
