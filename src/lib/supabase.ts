@@ -4,10 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 export const supabaseUrl = 'https://fzvrozrjtvflksumiqsk.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI';
 
-// Get the current site URL for redirects
+// Get the current site URL for redirects - more explicit for localhost
 export const getSiteUrl = () => {
   if (typeof window !== 'undefined') {
-    // Check if running on localhost, common development patterns
+    // Always use explicit port 3000 for localhost development
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:3000';
     }
@@ -79,9 +79,11 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      detectSessionInUrl: true, 
       storageKey: 'session',
       flowType: 'pkce',
+      // Explicitly set the redirect URL to match what you have in Supabase dashboard
+      redirectTo: 'http://localhost:3000/auth'
     },
     global: {
       headers: {
@@ -95,11 +97,11 @@ export const supabase = createClient(
         
         // Add extra headers that might help with CORS issues
         if (fetchOptions.headers) {
-          (fetchOptions.headers as Record<string, string>)['Origin'] = window.location.origin;
-          (fetchOptions.headers as Record<string, string>)['Referer'] = window.location.origin;
+          (fetchOptions.headers as Record<string, string>)['Origin'] = 'http://localhost:3000';
+          (fetchOptions.headers as Record<string, string>)['Referer'] = 'http://localhost:3000';
         }
         
-        // Add SameSite attribute to cookies for Firefox compatibility
+        // Add SameSite attribute to cookies for compatibility
         if (typeof document !== 'undefined') {
           document.cookie = "SameSite=None; Secure";
           document.cookie = "Path=/; SameSite=None; Secure";
@@ -287,14 +289,14 @@ export const directSignUp = async (email, password, userData) => {
       };
     }
     
-    // Prepare the signUp options
+    // Prepare the signUp options with explicit localhost:3000 redirect
     const signUpOptions = {
       email,
       password,
       options: {
         data: userData,
-        // This is the correct way to set the redirect URL
-        emailRedirectTo: getSiteUrl() + '/auth'
+        // This is the correct way to set the redirect URL for localhost
+        emailRedirectTo: 'http://localhost:3000/auth'
       }
     };
     
