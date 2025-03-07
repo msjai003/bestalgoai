@@ -7,6 +7,7 @@ import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, Exter
 import { toast } from 'sonner';
 import { supabase, getCurrentUser, checkFirefoxCompatibility, getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
+import InstallPrompt from '@/components/InstallPrompt';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -333,6 +334,9 @@ const Auth = () => {
           </Button>
         </p>
       </div>
+      
+      {/* Install Prompt for mobile devices */}
+      <InstallPrompt />
     </div>
   );
 };
