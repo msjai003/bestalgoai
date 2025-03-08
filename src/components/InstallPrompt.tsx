@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -24,18 +25,6 @@ const InstallPrompt = () => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
 
-    // Handle the beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
-      e.preventDefault();
-      // Store the event for later use
-      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
-      // Show our custom install button
-      setShowPrompt(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
     // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           (window.navigator as any).standalone || 
@@ -43,14 +32,50 @@ const InstallPrompt = () => {
     
     if (isStandalone) {
       setShowPrompt(false);
-    } else if (isIOSDevice) {
-      // For iOS, we'll show different instructions
-      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
-      setShowPrompt(!installPromptDismissed);
+      return;
     }
+    
+    // Handle the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Store the event for later use
+      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      // Show our custom install button after a short delay
+      setTimeout(() => {
+        const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+        if (!installPromptDismissed) {
+          setShowPrompt(true);
+        }
+      }, 3000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // For iOS, we'll show different instructions
+    if (isIOSDevice && !isStandalone) {
+      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+      
+      // Show the iOS prompt after a delay
+      setTimeout(() => {
+        if (!installPromptDismissed) {
+          setShowPrompt(true);
+        }
+      }, 3000);
+    }
+
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
+      // Clear the prompt
+      window.deferredInstallPrompt = null;
+      setShowPrompt(false);
+      // Show success message
+      toast.success("App installed successfully!");
+    });
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', () => {});
     };
   }, []);
 
@@ -66,8 +91,10 @@ const InstallPrompt = () => {
       
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
+        toast.success("Installation started");
       } else {
         console.log('User dismissed the install prompt');
+        toast.info("Installation declined");
       }
       
       // Clear the saved prompt since it can't be used again

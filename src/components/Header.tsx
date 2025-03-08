@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut, Download } from 'lucide-react';
@@ -50,12 +51,19 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// Create a global variable to store the install prompt event
+declare global {
+  interface Window {
+    deferredInstallPrompt: BeforeInstallPromptEvent | null;
+  }
+}
+
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState(latestNotifications);
   const [isAllRead, setIsAllRead] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
@@ -71,13 +79,27 @@ export const Header = () => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Store the event for later use
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      // Flag that we can install the app
+      setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
+      // Clear the deferredPrompt variable
+      window.deferredInstallPrompt = null;
+      // Update states
+      setIsInstallable(false);
+      setIsInstalled(true);
+      // Show success message
+      toast.success("App installed successfully!");
+    });
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', () => {});
     };
   }, []);
 
@@ -88,18 +110,18 @@ export const Header = () => {
   };
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!window.deferredInstallPrompt) return;
     
     // Show the install prompt
-    deferredPrompt.prompt();
+    window.deferredInstallPrompt.prompt();
     
     // Wait for the user to respond to the prompt
-    const choiceResult = await deferredPrompt.userChoice;
+    const choiceResult = await window.deferredInstallPrompt.userChoice;
     
     if (choiceResult.outcome === 'accepted') {
       toast.success("Installation started");
-      setDeferredPrompt(null);
-      setIsInstalled(true);
+      window.deferredInstallPrompt = null;
+      setIsInstallable(false);
     } else {
       toast.info("Installation declined");
     }
@@ -109,8 +131,8 @@ export const Header = () => {
 
   const hasUnreadNotifications = !isAllRead && notifications.length > 0;
 
-  // Only show install option if the app is not installed and we have a deferred prompt
-  const showInstallOption = !isInstalled && deferredPrompt !== null;
+  // Only show install option if the app is installable and not already installed
+  const showInstallOption = isInstallable && !isInstalled;
 
   return (
     <header className="fixed w-full top-0 z-50 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800">
