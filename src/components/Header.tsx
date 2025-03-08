@@ -1,7 +1,6 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut } from 'lucide-react';
+import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -10,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from 'sonner';
 
 // Latest notifications data
 const latestNotifications = [
@@ -45,11 +45,41 @@ const latestNotifications = [
   }
 ];
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState(latestNotifications);
   const [isAllRead, setIsAllRead] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if app is already installed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         (window.navigator as any).standalone || 
+                         document.referrer.includes('android-app://');
+    
+    setIsInstalled(isStandalone);
+    
+    // Handle the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Store the event for later use
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   
@@ -57,7 +87,30 @@ export const Header = () => {
     setIsAllRead(true);
   };
 
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const choiceResult = await deferredPrompt.userChoice;
+    
+    if (choiceResult.outcome === 'accepted') {
+      toast.success("Installation started");
+      setDeferredPrompt(null);
+      setIsInstalled(true);
+    } else {
+      toast.info("Installation declined");
+    }
+    
+    setIsOpen(false);
+  };
+
   const hasUnreadNotifications = !isAllRead && notifications.length > 0;
+
+  // Only show install option if the app is not installed and we have a deferred prompt
+  const showInstallOption = !isInstalled && deferredPrompt !== null;
 
   return (
     <header className="fixed w-full top-0 z-50 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800">
@@ -161,6 +214,14 @@ export const Header = () => {
         <div className="absolute top-16 left-0 w-64 bg-gray-900/95 backdrop-blur-lg border-r border-b border-gray-800 rounded-br-lg shadow-xl animate-in slide-in-from-left duration-200">
           <nav className="p-4">
             <ul className="space-y-2">
+              {showInstallOption && (
+                <MenuLink 
+                  to="#" 
+                  icon={<Download className="w-5 h-5" />} 
+                  label="Install App" 
+                  onClick={handleInstall} 
+                />
+              )}
               <MenuLink 
                 to="/about" 
                 icon={<Info className="w-5 h-5" />} 

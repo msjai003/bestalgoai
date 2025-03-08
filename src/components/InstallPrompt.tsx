@@ -8,9 +8,15 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// Create a global variable to store the install prompt event
+declare global {
+  interface Window {
+    deferredInstallPrompt: BeforeInstallPromptEvent | null;
+  }
+}
+
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
@@ -23,7 +29,7 @@ const InstallPrompt = () => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Store the event for later use
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
       // Show our custom install button
       setShowPrompt(true);
     };
@@ -39,9 +45,8 @@ const InstallPrompt = () => {
       setShowPrompt(false);
     } else if (isIOSDevice) {
       // For iOS, we'll show different instructions
-      const visitedBefore = localStorage.getItem('visitedBefore');
-      setShowPrompt(!visitedBefore);
-      localStorage.setItem('visitedBefore', 'true');
+      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+      setShowPrompt(!installPromptDismissed);
     }
 
     return () => {
@@ -50,14 +55,14 @@ const InstallPrompt = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt && !isIOS) return;
+    if (!window.deferredInstallPrompt && !isIOS) return;
     
-    if (deferredPrompt) {
+    if (window.deferredInstallPrompt) {
       // Show the install prompt
-      deferredPrompt.prompt();
+      window.deferredInstallPrompt.prompt();
       
       // Wait for the user to respond to the prompt
-      const choiceResult = await deferredPrompt.userChoice;
+      const choiceResult = await window.deferredInstallPrompt.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
@@ -66,7 +71,7 @@ const InstallPrompt = () => {
       }
       
       // Clear the saved prompt since it can't be used again
-      setDeferredPrompt(null);
+      window.deferredInstallPrompt = null;
     }
     
     // Hide the install button
