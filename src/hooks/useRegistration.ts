@@ -1,13 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
-  testSupabaseConnection, 
-  directSignUp, 
-  offlineSignup, 
+  directSignUp,
   getCurrentUser,
-  checkFirefoxCompatibility
-} from '@/lib/supabase';
+  getBrowserInfo
+} from '@/lib/mockAuth';
 
 export interface RegistrationData {
   fullName: string;
@@ -42,7 +41,7 @@ export const useRegistration = () => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const user = await getCurrentUser();
+      const user = getCurrentUser();
       if (user) {
         navigate('/dashboard');
       }
@@ -51,10 +50,9 @@ export const useRegistration = () => {
     checkAuthStatus();
     
     // Check for browser-specific issues
-    const browserCheck = checkFirefoxCompatibility();
-    if (browserCheck.isFirefox || browserCheck.isSafari || !browserCheck.cookiesEnabled) {
+    const browserCheck = getBrowserInfo();
+    if (browserCheck.browser === 'Firefox' || browserCheck.browser === 'Safari' || !browserCheck.cookiesEnabled) {
       setBrowserIssue(browserCheck);
-      // Show help by default for browsers with known issues
       setShowFirefoxHelp(true);
     }
   }, [navigate]);
@@ -119,7 +117,7 @@ export const useRegistration = () => {
     setConnectionError(null);
     
     try {
-      console.log("Starting registration process...");
+      console.log("Starting mock registration process...");
       
       const userData = {
         full_name: formData.fullName,
@@ -129,7 +127,7 @@ export const useRegistration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // Always attempt a direct signup first, regardless of browser
+      // Attempt mock signup
       const { data: authData, error: authError } = await directSignUp(
         formData.email, 
         formData.password, 
@@ -138,54 +136,17 @@ export const useRegistration = () => {
       
       if (authError) {
         console.error("Auth error details:", authError);
-        
-        // Show browser-specific help based on the error
-        const browserCheck = checkFirefoxCompatibility();
-        setShowFirefoxHelp(true);
-        
-        if (authError.message?.includes("already registered")) {
-          throw new Error("This email is already registered. Please try signing in instead.");
-        }
-        
-        // Generic connection error for all browsers
-        setConnectionError(
-          "Your browser's privacy settings may be blocking our authentication service. Please try the suggestions below."
-        );
-        
-        // Try to save registration data offline if possible
-        try {
-          await offlineSignup(formData.email, formData.password, userData);
-          toast.info("Your registration details have been saved locally. Please try again after adjusting your browser settings.");
-        } catch (e) {
-          console.error("Failed to save offline data", e);
-        }
-        
-        throw new Error("Browser privacy settings are preventing authentication. Please try the suggestions below.");
+        throw new Error(authError.message || "Registration failed");
       }
       
-      console.log("User created successfully:", authData?.user?.id);
+      console.log("Mock user created successfully:", authData?.user?.id);
       
-      toast.success("Registration completed successfully! Please check your email to verify your account.");
+      toast.success("Mock registration completed successfully!");
       navigate('/auth');
       
     } catch (error: any) {
       console.error("Registration error:", error);
-      
-      if (error.message?.includes("browser privacy") || 
-          error.message?.includes("third-party cookies") ||
-          error.message?.includes("incognito")) {
-        toast.error(error.message);
-      } else if (error.message?.includes("Failed to fetch") || 
-          error.message?.includes("NetworkError") ||
-          error.message?.includes("Unable to connect")) {
-        toast.error("Connection error: Please try registering with a different browser or check your internet connection.");
-      } else if (error.message?.includes("already registered")) {
-        toast.error("This email is already registered. Please try signing in instead.");
-      } else if (error.status === 429) {
-        toast.error("Too many requests. Please wait a moment before trying again.");
-      } else {
-        toast.error(error.message || "Registration failed. Please try again later.");
-      }
+      toast.error(error.message || "Registration failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }

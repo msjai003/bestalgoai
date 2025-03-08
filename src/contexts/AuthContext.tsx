@@ -1,7 +1,7 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, getCurrentUser, getUserProfile } from '@/lib/supabase';
+import { getCurrentUser, getUserProfile, signOut as mockSignOut } from '@/lib/mockAuth';
 import { toast } from 'sonner';
 
 type UserProfile = {
@@ -37,11 +37,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const currentUser = await getCurrentUser();
+        const currentUser = getCurrentUser();
         setUser(currentUser);
         
         if (currentUser) {
-          const userProfile = await getUserProfile();
+          const userProfile = getUserProfile();
           setProfile(userProfile);
         }
       } catch (error) {
@@ -53,30 +53,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     fetchUserData();
 
-    // Subscribe to auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        if (event === 'SIGNED_IN' && session) {
-          setUser(session.user);
-          const userProfile = await getUserProfile();
-          setProfile(userProfile);
-        } else if (event === 'SIGNED_OUT') {
+    // Listen for storage events (for multi-tab support)
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'mock_auth_user') {
+        if (event.newValue === null) {
           setUser(null);
           setProfile(null);
+        } else {
+          try {
+            const newUser = JSON.parse(event.newValue);
+            setUser(newUser);
+            const newProfile = getUserProfile();
+            setProfile(newProfile);
+          } catch (e) {
+            console.error('Error parsing user from storage event:', e);
+          }
         }
-        setIsLoading(false);
       }
-    );
+    };
 
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      authListener.subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await mockSignOut();
       setUser(null);
       setProfile(null);
       toast.success('Signed out successfully');

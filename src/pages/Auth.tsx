@@ -1,22 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, ChevronLeft, AlertCircle, Wifi, Globe, ServerCrash, RefreshCw, ExternalLink, Shield, WifiOff } from 'lucide-react';
+import { X, ChevronLeft, AlertCircle, Wifi, ServerCrash, RefreshCw, ExternalLink, Shield, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  supabase, 
-  supabaseUrl,
-  getCurrentUser, 
-  checkFirefoxCompatibility, 
-  getFirefoxInstructions, 
-  testSupabaseConnection, 
-  testDirectConnection, 
-  offlineLogin,
-  syncOfflineData,
-  getCachedSession,
-  directLogin
-} from '@/lib/supabase';
+  directLogin,
+  testConnection,
+  getBrowserInfo
+} from '@/lib/mockAuth';
+import { getCurrentUser } from '@/lib/mockAuth';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
 
@@ -30,32 +24,24 @@ const Auth = () => {
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error' | 'offline'>('untested');
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
-  const [directConnectionStatus, setDirectConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const user = await getCurrentUser();
+      const user = getCurrentUser();
       if (user) {
         navigate('/dashboard');
       }
     };
     
     checkAuthStatus();
-    
-    const browserCheck = checkFirefoxCompatibility();
-    if (browserCheck.isFirefox || browserCheck.isSafari || !browserCheck.cookiesEnabled) {
-      setShowConnectionHelp(false);
-    }
-    
     setIsOfflineMode(!navigator.onLine);
     
     const handleOnline = () => {
       setIsOfflineMode(false);
       toast.success("You're back online!");
-      syncOfflineData();
     };
     
     const handleOffline = () => {
@@ -65,10 +51,6 @@ const Auth = () => {
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
-    if (navigator.onLine) {
-      syncOfflineData();
-    }
     
     return () => {
       window.removeEventListener('online', handleOnline);
@@ -88,18 +70,7 @@ const Auth = () => {
 
     try {
       if (!navigator.onLine) {
-        if (isLogin) {
-          const offlineResult = offlineLogin(email, password);
-          if (offlineResult.success) {
-            toast.success('Logged in with cached credentials');
-            navigate('/dashboard');
-            return;
-          } else {
-            throw new Error("Cannot verify credentials while offline. Please try again when you're back online.");
-          }
-        } else {
-          throw new Error("You appear to be offline. Please check your internet connection.");
-        }
+        throw new Error("You appear to be offline. Please check your internet connection.");
       }
       
       if (isLogin) {
@@ -113,29 +84,8 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      if (error.message?.includes('Invalid login credentials')) {
-        setAuthError('Invalid email or password. Please try again.');
-      } else if (error.message?.includes('Email not confirmed')) {
-        setAuthError('Please confirm your email before logging in.');
-      } else if (error.message?.includes('Failed to fetch') || 
-                error.message?.includes('NetworkError') || 
-                !navigator.onLine) {
-        if (loginAttempts === 1) {
-          try {
-            await supabase.auth.refreshSession();
-            const { error: refreshError } = await directLogin(email, password);
-            if (!refreshError) {
-              toast.success('Login successful after session refresh!');
-              navigate('/dashboard');
-              setIsLoading(false);
-              return;
-            }
-          } catch (refreshError) {
-            console.error("Refresh attempt failed:", refreshError);
-          }
-        }
-        
-        setAuthError('Connection error. We are having trouble reaching our authentication service. This might be due to your network settings or browser configuration.');
+      if (!navigator.onLine) {
+        setAuthError('You appear to be offline. Please check your internet connection.');
         setShowConnectionHelp(true);
         setConnectionStatus('offline');
       } else {
@@ -153,7 +103,6 @@ const Auth = () => {
     setConnectionStatus('untested');
     setAuthError(null);
     setConnectionDetails(null);
-    setDirectConnectionStatus('untested');
     
     try {
       if (!navigator.onLine) {
@@ -164,41 +113,23 @@ const Auth = () => {
         return;
       }
 
-      const directResult = await testDirectConnection();
-      setDirectConnectionStatus(directResult.success ? 'success' : 'error');
-      
-      if (!directResult.success) {
-        try {
-          const simpleTest = await fetch(`${supabaseUrl}/`, {
-            method: 'HEAD',
-            mode: 'no-cors'
-          });
-          console.log("Simple CORS test result:", simpleTest.type);
-          
-          if (simpleTest.type === 'opaque') {
-            toast.info("Basic connectivity to Supabase exists, but CORS policy is preventing full access");
-          }
-        } catch (e) {
-          console.error("Even no-cors test failed:", e);
-        }
-      }
-      
-      const result = await testSupabaseConnection();
+      const result = await testConnection();
       console.log('Connection test result:', result);
-      setConnectionDetails(result);
+      
+      const browserInfo = getBrowserInfo();
+      setConnectionDetails({
+        browserInfo,
+        ...result
+      });
       
       if (result.success) {
         setConnectionStatus('success');
-        toast.success('Successfully connected to Supabase!');
+        toast.success('Connection test successful!');
       } else {
         setConnectionStatus('error');
-        if (result.isCorsOrCookieIssue || result.isNetworkIssue) {
-          setAuthError('Connection issue detected. This could be related to network settings, cookies, or browser configuration.');
-          setShowConnectionHelp(true);
-        } else {
-          setAuthError(result.error?.message || 'Failed to connect to Supabase');
-        }
-        toast.error('Failed to connect to Supabase');
+        setAuthError('Connection issue detected. See details below.');
+        setShowConnectionHelp(true);
+        toast.error('Connection test failed');
       }
     } catch (error: any) {
       console.error('Connection test error:', error);
@@ -230,7 +161,7 @@ const Auth = () => {
 
         <div className="flex flex-col items-center mt-12">
           <h1 className="text-2xl font-bold text-white mb-8">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? 'Welcome Back (Mock Auth)' : 'Create Account (Mock Auth)'}
           </h1>
 
           <div className="bg-gray-800/50 p-1 rounded-xl mb-8">
@@ -259,6 +190,16 @@ const Auth = () => {
             </div>
           </div>
 
+          <div className="mb-4 p-4 bg-blue-900/30 border border-blue-700 rounded-lg flex items-start">
+            <AlertCircle className="text-blue-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-blue-200 text-sm font-medium">Mock Authentication Active</p>
+              <p className="text-blue-200/80 text-xs mt-1">
+                Supabase has been replaced with a local mock system. Any email/password will work.
+              </p>
+            </div>
+          </div>
+
           {isOfflineMode && (
             <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700 rounded-lg flex items-start">
               <WifiOff className="text-amber-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -266,12 +207,9 @@ const Auth = () => {
                 <p className="text-amber-200 text-sm font-medium">You're currently offline</p>
                 <p className="text-amber-200/80 text-xs mt-1">
                   {isLogin 
-                    ? "You can still log in if you've previously logged in on this device." 
+                    ? "You need to be online to log in with the mock system." 
                     : "You need to be online to create a new account. Please check your connection."}
                 </p>
-                {getCachedSession() && (
-                  <p className="text-green-300 text-xs mt-1">A previously authenticated session is available.</p>
-                )}
               </div>
             </div>
           )}
@@ -286,7 +224,7 @@ const Auth = () => {
           {connectionStatus === 'success' && !authError && (
             <div className="mb-4 p-4 bg-green-900/30 border border-green-700 rounded-lg flex items-start">
               <Wifi className="text-green-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
-              <p className="text-green-200 text-sm">Successfully connected to Supabase! You can now log in.</p>
+              <p className="text-green-200 text-sm">Connection test successful! You can now log in.</p>
             </div>
           )}
 
@@ -299,29 +237,17 @@ const Auth = () => {
                 <li>Browser: {connectionDetails.browserInfo?.browser || 'Unknown'}</li>
                 <li>Online Status: {navigator.onLine ? 'Online' : 'Offline'}</li>
                 <li>Cookies Enabled: {connectionDetails.browserInfo?.cookiesEnabled ? 'Yes' : 'No'}</li>
-                <li>Direct URL Access: {directConnectionStatus === 'success' ? 'Success' : 'Failed'}</li>
-                <li>CORS/Cookie Issue: {connectionDetails.isCorsOrCookieIssue ? 'Likely' : 'Unknown'}</li>
-                <li>Network Issue: {connectionDetails.isNetworkIssue ? 'Detected' : 'Unknown'}</li>
-                {connectionDetails.isSpecificDomainBlocked && (
-                  <li className="text-red-300">Specific Domain Blocked: Supabase URL is likely blocked by your network</li>
+                {connectionDetails.message && (
+                  <li>Message: {connectionDetails.message}</li>
                 )}
               </ul>
               
               <div className="mt-4 p-3 bg-amber-900/40 border border-amber-700/50 rounded-lg">
                 <h4 className="text-amber-300 text-sm font-medium mb-1">Recommended Actions:</h4>
                 <ul className="text-xs text-amber-200 space-y-1">
-                  {directConnectionStatus === 'error' && (
-                    <li>• Your network may be blocking direct access to Supabase. Try a different network or VPN.</li>
-                  )}
-                  {connectionDetails.isCorsOrCookieIssue && (
-                    <li>• Browser security settings may be blocking the connection. Try disabling extensions or using incognito mode.</li>
-                  )}
-                  {connectionDetails.browserInfo?.browser !== 'Chrome' && (
-                    <li>• Try using Chrome browser which has better compatibility with Supabase.</li>
-                  )}
-                  {isLogin && getCachedSession() && (
-                    <li className="text-green-300">• Offline login is available with your cached credentials.</li>
-                  )}
+                  <li>• Check your network connection</li>
+                  <li>• Try using a different browser</li>
+                  <li>• Ensure cookies are enabled</li>
                 </ul>
               </div>
             </div>
@@ -356,12 +282,10 @@ const Auth = () => {
 
             <Button 
               type="submit"
-              disabled={isLoading || (!navigator.onLine && !isLogin)}
+              disabled={isLoading || !navigator.onLine}
               className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
             >
-              {isLoading ? "Processing..." : (
-                isOfflineMode && isLogin ? "Login (Offline Mode)" : "Login"
-              )}
+              {isLoading ? "Processing..." : "Mock Login"}
             </Button>
 
             <Button
@@ -378,7 +302,7 @@ const Auth = () => {
               ) : (
                 <>
                   <ServerCrash className="mr-2 h-4 w-4" />
-                  {testingConnection ? "Testing Connection..." : "Test Supabase Connection"}
+                  {testingConnection ? "Testing Connection..." : "Test Connection"}
                 </>
               )}
             </Button>
