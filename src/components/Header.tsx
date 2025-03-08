@@ -65,8 +65,13 @@ export const Header = () => {
   const [isAllRead, setIsAllRead] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Check if it's iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
+    
     // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          (window.navigator as any).standalone || 
@@ -85,6 +90,11 @@ export const Header = () => {
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // For iOS devices, we'll set installable to true since we can show instructions
+    if (isIOSDevice && !isStandalone) {
+      setIsInstallable(true);
+    }
 
     // Listen for app installed event
     window.addEventListener('appinstalled', () => {
@@ -110,20 +120,25 @@ export const Header = () => {
   };
 
   const handleInstall = async () => {
-    if (!window.deferredInstallPrompt) return;
+    if (!window.deferredInstallPrompt && !isIOS) return;
     
-    // Show the install prompt
-    window.deferredInstallPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const choiceResult = await window.deferredInstallPrompt.userChoice;
-    
-    if (choiceResult.outcome === 'accepted') {
-      toast.success("Installation started");
-      window.deferredInstallPrompt = null;
-      setIsInstallable(false);
-    } else {
-      toast.info("Installation declined");
+    if (window.deferredInstallPrompt) {
+      // Show the install prompt
+      window.deferredInstallPrompt.prompt();
+      
+      // Wait for the user to respond to the prompt
+      const choiceResult = await window.deferredInstallPrompt.userChoice;
+      
+      if (choiceResult.outcome === 'accepted') {
+        toast.success("Installation started");
+        window.deferredInstallPrompt = null;
+        setIsInstallable(false);
+      } else {
+        toast.info("Installation declined");
+      }
+    } else if (isIOS) {
+      // For iOS, we'll show instructions in a toast
+      toast.info("To install: tap the share button and select 'Add to Home Screen'");
     }
     
     setIsOpen(false);

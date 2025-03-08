@@ -19,6 +19,7 @@ declare global {
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
     // Check if it's iOS
@@ -41,6 +42,8 @@ const InstallPrompt = () => {
       e.preventDefault();
       // Store the event for later use
       window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      setIsInstallable(true);
+      
       // Show our custom install button after a short delay
       setTimeout(() => {
         const installPromptDismissed = localStorage.getItem('installPromptDismissed');
@@ -55,6 +58,7 @@ const InstallPrompt = () => {
     // For iOS, we'll show different instructions
     if (isIOSDevice && !isStandalone) {
       const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+      setIsInstallable(true);
       
       // Show the iOS prompt after a delay
       setTimeout(() => {
@@ -69,6 +73,7 @@ const InstallPrompt = () => {
       // Clear the prompt
       window.deferredInstallPrompt = null;
       setShowPrompt(false);
+      setIsInstallable(false);
       // Show success message
       toast.success("App installed successfully!");
     });
@@ -99,6 +104,7 @@ const InstallPrompt = () => {
       
       // Clear the saved prompt since it can't be used again
       window.deferredInstallPrompt = null;
+      setIsInstallable(false);
     }
     
     // Hide the install button
@@ -111,7 +117,7 @@ const InstallPrompt = () => {
     localStorage.setItem('installPromptDismissed', 'true');
   };
 
-  if (!showPrompt) return null;
+  if (!showPrompt || !isInstallable) return null;
 
   return (
     <div className="fixed bottom-20 left-4 right-4 bg-gray-800/95 backdrop-blur-lg border border-gray-700 rounded-xl p-4 shadow-lg z-50">
