@@ -44,13 +44,11 @@ const InstallPrompt = () => {
       window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
       setIsInstallable(true);
       
-      // Show our custom install button after a short delay
-      setTimeout(() => {
-        const installPromptDismissed = localStorage.getItem('installPromptDismissed');
-        if (!installPromptDismissed) {
-          setShowPrompt(true);
-        }
-      }, 3000);
+      // Show our custom install button immediately instead of after a delay
+      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+      if (!installPromptDismissed) {
+        setShowPrompt(true);
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -60,12 +58,10 @@ const InstallPrompt = () => {
       const installPromptDismissed = localStorage.getItem('installPromptDismissed');
       setIsInstallable(true);
       
-      // Show the iOS prompt after a delay
-      setTimeout(() => {
-        if (!installPromptDismissed) {
-          setShowPrompt(true);
-        }
-      }, 3000);
+      // Show the iOS prompt immediately instead of after a delay
+      if (!installPromptDismissed) {
+        setShowPrompt(true);
+      }
     }
 
     // Listen for app installed event
@@ -77,6 +73,16 @@ const InstallPrompt = () => {
       // Show success message
       toast.success("App installed successfully!");
     });
+
+    // Show a message to help users find the install option
+    setTimeout(() => {
+      if (!isStandalone && (window.deferredInstallPrompt || isIOSDevice)) {
+        toast.info("You can install this app for a better experience!", {
+          duration: 5000,
+          position: "top-center"
+        });
+      }
+    }, 2000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -105,6 +111,11 @@ const InstallPrompt = () => {
       // Clear the saved prompt since it can't be used again
       window.deferredInstallPrompt = null;
       setIsInstallable(false);
+    } else if (isIOS) {
+      // For iOS, provide more visible instructions
+      toast.info("To install: tap the share button and select 'Add to Home Screen'", {
+        duration: 8000
+      });
     }
     
     // Hide the install button
@@ -115,14 +126,21 @@ const InstallPrompt = () => {
     setShowPrompt(false);
     // Save in localStorage that user has dismissed the prompt
     localStorage.setItem('installPromptDismissed', 'true');
+    // Show a toast to let users know they can still install later
+    toast.info("You can install the app later from the menu", {
+      duration: 3000
+    });
   };
 
   if (!showPrompt || !isInstallable) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 bg-gray-800/95 backdrop-blur-lg border border-gray-700 rounded-xl p-4 shadow-lg z-50">
+    <div className="fixed bottom-20 left-4 right-4 bg-gradient-to-r from-gray-800/95 to-gray-900/95 backdrop-blur-lg border border-purple-700 rounded-xl p-4 shadow-lg z-50 animate-in fade-in duration-300">
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-white font-semibold">Install BestAlgo.ai</h3>
+        <h3 className="text-white font-semibold flex items-center">
+          <Download className="h-5 w-5 mr-2 text-[#FF00D4]" />
+          Install BestAlgo.ai
+        </h3>
         <Button variant="ghost" size="icon" onClick={dismissPrompt} className="p-1 h-auto w-auto text-gray-400">
           <X className="h-5 w-5" />
         </Button>
@@ -151,7 +169,7 @@ const InstallPrompt = () => {
       
       <Button
         onClick={handleInstallClick}
-        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center"
+        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity"
       >
         <Download className="mr-2 h-4 w-4" />
         {isIOS ? "Got it" : "Install App"}

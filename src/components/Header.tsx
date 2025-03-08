@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut, Download } from 'lucide-react';
@@ -12,7 +11,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from 'sonner';
 
-// Latest notifications data
 const latestNotifications = [
   {
     id: 1,
@@ -51,7 +49,6 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-// Create a global variable to store the install prompt event
 declare global {
   interface Window {
     deferredInstallPrompt: BeforeInstallPromptEvent | null;
@@ -66,44 +63,56 @@ export const Header = () => {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [showInstallToast, setShowInstallToast] = useState(false);
 
   useEffect(() => {
-    // Check if it's iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
     
-    // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          (window.navigator as any).standalone || 
                          document.referrer.includes('android-app://');
     
     setIsInstalled(isStandalone);
     
-    // Handle the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
-      // Store the event for later use
       window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
-      // Flag that we can install the app
       setIsInstallable(true);
+      
+      if (!localStorage.getItem('installToastShown') && !showInstallToast) {
+        setTimeout(() => {
+          toast.info("Click the menu to find the 'Install App' option", {
+            duration: 5000,
+            position: "top-center"
+          });
+          localStorage.setItem('installToastShown', 'true');
+          setShowInstallToast(true);
+        }, 3000);
+      }
+      
+      if (isIOSDevice && !isStandalone) {
+        setIsInstallable(true);
+        
+        if (!localStorage.getItem('iosInstallToastShown') && !showInstallToast) {
+          setTimeout(() => {
+            toast.info("Click the menu to find the 'Install App' option", {
+              duration: 5000,
+              position: "top-center"
+            });
+            localStorage.setItem('iosInstallToastShown', 'true');
+            setShowInstallToast(true);
+          }, 3000);
+        }
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // For iOS devices, we'll set installable to true since we can show instructions
-    if (isIOSDevice && !isStandalone) {
-      setIsInstallable(true);
-    }
-
-    // Listen for app installed event
     window.addEventListener('appinstalled', () => {
-      // Clear the deferredPrompt variable
       window.deferredInstallPrompt = null;
-      // Update states
       setIsInstallable(false);
       setIsInstalled(true);
-      // Show success message
       toast.success("App installed successfully!");
     });
 
@@ -111,7 +120,7 @@ export const Header = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', () => {});
     };
-  }, []);
+  }, [showInstallToast]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   
@@ -123,10 +132,8 @@ export const Header = () => {
     if (!window.deferredInstallPrompt && !isIOS) return;
     
     if (window.deferredInstallPrompt) {
-      // Show the install prompt
       window.deferredInstallPrompt.prompt();
       
-      // Wait for the user to respond to the prompt
       const choiceResult = await window.deferredInstallPrompt.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
@@ -137,8 +144,9 @@ export const Header = () => {
         toast.info("Installation declined");
       }
     } else if (isIOS) {
-      // For iOS, we'll show instructions in a toast
-      toast.info("To install: tap the share button and select 'Add to Home Screen'");
+      toast.info("To install: tap the share button and select 'Add to Home Screen'", {
+        duration: 8000
+      });
     }
     
     setIsOpen(false);
@@ -146,7 +154,6 @@ export const Header = () => {
 
   const hasUnreadNotifications = !isAllRead && notifications.length > 0;
 
-  // Only show install option if the app is installable and not already installed
   const showInstallOption = isInstallable && !isInstalled;
 
   return (
@@ -156,7 +163,7 @@ export const Header = () => {
           variant="ghost" 
           size="icon"
           onClick={toggleMenu}
-          className="p-2"
+          className={`p-2 ${showInstallOption ? 'animate-pulse' : ''}`}
         >
           {isOpen ? (
             <X className="w-5 h-5 text-gray-300" />
@@ -246,7 +253,6 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Menu dropdown */}
       {isOpen && (
         <div className="absolute top-16 left-0 w-64 bg-gray-900/95 backdrop-blur-lg border-r border-b border-gray-800 rounded-br-lg shadow-xl animate-in slide-in-from-left duration-200">
           <nav className="p-4">
@@ -256,7 +262,8 @@ export const Header = () => {
                   to="#" 
                   icon={<Download className="w-5 h-5" />} 
                   label="Install App" 
-                  onClick={handleInstall} 
+                  onClick={handleInstall}
+                  highlight={true}
                 />
               )}
               <MenuLink 
@@ -314,21 +321,29 @@ interface MenuLinkProps {
   icon: React.ReactNode;
   label: string;
   onClick?: () => void;
+  highlight?: boolean;
 }
 
-const MenuLink = ({ to, icon, label, onClick }: MenuLinkProps) => (
+const MenuLink = ({ to, icon, label, onClick, highlight = false }: MenuLinkProps) => (
   <li>
     <Link 
       to={to} 
       className={cn(
         "flex items-center gap-3 px-3 py-2.5 rounded-lg",
-        "text-gray-300 hover:text-white hover:bg-gray-800",
+        highlight 
+          ? "text-white bg-gradient-to-r from-[#FF00D4]/20 to-purple-800/20 border border-[#FF00D4]/30" 
+          : "text-gray-300 hover:text-white hover:bg-gray-800",
         "transition-colors duration-200"
       )}
       onClick={onClick}
     >
-      <span className="text-[#FF00D4]">{icon}</span>
+      <span className={highlight ? "text-white" : "text-[#FF00D4]"}>{icon}</span>
       <span>{label}</span>
+      {highlight && (
+        <span className="ml-auto text-xs bg-[#FF00D4] text-white px-1.5 py-0.5 rounded-full">
+          New
+        </span>
+      )}
     </Link>
   </li>
 );
