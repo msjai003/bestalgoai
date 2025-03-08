@@ -1,8 +1,9 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, getUserProfile, signOut as mockSignOut } from '@/lib/mockAuth';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 type UserProfile = {
   id: string;
@@ -15,7 +16,7 @@ type UserProfile = {
 };
 
 type AuthContextType = {
-  user: any | null;
+  user: User | null;
   profile: UserProfile | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
@@ -29,58 +30,87 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    // Initial session check
+    const checkSession = async () => {
       try {
-        const currentUser = getCurrentUser();
-        setUser(currentUser);
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (currentUser) {
-          const userProfile = getUserProfile();
-          setProfile(userProfile);
+        if (error) {
+          console.error('Error fetching session:', error);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (session?.user) {
+          setUser(session.user);
+          fetchUserProfile(session.user.id);
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
+        console.error('Session check error:', error);
         setIsLoading(false);
       }
     };
 
-    fetchUserData();
+    // Fetch user profile from Supabase
+    const fetchUserProfile = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
-    // Listen for storage events (for multi-tab support)
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'mock_auth_user') {
-        if (event.newValue === null) {
-          setUser(null);
-          setProfile(null);
-        } else {
-          try {
-            const newUser = JSON.parse(event.newValue);
-            setUser(newUser);
-            const newProfile = getUserProfile();
-            setProfile(newProfile);
-          } catch (e) {
-            console.error('Error parsing user from storage event:', e);
-          }
+        if (error) {
+          console.error('Error fetching user profile:', error);
+        } else if (data) {
+          setProfile(data as UserProfile);
         }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        setIsLoading(false);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      }
+    );
+
+    checkSession();
+
+    // Cleanup subscription
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
     try {
-      await mockSignOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+        toast.error('Failed to sign out');
+        throw error;
+      }
+      
       setUser(null);
       setProfile(null);
       toast.success('Signed out successfully');

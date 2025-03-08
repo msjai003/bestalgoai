@@ -2,11 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { 
-  directSignUp,
-  getCurrentUser,
-  getBrowserInfo
-} from '@/lib/mockAuth';
+import { supabase } from '@/lib/supabase';
 
 export interface RegistrationData {
   fullName: string;
@@ -41,8 +37,8 @@ export const useRegistration = () => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const user = getCurrentUser();
-      if (user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
         navigate('/dashboard');
       }
     };
@@ -50,12 +46,29 @@ export const useRegistration = () => {
     checkAuthStatus();
     
     // Check for browser-specific issues
-    const browserCheck = getBrowserInfo();
-    if (browserCheck.browser === 'Firefox' || browserCheck.browser === 'Safari' || !browserCheck.cookiesEnabled) {
-      setBrowserIssue(browserCheck);
+    const browserInfo = getBrowserInfo();
+    if (browserInfo.browser === 'Firefox' || browserInfo.browser === 'Safari' || !browserInfo.cookiesEnabled) {
+      setBrowserIssue(browserInfo);
       setShowFirefoxHelp(true);
     }
   }, [navigate]);
+
+  const getBrowserInfo = () => {
+    const userAgent = navigator.userAgent;
+    
+    let browser = "unknown";
+    if (userAgent.indexOf("Firefox") > -1) browser = "Firefox";
+    if (userAgent.indexOf("Chrome") > -1) browser = "Chrome";
+    if (userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1) browser = "Safari";
+    if (userAgent.indexOf("Edge") > -1) browser = "Edge";
+    
+    return {
+      browser,
+      isPrivateMode: !window.localStorage,
+      userAgent: userAgent,
+      cookiesEnabled: navigator.cookieEnabled
+    };
+  };
 
   const handleChange = (field: keyof RegistrationData, value: string | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -117,7 +130,7 @@ export const useRegistration = () => {
     setConnectionError(null);
     
     try {
-      console.log("Starting mock registration process...");
+      console.log("Starting registration process...");
       
       const userData = {
         full_name: formData.fullName,
@@ -127,25 +140,28 @@ export const useRegistration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // Attempt mock signup
-      const { data: authData, error: authError } = await directSignUp(
-        formData.email, 
-        formData.password, 
-        userData
-      );
+      // Attempt signup with Supabase
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: userData
+        }
+      });
       
-      if (authError) {
-        console.error("Auth error details:", authError);
-        throw new Error(authError.message || "Registration failed");
+      if (error) {
+        console.error("Auth error details:", error);
+        throw new Error(error.message || "Registration failed");
       }
       
-      console.log("Mock user created successfully:", authData?.user?.id);
+      console.log("User created successfully");
       
-      toast.success("Mock registration completed successfully!");
+      toast.success("Registration completed successfully! Please check your email to confirm your account.");
       navigate('/auth');
       
     } catch (error: any) {
       console.error("Registration error:", error);
+      setConnectionError(error.message || "Registration failed. Please try again later.");
       toast.error(error.message || "Registration failed. Please try again later.");
     } finally {
       setIsLoading(false);

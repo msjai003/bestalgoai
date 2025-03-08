@@ -5,12 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ChevronLeft, AlertCircle, Wifi, ServerCrash, RefreshCw, ExternalLink, Shield, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { 
-  directLogin,
-  testConnection,
-  getBrowserInfo
-} from '@/lib/mockAuth';
-import { getCurrentUser } from '@/lib/mockAuth';
+import { supabase, testSupabaseConnection } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
 
@@ -27,16 +23,13 @@ const Auth = () => {
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const user = getCurrentUser();
-      if (user) {
-        navigate('/dashboard');
-      }
-    };
+    if (user) {
+      navigate('/dashboard');
+    }
     
-    checkAuthStatus();
     setIsOfflineMode(!navigator.onLine);
     
     const handleOnline = () => {
@@ -56,7 +49,7 @@ const Auth = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [navigate]);
+  }, [navigate, user]);
 
   const handleSignUpClick = () => {
     navigate('/registration');
@@ -74,7 +67,10 @@ const Auth = () => {
       }
       
       if (isLogin) {
-        const { data, error } = await directLogin(email, password);
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
         if (error) throw error;
         
@@ -113,10 +109,15 @@ const Auth = () => {
         return;
       }
 
-      const result = await testConnection();
+      const result = await testSupabaseConnection();
       console.log('Connection test result:', result);
       
-      const browserInfo = getBrowserInfo();
+      const browserInfo = {
+        browser: getBrowserName(),
+        cookiesEnabled: navigator.cookieEnabled,
+        userAgent: navigator.userAgent
+      };
+      
       setConnectionDetails({
         browserInfo,
         ...result
@@ -141,6 +142,22 @@ const Auth = () => {
     }
   };
 
+  const getBrowserName = () => {
+    const userAgent = navigator.userAgent;
+    
+    if (userAgent.indexOf("Firefox") > -1) {
+      return "Firefox";
+    } else if (userAgent.indexOf("Chrome") > -1) {
+      return "Chrome";
+    } else if (userAgent.indexOf("Safari") > -1) {
+      return "Safari";
+    } else if (userAgent.indexOf("Edge") > -1) {
+      return "Edge";
+    } else {
+      return "Unknown";
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <div className="px-4 py-8 pb-32">
@@ -161,7 +178,7 @@ const Auth = () => {
 
         <div className="flex flex-col items-center mt-12">
           <h1 className="text-2xl font-bold text-white mb-8">
-            {isLogin ? 'Welcome Back (Mock Auth)' : 'Create Account (Mock Auth)'}
+            {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
 
           <div className="bg-gray-800/50 p-1 rounded-xl mb-8">
@@ -190,16 +207,6 @@ const Auth = () => {
             </div>
           </div>
 
-          <div className="mb-4 p-4 bg-blue-900/30 border border-blue-700 rounded-lg flex items-start">
-            <AlertCircle className="text-blue-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-blue-200 text-sm font-medium">Mock Authentication Active</p>
-              <p className="text-blue-200/80 text-xs mt-1">
-                Supabase has been replaced with a local mock system. Any email/password will work.
-              </p>
-            </div>
-          </div>
-
           {isOfflineMode && (
             <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700 rounded-lg flex items-start">
               <WifiOff className="text-amber-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -207,7 +214,7 @@ const Auth = () => {
                 <p className="text-amber-200 text-sm font-medium">You're currently offline</p>
                 <p className="text-amber-200/80 text-xs mt-1">
                   {isLogin 
-                    ? "You need to be online to log in with the mock system." 
+                    ? "You need to be online to log in." 
                     : "You need to be online to create a new account. Please check your connection."}
                 </p>
               </div>
@@ -285,7 +292,7 @@ const Auth = () => {
               disabled={isLoading || !navigator.onLine}
               className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
             >
-              {isLoading ? "Processing..." : "Mock Login"}
+              {isLoading ? "Processing..." : "Login"}
             </Button>
 
             <Button
