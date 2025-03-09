@@ -591,7 +591,8 @@ export const offlineLogin = (email, password) => {
 // Add a function to get browser-specific instructions for Firefox
 export const getFirefoxInstructions = () => {
   // Detect if using Chrome
-  const isChrome = navigator.userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
+  const userAgent = navigator.userAgent;
+  const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
   
   if (isChrome) {
     return {
