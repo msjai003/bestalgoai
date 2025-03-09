@@ -68,3 +68,83 @@ export const testFetchUserProfiles = async () => {
     return { success: false, error };
   }
 };
+
+// Sync offline registrations to Supabase when back online
+export const syncOfflineRegistrations = async () => {
+  if (!navigator.onLine) {
+    return { success: false, message: "Still offline, can't sync" };
+  }
+  
+  try {
+    const existingData = localStorage.getItem('offlineRegistrations');
+    if (!existingData) {
+      return { success: true, message: "No offline registrations to sync" };
+    }
+    
+    const offlineRegistrations = JSON.parse(existingData);
+    if (!offlineRegistrations.length) {
+      return { success: true, message: "No offline registrations to sync" };
+    }
+    
+    console.log(`Found ${offlineRegistrations.length} offline registrations to sync`);
+    
+    const results = [];
+    
+    // Process each registration
+    for (const registration of offlineRegistrations) {
+      const { email, userData, password } = registration;
+      
+      // Skip if missing critical data
+      if (!email || !userData) {
+        results.push({ 
+          email, 
+          success: false, 
+          message: "Incomplete registration data" 
+        });
+        continue;
+      }
+      
+      // Attempt to register this user
+      const { data, error } = await directSignUp(email, password || 'temporaryPassword123', userData);
+      
+      if (error) {
+        // Check if user already exists
+        if (error.message?.includes('already registered')) {
+          results.push({
+            email,
+            success: true,
+            message: "User already registered",
+          });
+        } else {
+          results.push({
+            email,
+            success: false,
+            error: error.message,
+          });
+        }
+      } else {
+        results.push({
+          email,
+          success: true,
+          message: "Successfully registered",
+          userId: data?.user?.id,
+        });
+      }
+    }
+    
+    // Clear processed registrations
+    localStorage.removeItem('offlineRegistrations');
+    
+    return { 
+      success: true, 
+      message: `Processed ${results.length} offline registrations`,
+      results 
+    };
+  } catch (error) {
+    console.error('Error syncing offline registrations:', error);
+    return { 
+      success: false, 
+      error: new Error("Failed to sync offline registrations")
+    };
+  }
+};
