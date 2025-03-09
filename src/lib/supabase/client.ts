@@ -5,6 +5,26 @@ import { createClient } from '@supabase/supabase-js';
 export const supabaseUrl = 'https://fzvrozrjtvflksumiqsk.supabase.co';
 export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI';
 
+// Proxy configuration
+export const proxyUrl = 'http://localhost:4000/proxy';
+const PROXY_ENABLED_KEY = 'supabase-proxy-enabled';
+
+// Check if proxy is enabled in localStorage
+export const isProxyEnabled = () => {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem(PROXY_ENABLED_KEY) === 'true';
+};
+
+// Enable/disable proxy
+export const enableProxy = (enabled = true) => {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(PROXY_ENABLED_KEY, enabled ? 'true' : 'false');
+  // Reload the page to reinitialize the Supabase client
+  if (typeof window !== 'undefined') {
+    window.location.reload();
+  }
+};
+
 // Get the current site URL for redirects - more explicit for localhost
 export const getSiteUrl = () => {
   if (typeof window !== 'undefined') {
@@ -26,6 +46,19 @@ const isChromeBrowser = () => {
   return userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
 };
 
+// Function to create a proxy fetch handler
+const createProxyFetch = (url, options) => {
+  // Modify the URL to use the proxy
+  const proxyPath = url.replace(supabaseUrl, proxyUrl);
+  console.log(`Using proxy for request: ${url} -> ${proxyPath}`);
+  
+  return fetch(proxyPath, options)
+    .catch(error => {
+      console.error(`Proxy fetch error for ${proxyPath}:`, error);
+      throw error;
+    });
+};
+
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
   supabaseUrl,
@@ -42,7 +75,7 @@ export const supabase = createClient(
       headers: {
         'X-Client-Info': 'supabase-js-web/2.49.1',
       },
-      fetch: (url: string, options?: RequestInit) => {
+      fetch: (url, options) => {
         const fetchOptions = options || {};
         
         // Essential fetch options that help with CORS
@@ -59,6 +92,11 @@ export const supabase = createClient(
             headers['Origin'] = window.location.origin;
             headers['Referer'] = window.location.origin;
           }
+        }
+        
+        // Use proxy if enabled and in browser environment
+        if (isProxyEnabled() && typeof window !== 'undefined') {
+          return createProxyFetch(url, fetchOptions);
         }
         
         // Chrome-specific workarounds for CORS and cookie issues
@@ -84,6 +122,12 @@ export const supabase = createClient(
             // Special handling for Chrome fetch errors
             if (isChromeBrowser() && error.message?.includes('Failed to fetch')) {
               console.log("Chrome-specific fetch error detected. This might be due to cookie or CORS settings.");
+              
+              // If direct fetch fails and proxy is not enabled, try using the proxy
+              if (!isProxyEnabled() && typeof window !== 'undefined') {
+                console.log("Attempting to use proxy as fallback...");
+                return createProxyFetch(url, fetchOptions);
+              }
             }
             
             throw error;
@@ -121,6 +165,7 @@ if (typeof window !== 'undefined') {
   console.log('Browser: ', navigator.userAgent || 'Unknown');
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
+  console.log('Proxy enabled: ', isProxyEnabled() ? 'Yes' : 'No');
   
   // Log Chrome-specific information
   if (isChromeBrowser()) {

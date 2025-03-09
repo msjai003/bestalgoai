@@ -1,5 +1,5 @@
 
-import { supabase, supabaseUrl, supabaseAnonKey } from './client';
+import { supabase, supabaseUrl, supabaseAnonKey, isProxyEnabled } from './client';
 import { detectBrowserInfo } from './browser-detection';
 
 // Test if the URL is reachable without Supabase
@@ -47,6 +47,36 @@ export const testDirectConnection = async () => {
     };
   } catch (error) {
     console.error('Direct connection test error:', error);
+    
+    // If proxy is enabled, try using the proxy
+    if (isProxyEnabled()) {
+      try {
+        const proxyUrl = 'http://localhost:4000/proxy';
+        const proxyResponse = await fetch(`${proxyUrl}/auth/v1/`, {
+          method: 'HEAD',
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        return {
+          success: proxyResponse.ok,
+          status: proxyResponse.status,
+          statusText: proxyResponse.statusText,
+          usingProxy: true
+        };
+      } catch (proxyError) {
+        console.error('Proxy connection test error:', proxyError);
+        return {
+          success: false,
+          error: proxyError,
+          isFetchError: true,
+          proxyFailed: true
+        };
+      }
+    }
+    
     return { 
       success: false, 
       error,
@@ -59,6 +89,7 @@ export const testDirectConnection = async () => {
 export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
+    console.log("Proxy enabled:", isProxyEnabled());
     
     // First check if we're online at all
     if (!navigator.onLine) {
@@ -79,6 +110,18 @@ export const testSupabaseConnection = async () => {
     if (!directTest.success) {
       console.log("Direct connection to Supabase URL failed:", directTest);
       
+      // If the proxy is enabled and we have a proxy failure, suggest starting the proxy server
+      if (isProxyEnabled() && directTest.proxyFailed) {
+        return {
+          success: false,
+          error: new Error("The CORS proxy server appears to be offline. Please start the proxy server with 'node proxy-server.js'"),
+          directTest,
+          isNetworkIssue: false,
+          proxyOffline: true,
+          browserInfo
+        };
+      }
+      
       // Try a different domain to test general internet connectivity
       try {
         const fallbackTest = await fetch('https://www.cloudflare.com', { 
@@ -93,6 +136,11 @@ export const testSupabaseConnection = async () => {
         
         if (isChrome) {
           errorMessage = "Chrome is blocking connection to our services. This is likely due to third-party cookie settings or a network restriction.";
+        }
+        
+        // Suggest enabling the proxy
+        if (!isProxyEnabled()) {
+          errorMessage += " Try enabling the CORS proxy server option below.";
         }
         
         return {
@@ -113,6 +161,11 @@ export const testSupabaseConnection = async () => {
       
       if (isChrome) {
         errorMessage = "Chrome cannot connect to our services. Please check your network settings and ensure third-party cookies are enabled.";
+      }
+      
+      // Suggest enabling the proxy
+      if (!isProxyEnabled()) {
+        errorMessage += " Try enabling the CORS proxy server option below.";
       }
       
       return {
@@ -139,6 +192,11 @@ export const testSupabaseConnection = async () => {
           errorMessage = "Chrome's security settings are blocking our connection. Please check that third-party cookies are allowed for this site.";
         }
         
+        // If proxy is not enabled, suggest it
+        if (!isProxyEnabled()) {
+          errorMessage += " Try enabling the CORS proxy server option below.";
+        }
+        
         return { 
           success: false, 
           error: new Error(errorMessage), 
@@ -156,7 +214,11 @@ export const testSupabaseConnection = async () => {
     }
     
     console.log("Connection test successful:", data);
-    return { success: true, data };
+    return { 
+      success: true, 
+      data,
+      usingProxy: isProxyEnabled() 
+    };
   } catch (error) {
     console.error('Supabase connection test exception:', error);
     
@@ -175,6 +237,11 @@ export const testSupabaseConnection = async () => {
     
     if (isChrome && isFetchError) {
       errorMessage = "Chrome cannot connect to our services. This is often caused by third-party cookie settings or network restrictions.";
+    }
+    
+    // If proxy is not enabled, suggest it
+    if (!isProxyEnabled() && isFetchError) {
+      errorMessage += " Try enabling the CORS proxy server option below.";
     }
        
     return { 
@@ -205,6 +272,35 @@ export const tryAlternateConnection = async () => {
     }
     
     const browserInfo = detectBrowserInfo();
+    
+    // If proxy is enabled, try using the proxy directly
+    if (isProxyEnabled()) {
+      try {
+        const proxyUrl = 'http://localhost:4000/proxy';
+        const response = await fetch(`${proxyUrl}/rest/v1/user_profiles?select=count`, {
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          console.log("Connection via proxy successful");
+          return {
+            success: true,
+            method: 'proxy',
+            browserInfo
+          };
+        }
+      } catch (proxyError) {
+        console.error("Proxy connection failed:", proxyError);
+        return {
+          success: false,
+          error: new Error("Could not connect via the proxy server. Please make sure it's running with 'node proxy-server.js'"),
+          proxyFailed: true
+        };
+      }
+    }
     
     // Attempt to use a simpler version of the client with different options
     const alternateUrl = supabaseUrl.replace('https://', 'https://alternate-');
