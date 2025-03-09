@@ -56,7 +56,7 @@ export const DeploymentDialog = ({
           </Button>
           <Button 
             onClick={() => handleDeployStrategy("real")}
-            className="h-24 w-full flex flex-col items-center justify-center bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white hover:from-[#FF00D4]/90 hover:to-[#FF00D4]/70 rounded-xl"
+            className="h-24 w-full flex flex-col items-center justify-center bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white hover:from-pink-500/70 hover:to-purple-500/70 rounded-xl"
           >
             <span className="text-lg mb-1">💰</span>
             <span className="text-base font-medium">Real Mode</span>

@@ -17,14 +17,14 @@ export const StrategyTypeStep = ({
       <div className="flex flex-col space-y-4">
         <Button
           variant={strategyType === "predefined" ? "default" : "outline"}
-          className={`h-14 w-full ${strategyType === "predefined" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
+          className={`h-14 w-full ${strategyType === "predefined" ? "bg-gradient-to-r from-pink-500/80 to-purple-500/80" : "bg-gray-800 border-gray-700"}`}
           onClick={() => onStrategyTypeChange("predefined")}
         >
           Predefined Strategies
         </Button>
         <Button
           variant={strategyType === "custom" ? "default" : "outline"}
-          className={`h-14 w-full ${strategyType === "custom" ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80" : "bg-gray-800 border-gray-700"}`}
+          className={`h-14 w-full ${strategyType === "custom" ? "bg-gradient-to-r from-pink-500/80 to-purple-500/80" : "bg-gray-800 border-gray-700"}`}
           onClick={() => onStrategyTypeChange("custom")}
         >
           Custom Strategy

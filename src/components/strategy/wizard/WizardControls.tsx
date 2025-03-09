@@ -29,7 +29,7 @@ export const WizardControls = ({
       {currentStep < WizardStep.CONFIRMATION && (
         <Button 
           onClick={onNext}
-          className="ml-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+          className="ml-auto bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white"
         >
           Next <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -38,7 +38,7 @@ export const WizardControls = ({
       {currentStep === WizardStep.CONFIRMATION && (
         <Button 
           onClick={onNext}
-          className="ml-auto bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+          className="ml-auto bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white"
         >
           Strategy Details
         </Button>

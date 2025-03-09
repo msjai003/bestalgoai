@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AlertTriangle, Shield, ExternalLink, RefreshCw, Download } from 'lucide-react';
 import { getFirefoxInstructions } from '@/lib/supabase/browser-detection';
@@ -112,10 +113,10 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
           {isMobile && (
             <div className="mt-4 pt-3 border-t border-gray-700">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-pink-300">Install as App</h4>
+                <h4 className="text-sm font-medium text-blue-300">Install as App</h4>
                 <button 
                   onClick={promptInstall}
-                  className="px-3 py-1 text-xs rounded flex items-center bg-pink-600/30 text-pink-300 border border-pink-600/50"
+                  className="px-3 py-1 text-xs rounded flex items-center bg-blue-600/30 text-blue-300 border border-blue-600/50"
                 >
                   <Download className="h-3 w-3 mr-1" />
                   Install App

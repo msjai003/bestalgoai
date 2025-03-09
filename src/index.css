@@ -51,7 +51,11 @@
 }
 
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF00D4] to-purple-600;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600;
+}
+
+.gradient-button {
+  @apply bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white hover:opacity-90 transition-opacity;
 }
 
 /* Add custom animation for security banner */
