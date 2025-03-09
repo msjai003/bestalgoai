@@ -191,3 +191,63 @@ export const testSupabaseConnection = async () => {
     };
   }
 };
+
+// Add a new alternate connection method that works around browser restrictions 
+export const tryAlternateConnection = async () => {
+  try {
+    // First determine if we're online at all
+    if (!navigator.onLine) {
+      return {
+        success: false,
+        error: new Error("You appear to be offline. Please check your internet connection."),
+        isOffline: true
+      };
+    }
+    
+    const browserInfo = detectBrowserInfo();
+    
+    // Attempt to use a simpler version of the client with different options
+    const alternateUrl = supabaseUrl.replace('https://', 'https://alternate-');
+    
+    // Try to create a public endpoint proxy that bypasses CORS restrictions
+    // This only works if your Supabase project has such an endpoint configured
+    try {
+      // Use a simplified config to reduce chances of CORS issues
+      const simpleResponse = await fetch(`${supabaseUrl}/rest/v1/user_profiles?select=count`, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-store',
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (simpleResponse.ok) {
+        console.log("Alternate connection successful using simplified fetch");
+        return {
+          success: true,
+          method: 'simplified-fetch',
+          browserInfo
+        };
+      }
+    } catch (fetchError) {
+      console.log("Simplified fetch approach failed:", fetchError);
+    }
+    
+    // As a last resort, we can use the offline mode and try to sync later
+    return {
+      success: false,
+      fallbackToOffline: true,
+      error: new Error("All connection methods failed. Using offline mode."),
+      browserInfo
+    };
+  } catch (error) {
+    console.error("All alternate connection methods failed:", error);
+    return {
+      success: false,
+      error: new Error("Unable to establish any connection to our services."),
+      useOfflineMode: true
+    };
+  }
+};

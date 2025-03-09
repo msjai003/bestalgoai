@@ -57,6 +57,20 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
               <ExternalLink className="h-3 w-3 mr-1" />
               Chrome cookie settings help
             </a>
+            
+            <p className="mt-2 text-xs text-gray-400">
+              If you're on a corporate network, some network policies may block connections. 
+              Try using a personal device or contact your IT department.
+            </p>
+            
+            <div className="mt-3 p-3 bg-blue-900/20 border border-blue-700/30 rounded">
+              <h4 className="text-xs font-medium text-blue-300">Additional options:</h4>
+              <ul className="mt-1 text-xs text-gray-300">
+                <li className="mt-1">• Try using Incognito mode with third-party cookies enabled</li>
+                <li className="mt-1">• Try a different browser like Firefox or Edge</li>
+                <li className="mt-1">• Try using a mobile device instead</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>

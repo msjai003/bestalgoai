@@ -93,6 +93,28 @@ export const supabase = createClient(
   }
 );
 
+// Create a fallback client with less restrictive settings
+export const createFallbackClient = () => {
+  try {
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        flowType: 'implicit'
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'fallback-client/1.0.0',
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Failed to create fallback client:", error);
+    return null;
+  }
+};
+
 // Log the current site URL on load for debugging
 if (typeof window !== 'undefined') {
   console.log('Current site URL for redirects:', getSiteUrl());
