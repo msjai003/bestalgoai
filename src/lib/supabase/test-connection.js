@@ -23,7 +23,7 @@ async function testConnection() {
     
     if (healthError) {
       console.error("Connection test failed:", healthError);
-      return false;
+      return { success: false, error: healthError };
     }
     
     console.log("Connection successful! Count:", healthData);
@@ -33,19 +33,29 @@ async function testConnection() {
     
     if (error) {
       console.error("Error fetching user profiles:", error);
-      return false;
+      return { success: false, error };
     }
     
     console.log("Successfully fetched profiles:", data);
-    return true;
+    return { success: true, data };
   } catch (error) {
     console.error("Exception during test:", error);
-    return false;
+    return { success: false, error };
   }
 }
 
 // Run the test
 testConnection()
-  .then(success => {
-    console.log("Test completed:", success ? "SUCCESS" : "FAILED");
+  .then(result => {
+    console.log("Test completed:", result.success ? "SUCCESS" : "FAILED");
+    if (result.data) {
+      console.log("Data:", result.data);
+    }
+    if (result.error) {
+      console.log("Error details:", result.error);
+    }
   });
+
+module.exports = {
+  testConnection
+};
