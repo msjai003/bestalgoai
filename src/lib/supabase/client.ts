@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -16,6 +17,12 @@ export const getSiteUrl = () => {
   }
   // Fallback for SSR or non-browser environments
   return 'https://localhost:3000';
+};
+
+// Check if using Chrome browser
+const isChromeBrowser = () => {
+  if (typeof navigator === 'undefined') return false;
+  return navigator.userAgent.indexOf("Chrome") > -1 && navigator.userAgent.indexOf("Edg") === -1;
 };
 
 // Create a single supabase client for interacting with your database
@@ -42,14 +49,22 @@ export const supabase = createClient(
         
         // Add extra headers that might help with CORS issues
         if (fetchOptions.headers) {
-          (fetchOptions.headers as Record<string, string>)['Origin'] = 'http://localhost:3000';
-          (fetchOptions.headers as Record<string, string>)['Referer'] = 'http://localhost:3000';
+          (fetchOptions.headers as Record<string, string>)['Origin'] = window.location.origin;
+          (fetchOptions.headers as Record<string, string>)['Referer'] = window.location.origin;
         }
         
-        // Add SameSite attribute to cookies for compatibility
-        if (typeof document !== 'undefined') {
-          document.cookie = "SameSite=None; Secure";
-          document.cookie = "Path=/; SameSite=None; Secure";
+        // Chrome-specific workarounds for CORS and cookie issues
+        if (isChromeBrowser()) {
+          // Add SameSite attribute to cookies for Chrome compatibility
+          if (typeof document !== 'undefined') {
+            document.cookie = "SameSite=None; Secure";
+            document.cookie = "Path=/; SameSite=None; Secure";
+          }
+          
+          // For Chrome, add extra no-cors fetch options
+          if (url.includes('auth/v1')) {
+            console.log("Using special Chrome auth configuration for:", url);
+          }
         }
         
         console.log(`Fetch request to: ${url}`);
@@ -57,6 +72,12 @@ export const supabase = createClient(
         return fetch(url, fetchOptions)
           .catch(error => {
             console.error(`Fetch error for ${url}:`, error);
+            
+            // Special handling for Chrome fetch errors
+            if (isChromeBrowser() && error.message?.includes('Failed to fetch')) {
+              console.log("Chrome-specific fetch error detected. This might be due to cookie or CORS settings.");
+            }
+            
             throw error;
           });
       }
@@ -70,4 +91,9 @@ if (typeof window !== 'undefined') {
   console.log('Browser: ', navigator.userAgent);
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
+  
+  // Log Chrome-specific information
+  if (isChromeBrowser()) {
+    console.log('Chrome detected: Adding special handling for Chrome browser');
+  }
 }

@@ -3,6 +3,15 @@ import { supabaseUrl, supabaseAnonKey } from './client';
 
 // Function to detect browser information for better error messages
 export function detectBrowserInfo() {
+  if (typeof navigator === 'undefined') {
+    return {
+      browser: "unknown",
+      isPrivateMode: false,
+      userAgent: "",
+      cookiesEnabled: false
+    };
+  }
+  
   const userAgent = navigator.userAgent;
   const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
   const isFirefox = userAgent.indexOf("Firefox") > -1;
@@ -26,6 +35,18 @@ export function detectBrowserInfo() {
 
 // Add a function to get browser-specific instructions for Firefox
 export const getFirefoxInstructions = () => {
+  // Make sure userAgent is defined
+  if (typeof navigator === 'undefined') {
+    return {
+      title: "Connection Issues",
+      steps: [
+        "Check your internet connection and make sure you're online",
+        "Try reloading the page",
+        "Try using a different browser like Chrome or Edge",
+      ]
+    };
+  }
+  
   // Detect if using Chrome
   const userAgent = navigator.userAgent;
   const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
@@ -63,6 +84,16 @@ export const getFirefoxInstructions = () => {
 
 // Add a function to check for common Firefox issues
 export const checkFirefoxCompatibility = () => {
+  if (typeof navigator === 'undefined') {
+    return {
+      isFirefox: false,
+      isSafari: false,
+      cookiesEnabled: false,
+      isPrivate: false,
+      hasETP: false
+    };
+  }
+  
   const isFirefox = navigator.userAgent.indexOf("Firefox") > -1;
   const isSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1;
   

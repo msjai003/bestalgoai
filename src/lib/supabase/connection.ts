@@ -70,6 +70,10 @@ export const testSupabaseConnection = async () => {
       };
     }
     
+    // Get browser info for better troubleshooting
+    const browserInfo = detectBrowserInfo();
+    const isChrome = browserInfo.browser === 'Chrome';
+    
     // Test direct access to the Supabase URL first
     const directTest = await testDirectConnection();
     if (!directTest.success) {
@@ -85,27 +89,39 @@ export const testSupabaseConnection = async () => {
         console.log('Fallback connectivity test:', fallbackTest.type);
         
         // If we can reach cloudflare but not Supabase, it might be a CORS/firewall issue
+        let errorMessage = "Cannot reach Supabase, but other websites work. This suggests a network restriction or firewall blocking our service.";
+        
+        if (isChrome) {
+          errorMessage = "Chrome is blocking connection to our services. This is likely due to third-party cookie settings or a network restriction.";
+        }
+        
         return {
           success: false,
-          error: new Error("Cannot reach Supabase, but other websites work. This suggests a network restriction or firewall blocking our service."),
+          error: new Error(errorMessage),
           directTest,
           isNetworkIssue: false,
           isCorsOrCookieIssue: true,
           isSpecificDomainBlocked: true,
-          browserInfo: detectBrowserInfo()
+          browserInfo
         };
       } catch (e) {
         // If we can't reach cloudflare either, it's likely a general network issue
         console.log('Fallback test also failed:', e);
       }
       
+      let errorMessage = "Cannot reach our services directly. This may indicate network restrictions.";
+      
+      if (isChrome) {
+        errorMessage = "Chrome cannot connect to our services. Please check your network settings and ensure third-party cookies are enabled.";
+      }
+      
       return {
         success: false,
-        error: new Error("Cannot reach our services directly. This may indicate network restrictions."),
+        error: new Error(errorMessage),
         directTest,
         isNetworkIssue: true,
         isCorsOrCookieIssue: true,
-        browserInfo: detectBrowserInfo()
+        browserInfo
       };
     }
     
@@ -117,11 +133,17 @@ export const testSupabaseConnection = async () => {
       
       // Check for specific CORS or cookie-related errors
       if (error.message?.includes('fetch') || error.code === 'PGRST301') {
+        let errorMessage = "Browser security settings are preventing connection to our services.";
+        
+        if (isChrome) {
+          errorMessage = "Chrome's security settings are blocking our connection. Please check that third-party cookies are allowed for this site.";
+        }
+        
         return { 
           success: false, 
-          error, 
+          error: new Error(errorMessage), 
           isCorsOrCookieIssue: true,
-          browserInfo: detectBrowserInfo(),
+          browserInfo,
           networkDetails: {
             onLine: navigator.onLine,
             userAgent: navigator.userAgent,
@@ -138,19 +160,29 @@ export const testSupabaseConnection = async () => {
   } catch (error) {
     console.error('Supabase connection test exception:', error);
     
+    // Get browser info for better troubleshooting
+    const browserInfo = detectBrowserInfo();
+    const isChrome = browserInfo.browser === 'Chrome';
+    
     // Check if this is a fetch/network error
     const isFetchError = error instanceof Error && 
       (error.message?.includes('fetch') || 
        error.message?.includes('network') ||
        error.message?.includes('Failed to fetch') ||
        error.message?.includes('NetworkError'));
+    
+    let errorMessage = "Connection error detected. Please check your network settings.";
+    
+    if (isChrome && isFetchError) {
+      errorMessage = "Chrome cannot connect to our services. This is often caused by third-party cookie settings or network restrictions.";
+    }
        
     return { 
       success: false, 
-      error,
+      error: new Error(errorMessage),
       isCorsOrCookieIssue: isFetchError,
       isNetworkIssue: isFetchError,
-      browserInfo: detectBrowserInfo(),
+      browserInfo,
       networkDetails: {
         onLine: navigator.onLine,
         userAgent: navigator.userAgent,
