@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -18,10 +19,11 @@ export const getSiteUrl = () => {
   return 'https://localhost:3000';
 };
 
-// Check if using Chrome browser
+// Check if using Chrome browser - safely check userAgent
 const isChromeBrowser = () => {
   if (typeof navigator === 'undefined') return false;
-  return navigator.userAgent.indexOf("Chrome") > -1 && navigator.userAgent.indexOf("Edg") === -1;
+  const userAgent = navigator.userAgent || '';
+  return userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
 };
 
 // Create a single supabase client for interacting with your database
@@ -42,14 +44,21 @@ export const supabase = createClient(
       },
       fetch: (url: string, options?: RequestInit) => {
         const fetchOptions = options || {};
+        
+        // Essential fetch options that help with CORS
         fetchOptions.cache = 'no-store';
         fetchOptions.credentials = 'include';
         fetchOptions.mode = 'cors';
         
         // Add extra headers that might help with CORS issues
         if (fetchOptions.headers) {
-          (fetchOptions.headers as Record<string, string>)['Origin'] = window.location.origin;
-          (fetchOptions.headers as Record<string, string>)['Referer'] = window.location.origin;
+          const headers = fetchOptions.headers as Record<string, string>;
+          
+          // Only add these headers in browser environment
+          if (typeof window !== 'undefined') {
+            headers['Origin'] = window.location.origin;
+            headers['Referer'] = window.location.origin;
+          }
         }
         
         // Chrome-specific workarounds for CORS and cookie issues
@@ -60,7 +69,7 @@ export const supabase = createClient(
             document.cookie = "Path=/; SameSite=None; Secure";
           }
           
-          // For Chrome, add extra no-cors fetch options
+          // For Chrome auth endpoints, add special handling
           if (url.includes('auth/v1')) {
             console.log("Using special Chrome auth configuration for:", url);
           }
@@ -87,7 +96,7 @@ export const supabase = createClient(
 // Log the current site URL on load for debugging
 if (typeof window !== 'undefined') {
   console.log('Current site URL for redirects:', getSiteUrl());
-  console.log('Browser: ', navigator.userAgent);
+  console.log('Browser: ', navigator.userAgent || 'Unknown');
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
   

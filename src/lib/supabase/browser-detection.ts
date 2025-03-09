@@ -1,119 +1,87 @@
 
-import { supabaseUrl, supabaseAnonKey } from './client';
-
-// Function to detect browser information for better error messages
-export function detectBrowserInfo() {
+// Helper function to detect browser information
+export const detectBrowserInfo = () => {
   if (typeof navigator === 'undefined') {
     return {
-      browser: "unknown",
+      browser: 'Unknown',
       isPrivateMode: false,
-      userAgent: "",
+      userAgent: 'Unknown',
       cookiesEnabled: false
     };
   }
   
-  const userAgent = navigator.userAgent;
-  const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
-  const isFirefox = userAgent.indexOf("Firefox") > -1;
-  const isSafari = userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1;
-  const isEdge = userAgent.indexOf("Edg") > -1;
-  const isPrivateMode = !window.localStorage;
-
-  let browserName = "unknown";
-  if (isChrome) browserName = "Chrome";
-  if (isFirefox) browserName = "Firefox";
-  if (isSafari) browserName = "Safari";
-  if (isEdge) browserName = "Edge";
-
+  const userAgent = navigator.userAgent || '';
+  
+  let browser = "Unknown";
+  if (userAgent.indexOf("Firefox") > -1) browser = "Firefox";
+  if (userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1) browser = "Chrome";
+  if (userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1) browser = "Safari";
+  if (userAgent.indexOf("Edg") > -1) browser = "Edge";
+  
   return {
-    browser: browserName,
-    isPrivateMode: isPrivateMode,
+    browser,
+    isPrivateMode: !window.localStorage,
     userAgent: userAgent,
     cookiesEnabled: navigator.cookieEnabled
   };
-}
+};
 
-// Add a function to get browser-specific instructions for Firefox
+// Get browser-specific instructions for enabling cookies/fixing connection issues
 export const getFirefoxInstructions = () => {
-  // Make sure userAgent is defined
-  if (typeof navigator === 'undefined') {
-    return {
-      title: "Connection Issues",
-      steps: [
-        "Check your internet connection and make sure you're online",
-        "Try reloading the page",
-        "Try using a different browser like Chrome or Edge",
-      ]
-    };
-  }
-  
-  // Detect if using Chrome
-  const userAgent = navigator.userAgent;
+  const userAgent = navigator.userAgent || '';
   const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
+  const isFirefox = userAgent.indexOf("Firefox") > -1;
+  const isSafari = userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1;
   
   if (isChrome) {
     return {
-      title: "Chrome Connection Issues",
+      title: "Chrome Browser Settings",
       steps: [
-        "Check your internet connection and make sure you're online",
-        "Check if you're using any VPN or proxy services that might be blocking our connection",
-        "Open Chrome settings and go to Privacy and Security → Site Settings → Cookies and site data",
-        "Make sure 'Block third-party cookies' is turned off or add this site to exceptions",
-        "Try clearing your browser cache and cookies for this site",
-        "Disable any browser extensions temporarily",
-        "Try using a different internet connection (like mobile data)"
+        "Open Chrome Settings (click the three dots in the top right corner)",
+        "Scroll down and click on 'Privacy and security'",
+        "Click on 'Cookies and other site data'",
+        "Make sure 'Block third-party cookies in Incognito' is unchecked",
+        "Check 'Allow all cookies' or add our site to the allowed list",
+        "Return to this page and click 'Test Connection' again"
       ]
     };
   }
   
-  // Default Firefox instructions
-  return {
-    title: "Connection Issues",
-    steps: [
-      "Check your internet connection and make sure you're online",
-      "Try reloading the page",
-      "If using Firefox: Click the shield icon in the address bar and turn off 'Enhanced Tracking Protection'",
-      "If using Chrome/Edge: Try disabling any extensions that might block requests",
-      "If using Safari: Go to Preferences > Privacy and uncheck 'Prevent Cross-Site Tracking'",
-      "Try using a different browser like Chrome or Edge",
-      "Make sure cookies are enabled in your browser settings",
-      "If possible, try using a non-private/non-incognito window"
-    ]
-  };
-};
-
-// Add a function to check for common Firefox issues
-export const checkFirefoxCompatibility = () => {
-  if (typeof navigator === 'undefined') {
+  if (isFirefox) {
     return {
-      isFirefox: false,
-      isSafari: false,
-      cookiesEnabled: false,
-      isPrivate: false,
-      hasETP: false
+      title: "Firefox Privacy Settings",
+      steps: [
+        "Open Firefox Settings (click the hamburger menu in the top right)",
+        "Click on 'Privacy & Security'",
+        "Under 'Enhanced Tracking Protection', select 'Standard' or 'Custom'",
+        "If 'Custom', ensure 'Cookies' is set to 'All cookies' or 'Cross-site tracking cookies'",
+        "Click the shield icon in the address bar and disable protection for this site",
+        "Reload the page and try again"
+      ]
     };
   }
   
-  const isFirefox = navigator.userAgent.indexOf("Firefox") > -1;
-  const isSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1;
-  
-  // Check if cookies are enabled
-  const cookiesEnabled = navigator.cookieEnabled;
-  
-  // Check if in private browsing (approximate detection)
-  let isPrivate = false;
-  try {
-    localStorage.setItem("test", "test");
-    localStorage.removeItem("test");
-  } catch (e) {
-    isPrivate = true;
+  if (isSafari) {
+    return {
+      title: "Safari Privacy Settings",
+      steps: [
+        "Open Safari Preferences (Safari menu > Preferences)",
+        "Click on the 'Privacy' tab",
+        "Uncheck 'Prevent cross-site tracking'",
+        "Ensure 'Block all cookies' is NOT selected",
+        "Close preferences, reload the page and try again"
+      ]
+    };
   }
   
   return {
-    isFirefox,
-    isSafari,
-    cookiesEnabled,
-    isPrivate,
-    hasETP: isFirefox // Assume ETP is on by default in Firefox
+    title: "Browser Privacy Settings",
+    steps: [
+      "Check your browser's privacy settings and ensure cookies are enabled",
+      "Disable any tracking protection features for this site",
+      "Check if you have a content blocker or firewall that might be blocking our service",
+      "Try using a different browser like Chrome or Firefox",
+      "Reload the page and try again"
+    ]
   };
 };
