@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { testSupabaseConnection, directSignUp, offlineSignup } from '@/lib/supabase';
 
 export interface RegistrationData {
   fullName: string;
@@ -23,6 +24,7 @@ export const useRegistration = () => {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [browserIssue, setBrowserIssue] = useState<any>(null);
   const [showFirefoxHelp, setShowFirefoxHelp] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [formData, setFormData] = useState<RegistrationData>({
     fullName: '',
     email: '',
@@ -43,6 +45,23 @@ export const useRegistration = () => {
       }
     };
     
+    // Check for offline status initially
+    setIsOffline(!navigator.onLine);
+    
+    // Add online/offline event listeners
+    const handleOnline = () => {
+      setIsOffline(false);
+      setConnectionError(null);
+    };
+    
+    const handleOffline = () => {
+      setIsOffline(true);
+      setConnectionError("Your device appears to be offline. Please check your internet connection.");
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
     checkAuthStatus();
     
     // Check for browser-specific issues
@@ -51,6 +70,29 @@ export const useRegistration = () => {
       setBrowserIssue(browserInfo);
       setShowFirefoxHelp(true);
     }
+    
+    // Do a test connection to Supabase
+    const testConnection = async () => {
+      try {
+        const result = await testSupabaseConnection();
+        if (!result.success) {
+          setConnectionError(result.error?.message || "Unable to connect to our services. Please check your network and browser settings.");
+          setShowFirefoxHelp(true);
+          console.log("Connection test failed:", result);
+        }
+      } catch (error) {
+        console.error("Error testing connection:", error);
+      }
+    };
+    
+    if (navigator.onLine) {
+      testConnection();
+    }
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [navigate]);
 
   const getBrowserInfo = () => {
@@ -140,17 +182,37 @@ export const useRegistration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // Attempt signup with Supabase
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: userData
+      // Check if we're offline or having connection issues
+      if (isOffline) {
+        // Store the registration attempt for later
+        const offlineResult = await offlineSignup(formData.email, formData.password, userData);
+        if (offlineResult.success) {
+          toast.success("Your registration has been saved and will be completed when you're back online.");
+          navigate('/auth');
+        } else {
+          throw new Error("Could not save registration information. Please try again later.");
         }
-      });
+        return;
+      }
+      
+      // Try using the direct signup function for better error handling
+      const { data, error } = await directSignUp(formData.email, formData.password, userData);
       
       if (error) {
         console.error("Auth error details:", error);
+        
+        // Check for specific errors
+        if (error.message?.includes('fetch') || error.message?.includes('network')) {
+          // Try the test connection to get more details
+          const testResult = await testSupabaseConnection();
+          if (testResult.browserInfo?.browser === 'Firefox' || testResult.browserInfo?.browser === 'Safari') {
+            setShowFirefoxHelp(true);
+            throw new Error("Your browser may be blocking our connection. Please check the troubleshooting steps below.");
+          } else {
+            throw new Error("Network connection issues. Please check your internet connection and try again.");
+          }
+        }
+        
         throw new Error(error.message || "Registration failed");
       }
       
@@ -175,6 +237,7 @@ export const useRegistration = () => {
     connectionError,
     showFirefoxHelp,
     browserIssue,
+    isOffline,
     handleChange,
     handleNext,
     handleBack,

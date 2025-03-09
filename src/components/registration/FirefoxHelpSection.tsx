@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Settings, ExternalLink, Wifi, Globe } from 'lucide-react';
-import { getFirefoxInstructions } from '@/lib/supabase';
+import { AlertCircle, Settings, ExternalLink, Wifi, Globe, RefreshCw } from 'lucide-react';
+import { getFirefoxInstructions, testSupabaseConnection, testDirectConnection } from '@/lib/supabase';
 
 interface FirefoxHelpSectionProps {
   connectionError: string | null;
@@ -20,6 +20,23 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
     window.open('https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop', '_blank');
   };
 
+  const retryConnection = async () => {
+    // First test direct connection
+    const directResult = await testDirectConnection();
+    
+    if (directResult.success) {
+      // If direct connection works, test Supabase connection
+      const result = await testSupabaseConnection();
+      if (result.success) {
+        window.location.reload();
+      } else {
+        alert("Connection test failed. Please check your browser settings and try again.");
+      }
+    } else {
+      alert("Unable to establish a connection. Please check your internet connection and try again.");
+    }
+  };
+
   return (
     <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
       <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -33,7 +50,7 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
                 <li key={index}>{step}</li>
               ))}
             </ol>
-            <div className="flex space-x-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -51,6 +68,15 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({ connectionError
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Try Chrome Browser
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-500 text-red-400 hover:bg-red-950"
+                onClick={retryConnection}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Test Connection
               </Button>
               <Button
                 variant="outline"

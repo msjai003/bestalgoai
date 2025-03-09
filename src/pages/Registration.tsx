@@ -9,6 +9,7 @@ import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
 import RegistrationStepTwo from '@/components/registration/RegistrationStepTwo';
 import RegistrationStepThree from '@/components/registration/RegistrationStepThree';
 import RegistrationFooter from '@/components/registration/RegistrationFooter';
+import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
 
 const Registration = () => {
   const {
@@ -17,6 +18,7 @@ const Registration = () => {
     isLoading,
     connectionError,
     showFirefoxHelp,
+    isOffline,
     handleChange,
     handleNext,
     handleBack,
@@ -44,6 +46,17 @@ const Registration = () => {
         <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
         <ProgressIndicator step={step} totalSteps={3} />
       </section>
+
+      {isOffline && (
+        <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg flex items-start">
+          <WifiOff className="text-yellow-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-yellow-200 text-sm">
+              You are currently offline. You can continue filling in the form, and we'll save your registration when you're back online.
+            </p>
+          </div>
+        </div>
+      )}
 
       <FirefoxHelpSection 
         connectionError={connectionError} 
