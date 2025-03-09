@@ -1,12 +1,21 @@
 
 import React from 'react';
-import { AlertTriangle, Shield, ExternalLink, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Shield, ExternalLink, RefreshCw, Download } from 'lucide-react';
 import { getFirefoxInstructions } from '@/lib/supabase/browser-detection';
 import { enableProxy, isProxyEnabled } from '@/lib/supabase/client';
 
 interface FirefoxHelpSectionProps {
   connectionError: string | null;
   showFirefoxHelp: boolean;
+}
+
+declare global {
+  interface Window {
+    deferredInstallPrompt: Event & {
+      prompt: () => Promise<void>;
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+    } | null;
+  }
 }
 
 const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
@@ -17,10 +26,41 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
 
   const browserInstructions = getFirefoxInstructions();
   const isChrome = navigator.userAgent.indexOf("Chrome") > -1 && navigator.userAgent.indexOf("Edg") === -1;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const proxyEnabled = isProxyEnabled();
 
   const toggleProxy = () => {
     enableProxy(!proxyEnabled);
+  };
+  
+  const promptInstall = () => {
+    if (window.deferredInstallPrompt) {
+      // Show the PWA install prompt
+      window.deferredInstallPrompt.prompt();
+      
+      // Wait for user response
+      window.deferredInstallPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        // Clear the saved prompt
+        window.deferredInstallPrompt = null;
+      });
+    } else {
+      // If on mobile, provide installation instructions
+      if (isMobile) {
+        // iOS-specific instructions
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+          alert("To install the app on iOS: tap the share button and select 'Add to Home Screen'");
+        } 
+        // Android-specific instructions
+        else if (/Android/.test(navigator.userAgent)) {
+          alert("To install the app on Android: tap the menu button (⋮) and select 'Add to Home screen' or 'Install app'");
+        }
+      }
+    }
   };
 
   return (
@@ -77,6 +117,25 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
             <p className="text-green-400 mb-1"># Start the proxy server:</p>
             <p className="text-gray-300">node proxy-server.js</p>
           </div>
+          
+          {isMobile && (
+            <div className="mt-4 pt-3 border-t border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-pink-300">Install as App</h4>
+                <button 
+                  onClick={promptInstall}
+                  className="px-3 py-1 text-xs rounded flex items-center bg-pink-600/30 text-pink-300 border border-pink-600/50"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Install App
+                </button>
+              </div>
+              
+              <p className="text-xs text-gray-400 mb-2">
+                Installing as an app can sometimes resolve connection issues by providing a more native experience.
+              </p>
+            </div>
+          )}
           
           {isChrome && (
             <div className="mt-4">

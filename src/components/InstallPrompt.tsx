@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X } from 'lucide-react';
+import { Download, X, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -19,13 +19,18 @@ declare global {
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
-    // Check if it's iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    // Check for various platform types
+    const userAgent = navigator.userAgent || '';
+    const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    const isAndroidDevice = /Android/.test(userAgent);
+    
     setIsIOS(isIOSDevice);
-
+    setIsAndroid(isAndroidDevice);
+    
     // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           (window.navigator as any).standalone || 
@@ -74,10 +79,16 @@ const InstallPrompt = () => {
       toast.success("App installed successfully!");
     });
 
+    // Check if manifest exists and is correctly linked
+    const linkManifest = document.querySelector('link[rel="manifest"]');
+    if (!linkManifest) {
+      console.error("No manifest link found in document head");
+    }
+
     // Show a message to help users find the install option
     setTimeout(() => {
-      if (!isStandalone && (window.deferredInstallPrompt || isIOSDevice)) {
-        toast.info("You can install this app for a better experience!", {
+      if (!isStandalone && (window.deferredInstallPrompt || isIOSDevice || isAndroidDevice)) {
+        toast.info("You can install this app on your device for a better experience!", {
           duration: 5000,
           position: "top-center"
         });
@@ -91,35 +102,45 @@ const InstallPrompt = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!window.deferredInstallPrompt && !isIOS) return;
+    if (!window.deferredInstallPrompt && !isIOS && !isAndroid) return;
     
     if (window.deferredInstallPrompt) {
-      // Show the install prompt
-      window.deferredInstallPrompt.prompt();
-      
-      // Wait for the user to respond to the prompt
-      const choiceResult = await window.deferredInstallPrompt.userChoice;
-      
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-        toast.success("Installation started");
-      } else {
-        console.log('User dismissed the install prompt');
-        toast.info("Installation declined");
+      try {
+        // Show the install prompt
+        window.deferredInstallPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const choiceResult = await window.deferredInstallPrompt.userChoice;
+        
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+          toast.success("Installation started");
+        } else {
+          console.log('User dismissed the install prompt');
+          toast.info("Installation declined");
+        }
+        
+        // Clear the saved prompt since it can't be used again
+        window.deferredInstallPrompt = null;
+        setIsInstallable(false);
+      } catch (error) {
+        console.error('Error during installation:', error);
+        toast.error("Installation failed. Please try again.");
       }
-      
-      // Clear the saved prompt since it can't be used again
-      window.deferredInstallPrompt = null;
-      setIsInstallable(false);
     } else if (isIOS) {
-      // For iOS, provide more visible instructions
+      // For iOS, provide more visible instructions with animation
+      const shareButton = document.getElementById('ios-share-button');
+      if (shareButton) shareButton.classList.add('animate-pulse');
+      
       toast.info("To install: tap the share button and select 'Add to Home Screen'", {
         duration: 8000
       });
+    } else if (isAndroid) {
+      // For Android without install prompt
+      toast.info("To install: tap the menu button (⋮) and select 'Add to Home screen'", {
+        duration: 8000
+      });
     }
-    
-    // Hide the install button
-    setShowPrompt(false);
   };
 
   const dismissPrompt = () => {
@@ -152,13 +173,27 @@ const InstallPrompt = () => {
             Add this app to your home screen for the best experience:
           </p>
           <ol className="text-gray-300 text-xs space-y-1 mb-3 list-decimal ml-4">
-            <li>Tap the share button <span className="inline-block">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm9 1a1 1 0 10-2 0v6.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L12 12.586V6z" clipRule="evenodd" />
-              </svg>
+            <li>Tap the share button <span id="ios-share-button" className="inline-block animate-pulse-slow">
+              <Share2 className="h-4 w-4 inline text-blue-400" />
             </span></li>
             <li>Scroll and select "Add to Home Screen"</li>
             <li>Tap "Add" in the top right corner</li>
+          </ol>
+          <div className="mt-2 mb-2">
+            <img src="/ios-install-guide.png" alt="iOS installation guide" className="rounded-md w-full max-w-[200px] mx-auto" onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }} />
+          </div>
+        </div>
+      ) : isAndroid ? (
+        <div>
+          <p className="text-gray-300 text-sm mb-3">
+            Add this app to your home screen for the best experience:
+          </p>
+          <ol className="text-gray-300 text-xs space-y-1 mb-3 list-decimal ml-4">
+            <li>Tap the menu button (⋮) in your browser</li>
+            <li>Select "Add to Home screen" or "Install app"</li>
+            <li>Confirm by tapping "Add" or "Install"</li>
           </ol>
         </div>
       ) : (
@@ -172,7 +207,7 @@ const InstallPrompt = () => {
         className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity"
       >
         <Download className="mr-2 h-4 w-4" />
-        {isIOS ? "Got it" : "Install App"}
+        {isIOS ? "Got it" : isAndroid ? "Install App" : "Install App"}
       </Button>
     </div>
   );
