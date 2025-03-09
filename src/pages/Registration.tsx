@@ -38,6 +38,21 @@ const Registration = () => {
     }
   };
 
+  // Generate a clearer error message for Chrome users
+  const getConnectionErrorMessage = () => {
+    if (!connectionError) return null;
+    
+    const userAgent = navigator.userAgent;
+    const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
+    
+    if (isChrome && connectionError.includes("CORS") || connectionError.includes("fetch") || 
+        connectionError.includes("network") || connectionError.includes("connect")) {
+      return "We're having trouble connecting to our services. This could be due to a network restriction, firewall, or security setting in Chrome.";
+    }
+    
+    return connectionError;
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <RegistrationHeader handleBack={handleBack} />
@@ -59,7 +74,7 @@ const Registration = () => {
       )}
 
       <FirefoxHelpSection 
-        connectionError={connectionError} 
+        connectionError={getConnectionErrorMessage()} 
         showFirefoxHelp={showFirefoxHelp} 
       />
 

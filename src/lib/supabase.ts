@@ -149,7 +149,7 @@ export const testSupabaseConnection = async () => {
         // If we can reach cloudflare but not Supabase, it might be a CORS/firewall issue
         return {
           success: false,
-          error: new Error("Cannot reach Supabase, but other websites work. This suggests a CORS or network restriction specific to Supabase."),
+          error: new Error("Cannot reach Supabase, but other websites work. This suggests a network restriction or firewall blocking our service."),
           directTest,
           isNetworkIssue: false,
           isCorsOrCookieIssue: true,
@@ -163,7 +163,7 @@ export const testSupabaseConnection = async () => {
       
       return {
         success: false,
-        error: new Error("Cannot reach Supabase URL directly. This may indicate network restrictions."),
+        error: new Error("Cannot reach our services directly. This may indicate network restrictions."),
         directTest,
         isNetworkIssue: true,
         isCorsOrCookieIssue: true,
@@ -225,7 +225,7 @@ export const testSupabaseConnection = async () => {
 // Function to detect browser information for better error messages
 function detectBrowserInfo() {
   const userAgent = navigator.userAgent;
-  const isChrome = userAgent.indexOf("Chrome") > -1;
+  const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
   const isFirefox = userAgent.indexOf("Firefox") > -1;
   const isSafari = userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1;
   const isEdge = userAgent.indexOf("Edg") > -1;
@@ -590,6 +590,25 @@ export const offlineLogin = (email, password) => {
 
 // Add a function to get browser-specific instructions for Firefox
 export const getFirefoxInstructions = () => {
+  // Detect if using Chrome
+  const isChrome = navigator.userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
+  
+  if (isChrome) {
+    return {
+      title: "Chrome Connection Issues",
+      steps: [
+        "Check your internet connection and make sure you're online",
+        "Check if you're using any VPN or proxy services that might be blocking our connection",
+        "Open Chrome settings and go to Privacy and Security → Site Settings → Cookies and site data",
+        "Make sure 'Block third-party cookies' is turned off or add this site to exceptions",
+        "Try clearing your browser cache and cookies for this site",
+        "Disable any browser extensions temporarily",
+        "Try using a different internet connection (like mobile data)"
+      ]
+    };
+  }
+  
+  // Default Firefox instructions
   return {
     title: "Connection Issues",
     steps: [
@@ -638,4 +657,3 @@ if (typeof window !== 'undefined') {
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
 }
-
