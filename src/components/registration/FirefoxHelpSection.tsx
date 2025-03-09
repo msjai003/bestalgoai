@@ -1,21 +1,12 @@
-
 import React from 'react';
 import { AlertTriangle, Shield, ExternalLink, RefreshCw, Download } from 'lucide-react';
 import { getFirefoxInstructions } from '@/lib/supabase/browser-detection';
 import { enableProxy, isProxyEnabled } from '@/lib/supabase/client';
+import { BeforeInstallPromptEvent } from '@/types/installation';
 
 interface FirefoxHelpSectionProps {
   connectionError: string | null;
   showFirefoxHelp: boolean;
-}
-
-declare global {
-  interface Window {
-    deferredInstallPrompt: Event & {
-      prompt: () => Promise<void>;
-      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-    } | null;
-  }
 }
 
 const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({

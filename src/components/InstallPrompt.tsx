@@ -1,20 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, X, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-// Create a global variable to store the install prompt event
-declare global {
-  interface Window {
-    deferredInstallPrompt: BeforeInstallPromptEvent | null;
-  }
-}
+import { BeforeInstallPromptEvent } from '@/types/installation';
 
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
