@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, User, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
-import { Header } from "@/components/Header";
+import { toast } from "@/components/ui/use-toast";
+import Header from '@/components/Header';
 import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StrategySection } from "@/components/strategy/StrategySection";

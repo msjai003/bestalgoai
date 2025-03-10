@@ -1,17 +1,17 @@
-
-import { useState } from "react";
-import { Header } from "@/components/Header";
-import { BottomNav } from "@/components/BottomNav";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { useState } from 'react';
+import { Header } from '@/components/Header';
+import { BottomNav } from '@/components/BottomNav';
+import { Button } from '@/components/ui/button';
 import { 
   PlusCircle,
   Image,
   BookOpen,
   MessageSquare
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {
@@ -145,3 +145,4 @@ const CreatePost = () => {
 };
 
 export default CreatePost;
+

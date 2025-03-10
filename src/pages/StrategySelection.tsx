@@ -1,9 +1,11 @@
+
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
-import { Header } from "@/components/Header";
+import Header from "@/components/Header";
 import { StrategyCard } from "@/components/strategy/StrategyCard";
 import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
 import { predefinedStrategies } from "@/constants/strategy-data";

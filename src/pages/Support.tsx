@@ -1,6 +1,7 @@
 
+import React from 'react';
 import { useState } from 'react';
-import { Header } from '@/components/Header';
+import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';

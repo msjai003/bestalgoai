@@ -1,5 +1,6 @@
 
-import { Header } from "@/components/Header";
+import React from 'react';
+import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Link } from "react-router-dom";
 

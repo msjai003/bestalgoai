@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Header } from "@/components/Header";
+import React from 'react';
+import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
