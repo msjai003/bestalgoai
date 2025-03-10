@@ -1,349 +1,164 @@
-import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Menu, X, Info, BookOpen, HelpCircle, Bell, Check, Settings, Package, Users, FileText, LogOut, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from 'sonner';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Menu } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getSiteUrl } from '@/lib/supabase/client';
 
-const latestNotifications = [
-  {
-    id: 1,
-    title: "Trade Executed",
-    message: "Your order #12345 has been executed successfully",
-    time: "2 min ago"
-  },
-  {
-    id: 2,
-    title: "Price Alert",
-    message: "HDFC Bank reached target price of ₹1,680",
-    time: "15 min ago"
-  },
-  {
-    id: 3,
-    title: "AI Strategy Update",
-    message: "Your strategy has been optimized based on market conditions",
-    time: "1 hour ago"
-  },
-  {
-    id: 4,
-    title: "Account Security",
-    message: "Your account security settings were updated",
-    time: "2 hours ago"
-  },
-  {
-    id: 5,
-    title: "New Feature",
-    message: "Enhanced risk management tools are now available!",
-    time: "1 day ago"
-  }
-];
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-declare global {
-  interface Window {
-    deferredInstallPrompt: BeforeInstallPromptEvent | null;
-  }
-}
-
-export const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(latestNotifications);
-  const [isAllRead, setIsAllRead] = useState(false);
-  const [isInstallable, setIsInstallable] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [showInstallToast, setShowInstallToast] = useState(false);
-
-  useEffect(() => {
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    setIsIOS(isIOSDevice);
-    
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         (window.navigator as any).standalone || 
-                         document.referrer.includes('android-app://');
-    
-    setIsInstalled(isStandalone);
-    
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
-      setIsInstallable(true);
-      
-      if (!localStorage.getItem('installToastShown') && !showInstallToast) {
-        setTimeout(() => {
-          toast.info("Click the menu to find the 'Install App' option", {
-            duration: 5000,
-            position: "top-center"
-          });
-          localStorage.setItem('installToastShown', 'true');
-          setShowInstallToast(true);
-        }, 3000);
-      }
-      
-      if (isIOSDevice && !isStandalone) {
-        setIsInstallable(true);
-        
-        if (!localStorage.getItem('iosInstallToastShown') && !showInstallToast) {
-          setTimeout(() => {
-            toast.info("Click the menu to find the 'Install App' option", {
-              duration: 5000,
-              position: "top-center"
-            });
-            localStorage.setItem('iosInstallToastShown', 'true');
-            setShowInstallToast(true);
-          }, 3000);
-        }
-      }
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    window.addEventListener('appinstalled', () => {
-      window.deferredInstallPrompt = null;
-      setIsInstallable(false);
-      setIsInstalled(true);
-      toast.success("App installed successfully!");
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => {});
-    };
-  }, [showInstallToast]);
-
-  const toggleMenu = () => setIsOpen(!isOpen);
+const Header: React.FC = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  const markAllAsRead = () => {
-    setIsAllRead(true);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
   };
-
-  const handleInstall = async () => {
-    if (!window.deferredInstallPrompt && !isIOS) return;
-    
-    if (window.deferredInstallPrompt) {
-      window.deferredInstallPrompt.prompt();
-      
-      const choiceResult = await window.deferredInstallPrompt.userChoice;
-      
-      if (choiceResult.outcome === 'accepted') {
-        toast.success("Installation started");
-        window.deferredInstallPrompt = null;
-        setIsInstallable(false);
-      } else {
-        toast.info("Installation declined");
-      }
-    } else if (isIOS) {
-      toast.info("To install: tap the share button and select 'Add to Home Screen'", {
-        duration: 8000
-      });
-    }
-    
-    setIsOpen(false);
-  };
-
-  const hasUnreadNotifications = !isAllRead && notifications.length > 0;
-
-  const showInstallOption = isInstallable && !isInstalled;
-
+  
   return (
-    <header className="fixed w-full top-0 z-50 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800">
-      <div className="flex items-center justify-between px-4 h-16">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={toggleMenu}
-          className={`p-2 ${showInstallOption ? 'animate-pulse' : ''}`}
-        >
-          {isOpen ? (
-            <X className="w-5 h-5 text-gray-300" />
-          ) : (
-            <Menu className="w-5 h-5 text-gray-300" />
-          )}
-        </Button>
-
-        <Link to="/" className="flex items-center space-x-2">
-          <i className="fa-solid fa-robot text-[#FF00D4]"></i>
-          <span className="text-white font-bold">BestAlgo.ai</span>
+    <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-lg">
+      <div className="container flex items-center justify-between h-16 px-4">
+        <Link to="/" className="flex items-center">
+          <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl"></i>
+          <span className="text-white text-xl ml-2">BestAlgo.ai</span>
         </Link>
 
-        <div className="flex items-center space-x-4">
-          <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="p-2 relative">
-                <Bell className="w-5 h-5 text-gray-300" />
-                {hasUnreadNotifications && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF00D4] rounded-full"></span>
-                )}
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link
+            to="/"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            About
+          </Link>
+          <Link
+            to="/pricing"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Pricing
+          </Link>
+          <Link
+            to="/contact"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Contact
+          </Link>
+          
+          <Link
+            to="/database"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Database
+          </Link>
+          
+          {user ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Dashboard
+              </Link>
+              <Button variant="secondary" size="sm" onClick={handleSignOut}>
+                Sign Out
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md p-0 bg-gray-900 border-gray-800 text-white">
-              <div className="flex flex-col max-h-[80vh]">
-                <div className="sticky top-0 px-6 py-4 border-b border-gray-800 bg-gray-900 z-10">
-                  <div className="flex justify-between items-center">
-                    <h2 className="font-bold text-lg">Notifications</h2>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-gray-400 hover:text-[#FF00D4] transition-colors"
-                        onClick={markAllAsRead}
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        <span className="text-xs">Mark all as read</span>
-                      </Button>
-                      <Link to="/settings">
-                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#FF00D4]">
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-                
-                {notifications.length > 0 ? (
-                  <ScrollArea className="flex-1 max-h-[60vh]">
-                    <div className="divide-y divide-gray-800">
-                      {notifications.map((notification) => (
-                        <div key={notification.id} className="px-6 py-4 hover:bg-gray-800/50 transition-colors">
-                          <div className="flex justify-between">
-                            <h4 className="text-sm font-medium">{notification.title}</h4>
-                            <span className="text-xs text-gray-400">{notification.time}</span>
-                          </div>
-                          <p className="text-sm text-gray-300 mt-1">{notification.message}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-4">
-                      <Check className="w-6 h-6 text-[#FF00D4]" />
-                    </div>
-                    <h3 className="text-lg font-medium mb-2">You're all caught up!</h3>
-                    <p className="text-sm text-gray-400">No new notifications.</p>
-                  </div>
-                )}
-                
-                <div className="sticky bottom-0 border-t border-gray-800 p-4 bg-gray-900">
-                  <Link to="/alerts">
-                    <Button className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white hover:opacity-90 transition-opacity">
-                      View All Notifications
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <img 
-            src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" 
-            alt="Profile" 
-            className="w-8 h-8 rounded-full"
-          />
-        </div>
-      </div>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-shadow"
+            >
+              Get Started
+            </Link>
+          )}
+        </nav>
 
-      {isOpen && (
-        <div className="absolute top-16 left-0 w-64 bg-gray-900/95 backdrop-blur-lg border-r border-b border-gray-800 rounded-br-lg shadow-xl animate-in slide-in-from-left duration-200">
-          <nav className="p-4">
-            <ul className="space-y-2">
-              {showInstallOption && (
-                <MenuLink 
-                  to="#" 
-                  icon={<Download className="w-5 h-5" />} 
-                  label="Install App" 
-                  onClick={handleInstall}
-                  highlight={true}
-                />
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" className="md:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="bg-gray-900 border-l border-gray-700">
+            <SheetHeader className="space-y-2.5">
+              <SheetTitle>Menu</SheetTitle>
+              <SheetDescription>
+                Navigate through the application
+              </SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-4 py-4">
+              <Link
+                to="/"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                About
+              </Link>
+              <Link
+                to="/pricing"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                Pricing
+              </Link>
+              <Link
+                to="/contact"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                Contact
+              </Link>
+              
+              <Link
+                to="/database"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                Database
+              </Link>
+              
+              {user ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="text-gray-300 hover:text-white transition-colors block py-2"
+                  >
+                    Dashboard
+                  </Link>
+                  <Button variant="secondary" size="sm" onClick={handleSignOut} className="w-full">
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-shadow block text-center"
+                >
+                  Get Started
+                </Link>
               )}
-              <MenuLink 
-                to="/about" 
-                icon={<Info className="w-5 h-5" />} 
-                label="About us" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/blog" 
-                icon={<BookOpen className="w-5 h-5" />} 
-                label="Blogs" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/support" 
-                icon={<HelpCircle className="w-5 h-5" />} 
-                label="Support" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/products" 
-                icon={<Package className="w-5 h-5" />} 
-                label="Products" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/partners" 
-                icon={<Users className="w-5 h-5" />} 
-                label="Partners" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/terms" 
-                icon={<FileText className="w-5 h-5" />} 
-                label="Legal / Terms & Privacy" 
-                onClick={() => setIsOpen(false)} 
-              />
-              <MenuLink 
-                to="/logout" 
-                icon={<LogOut className="w-5 h-5" />} 
-                label="Logout" 
-                onClick={() => setIsOpen(false)} 
-              />
-            </ul>
-          </nav>
-        </div>
-      )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
     </header>
   );
 };
 
-interface MenuLinkProps {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  highlight?: boolean;
-}
-
-const MenuLink = ({ to, icon, label, onClick, highlight = false }: MenuLinkProps) => (
-  <li>
-    <Link 
-      to={to} 
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg",
-        highlight 
-          ? "text-white bg-gradient-to-r from-[#FF00D4]/20 to-purple-800/20 border border-[#FF00D4]/30" 
-          : "text-gray-300 hover:text-white hover:bg-gray-800",
-        "transition-colors duration-200"
-      )}
-      onClick={onClick}
-    >
-      <span className={highlight ? "text-white" : "text-[#FF00D4]"}>{icon}</span>
-      <span>{label}</span>
-      {highlight && (
-        <span className="ml-auto text-xs bg-[#FF00D4] text-white px-1.5 py-0.5 rounded-full">
-          New
-        </span>
-      )}
-    </Link>
-  </li>
-);
+export default Header;
