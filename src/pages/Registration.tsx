@@ -1,94 +1,52 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useRegistration } from '@/hooks/useRegistration';
-import RegistrationHeader from '@/components/registration/RegistrationHeader';
-import ProgressIndicator from '@/components/registration/ProgressIndicator';
-import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
-import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
-import RegistrationStepTwo from '@/components/registration/RegistrationStepTwo';
-import RegistrationStepThree from '@/components/registration/RegistrationStepThree';
-import RegistrationFooter from '@/components/registration/RegistrationFooter';
-import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
 
 const Registration = () => {
-  const {
-    step,
-    formData,
-    isLoading,
-    connectionError,
-    showFirefoxHelp,
-    isOffline,
-    handleChange,
-    handleNext,
-    handleBack,
-    handleCompleteRegistration,
-  } = useRegistration();
-
-  const renderRegistrationStep = () => {
-    switch (step) {
-      case 1:
-        return <RegistrationStepOne formData={formData} handleChange={handleChange} />;
-      case 2:
-        return <RegistrationStepTwo formData={formData} handleChange={handleChange} />;
-      case 3:
-        return <RegistrationStepThree formData={formData} handleChange={handleChange} />;
-      default:
-        return null;
-    }
-  };
-
-  // Generate a more general connection error message
-  const getConnectionErrorMessage = () => {
-    if (!connectionError) return null;
-    
-    if (connectionError.includes("CORS") || connectionError.includes("fetch") || 
-        connectionError.includes("network") || connectionError.includes("connect")) {
-      return "We're having trouble connecting to our services. This could be due to network conditions or server availability.";
-    }
-    
-    return connectionError;
-  };
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
-      <RegistrationHeader handleBack={handleBack} />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-gray-400">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <Link to="/" className="flex items-center">
+            <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl"></i>
+            <span className="text-white text-xl ml-2">BestAlgo.ai</span>
+          </Link>
+        </div>
+        <Link to="/" className="text-gray-400">
+          <X className="h-5 w-5" />
+        </Link>
+      </div>
 
       <section className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
-        <ProgressIndicator step={step} totalSteps={3} />
+        <h1 className="text-2xl font-bold mb-4">Registration Disabled</h1>
       </section>
-
-      {isOffline && (
-        <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg flex items-start">
-          <WifiOff className="text-yellow-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-yellow-200 text-sm">
-              You are currently offline. You can continue filling in the form, and we'll save your registration when you're back online.
-            </p>
-          </div>
-        </div>
-      )}
-
-      <FirefoxHelpSection 
-        connectionError={getConnectionErrorMessage()} 
-        showFirefoxHelp={showFirefoxHelp} 
-      />
 
       <section className="space-y-6">
         <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700">
-          {renderRegistrationStep()}
+          <div className="flex items-center mb-4 text-yellow-400">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Registration Unavailable</h2>
+          </div>
+          <p className="text-gray-300 mb-4">
+            The registration functionality has been temporarily removed.
+          </p>
         </div>
 
         <Button
-          onClick={step === 3 ? handleCompleteRegistration : handleNext}
-          disabled={isLoading}
+          onClick={() => window.history.back()}
           className="w-full bg-gradient-to-r from-[#FF00D4]/70 to-purple-600/70 text-white py-8 rounded-xl shadow-lg"
         >
-          {isLoading ? "Processing..." : (step === 3 ? 'Complete Registration' : 'Next Step')}
+          Go Back
         </Button>
 
-        <RegistrationFooter />
+        <div className="text-center text-gray-500 text-sm mt-6">
+          <p>© 2023 BestAlgo.ai. All rights reserved.</p>
+        </div>
       </section>
     </div>
   );
