@@ -14,6 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/components/ui/use-toast';
+import FeedbackForm from '@/components/FeedbackForm';
+import FeedbackList from '@/components/FeedbackList';
 
 const faqItems = [
   {
@@ -79,6 +81,18 @@ const SupportPage = () => {
               </AccordionItem>
             ))}
           </Accordion>
+        </section>
+
+        {/* New Feedback Form Section */}
+        <section className="px-4 py-6">
+          <h2 className="text-xl font-bold mb-4">Share Your Experience</h2>
+          <FeedbackForm />
+        </section>
+
+        {/* New Feedback List Section */}
+        <section className="px-4 py-6 bg-gray-800/30">
+          <h2 className="text-xl font-bold mb-4">Recent Feedback</h2>
+          <FeedbackList />
         </section>
 
         <section className="px-4 py-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#FF00D4]/20">

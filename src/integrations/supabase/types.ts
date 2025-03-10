@@ -9,39 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      user_profiles: {
+      feedback: {
         Row: {
-          certification_number: string | null
           created_at: string
           email: string
-          full_name: string | null
           id: string
-          is_research_analyst: boolean | null
-          mobile: string | null
-          trading_experience: string | null
-          updated_at: string
+          message: string
+          name: string
         }
         Insert: {
-          certification_number?: string | null
           created_at?: string
           email: string
-          full_name?: string | null
-          id: string
-          is_research_analyst?: boolean | null
-          mobile?: string | null
-          trading_experience?: string | null
-          updated_at?: string
+          id?: string
+          message: string
+          name: string
         }
         Update: {
-          certification_number?: string | null
           created_at?: string
           email?: string
-          full_name?: string | null
           id?: string
-          is_research_analyst?: boolean | null
-          mobile?: string | null
-          trading_experience?: string | null
-          updated_at?: string
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          account_no: string | null
+          age: number | null
+          apikey: string | null
+          email: string | null
+          id: number
+          name: string | null
+          phonenumber: string | null
+        }
+        Insert: {
+          account_no?: string | null
+          age?: number | null
+          apikey?: string | null
+          email?: string | null
+          id?: number
+          name?: string | null
+          phonenumber?: string | null
+        }
+        Update: {
+          account_no?: string | null
+          age?: number | null
+          apikey?: string | null
+          email?: string | null
+          id?: number
+          name?: string | null
+          phonenumber?: string | null
         }
         Relationships: []
       }
