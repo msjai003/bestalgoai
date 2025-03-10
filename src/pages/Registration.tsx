@@ -23,7 +23,7 @@ const Registration = () => {
       </div>
 
       <section className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Registration Disabled</h1>
+        <h1 className="text-2xl font-bold mb-4">Registration Removed</h1>
       </section>
 
       <section className="space-y-6">
@@ -33,7 +33,7 @@ const Registration = () => {
             <h2 className="text-xl font-semibold">Registration Unavailable</h2>
           </div>
           <p className="text-gray-300 mb-4">
-            The registration functionality has been temporarily removed.
+            The registration functionality has been completely removed from this application.
           </p>
         </div>
 

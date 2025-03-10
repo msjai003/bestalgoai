@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft } from 'lucide-react';
@@ -26,12 +25,12 @@ const Auth = () => {
 
         <div className="flex flex-col items-center mt-12">
           <h1 className="text-2xl font-bold text-white mb-8">
-            Authentication Disabled
+            Authentication Removed
           </h1>
           
           <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700 mb-8">
             <p className="text-white text-center">
-              Login and registration functionality has been temporarily removed.
+              Login and registration functionality has been completely removed from this application.
             </p>
           </div>
           

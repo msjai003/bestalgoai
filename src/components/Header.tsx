@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -11,18 +11,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Menu } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getSiteUrl } from '@/lib/supabase/client';
 
 const Header: React.FC = () => {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
-  };
   
   return (
     <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-lg">
@@ -65,26 +56,12 @@ const Header: React.FC = () => {
             Database
           </Link>
           
-          {user ? (
-            <>
-              <Link
-                to="/dashboard"
-                className="text-gray-300 hover:text-white transition-colors"
-              >
-                Dashboard
-              </Link>
-              <Button variant="secondary" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <Link
-              to="/auth"
-              className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-shadow"
-            >
-              Get Started
-            </Link>
-          )}
+          <Link
+            to="/dashboard"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Dashboard
+          </Link>
         </nav>
 
         <Sheet>
@@ -133,26 +110,12 @@ const Header: React.FC = () => {
                 Database
               </Link>
               
-              {user ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="text-gray-300 hover:text-white transition-colors block py-2"
-                  >
-                    Dashboard
-                  </Link>
-                  <Button variant="secondary" size="sm" onClick={handleSignOut} className="w-full">
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Link
-                  to="/auth"
-                  className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-shadow block text-center"
-                >
-                  Get Started
-                </Link>
-              )}
+              <Link
+                to="/dashboard"
+                className="text-gray-300 hover:text-white transition-colors block py-2"
+              >
+                Dashboard
+              </Link>
             </div>
           </SheetContent>
         </Sheet>
