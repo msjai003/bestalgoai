@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,8 @@ import InstallPrompt from '@/components/InstallPrompt';
 import { getBrowserInfo } from '@/utils/browserUtils';
 import { testSupabaseConnection } from '@/utils/testConnection';
 
+type ConnectionStatus = 'untested' | 'success' | 'error' | 'offline';
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -19,7 +22,7 @@ const Auth = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus<'untested' | 'success' | 'error' | 'offline'>('untested');
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('untested');
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -164,7 +167,6 @@ const Auth = () => {
     }
   };
 
-  
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <div className="px-4 py-8 pb-32">
