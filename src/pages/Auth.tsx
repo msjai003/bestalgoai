@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
+import { getBrowserInfo } from '@/utils/browserUtils';
+import { testSupabaseConnection } from '@/utils/testConnection';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,7 +19,7 @@ const Auth = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error' | 'offline'>('untested');
+  const [connectionStatus, setConnectionStatus<'untested' | 'success' | 'error' | 'offline'>('untested');
   const [connectionDetails, setConnectionDetails] = useState<any>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   const [loginAttempts, setLoginAttempts] = useState(0);
