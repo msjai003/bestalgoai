@@ -20,6 +20,8 @@ const FeedbackList: React.FC = () => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
+        console.log("Fetching feedback from Supabase...");
+        
         const { data, error } = await supabase
           .from('feedback')
           .select('*')
@@ -27,9 +29,11 @@ const FeedbackList: React.FC = () => {
           .limit(5);
 
         if (error) {
+          console.error('Error fetching feedback:', error);
           throw new Error(error.message);
         }
 
+        console.log("Feedback fetched successfully:", data);
         setFeedbacks(data || []);
       } catch (err: any) {
         console.error('Error fetching feedback:', err);

@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import { testSupabaseConnection, directSignUp, offlineSignup } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 export interface RegistrationData {
   fullName: string;
@@ -39,8 +38,8 @@ export const useRegistration = () => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
         navigate('/dashboard');
       }
     };
@@ -69,24 +68,6 @@ export const useRegistration = () => {
     if (browserInfo.browser === 'Firefox' || browserInfo.browser === 'Safari' || !browserInfo.cookiesEnabled) {
       setBrowserIssue(browserInfo);
       setShowFirefoxHelp(true);
-    }
-    
-    // Do a test connection to Supabase
-    const testConnection = async () => {
-      try {
-        const result = await testSupabaseConnection();
-        if (!result.success) {
-          setConnectionError(result.error?.message || "Unable to connect to our services. Please check your network and browser settings.");
-          setShowFirefoxHelp(true);
-          console.log("Connection test failed:", result);
-        }
-      } catch (error) {
-        console.error("Error testing connection:", error);
-      }
-    };
-    
-    if (navigator.onLine) {
-      testConnection();
     }
     
     return () => {
@@ -172,7 +153,7 @@ export const useRegistration = () => {
     setConnectionError(null);
     
     try {
-      console.log("Starting registration process...");
+      console.log("Starting registration process with Supabase...");
       
       const userData = {
         full_name: formData.fullName,
@@ -182,41 +163,28 @@ export const useRegistration = () => {
         certification_number: formData.certificationNumber || null,
       };
       
-      // Check if we're offline or having connection issues
+      // Check if we're offline
       if (isOffline) {
-        // Store the registration attempt for later
-        const offlineResult = await offlineSignup(formData.email, formData.password, userData);
-        if (offlineResult.success) {
-          toast.success("Your registration has been saved and will be completed when you're back online.");
-          navigate('/auth');
-        } else {
-          throw new Error("Could not save registration information. Please try again later.");
-        }
+        toast.error("You are offline. Please connect to the internet to complete registration.");
+        setIsLoading(false);
         return;
       }
       
-      // Try using the direct signup function for better error handling
-      const { data, error } = await directSignUp(formData.email, formData.password, userData);
+      // Register user with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: userData
+        }
+      });
       
       if (error) {
         console.error("Auth error details:", error);
-        
-        // Check for specific errors
-        if (error.message?.includes('fetch') || error.message?.includes('network')) {
-          // Try the test connection to get more details
-          const testResult = await testSupabaseConnection();
-          if (testResult.browserInfo?.browser === 'Firefox' || testResult.browserInfo?.browser === 'Safari') {
-            setShowFirefoxHelp(true);
-            throw new Error("Your browser may be blocking our connection. Please check the troubleshooting steps below.");
-          } else {
-            throw new Error("Network connection issues. Please check your internet connection and try again.");
-          }
-        }
-        
         throw new Error(error.message || "Registration failed");
       }
       
-      console.log("User created successfully");
+      console.log("User created successfully:", data);
       
       toast.success("Registration completed successfully! Please check your email to confirm your account.");
       navigate('/auth');

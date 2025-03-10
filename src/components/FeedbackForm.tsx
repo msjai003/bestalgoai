@@ -41,6 +41,8 @@ const FeedbackForm: React.FC = () => {
         return;
       }
 
+      console.log("Submitting feedback to Supabase...");
+      
       // Insert data into Supabase
       const { data, error } = await supabase
         .from('feedback')
@@ -53,6 +55,8 @@ const FeedbackForm: React.FC = () => {
         throw new Error(error.message);
       }
 
+      console.log("Feedback submitted successfully:", data);
+      
       // Success message
       toast({
         title: "Feedback submitted",

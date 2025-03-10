@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ChevronLeft, AlertCircle, Wifi, ServerCrash, RefreshCw, ExternalLink, Shield, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, testSupabaseConnection } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
@@ -67,13 +66,19 @@ const Auth = () => {
       }
       
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("Attempting login with Supabase...");
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Login error:", error);
+          throw error;
+        }
         
+        console.log("Login successful:", data);
         toast.success('Login successful!');
         navigate('/dashboard');
       }
@@ -83,7 +88,6 @@ const Auth = () => {
       if (!navigator.onLine) {
         setAuthError('You appear to be offline. Please check your internet connection.');
         setShowConnectionHelp(true);
-        setConnectionStatus('offline');
       } else {
         setAuthError(error.message || 'Authentication failed');
       }
@@ -158,6 +162,7 @@ const Auth = () => {
     }
   };
 
+  
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <div className="px-4 py-8 pb-32">
