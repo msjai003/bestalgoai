@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -59,6 +58,11 @@ const createProxyFetch = (url, options) => {
     });
 };
 
+// Validate Supabase credentials before creating client
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase credentials. Please check your configuration.');
+}
+
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
   supabaseUrl,
@@ -76,62 +80,67 @@ export const supabase = createClient(
         'X-Client-Info': 'supabase-js-web/2.49.1',
       },
       fetch: (url, options) => {
-        const fetchOptions = options || {};
-        
-        // Essential fetch options that help with CORS
-        fetchOptions.cache = 'no-store';
-        fetchOptions.credentials = 'include';
-        fetchOptions.mode = 'cors';
-        
-        // Add extra headers that might help with CORS issues
-        if (fetchOptions.headers) {
-          const headers = fetchOptions.headers as Record<string, string>;
+        try {
+          const fetchOptions = options || {};
           
-          // Only add these headers in browser environment
-          if (typeof window !== 'undefined') {
-            headers['Origin'] = window.location.origin;
-            headers['Referer'] = window.location.origin;
-          }
-        }
-        
-        // Use proxy if enabled and in browser environment
-        if (isProxyEnabled() && typeof window !== 'undefined') {
-          return createProxyFetch(url, fetchOptions);
-        }
-        
-        // Chrome-specific workarounds for CORS and cookie issues
-        if (isChromeBrowser()) {
-          // Add SameSite attribute to cookies for Chrome compatibility
-          if (typeof document !== 'undefined') {
-            document.cookie = "SameSite=None; Secure";
-            document.cookie = "Path=/; SameSite=None; Secure";
-          }
+          // Essential fetch options that help with CORS
+          fetchOptions.cache = 'no-store';
+          fetchOptions.credentials = 'include';
+          fetchOptions.mode = 'cors';
           
-          // For Chrome auth endpoints, add special handling
-          if (url.includes('auth/v1')) {
-            console.log("Using special Chrome auth configuration for:", url);
-          }
-        }
-        
-        console.log(`Fetch request to: ${url}`);
-        
-        return fetch(url, fetchOptions)
-          .catch(error => {
-            console.error(`Fetch error for ${url}:`, error);
+          // Add extra headers that might help with CORS issues
+          if (fetchOptions.headers) {
+            const headers = fetchOptions.headers as Record<string, string>;
             
-            // Special handling for Chrome fetch errors
-            if (isChromeBrowser() && error.message?.includes('Failed to fetch')) {
-              console.log("Chrome-specific fetch error detected. This might be due to cookie or CORS settings.");
-              
-              // If direct fetch fails and proxy is not enabled, try using the proxy
-              if (!isProxyEnabled() && typeof window !== 'undefined') {
-                console.log("Attempting to use proxy as fallback...");
-                return createProxyFetch(url, fetchOptions);
-              }
+            // Only add these headers in browser environment
+            if (typeof window !== 'undefined') {
+              headers['Origin'] = window.location.origin;
+              headers['Referer'] = window.location.origin;
+            }
+          }
+          
+          // Use proxy if enabled and in browser environment
+          if (isProxyEnabled() && typeof window !== 'undefined') {
+            return createProxyFetch(url, fetchOptions);
+          }
+          
+          // Chrome-specific workarounds for CORS and cookie issues
+          if (isChromeBrowser()) {
+            // Add SameSite attribute to cookies for Chrome compatibility
+            if (typeof document !== 'undefined') {
+              document.cookie = "SameSite=None; Secure";
+              document.cookie = "Path=/; SameSite=None; Secure";
             }
             
-            throw error;
-          });
+            // For Chrome auth endpoints, add special handling
+            if (url.includes('auth/v1')) {
+              console.log("Using special Chrome auth configuration for:", url);
+            }
+          }
+          
+          console.log(`Fetch request to: ${url}`);
+          
+          return fetch(url, fetchOptions)
+            .catch(error => {
+              console.error(`Fetch error for ${url}:`, error);
+              
+              // Special handling for Chrome fetch errors
+              if (isChromeBrowser() && error.message?.includes('Failed to fetch')) {
+                console.log("Chrome-specific fetch error detected. This might be due to cookie or CORS settings.");
+                
+                // If direct fetch fails and proxy is not enabled, try using the proxy
+                if (!isProxyEnabled() && typeof window !== 'undefined') {
+                  console.log("Attempting to use proxy as fallback...");
+                  return createProxyFetch(url, fetchOptions);
+                }
+              }
+              
+              throw error;
+            });
+        } catch (fetchError) {
+          console.error('Supabase fetch handler error:', fetchError);
+          throw new Error('Error connecting to Supabase. Please check your network connection and Supabase credentials.');
+        }
       }
     }
   }
@@ -140,6 +149,10 @@ export const supabase = createClient(
 // Create a fallback client with less restrictive settings
 export const createFallbackClient = () => {
   try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase credentials for fallback client');
+    }
+    
     return createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: false,
@@ -166,6 +179,8 @@ if (typeof window !== 'undefined') {
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
   console.log('Cookies enabled: ', navigator.cookieEnabled ? 'Yes' : 'No');
   console.log('Proxy enabled: ', isProxyEnabled() ? 'Yes' : 'No');
+  console.log('Supabase URL:', supabaseUrl ? 'Configured' : 'Missing');
+  console.log('Supabase Key:', supabaseAnonKey ? 'Configured (length: ' + supabaseAnonKey.length + ')' : 'Missing');
   
   // Log Chrome-specific information
   if (isChromeBrowser()) {

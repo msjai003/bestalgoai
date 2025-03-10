@@ -1,10 +1,19 @@
-
 import { supabase, supabaseUrl, supabaseAnonKey, isProxyEnabled } from './client';
 import { detectBrowserInfo } from './browser-detection';
 
 // Test if the URL is reachable without Supabase
 export const testDirectConnection = async () => {
   try {
+    // First check if Supabase credentials are available
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return { 
+        success: false, 
+        status: 'missing_credentials',
+        statusText: 'Missing Supabase credentials. Please check environment variables.',
+        error: new Error('Missing Supabase credentials')
+      };
+    }
+
     // First try to check internet connectivity in general
     const onlineStatus = navigator.onLine;
     if (!onlineStatus) {
@@ -90,6 +99,15 @@ export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
     console.log("Proxy enabled:", isProxyEnabled());
+    
+    // Check if Supabase credentials are available
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        error: new Error("Missing Supabase credentials. Please check environment variables."),
+        isMissingCredentials: true
+      };
+    }
     
     // First check if we're online at all
     if (!navigator.onLine) {
