@@ -43,30 +43,6 @@ export const registerUser = async (formData: RegistrationData) => {
   
   console.log("User created successfully:", data);
   
-  // If we have a user ID, try to store additional data in the users table
-  if (data.user?.id) {
-    try {
-      const { error: userTableError } = await supabase
-        .from('users')
-        .upsert({
-          id: data.user.id, 
-          name: formData.fullName,
-          email: formData.email,
-          phonenumber: formData.mobile
-        });
-      
-      if (userTableError) {
-        console.error("Error inserting into users table:", userTableError);
-        // Don't throw here, as the auth registration was successful
-      } else {
-        console.log("User data inserted into users table successfully");
-      }
-    } catch (tableError: any) {
-      console.error("Exception inserting into users table:", tableError);
-      // Don't throw here, as the auth registration was successful
-    }
-  }
-  
   return data;
 };
 
@@ -98,7 +74,7 @@ export const saveUserData = async (userId: string, data: any) => {
   console.log("Saving user data for:", userId, data);
   
   const { error } = await supabase
-    .from('users')
+    .from('user_profiles')
     .upsert({
       id: userId,
       ...data

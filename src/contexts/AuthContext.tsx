@@ -2,7 +2,7 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 type UserProfile = {
