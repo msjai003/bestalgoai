@@ -63,22 +63,22 @@ const StrategyDetails = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-400">
-                    <span className="font-medium text-white">Win Rate:</span> {strategy.winRate}
+                    <span className="font-medium text-white">Win Rate:</span> {strategy.performance.winRate}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-400">
-                    <span className="font-medium text-white">Risk Score:</span> {strategy.riskScore}
+                    <span className="font-medium text-white">Risk Score:</span> {strategy.parameters.find(p => p.name === "Risk Score")?.value || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-400">
-                    <span className="font-medium text-white">Average Return:</span> {strategy.avgReturn}
+                    <span className="font-medium text-white">Average Return:</span> {strategy.performance.avgProfit}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-400">
-                    <span className="font-medium text-white">Max Drawdown:</span> {strategy.maxDrawdown}
+                    <span className="font-medium text-white">Max Drawdown:</span> {strategy.performance.drawdown}
                   </p>
                 </div>
               </div>
@@ -87,7 +87,7 @@ const StrategyDetails = () => {
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Strategy Logic</h2>
               <ScrollArea className="h-40 bg-gray-700/20 rounded-md p-4">
-                <p className="text-sm text-gray-300">{strategy.strategyLogic}</p>
+                <p className="text-sm text-gray-300">{strategy.description}</p>
               </ScrollArea>
             </div>
 

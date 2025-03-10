@@ -10,6 +10,7 @@ import { StrategySection } from "@/components/strategy/StrategySection";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 import { StrategyFilter } from "@/components/strategy/StrategyFilter";
+import { Star, User } from 'lucide-react';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
