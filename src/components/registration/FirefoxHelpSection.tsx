@@ -63,8 +63,8 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
           <p className="text-yellow-200 text-sm font-medium">{connectionError}</p>
           <p className="text-yellow-200/80 text-xs mt-1">
             {isChrome 
-              ? "Chrome's privacy settings may be blocking our connection. Try the troubleshooting steps below."
-              : "Your browser may be blocking our connection. Try the troubleshooting steps below."}
+              ? "We're experiencing connection issues. This could be related to network conditions or server availability."
+              : "We're experiencing connection issues. This could be related to network conditions or server availability."}
           </p>
         </div>
       </div>
@@ -72,16 +72,26 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
       <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
         <div className="flex items-center mb-3">
           <Shield className="h-5 w-5 text-blue-400 mr-2" />
-          <h3 className="font-medium">{browserInstructions.title}</h3>
+          <h3 className="font-medium">Connection Troubleshooting</h3>
         </div>
         
         <ul className="space-y-2 ml-2 text-sm text-gray-300">
-          {browserInstructions.steps.map((step, index) => (
-            <li key={index} className="flex items-start">
-              <span className="mr-2 text-blue-400">•</span>
-              <span>{step}</span>
-            </li>
-          ))}
+          <li className="flex items-start">
+            <span className="mr-2 text-blue-400">•</span>
+            <span>Check your internet connection and try refreshing the page</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2 text-blue-400">•</span>
+            <span>Make sure your network isn't blocking API connections</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2 text-blue-400">•</span>
+            <span>Try using a different network (like mobile data instead of WiFi)</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2 text-blue-400">•</span>
+            <span>Our servers might be experiencing temporary issues</span>
+          </li>
         </ul>
         
         <div className="mt-4 pt-3 border-t border-gray-700">
@@ -101,7 +111,7 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
           </div>
           
           <p className="text-xs text-gray-400 mb-2">
-            If browser security settings are preventing connections, you can use our CORS proxy server as a workaround.
+            If you're still experiencing connection issues, our CORS proxy server might help resolve them.
             This requires you to start the proxy server on your local machine.
           </p>
           
@@ -129,33 +139,31 @@ const FirefoxHelpSection: React.FC<FirefoxHelpSectionProps> = ({
             </div>
           )}
           
-          {isChrome && (
-            <div className="mt-4">
-              <a 
-                href="https://support.google.com/chrome/answer/95647" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-sm text-blue-400 hover:text-blue-300"
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                Chrome cookie settings help
-              </a>
-              
-              <p className="mt-2 text-xs text-gray-400">
-                If you're on a corporate network, some network policies may block connections. 
-                Try using a personal device or contact your IT department.
-              </p>
-              
-              <div className="mt-3 p-3 bg-blue-900/20 border border-blue-700/30 rounded">
-                <h4 className="text-xs font-medium text-blue-300">Additional options:</h4>
-                <ul className="mt-1 text-xs text-gray-300">
-                  <li className="mt-1">• Try using Incognito mode with third-party cookies enabled</li>
-                  <li className="mt-1">• Try a different browser like Firefox or Edge</li>
-                  <li className="mt-1">• Try using a mobile device instead</li>
-                </ul>
-              </div>
+          <div className="mt-4">
+            <a 
+              href="https://status.bestalgotradingapp.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-sm text-blue-400 hover:text-blue-300"
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Check our service status
+            </a>
+            
+            <p className="mt-2 text-xs text-gray-400">
+              If you're on a corporate network, some network policies may block connections. 
+              Try using a personal device or a different network.
+            </p>
+            
+            <div className="mt-3 p-3 bg-blue-900/20 border border-blue-700/30 rounded">
+              <h4 className="text-xs font-medium text-blue-300">Additional options:</h4>
+              <ul className="mt-1 text-xs text-gray-300">
+                <li className="mt-1">• Try opening the application in a different browser</li>
+                <li className="mt-1">• Clear your browser cache and cookies</li>
+                <li className="mt-1">• Try using a mobile device instead</li>
+              </ul>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

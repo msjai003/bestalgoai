@@ -38,16 +38,13 @@ const Registration = () => {
     }
   };
 
-  // Generate a clearer error message for Chrome users
+  // Generate a more general connection error message
   const getConnectionErrorMessage = () => {
     if (!connectionError) return null;
     
-    const userAgent = navigator.userAgent;
-    const isChrome = userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1;
-    
-    if (isChrome && connectionError.includes("CORS") || connectionError.includes("fetch") || 
+    if (connectionError.includes("CORS") || connectionError.includes("fetch") || 
         connectionError.includes("network") || connectionError.includes("connect")) {
-      return "We're having trouble connecting to our services. This could be due to a network restriction, firewall, or security setting in Chrome.";
+      return "We're having trouble connecting to our services. This could be due to network conditions or server availability.";
     }
     
     return connectionError;
@@ -86,7 +83,7 @@ const Registration = () => {
         <Button
           onClick={step === 3 ? handleCompleteRegistration : handleNext}
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-8 rounded-xl shadow-lg"
+          className="w-full bg-gradient-to-r from-[#FF00D4]/70 to-purple-600/70 text-white py-8 rounded-xl shadow-lg"
         >
           {isLoading ? "Processing..." : (step === 3 ? 'Complete Registration' : 'Next Step')}
         </Button>
