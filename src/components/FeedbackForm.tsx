@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Send, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { testTableAccess } from '@/utils/testConnection';
+import { testTableAccess } from '@/lib/supabase/test-connection';
 
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');

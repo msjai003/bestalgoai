@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { RegistrationData } from '@/types/registration';
-import { testSupabaseConnection } from '@/utils/testConnection';
+import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
 // Test connection before any registration attempts
 export const testRegistrationConnection = async () => {

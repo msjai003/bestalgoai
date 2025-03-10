@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import FirefoxHelpSection from '@/components/registration/FirefoxHelpSection';
 import InstallPrompt from '@/components/InstallPrompt';
 import { getBrowserInfo } from '@/utils/browserUtils';
-import { testSupabaseConnection } from '@/utils/testConnection';
+import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
 type ConnectionStatus = 'untested' | 'success' | 'error' | 'offline';
 
