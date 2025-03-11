@@ -3,7 +3,7 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
-    const { data, error } = await supabase.from('signup').select('*').limit(1);
+    const { data, error } = supabase.from('signup').select('*');
     
     if (error) {
       console.error('Error accessing Supabase table:', error);

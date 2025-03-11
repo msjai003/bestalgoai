@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -6,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronRight, TrendingUp, Loader } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Mock data since database connection is removed
 const mockPerformanceData = [
@@ -41,7 +41,7 @@ const Dashboard = () => {
     toast({
       title: "Demo Mode Active",
       description: "Database connection has been removed. Showing mock data.",
-      variant: "warning",
+      variant: "default",
     });
   }, [toast]);
 

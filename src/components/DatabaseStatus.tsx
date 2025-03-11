@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -27,11 +26,10 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection
-      const { data, error } = await supabase
+      // Test Supabase connection - using the mock client
+      const { data, error } = supabase
         .from('_supabase_schema_information')
-        .select('*')
-        .limit(1);
+        .select('*');
       
       if (error) {
         throw error;
@@ -65,13 +63,12 @@ const DatabaseStatus: React.FC = () => {
     for (const tableName of expectedTables) {
       try {
         // First check if the table exists
-        const { data: tableData, error: tableError } = await supabase
+        const { data, error } = supabase
           .from(tableName)
-          .select('count', { count: 'exact' })
-          .limit(1);
+          .select('count');
         
-        if (tableError) {
-          console.error(`Error checking table ${tableName}:`, tableError);
+        if (error) {
+          console.error(`Error checking table ${tableName}:`, error);
           tableResults.push({
             name: tableName,
             rowCount: 0,
@@ -80,7 +77,7 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
-        const rowCount = typeof tableData === 'number' ? tableData : (tableData ? tableData.length : 0);
+        const rowCount = typeof data === 'number' ? data : (data ? data.length : 0);
         
         tableResults.push({
           name: tableName,
@@ -103,10 +100,9 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = supabase
         .from(tableName)
-        .select('*')
-        .limit(5);
+        .select('*');
       
       if (error) {
         throw error;

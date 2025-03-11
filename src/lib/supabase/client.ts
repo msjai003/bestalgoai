@@ -20,17 +20,40 @@ export const supabase = {
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ subscription: { unsubscribe: () => {} } }),
   },
-  from: () => ({
-    select: () => ({
-      limit: () => ({
-        order: () => ({
+  from: (tableName) => ({
+    select: (columns) => ({
+      limit: (limitNum) => ({
+        order: (orderBy) => ({
           data: [],
           error: { message: 'Database connection removed' }
-        })
+        }),
+        data: [],
+        error: { message: 'Database connection removed' }
       }),
-      insert: () => ({ data: null, error: { message: 'Database connection removed' } })
+      insert: (data) => ({ 
+        data: null, 
+        error: { message: 'Database connection removed' } 
+      }),
+      upsert: (data) => ({
+        data: null,
+        error: { message: 'Database connection removed' }
+      }),
+      data: [],
+      error: { message: 'Database connection removed' }
     })
-  })
+  }),
+  storage: {
+    from: (bucketName) => ({
+      upload: async () => ({ data: null, error: { message: 'Database connection removed' } }),
+      getPublicUrl: () => ({ data: { publicUrl: '' }, error: null }),
+    })
+  },
+  channel: (channelName) => ({
+    on: () => ({
+      subscribe: () => {}
+    })
+  }),
+  removeChannel: () => {}
 };
 
 // Create a fallback client function

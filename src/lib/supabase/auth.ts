@@ -1,4 +1,3 @@
-
 import { supabase } from './client';
 
 // Test a direct sign-up with extra data
@@ -55,7 +54,7 @@ export const testFetchUserProfiles = async () => {
   try {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('count');
+      .select('*');
 
     if (error) {
       console.error("Error fetching user profiles:", error);
