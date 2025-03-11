@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -91,9 +90,7 @@ const Registration = () => {
       }
 
       if (data.user) {
-        toast({
-          description: 'Please check your email to confirm your account.',
-        });
+        toast.success('Please check your email to confirm your account.');
         
         // Navigate to login
         navigate('/auth');
@@ -104,14 +101,13 @@ const Registration = () => {
       // Handle network errors specifically
       if (error.message?.includes('fetch') || error.message?.includes('network')) {
         setErrorMessage('Network error: Cannot connect to the database. Please check your internet connection.');
+      } else if (error.message?.includes('User already registered')) {
+        setErrorMessage('This email is already registered. Please try logging in instead.');
       } else {
         setErrorMessage(error.message || 'Failed to register');
       }
       
-      toast({
-        description: error.message || 'An error occurred during registration',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'An error occurred during registration');
     } finally {
       setIsLoading(false);
     }

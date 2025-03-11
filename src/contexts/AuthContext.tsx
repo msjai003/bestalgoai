@@ -2,7 +2,7 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { toast as sonnerToast } from 'sonner';
+import { toast } from 'sonner';
 
 type Profile = {
   id: string;
@@ -57,9 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error('Session retrieval error:', error);
-        sonnerToast('There was a problem loading your session.', {
-          variant: 'destructive',
-        });
+        toast.error('There was a problem loading your session.');
       } finally {
         setIsLoading(false);
       }
@@ -122,18 +120,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Error signing in:', error);
-        sonnerToast(error.message, {
-          variant: 'destructive',
-        });
+        toast.error(error.message);
         return { error };
       }
 
       // Toast success
-      sonnerToast('Successfully signed in.');
+      toast.success('Successfully signed in.');
 
       return { error: null };
     } catch (error) {
       console.error('Exception during sign in:', error);
+      toast.error('Failed to sign in. Please try again.');
       return { error };
     }
   };
@@ -153,12 +150,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(null);
       setSession(null);
       
-      sonnerToast('You have been successfully signed out.');
+      toast.success('You have been successfully signed out.');
     } catch (error) {
       console.error('Sign out error:', error);
-      sonnerToast('There was a problem signing you out.', {
-        variant: 'destructive',
-      });
+      toast.error('There was a problem signing you out.');
     }
   };
 

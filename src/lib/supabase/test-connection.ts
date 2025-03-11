@@ -5,14 +5,24 @@ export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
     
+    // Create a promise with timeout to avoid hanging requests
+    const timeout = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Connection timeout - server may be unavailable')), 10000);
+    });
+    
     // Simple ping test to check general connectivity
-    const { data, error } = await supabase.from('feedback').select('count').limit(1);
+    const connectionPromise = supabase.from('feedback').select('count').limit(1);
+    
+    // Race the connection attempt against the timeout
+    const { data, error } = await Promise.race([connectionPromise, timeout])
+      .then(result => result)
+      .catch(err => ({ data: null, error: err }));
     
     if (error) {
       console.error("Connection test error:", error);
       return {
         success: false,
-        message: error.message,
+        message: error.message || "Failed to connect to database",
         details: error
       };
     }

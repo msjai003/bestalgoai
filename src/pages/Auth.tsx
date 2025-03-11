@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -59,7 +58,13 @@ const Auth = () => {
       const { error } = await signIn(email, password);
 
       if (error) {
-        setErrorMessage(error.message || 'Failed to sign in. Please check your credentials.');
+        if (error.message?.includes('Email not confirmed')) {
+          setErrorMessage('Please confirm your email address before logging in.');
+        } else if (error.message?.includes('Invalid login credentials')) {
+          setErrorMessage('Invalid email or password. Please try again.');
+        } else {
+          setErrorMessage(error.message || 'Failed to sign in. Please check your credentials.');
+        }
       } else {
         // Redirect to dashboard on successful login
         navigate('/dashboard');
