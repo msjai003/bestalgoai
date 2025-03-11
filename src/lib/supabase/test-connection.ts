@@ -13,12 +13,14 @@ export const testSupabaseConnection = async () => {
         message: "Connected to Supabase successfully"
       };
     } else {
+      console.error('Connection test error:', error);
       return {
         success: false,
         message: error.message
       };
     }
   } catch (error: any) {
+    console.error('Connection test exception:', error);
     return {
       success: false,
       message: error?.message || "Failed to connect to database"
@@ -38,6 +40,7 @@ export const testTableAccess = async (tableName: string) => {
         message: `Connected to ${tableName} table successfully`
       };
     } else {
+      console.error(`Table access error (${tableName}):`, error);
       return {
         success: false,
         message: error.message
@@ -45,6 +48,7 @@ export const testTableAccess = async (tableName: string) => {
     }
   }
   catch (error: any) {
+    console.error(`Table access exception (${tableName}):`, error);
     return {
       success: false,
       message: error?.message || `Failed to connect to ${tableName} table`
@@ -55,6 +59,33 @@ export const testTableAccess = async (tableName: string) => {
 // Function to store signup data
 export const storeSignupData = async (email: string, password: string, confirmPassword: string) => {
   try {
+    console.log('Attempting to store signup data for:', email);
+    
+    // Check if the record already exists to avoid duplicates
+    const { data: existingData, error: checkError } = await supabase
+      .from('signup')
+      .select('*')
+      .eq('email', email)
+      .limit(1);
+      
+    if (checkError) {
+      console.error('Error checking existing signup:', checkError);
+      return { 
+        success: false, 
+        message: checkError.message || 'Failed to check existing signup information' 
+      };
+    }
+    
+    // If the email already exists, return an error
+    if (existingData && existingData.length > 0) {
+      console.log('Email already exists in signup table');
+      return { 
+        success: true, 
+        message: 'Email already registered' 
+      };
+    }
+    
+    // Insert the new signup record with proper data types
     const { data, error } = await supabase
       .from('signup')
       .insert([{ 
@@ -71,6 +102,7 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       };
     }
     
+    console.log('Signup data stored successfully');
     return { 
       success: true, 
       message: 'Signup data stored successfully' 
