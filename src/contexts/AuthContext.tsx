@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase, createFallbackClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, confirmPassword: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -65,11 +66,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Sign up function with retry mechanism
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, confirmPassword: string) => {
     try {
       setIsLoading(true);
       
-      // Try with main client first
+      // Verify that passwords match
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return { error: new Error('Passwords do not match') };
+      }
+      
+      // First, attempt to store the signup data directly
+      try {
+        const { error: insertError } = await supabase
+          .from('signup')
+          .insert([{ email, password }]);
+
+        if (insertError) {
+          console.error('Error storing signup data:', insertError);
+          toast.error('Failed to store signup information');
+          return { error: insertError };
+        }
+      } catch (insertErr) {
+        console.error('Exception storing signup data:', insertErr);
+        toast.error('Network error while storing signup data');
+        return { error: insertErr as Error };
+      }
+      
+      // Try with main client for auth
       let response = await supabase.auth.signUp({
         email,
         password,
@@ -96,30 +120,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      // Store data in signup table
       if (data?.user) {
-        try {
-          const { error: insertError } = await supabase
-            .from('signup')
-            .insert([{ email, password }]);
-
-          if (insertError) {
-            console.error('Error storing signup data:', insertError);
-            // Don't fail the signup if just this part fails
-            toast.warning('Account created but some profile data may not be saved');
-          } else {
-            toast.success('Account created successfully!');
-          }
-
-          setUser({
-            id: data.user.id,
-            email: data.user.email || '',
-          });
-        } catch (insertErr) {
-          console.error('Exception storing signup data:', insertErr);
-          // Still consider signup successful if auth worked
-          toast.warning('Account created but profile data not saved');
-        }
+        toast.success('Account created successfully!');
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+        });
       }
 
       return { error: null };

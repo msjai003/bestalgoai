@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -52,8 +51,8 @@ const Registration = () => {
         return;
       }
 
-      // Call signUp from AuthContext
-      const { error } = await signUp(email, password);
+      // Call signUp from AuthContext with all three parameters
+      const { error } = await signUp(email, password, confirmPassword);
       
       if (error) {
         if (error.message?.includes('fetch') || error.message?.includes('network') || 
