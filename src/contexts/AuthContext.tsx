@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase, createFallbackClient } from '@/lib/supabase/client';
+import { storeSignupData } from '@/lib/supabase/test-connection';
 import { toast } from 'sonner';
 
 interface User {
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Sign up function with retry mechanism
+  // Sign up function with improved error handling and storage
   const signUp = async (email: string, password: string, confirmPassword: string) => {
     try {
       setIsLoading(true);
@@ -76,21 +76,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
       
-      // First, attempt to store the signup data directly
-      try {
-        const { error: insertError } = await supabase
-          .from('signup')
-          .insert([{ email, password }]);
-
-        if (insertError) {
-          console.error('Error storing signup data:', insertError);
-          toast.error('Failed to store signup information');
-          return { error: insertError };
-        }
-      } catch (insertErr) {
-        console.error('Exception storing signup data:', insertErr);
-        toast.error('Network error while storing signup data');
-        return { error: insertErr as Error };
+      // First, store the signup data in the signup table
+      const signupResult = await storeSignupData(email, password, confirmPassword);
+      
+      if (!signupResult.success) {
+        console.error('Error storing signup data:', signupResult.message);
+        toast.error(signupResult.message || 'Failed to store signup information');
+        return { error: new Error(signupResult.message || 'Failed to store signup information') };
       }
       
       // Try with main client for auth

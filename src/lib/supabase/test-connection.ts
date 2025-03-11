@@ -26,7 +26,7 @@ export const testSupabaseConnection = async () => {
   }
 };
 
-// Add the missing testTableAccess function
+// Add a specific function to test and insert into the signup table
 export const testTableAccess = async (tableName: string) => {
   try {
     // Test connection to the specified table
@@ -43,10 +43,43 @@ export const testTableAccess = async (tableName: string) => {
         message: error.message
       };
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     return {
       success: false,
       message: error?.message || `Failed to connect to ${tableName} table`
+    };
+  }
+};
+
+// Function to store signup data
+export const storeSignupData = async (email: string, password: string, confirmPassword: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('signup')
+      .insert([{ 
+        email, 
+        password,
+        confirm_password: confirmPassword 
+      }]);
+    
+    if (error) {
+      console.error('Error storing signup data:', error);
+      return { 
+        success: false, 
+        message: error.message || 'Failed to store signup information' 
+      };
+    }
+    
+    return { 
+      success: true, 
+      message: 'Signup data stored successfully' 
+    };
+  } catch (error: any) {
+    console.error('Exception storing signup data:', error);
+    return { 
+      success: false, 
+      message: error?.message || 'Network error while storing signup data' 
     };
   }
 };

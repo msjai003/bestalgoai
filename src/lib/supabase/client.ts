@@ -13,6 +13,20 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
+// Create a simplified fetch handler to reduce complexity and possible errors
+const customFetch = (url: RequestInfo | URL, options?: RequestInit) => {
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options?.headers || {}),
+      'X-Client-Info': 'supabase-js-web/2.49.1',
+    }
+  }).catch(error => {
+    console.error(`Fetch error for ${url}:`, error);
+    throw error;
+  });
+};
+
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
   supabaseUrl,
@@ -22,26 +36,9 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storageKey: 'session',
-      flowType: 'pkce'
     },
     global: {
-      fetch: (url, options) => {
-        // Simple fetch without complex configuration that might cause issues
-        return fetch(url, {
-          ...options,
-          cache: 'no-store',
-          credentials: 'include',
-          mode: 'cors',
-          headers: {
-            ...(options?.headers || {}),
-            'X-Client-Info': 'supabase-js-web/2.49.1',
-          }
-        }).catch(error => {
-          console.error(`Fetch error for ${url}:`, error);
-          throw error;
-        });
-      }
+      fetch: customFetch
     }
   }
 );
@@ -55,6 +52,9 @@ export const createFallbackClient = () => {
         autoRefreshToken: true,
         detectSessionInUrl: false,
         flowType: 'implicit'
+      },
+      global: {
+        fetch: customFetch
       }
     });
   } catch (error) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +17,7 @@ const Registration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isNetworkIssue, setIsNetworkIssue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -24,6 +27,20 @@ const Registration = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  // Test the database connection on component mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const result = await testSupabaseConnection();
+      setConnectionStatus(result.success);
+      if (!result.success) {
+        setIsNetworkIssue(true);
+        setErrorMessage('Database connection issue: ' + result.message);
+      }
+    };
+
+    checkConnection();
+  }, []);
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,9 +73,9 @@ const Registration = () => {
       
       if (error) {
         if (error.message?.includes('fetch') || error.message?.includes('network') || 
-            error.message?.includes('Failed to connect')) {
+            error.message?.includes('Failed to connect') || error.message?.includes('store signup')) {
           setIsNetworkIssue(true);
-          setErrorMessage('Network connection issue. Please check your internet connection and try again.');
+          setErrorMessage(error.message || 'Network connection issue. Please check your internet connection and try again.');
         } else {
           setErrorMessage(error.message || 'Failed to create account');
         }
@@ -68,9 +85,9 @@ const Registration = () => {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('store signup')) {
         setIsNetworkIssue(true);
-        setErrorMessage('Network connection issue. Please check your internet connection and try again.');
+        setErrorMessage(error.message || 'Network connection issue. Please check your internet connection and try again.');
       } else {
         setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
       }
@@ -100,6 +117,15 @@ const Registration = () => {
         <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
         <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
       </section>
+
+      {connectionStatus === false && (
+        <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
+          <WifiOff className="h-4 w-4 text-yellow-400" />
+          <AlertDescription className="text-yellow-200 ml-2">
+            Unable to connect to the database. Some features may not work properly.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {errorMessage && (
         <Alert className={`${isNetworkIssue ? 'bg-yellow-900/30 border-yellow-800' : 'bg-red-900/30 border-red-800'} mb-6`} variant="destructive">
@@ -155,7 +181,7 @@ const Registration = () => {
 
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || connectionStatus === false}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
