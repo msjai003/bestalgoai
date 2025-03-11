@@ -47,7 +47,7 @@ function AppRoutes() {
       <Route path="/registration" element={<Registration />} />
       <Route path="/onboarding" element={<Onboarding />} />
       
-      {/* All routes are now public */}
+      {/* All routes are public */}
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/strategy-builder" element={<StrategyBuilder />} />
       <Route path="/strategy-selection" element={<StrategySelection />} />
