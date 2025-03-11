@@ -1,7 +1,7 @@
 
 // Mock client that doesn't connect to Supabase
-export const supabaseUrl = 'removed';
-export const supabaseAnonKey = 'removed';
+export const supabaseUrl = 'https://ohryyssrykyrmkdttaet.supabase.co';
+export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ocnl5c3NyeWt5cm1rZHR0YWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTIyMDgsImV4cCI6MjA1NzE2ODIwOH0.gQrW_Ki_YnnOeKOmMpJ1MQe8fkOMQ-oEbdzNKoRDDH0';
 
 // Get the current site URL for redirects
 export const getSiteUrl = () => {
@@ -11,51 +11,13 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Mock Supabase client
-export const supabase = {
-  auth: {
-    signUp: () => ({ data: null, error: { message: 'Database connection removed' } }),
-    signInWithPassword: () => ({ data: null, error: { message: 'Database connection removed' } }),
-    signOut: () => ({ error: null }),
-    getSession: () => ({ data: { session: null }, error: null }),
-    onAuthStateChange: () => ({ subscription: { unsubscribe: () => {} } }),
-  },
-  from: () => ({
-    select: () => ({
-      limit: () => ({
-        order: () => ({
-          data: [],
-          error: { message: 'Database connection removed' }
-        })
-      }),
-      insert: () => ({ 
-        data: null, 
-        error: { message: 'Database connection removed' } 
-      }),
-      upsert: () => ({
-        data: null,
-        error: { message: 'Database connection removed' }
-      }),
-      data: [],
-      error: { message: 'Database connection removed' }
-    })
-  }),
-  storage: {
-    from: () => ({
-      upload: () => ({ data: null, error: { message: 'Database connection removed' } }),
-      getPublicUrl: () => ({ data: { publicUrl: '' }, error: null }),
-    })
-  },
-  channel: () => ({
-    on: () => ({
-      subscribe: () => {}
-    })
-  }),
-  removeChannel: () => {}
-};
+// Create Supabase client
+import { createClient } from '@supabase/supabase-js';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Create a fallback client function
 export const createFallbackClient = () => {
-  console.log('Creating fallback client (no actual connection)');
+  console.log('Creating client for Supabase project: ohryyssrykyrmkdttaet');
   return supabase;
 };
