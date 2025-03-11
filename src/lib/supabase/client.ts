@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase URL and anon key - these should be public values
@@ -100,23 +99,10 @@ export const supabase = createClient(
             }
           }
           
-          // Use proxy if enabled and in browser environment
-          if (isProxyEnabled() && typeof window !== 'undefined') {
-            return createProxyFetch(url, fetchOptions);
-          }
-          
-          // Chrome-specific workarounds for CORS and cookie issues
-          if (isChromeBrowser()) {
-            // Add SameSite attribute to cookies for Chrome compatibility
-            if (typeof document !== 'undefined') {
-              document.cookie = "SameSite=None; Secure";
-              document.cookie = "Path=/; SameSite=None; Secure";
-            }
-            
-            // For Chrome auth endpoints, add special handling
-            if (url.includes('auth/v1')) {
-              console.log("Using special Chrome auth configuration for:", url);
-            }
+          // Add SameSite attribute to cookies for Chrome compatibility
+          if (typeof document !== 'undefined') {
+            document.cookie = "SameSite=None; Secure";
+            document.cookie = "Path=/; SameSite=None; Secure";
           }
           
           console.log(`Fetch request to: ${url}`);
@@ -124,18 +110,6 @@ export const supabase = createClient(
           return fetch(url, fetchOptions)
             .catch(error => {
               console.error(`Fetch error for ${url}:`, error);
-              
-              // Special handling for Chrome fetch errors
-              if (isChromeBrowser() && error.message?.includes('Failed to fetch')) {
-                console.log("Chrome-specific fetch error detected. This might be due to cookie or CORS settings.");
-                
-                // If direct fetch fails and proxy is not enabled, try using the proxy
-                if (!isProxyEnabled() && typeof window !== 'undefined') {
-                  console.log("Attempting to use proxy as fallback...");
-                  return createProxyFetch(url, fetchOptions);
-                }
-              }
-              
               throw error;
             });
         } catch (fetchError) {

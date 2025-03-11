@@ -25,3 +25,28 @@ export const testSupabaseConnection = async () => {
     };
   }
 };
+
+// Add the missing testTableAccess function
+export const testTableAccess = async (tableName: string) => {
+  try {
+    // Test connection to the specified table
+    const { data, error } = await supabase.from(tableName).select('count').limit(1);
+    
+    if (!error) {
+      return {
+        success: true,
+        message: `Connected to ${tableName} table successfully`
+      };
+    } else {
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.message || `Failed to connect to ${tableName} table`
+    };
+  }
+};
