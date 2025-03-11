@@ -1,20 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, WifiOff } from 'lucide-react';
+import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+
+  // Check connection on component mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const result = await testSupabaseConnection();
+      setIsConnected(result.success);
+      if (!result.success) {
+        setErrorMessage('Database connection issue. Please try again later or contact support.');
+        console.error('Connection test result:', result);
+      }
+    };
+    
+    checkConnection();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +40,20 @@ const Auth = () => {
     try {
       if (!email.trim() || !password.trim()) {
         setErrorMessage('Please enter both email and password.');
+        setIsLoading(false);
         return;
+      }
+
+      if (!isConnected) {
+        setErrorMessage('Cannot connect to the database. Please check your internet connection or try again later.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check connection before login attempt
+      const connectionTest = await testSupabaseConnection();
+      if (!connectionTest.success) {
+        throw new Error("Cannot connect to the database: " + connectionTest.message);
       }
 
       const { error } = await signIn(email, password);
@@ -37,7 +66,13 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      
+      // Handle network errors specifically
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        setErrorMessage('Network error: Cannot connect to the database. Please check your internet connection.');
+      } else {
+        setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +99,15 @@ const Auth = () => {
         <h1 className="text-2xl font-bold mb-4">Welcome Back</h1>
         <p className="text-gray-400">Login to access your trading algorithms and portfolio management.</p>
       </section>
+
+      {!isConnected && (
+        <Alert className="bg-amber-900/30 border-amber-800 mb-6">
+          <WifiOff className="h-4 w-4 text-amber-400" />
+          <AlertDescription className="text-amber-200 ml-2">
+            Database connection is currently unavailable. Login may not work.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {errorMessage && (
         <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
@@ -108,7 +152,7 @@ const Auth = () => {
 
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !isConnected}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
         >
           {isLoading ? 'Signing In...' : 'Sign In'}

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase/client';
-import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
 const Registration = () => {
   const [fullName, setFullName] = useState('');
@@ -15,7 +17,22 @@ const Registration = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
   const navigate = useNavigate();
+
+  // Check connection on component mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const result = await testSupabaseConnection();
+      setIsConnected(result.success);
+      if (!result.success) {
+        setErrorMessage('Database connection issue. Please try again later or contact support.');
+        console.error('Connection test result:', result);
+      }
+    };
+    
+    checkConnection();
+  }, []);
 
   const validateForm = () => {
     if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
@@ -44,9 +61,20 @@ const Registration = () => {
       return;
     }
 
+    if (!isConnected) {
+      setErrorMessage('Cannot connect to the database. Please check your internet connection or try again later.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Check connection before registration attempt
+      const connectionTest = await testSupabaseConnection();
+      if (!connectionTest.success) {
+        throw new Error("Cannot connect to the database: " + connectionTest.message);
+      }
+
       // Register with Supabase
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -72,7 +100,14 @@ const Registration = () => {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      setErrorMessage(error.message || 'Failed to register');
+      
+      // Handle network errors specifically
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        setErrorMessage('Network error: Cannot connect to the database. Please check your internet connection.');
+      } else {
+        setErrorMessage(error.message || 'Failed to register');
+      }
+      
       toast({
         description: error.message || 'An error occurred during registration',
         variant: 'destructive',
@@ -103,6 +138,15 @@ const Registration = () => {
         <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
         <p className="text-gray-400">Join BestAlgo.ai to start building powerful trading strategies.</p>
       </section>
+
+      {!isConnected && (
+        <Alert className="bg-amber-900/30 border-amber-800 mb-6">
+          <WifiOff className="h-4 w-4 text-amber-400" />
+          <AlertDescription className="text-amber-200 ml-2">
+            Database connection is currently unavailable. Registration may not work.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {errorMessage && (
         <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
@@ -166,7 +210,7 @@ const Registration = () => {
 
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !isConnected}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}

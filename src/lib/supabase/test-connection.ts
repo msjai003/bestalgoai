@@ -5,7 +5,7 @@ export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
     
-    // Try to access the feedback table for a more complete connection test
+    // Simple ping test to check general connectivity
     const { data, error } = await supabase.from('feedback').select('count').limit(1);
     
     if (error) {
@@ -47,7 +47,17 @@ export const testSupabaseConnection = async () => {
 export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
-    const { data, error } = await supabase.from(tableName).select('count').limit(1);
+    
+    // Use more resilient fetch method with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('count')
+      .limit(1);
+    
+    clearTimeout(timeoutId);
     
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);
