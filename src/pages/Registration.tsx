@@ -6,21 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, WifiOff, Info, DatabaseIcon } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import { testSupabaseConnection, testTableAccess } from '@/lib/supabase/test-connection';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [detailedError, setDetailedError] = useState<string | null>(null);
-  const [isNetworkIssue, setIsNetworkIssue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null);
-  const [tableStatus, setTableStatus] = useState<boolean | null>(null);
-  const [isTestingConnection, setIsTestingConnection] = useState(true);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -31,49 +25,9 @@ const Registration = () => {
     }
   }, [user, navigate]);
 
-  // Test the database connection and signup table on component mount
-  useEffect(() => {
-    const checkConnection = async () => {
-      setIsTestingConnection(true);
-      
-      try {
-        // Check general connection
-        const connectionResult = await testSupabaseConnection();
-        setConnectionStatus(connectionResult.success);
-        
-        if (!connectionResult.success) {
-          setIsNetworkIssue(true);
-          setErrorMessage('Database connection issue: ' + connectionResult.message);
-          setIsTestingConnection(false);
-          return;
-        }
-        
-        // Check specifically the signup table
-        const tableResult = await testTableAccess('signup');
-        setTableStatus(tableResult.success);
-        
-        if (!tableResult.success) {
-          setIsNetworkIssue(true);
-          setErrorMessage('Signup table access issue: ' + tableResult.message);
-        }
-      } catch (error) {
-        console.error('Connection check error:', error);
-        setConnectionStatus(false);
-        setIsNetworkIssue(true);
-        setErrorMessage('Failed to check database connection');
-      } finally {
-        setIsTestingConnection(false);
-      }
-    };
-
-    checkConnection();
-  }, []);
-
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setDetailedError(null);
-    setIsNetworkIssue(false);
     setIsLoading(true);
 
     try {
@@ -96,80 +50,21 @@ const Registration = () => {
         return;
       }
 
-      // Verify database connection before attempting registration
-      if (connectionStatus === false || tableStatus === false) {
-        setErrorMessage('Cannot register: Database connection issue');
-        setIsNetworkIssue(true);
-        setIsLoading(false);
-        return;
-      }
-
       // Call signUp from AuthContext with all three parameters
       const { error } = await signUp(email, password, confirmPassword);
       
       if (error) {
         console.error('Registration error details:', error);
-        
-        if (error.message?.includes('fetch') || error.message?.includes('network') || 
-            error.message?.includes('Failed to connect') || error.message?.includes('store signup')) {
-          setIsNetworkIssue(true);
-          setErrorMessage('Network or database connection issue');
-          setDetailedError(error.message || 'Failed to store signup information. Please try again.');
-        } else {
-          setErrorMessage(error.message || 'Failed to create account');
-        }
+        setErrorMessage(error.message || 'Failed to create account');
       } else {
         toast.success('Signup was successful!');
         navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('store signup')) {
-        setIsNetworkIssue(true);
-        setErrorMessage('Network connection issue');
-        setDetailedError(error.message || 'Network error during signup. Please check your connection and try again.');
-      } else {
-        setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
-      }
+      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const retryConnectionTest = async () => {
-    setIsTestingConnection(true);
-    setErrorMessage(null);
-    setDetailedError(null);
-    
-    try {
-      // Check general connection
-      const connectionResult = await testSupabaseConnection();
-      setConnectionStatus(connectionResult.success);
-      
-      if (!connectionResult.success) {
-        setIsNetworkIssue(true);
-        setErrorMessage('Database connection issue: ' + connectionResult.message);
-        setIsTestingConnection(false);
-        return;
-      }
-      
-      // Check specifically the signup table
-      const tableResult = await testTableAccess('signup');
-      setTableStatus(tableResult.success);
-      
-      if (!tableResult.success) {
-        setIsNetworkIssue(true);
-        setErrorMessage('Signup table access issue: ' + tableResult.message);
-      } else {
-        toast.success('Database connection successful!');
-      }
-    } catch (error) {
-      console.error('Connection check error:', error);
-      setConnectionStatus(false);
-      setIsNetworkIssue(true);
-      setErrorMessage('Failed to check database connection');
-    } finally {
-      setIsTestingConnection(false);
     }
   };
 
@@ -195,64 +90,18 @@ const Registration = () => {
         <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
       </section>
 
-      {isTestingConnection && (
-        <Alert className="bg-blue-900/30 border-blue-800 mb-6">
-          <Info className="h-4 w-4 text-blue-400" />
-          <AlertDescription className="text-blue-200 ml-2 flex items-center">
-            Testing database connection...
-            <div className="ml-2 animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {connectionStatus === false && !isTestingConnection && (
-        <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
-          <WifiOff className="h-4 w-4 text-yellow-400" />
-          <AlertDescription className="text-yellow-200 ml-2">
-            Unable to connect to the database. Some features may not work properly.
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 bg-yellow-800/50 border-yellow-700 text-yellow-200 hover:bg-yellow-700"
-              onClick={retryConnectionTest}
-              disabled={isTestingConnection}
-            >
-              Retry Connection
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {tableStatus === false && connectionStatus === true && !isTestingConnection && (
-        <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
-          <Info className="h-4 w-4 text-yellow-400" />
-          <AlertDescription className="text-yellow-200 ml-2">
-            Connected to the database, but cannot access the signup table. Registration may fail.
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 bg-yellow-800/50 border-yellow-700 text-yellow-200 hover:bg-yellow-700"
-              onClick={retryConnectionTest}
-              disabled={isTestingConnection}
-            >
-              Retry Connection
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+      <Alert className="bg-blue-900/30 border-blue-800 mb-6">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertDescription className="text-blue-200 ml-2">
+          Database connection has been removed. For demo, use email containing "demo" (e.g., demo@example.com).
+        </AlertDescription>
+      </Alert>
 
       {errorMessage && (
-        <Alert className={`${isNetworkIssue ? 'bg-yellow-900/30 border-yellow-800' : 'bg-red-900/30 border-red-800'} mb-6`} variant="destructive">
-          {isNetworkIssue ? (
-            <WifiOff className="h-4 w-4 text-yellow-400" />
-          ) : (
-            <AlertTriangle className="h-4 w-4 text-red-400" />
-          )}
-          <AlertDescription className={`${isNetworkIssue ? 'text-yellow-200' : 'text-red-200'} ml-2`}>
+        <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
+          <AlertTriangle className="h-4 w-4 text-red-400" />
+          <AlertDescription className="text-red-200 ml-2">
             {errorMessage}
-            {detailedError && (
-              <div className="mt-2 text-xs opacity-80">{detailedError}</div>
-            )}
           </AlertDescription>
         </Alert>
       )}
@@ -298,7 +147,7 @@ const Registration = () => {
 
         <Button
           type="submit"
-          disabled={isLoading || isTestingConnection || connectionStatus === false}
+          disabled={isLoading}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}

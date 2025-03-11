@@ -1,76 +1,64 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Link } from "react-router-dom";
-import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronRight, TrendingUp, TrendingDown, Loader } from 'lucide-react';
+import { ChevronRight, TrendingUp, Loader } from 'lucide-react';
+
+// Mock data since database connection is removed
+const mockPerformanceData = [
+  { date: '1/5', value: 1200000 },
+  { date: '2/5', value: 1250000 },
+  { date: '3/5', value: 1245000 },
+  { date: '4/5', value: 1275000 },
+  { date: '5/5', value: 1245678 },
+];
+
+const mockStrategies = [
+  { 
+    id: '1', 
+    name: 'Moving Average Crossover', 
+    description: 'A trend-following strategy based on the crossover of two moving averages'
+  },
+  { 
+    id: '2', 
+    name: 'RSI Reversal', 
+    description: 'Identifies potential market reversals using the Relative Strength Index'
+  },
+  { 
+    id: '3', 
+    name: 'Bollinger Band Squeeze', 
+    description: 'Capitalizes on breakouts when volatility increases after a period of contraction'
+  }
+];
 
 const Dashboard = () => {
-  const [portfolioValue, setPortfolioValue] = useState("₹12,45,678");
-  const [todaysPnL, setTodaysPnL] = useState("+₹24,500");
-  const [overallPnL, setOverallPnL] = useState("+₹1,45,500");
-  const [strategies, setStrategies] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
-  const [performanceData, setPerformanceData] = useState([
-    { date: '1/5', value: 1200000 },
-    { date: '2/5', value: 1250000 },
-    { date: '3/5', value: 1245000 },
-    { date: '4/5', value: 1275000 },
-    { date: '5/5', value: 1245678 },
-  ]);
-
-  useEffect(() => {
-    const fetchStrategies = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch some strategies to display
-        const { data, error } = await supabase
-          .from('strategies')
-          .select('*')
-          .limit(3);
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data) {
-          setStrategies(data);
-          toast({
-            title: "Connected to database",
-            description: "Successfully fetched data from Supabase",
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching strategies:', error);
-        toast({
-          title: "Database Error",
-          description: "Could not fetch strategies. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStrategies();
+  React.useEffect(() => {
+    toast({
+      title: "Demo Mode Active",
+      description: "Database connection has been removed. Showing mock data.",
+      variant: "warning",
+    });
   }, [toast]);
 
   return (
     <div className="bg-gray-900 min-h-screen">
       <Header />
       <main className="pt-16 pb-20">
+        <div className="p-4 bg-yellow-900/30 border border-yellow-700 m-4 rounded-lg">
+          <p className="text-yellow-200 text-sm">⚠️ Demo Mode: Database connection has been removed. Showing mock data.</p>
+        </div>
+        
         <section id="portfolio-overview" className="p-4">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 shadow-xl border border-gray-800">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
-                <p className="text-2xl font-bold text-white">{portfolioValue}</p>
+                <p className="text-2xl font-bold text-white">₹12,45,678</p>
               </div>
               <Link 
                 to="/subscription" 
@@ -82,7 +70,7 @@ const Dashboard = () => {
             
             <div className="h-36 my-4">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={performanceData}>
+                <LineChart data={mockPerformanceData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
                   <XAxis dataKey="date" stroke="#888" />
                   <YAxis stroke="#888" tickFormatter={(value) => `₹${value/100000}L`} />
@@ -102,11 +90,11 @@ const Dashboard = () => {
             <div className="flex justify-between text-sm mt-4">
               <div>
                 <p className="text-gray-400">Today's P&L</p>
-                <p className="text-emerald-400 font-medium">{todaysPnL}</p>
+                <p className="text-emerald-400 font-medium">+₹24,500</p>
               </div>
               <div>
                 <p className="text-gray-400">Overall P&L</p>
-                <p className="text-emerald-400 font-medium">{overallPnL}</p>
+                <p className="text-emerald-400 font-medium">+₹1,45,500</p>
               </div>
             </div>
           </div>
@@ -135,43 +123,26 @@ const Dashboard = () => {
             </Link>
           </div>
           
-          {isLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <Loader className="h-6 w-6 text-[#FF00D4] animate-spin" />
-              <span className="ml-2 text-gray-400">Loading strategies...</span>
-            </div>
-          ) : strategies.length > 0 ? (
-            <div className="space-y-3">
-              {strategies.map((strategy) => (
-                <div key={strategy.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-white">{strategy.name}</h4>
-                    <div className="flex items-center text-emerald-400 text-sm">
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      <span>+12.4%</span>
-                    </div>
+          <div className="space-y-3">
+            {mockStrategies.map((strategy) => (
+              <div key={strategy.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-medium text-white">{strategy.name}</h4>
+                  <div className="flex items-center text-emerald-400 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <span>+12.4%</span>
                   </div>
-                  <p className="text-gray-400 text-sm mb-3">{strategy.description || "No description available"}</p>
-                  <Link 
-                    to={`/strategy-details/${strategy.id}`}
-                    className="text-[#FF00D4] text-sm hover:underline"
-                  >
-                    View details
-                  </Link>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700 text-center">
-              <p className="text-gray-400 mb-4">No strategies found</p>
-              <Link 
-                to="/strategy-selection"
-                className="bg-[#FF00D4]/20 text-[#FF00D4] px-4 py-2 rounded-lg hover:bg-[#FF00D4]/30"
-              >
-                Explore Strategies
-              </Link>
-            </div>
-          )}
+                <p className="text-gray-400 text-sm mb-3">{strategy.description}</p>
+                <Link 
+                  to={`/strategy-details/${strategy.id}`}
+                  className="text-[#FF00D4] text-sm hover:underline"
+                >
+                  View details
+                </Link>
+              </div>
+            ))}
+          </div>
         </section>
       </main>
       <BottomNav />

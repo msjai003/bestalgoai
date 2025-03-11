@@ -1,9 +1,7 @@
 
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase project URL and anon key
-export const supabaseUrl = 'https://fzvrozrjtvflksumiqsk.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI';
+// Mock client that doesn't connect to Supabase
+export const supabaseUrl = 'removed';
+export const supabaseAnonKey = 'removed';
 
 // Get the current site URL for redirects
 export const getSiteUrl = () => {
@@ -13,19 +11,30 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Create a Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Mock Supabase client
+export const supabase = {
+  auth: {
+    signUp: async () => ({ data: null, error: { message: 'Database connection removed' } }),
+    signInWithPassword: async () => ({ data: null, error: { message: 'Database connection removed' } }),
+    signOut: async () => ({ error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ subscription: { unsubscribe: () => {} } }),
+  },
+  from: () => ({
+    select: () => ({
+      limit: () => ({
+        order: () => ({
+          data: [],
+          error: { message: 'Database connection removed' }
+        })
+      }),
+      insert: () => ({ data: null, error: { message: 'Database connection removed' } })
+    })
+  })
+};
 
 // Create a fallback client function
 export const createFallbackClient = () => {
-  console.log('Creating fallback client');
-  return createClient(supabaseUrl, supabaseAnonKey);
+  console.log('Creating fallback client (no actual connection)');
+  return supabase;
 };
-
-// Log information for debugging purposes
-if (typeof window !== 'undefined') {
-  console.log('Connected to Supabase database');
-  console.log('Current site URL for redirects:', getSiteUrl());
-  console.log('Browser: ', navigator.userAgent || 'Unknown');
-  console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
-}

@@ -5,9 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Send, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { testTableAccess } from '@/lib/supabase/test-connection';
 
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -55,47 +53,30 @@ const FeedbackForm: React.FC = () => {
         return;
       }
 
-      // Test table access before attempting to insert
-      const tableTest = await testTableAccess('feedback');
-      if (!tableTest.success) {
-        throw new Error(`Cannot access feedback table: ${tableTest.message}`);
-      }
-
-      console.log("Submitting feedback to Supabase...");
+      console.log("Mock feedback submission:", { name, email, message });
       
-      // Insert data into Supabase
-      const { data, error } = await supabase
-        .from('feedback')
-        .insert([
-          { name, email, message }
-        ]);
+      // Simulate a successful submission with a delay
+      setTimeout(() => {
+        // Success message
+        toast({
+          title: "Feedback submitted",
+          description: "Thank you for your feedback! (Demo mode - no database connection)",
+        });
 
-      if (error) {
-        console.error('Error submitting feedback:', error);
-        throw new Error(error.message);
-      }
-
-      console.log("Feedback submitted successfully:", data);
-      
-      // Success message
-      toast({
-        title: "Feedback submitted",
-        description: "Thank you for your feedback!",
-      });
-
-      // Reset form
-      setName('');
-      setEmail('');
-      setMessage('');
+        // Reset form
+        setName('');
+        setEmail('');
+        setMessage('');
+        setIsSubmitting(false);
+      }, 1000);
     } catch (error: any) {
       console.error('Error in feedback submission:', error);
-      setErrorMessage(error.message || "There was a problem submitting your feedback");
+      setErrorMessage("Database connection has been removed from the project");
       toast({
         title: "Submission failed",
-        description: error.message || "There was a problem submitting your feedback",
+        description: "Database connection has been removed from the project",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

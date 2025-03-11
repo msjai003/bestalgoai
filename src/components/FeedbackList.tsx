@@ -1,83 +1,40 @@
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 
-interface Feedback {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  created_at: string;
-}
+// Mock feedback data
+const mockFeedback = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    message: 'Great application! I really enjoy using the trading algorithms.',
+    created_at: '2025-03-05T10:30:00Z'
+  },
+  {
+    id: '2',
+    name: 'Sarah Johnson',
+    email: 'sarah@example.com',
+    message: 'The UI is intuitive and the backtesting feature is amazing!',
+    created_at: '2025-03-04T15:45:00Z'
+  },
+  {
+    id: '3',
+    name: 'Michael Smith',
+    email: 'michael@example.com',
+    message: 'Would love to see more educational resources about trading strategies.',
+    created_at: '2025-03-03T09:15:00Z'
+  }
+];
 
 const FeedbackList: React.FC = () => {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchFeedback = async () => {
-      try {
-        console.log("Fetching feedback from Supabase...");
-        
-        const { data, error } = await supabase
-          .from('feedback')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        if (error) {
-          console.error('Error fetching feedback:', error);
-          throw new Error(error.message);
-        }
-
-        console.log("Feedback fetched successfully:", data);
-        setFeedbacks(data || []);
-      } catch (err: any) {
-        console.error('Error fetching feedback:', err);
-        setError(err.message);
-        toast({
-          title: "Failed to load feedback",
-          description: err.message,
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFeedback();
-  }, [toast]);
-
-  if (isLoading) {
-    return (
-      <div className="p-6 bg-gray-800/40 border border-gray-700 rounded-lg">
-        <p className="text-gray-400 text-center">Loading feedback...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-gray-800/40 border border-gray-700 rounded-lg">
-        <p className="text-red-400 text-center">Error: {error}</p>
-      </div>
-    );
-  }
-
-  if (feedbacks.length === 0) {
-    return (
-      <div className="p-6 bg-gray-800/40 border border-gray-700 rounded-lg">
-        <p className="text-gray-400 text-center">No feedback submitted yet. Be the first!</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {feedbacks.map((feedback) => (
+      <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg mb-4">
+        <p className="text-yellow-300 text-sm mb-2">⚠️ Demo Mode</p>
+        <p className="text-gray-400 text-sm">Database connection has been removed. Showing mock feedback data.</p>
+      </div>
+      
+      {mockFeedback.map((feedback) => (
         <div 
           key={feedback.id} 
           className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg"

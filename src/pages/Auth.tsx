@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -74,6 +74,13 @@ const Auth = () => {
         <h1 className="text-2xl font-bold mb-4">Welcome Back</h1>
         <p className="text-gray-400">Login to access your trading algorithms and portfolio management.</p>
       </section>
+
+      <Alert className="bg-blue-900/30 border-blue-800 mb-6">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertDescription className="text-blue-200 ml-2">
+          Database connection has been removed. For demo, use email containing "demo" (e.g., demo@example.com).
+        </AlertDescription>
+      </Alert>
 
       {errorMessage && (
         <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
