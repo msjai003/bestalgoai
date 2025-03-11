@@ -46,6 +46,8 @@ const Signup = () => {
       }
 
       // Call the signUp method from AuthContext
+      // For now, we'll just pass email and password to the auth context
+      // In a real app, you might want to store name and mobile number in a user profile table
       const { error } = await signUp(email, password, confirmPassword);
       
       if (error) {
@@ -54,7 +56,11 @@ const Signup = () => {
         return;
       }
 
-      // Navigate to dashboard on success (the toast is shown by the auth context)
+      // Store additional user data (name, mobile) if needed
+      // This could be saved to a user profile table in Supabase
+      
+      toast.success('Account created successfully!');
+      // Navigate to dashboard on success
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -96,6 +102,7 @@ const Signup = () => {
 
       <form onSubmit={handleSignup} className="space-y-6">
         <div className="space-y-4">
+          {/* Name Field - Prominently displayed */}
           <div>
             <Label htmlFor="name" className="text-gray-300 mb-2 block">Full Name</Label>
             <div className="relative">
@@ -128,6 +135,7 @@ const Signup = () => {
             </div>
           </div>
 
+          {/* Mobile Number Field - Prominently displayed */}
           <div>
             <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
             <div className="relative">
