@@ -5,6 +5,7 @@ interface SignupRecord {
   id: string;
   name: string;
   email: string;
+  mobileNumber?: string;
   message: string;
   created_at: string;
 }
@@ -15,6 +16,7 @@ const sampleSignups: SignupRecord[] = [
     id: '1',
     name: 'John Doe',
     email: 'john@example.com',
+    mobileNumber: '+1 123-456-7890',
     message: 'Excited to try out this platform!',
     created_at: new Date().toISOString()
   },
@@ -22,6 +24,7 @@ const sampleSignups: SignupRecord[] = [
     id: '2',
     name: 'Jane Smith',
     email: 'jane@example.com',
+    mobileNumber: '+1 234-567-8901',
     message: 'Looking forward to seeing the features.',
     created_at: new Date(Date.now() - 86400000).toISOString() // 1 day ago
   },
@@ -29,6 +32,7 @@ const sampleSignups: SignupRecord[] = [
     id: '3',
     name: 'Mike Johnson',
     email: 'mike@example.com',
+    mobileNumber: '+1 345-678-9012',
     message: 'Great concept! Can\'t wait to get started.',
     created_at: new Date(Date.now() - 172800000).toISOString() // 2 days ago
   }
@@ -59,7 +63,10 @@ const FeedbackList: React.FC = () => {
             </span>
           </div>
           <p className="text-gray-300 text-sm mb-2">{signup.message}</p>
-          <p className="text-gray-400 text-xs">{signup.email}</p>
+          <div className="text-gray-400 text-xs flex flex-col sm:flex-row sm:gap-4">
+            <span>{signup.email}</span>
+            {signup.mobileNumber && <span>{signup.mobileNumber}</span>}
+          </div>
         </div>
       ))}
     </div>

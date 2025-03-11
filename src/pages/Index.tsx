@@ -16,6 +16,7 @@ const Index = () => {
   const [signupForm, setSignupForm] = useState({
     name: '',
     email: '',
+    mobileNumber: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +30,7 @@ const Index = () => {
     e.preventDefault();
     
     // Basic validation
-    if (!signupForm.name || !signupForm.email || !signupForm.message) {
+    if (!signupForm.name || !signupForm.email || !signupForm.mobileNumber || !signupForm.message) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -45,6 +46,7 @@ const Index = () => {
         setSignupForm({
           name: '',
           email: '',
+          mobileNumber: '',
           message: ''
         });
         
@@ -82,6 +84,21 @@ const Index = () => {
                     onChange={handleSignupChange}
                     className="bg-gray-700/50 border-gray-600"
                     placeholder="Enter your name"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-300 mb-1">
+                    Mobile Number
+                  </label>
+                  <Input 
+                    id="mobileNumber"
+                    name="mobileNumber"
+                    type="tel"
+                    value={signupForm.mobileNumber}
+                    onChange={handleSignupChange}
+                    className="bg-gray-700/50 border-gray-600"
+                    placeholder="Enter your mobile number"
                   />
                 </div>
                 

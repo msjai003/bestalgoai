@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -17,7 +18,7 @@ const FeedbackForm: React.FC = () => {
 
   const validateForm = () => {
     // Validate inputs
-    if (!name.trim() || !email.trim() || !message.trim()) {
+    if (!name.trim() || !email.trim() || !mobileNumber.trim() || !message.trim()) {
       setErrorMessage("Please fill out all fields");
       toast({
         title: "Missing information",
@@ -64,6 +65,7 @@ const FeedbackForm: React.FC = () => {
         // Reset form
         setName('');
         setEmail('');
+        setMobileNumber('');
         setMessage('');
         setIsSubmitting(false);
       }, 800);
@@ -98,6 +100,18 @@ const FeedbackForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="mobileNumber" className="text-sm text-gray-300">Mobile Number</Label>
+          <Input
+            id="mobileNumber"
+            type="tel"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            placeholder="Enter your mobile number"
             className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
           />
         </div>
