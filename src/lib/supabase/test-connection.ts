@@ -3,11 +3,16 @@ import { supabase } from "./client";
 
 export const testSupabaseConnection = async () => {
   try {
-    // Test connection to the signup table
-    const { data, error } = await supabase.from('signup').select('count').limit(1);
+    // Test connection to the signup table with a simple, lightweight query
+    const { data, error } = await supabase
+      .from('signup')
+      .select('count')
+      .limit(1)
+      .throwOnError();
     
     // If we can connect successfully
     if (!error) {
+      console.log('Successfully connected to Supabase database');
       return {
         success: true,
         message: "Connected to Supabase successfully"
@@ -16,14 +21,15 @@ export const testSupabaseConnection = async () => {
       console.error('Connection test error:', error);
       return {
         success: false,
-        message: error.message
+        message: error.message || "Failed to connect to database"
       };
     }
   } catch (error: any) {
     console.error('Connection test exception:', error);
     return {
       success: false,
-      message: error?.message || "Failed to connect to database"
+      message: error?.message || "Failed to connect to database",
+      details: error?.toString()
     };
   }
 };
@@ -31,10 +37,15 @@ export const testSupabaseConnection = async () => {
 // Add a specific function to test and insert into the signup table
 export const testTableAccess = async (tableName: string) => {
   try {
-    // Test connection to the specified table
-    const { data, error } = await supabase.from(tableName).select('count').limit(1);
+    // Test connection to the specified table with a minimal query
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('count')
+      .limit(1)
+      .throwOnError();
     
     if (!error) {
+      console.log(`Successfully connected to ${tableName} table`);
       return {
         success: true,
         message: `Connected to ${tableName} table successfully`
@@ -43,7 +54,7 @@ export const testTableAccess = async (tableName: string) => {
       console.error(`Table access error (${tableName}):`, error);
       return {
         success: false,
-        message: error.message
+        message: error.message || `Failed to connect to ${tableName} table`
       };
     }
   }
@@ -51,7 +62,8 @@ export const testTableAccess = async (tableName: string) => {
     console.error(`Table access exception (${tableName}):`, error);
     return {
       success: false,
-      message: error?.message || `Failed to connect to ${tableName} table`
+      message: error?.message || `Failed to connect to ${tableName} table`,
+      details: error?.toString()
     };
   }
 };
@@ -68,12 +80,22 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       };
     }
     
+    // First, test the connection to make sure we can reach the database
+    const connectionTest = await testSupabaseConnection();
+    if (!connectionTest.success) {
+      console.error('Database connection failed before attempting to store data:', connectionTest.message);
+      return {
+        success: false,
+        message: 'Database connection error: ' + connectionTest.message
+      };
+    }
+    
     // Check if the record already exists to avoid duplicates
     const { data: existingData, error: checkError } = await supabase
       .from('signup')
-      .select('*')
+      .select('email')
       .eq('email', email)
-      .limit(1);
+      .maybeSingle();
       
     if (checkError) {
       console.error('Error checking existing signup:', checkError);
@@ -84,7 +106,7 @@ export const storeSignupData = async (email: string, password: string, confirmPa
     }
     
     // If the email already exists, return an error
-    if (existingData && existingData.length > 0) {
+    if (existingData) {
       console.log('Email already exists in signup table');
       return { 
         success: true, 
@@ -92,14 +114,14 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       };
     }
     
-    // Simpler insert approach with explicit data
+    // Use a direct insert approach for better error handling
     const { error } = await supabase
       .from('signup')
-      .insert({
-        email: email,
-        password: password,
+      .insert([{
+        email,
+        password,
         confirm_password: confirmPassword
-      });
+      }]);
     
     if (error) {
       console.error('Error storing signup data:', error);
@@ -118,7 +140,8 @@ export const storeSignupData = async (email: string, password: string, confirmPa
     console.error('Exception storing signup data:', error);
     return { 
       success: false, 
-      message: error?.message || 'Network error while storing signup data' 
+      message: error?.message || 'Network error while storing signup data',
+      details: error?.toString()
     };
   }
 };

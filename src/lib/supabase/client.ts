@@ -13,14 +13,16 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Create a simplified fetch handler to reduce complexity and possible errors
+// Create a simplified fetch handler that adds CORS headers and better error handling
 const customFetch = (url: RequestInfo | URL, options?: RequestInit) => {
   return fetch(url, {
     ...options,
     headers: {
       ...(options?.headers || {}),
       'X-Client-Info': 'supabase-js-web/2.49.1',
-    }
+      'Access-Control-Allow-Origin': '*' // Add CORS header
+    },
+    mode: 'cors', // Explicitly set CORS mode
   }).catch(error => {
     console.error(`Fetch error for ${url}:`, error);
     throw error;
