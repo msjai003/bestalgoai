@@ -54,8 +54,8 @@ const FeedbackForm: React.FC = () => {
         return;
       }
 
-      // Submit to the new signup table
-      const { data, error } = await supabase
+      // Submit to the signup table
+      const { error } = await supabase
         .from('signup')
         .insert({
           name,

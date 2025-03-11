@@ -78,6 +78,7 @@ const FeedbackList: React.FC = () => {
             </span>
           </div>
           <p className="text-gray-300 text-sm mb-2">{signup.message}</p>
+          <p className="text-gray-400 text-xs">{signup.email}</p>
         </div>
       ))}
     </div>

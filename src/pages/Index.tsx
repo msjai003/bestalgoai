@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
+import FeedbackList from '@/components/FeedbackList';
 
 const Index = () => {
   const [signupForm, setSignupForm] = useState({
@@ -132,6 +133,11 @@ const Index = () => {
                   {isSubmitting ? 'Submitting...' : 'Sign Up Now'}
                 </Button>
               </form>
+            </div>
+            
+            <div className="mt-10">
+              <h3 className="text-xl font-bold mb-4">Recent Sign Ups</h3>
+              <FeedbackList />
             </div>
           </div>
         </section>
