@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -65,7 +64,6 @@ const Registration = () => {
 
       if (data.user) {
         toast({
-          title: 'Registration successful!',
           description: 'Please check your email to confirm your account.',
         });
         
@@ -76,7 +74,6 @@ const Registration = () => {
       console.error('Registration error:', error);
       setErrorMessage(error.message || 'Failed to register');
       toast({
-        title: 'Registration failed',
         description: error.message || 'An error occurred during registration',
         variant: 'destructive',
       });

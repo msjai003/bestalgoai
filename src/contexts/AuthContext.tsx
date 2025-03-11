@@ -58,7 +58,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Session retrieval error:', error);
         toast({
-          title: 'Session Error',
           description: 'There was a problem loading your session.',
           variant: 'destructive',
         });
@@ -125,7 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         console.error('Error signing in:', error);
         toast({
-          title: 'Authentication Failed',
           description: error.message,
           variant: 'destructive',
         });
@@ -134,7 +132,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Toast success
       toast({
-        title: 'Welcome back!',
         description: 'Successfully signed in.',
       });
 
@@ -161,13 +158,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(null);
       
       toast({
-        title: 'Signed out',
         description: 'You have been successfully signed out.',
       });
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
-        title: 'Sign Out Error',
         description: 'There was a problem signing you out.',
         variant: 'destructive',
       });

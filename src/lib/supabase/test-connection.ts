@@ -5,8 +5,8 @@ export const testSupabaseConnection = async () => {
   try {
     console.log("Testing Supabase connection...");
     
-    // Try to access the users table for a more complete connection test
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    // Try to access the feedback table for a more complete connection test
+    const { data, error } = await supabase.from('feedback').select('count').limit(1);
     
     if (error) {
       console.error("Connection test error:", error);
