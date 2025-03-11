@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { supabase, createFallbackClient } from '@/lib/supabase/client';
 import { storeSignupData } from '@/lib/supabase/test-connection';
@@ -71,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
       
+      // First store the signup data in our custom signup table
       const signupResult = await storeSignupData(email, password, confirmPassword);
       
       if (!signupResult.success) {
@@ -79,6 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error(signupResult.message || 'Failed to store signup information') };
       }
       
+      // Then use Supabase Auth to create the user
       let response = await supabase.auth.signUp({
         email,
         password,
