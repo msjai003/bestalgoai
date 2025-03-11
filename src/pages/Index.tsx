@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase/client';
 import FeedbackList from '@/components/FeedbackList';
 
 const Index = () => {
@@ -38,19 +37,8 @@ const Index = () => {
     setIsSubmitting(true);
     
     try {
-      // Submit to the signup table
-      const { error } = await supabase
-        .from('signup')
-        .insert({
-          name: signupForm.name,
-          email: signupForm.email,
-          message: signupForm.message
-        });
-      
-      if (error) {
-        toast.error(error.message || 'Failed to submit your information');
-        console.error('Signup submission error:', error);
-      } else {
+      // Simulate submission with a timeout
+      setTimeout(() => {
         toast.success('Thank you for signing up!');
         
         // Reset form
@@ -59,11 +47,12 @@ const Index = () => {
           email: '',
           message: ''
         });
-      }
+        
+        setIsSubmitting(false);
+      }, 800);
     } catch (error: any) {
       console.error('Error submitting signup:', error);
       toast.error('An unexpected error occurred');
-    } finally {
       setIsSubmitting(false);
     }
   };

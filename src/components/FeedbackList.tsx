@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import React from 'react';
 
 interface SignupRecord {
   id: string;
@@ -10,51 +9,33 @@ interface SignupRecord {
   created_at: string;
 }
 
+// Sample static data to display instead of fetching from database
+const sampleSignups: SignupRecord[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    message: 'Excited to try out this platform!',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    message: 'Looking forward to seeing the features.',
+    created_at: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+  },
+  {
+    id: '3',
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    message: 'Great concept! Can\'t wait to get started.',
+    created_at: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+  }
+];
+
 const FeedbackList: React.FC = () => {
-  const [signups, setSignups] = useState<SignupRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSignups = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('signup')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          throw error;
-        }
-        
-        setSignups(data || []);
-      } catch (err: any) {
-        console.error('Error fetching signups:', err);
-        setError(err.message || 'Failed to load signups');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSignups();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg">
-        <p className="text-gray-400 text-sm">Loading sign ups...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg">
-        <p className="text-red-200 text-sm">Error: {error}</p>
-      </div>
-    );
-  }
+  const signups = sampleSignups;
 
   if (signups.length === 0) {
     return (

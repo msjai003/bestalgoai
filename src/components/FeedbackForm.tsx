@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Send, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase/client';
 
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -54,24 +53,8 @@ const FeedbackForm: React.FC = () => {
         return;
       }
 
-      // Submit to the signup table
-      const { error } = await supabase
-        .from('signup')
-        .insert({
-          name,
-          email,
-          message
-        });
-      
-      if (error) {
-        console.error('Error submitting feedback:', error);
-        setErrorMessage(error.message || "Failed to submit your information");
-        toast({
-          title: "Submission failed",
-          description: error.message || "There was a problem submitting your information",
-          variant: "destructive",
-        });
-      } else {
+      // Simulate form submission with a timeout
+      setTimeout(() => {
         // Success message
         toast({
           title: "Signup submitted",
@@ -82,7 +65,8 @@ const FeedbackForm: React.FC = () => {
         setName('');
         setEmail('');
         setMessage('');
-      }
+        setIsSubmitting(false);
+      }, 800);
     } catch (error: any) {
       console.error('Error in feedback submission:', error);
       setErrorMessage(error.message || "An unexpected error occurred");
@@ -91,7 +75,6 @@ const FeedbackForm: React.FC = () => {
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
