@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, WifiOff, Info } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, WifiOff, Info, DatabaseIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { testSupabaseConnection, testTableAccess } from '@/lib/supabase/test-connection';
 
@@ -20,6 +20,7 @@ const Registration = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null);
   const [tableStatus, setTableStatus] = useState<boolean | null>(null);
+  const [isTestingConnection, setIsTestingConnection] = useState(true);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -33,23 +34,35 @@ const Registration = () => {
   // Test the database connection and signup table on component mount
   useEffect(() => {
     const checkConnection = async () => {
-      // Check general connection
-      const connectionResult = await testSupabaseConnection();
-      setConnectionStatus(connectionResult.success);
+      setIsTestingConnection(true);
       
-      if (!connectionResult.success) {
+      try {
+        // Check general connection
+        const connectionResult = await testSupabaseConnection();
+        setConnectionStatus(connectionResult.success);
+        
+        if (!connectionResult.success) {
+          setIsNetworkIssue(true);
+          setErrorMessage('Database connection issue: ' + connectionResult.message);
+          setIsTestingConnection(false);
+          return;
+        }
+        
+        // Check specifically the signup table
+        const tableResult = await testTableAccess('signup');
+        setTableStatus(tableResult.success);
+        
+        if (!tableResult.success) {
+          setIsNetworkIssue(true);
+          setErrorMessage('Signup table access issue: ' + tableResult.message);
+        }
+      } catch (error) {
+        console.error('Connection check error:', error);
+        setConnectionStatus(false);
         setIsNetworkIssue(true);
-        setErrorMessage('Database connection issue: ' + connectionResult.message);
-        return;
-      }
-      
-      // Check specifically the signup table
-      const tableResult = await testTableAccess('signup');
-      setTableStatus(tableResult.success);
-      
-      if (!tableResult.success) {
-        setIsNetworkIssue(true);
-        setErrorMessage('Signup table access issue: ' + tableResult.message);
+        setErrorMessage('Failed to check database connection');
+      } finally {
+        setIsTestingConnection(false);
       }
     };
 
@@ -79,6 +92,14 @@ const Registration = () => {
 
       if (password.length < 6) {
         setErrorMessage('Password must be at least 6 characters');
+        setIsLoading(false);
+        return;
+      }
+
+      // Verify database connection before attempting registration
+      if (connectionStatus === false || tableStatus === false) {
+        setErrorMessage('Cannot register: Database connection issue');
+        setIsNetworkIssue(true);
         setIsLoading(false);
         return;
       }
@@ -115,6 +136,43 @@ const Registration = () => {
     }
   };
 
+  const retryConnectionTest = async () => {
+    setIsTestingConnection(true);
+    setErrorMessage(null);
+    setDetailedError(null);
+    
+    try {
+      // Check general connection
+      const connectionResult = await testSupabaseConnection();
+      setConnectionStatus(connectionResult.success);
+      
+      if (!connectionResult.success) {
+        setIsNetworkIssue(true);
+        setErrorMessage('Database connection issue: ' + connectionResult.message);
+        setIsTestingConnection(false);
+        return;
+      }
+      
+      // Check specifically the signup table
+      const tableResult = await testTableAccess('signup');
+      setTableStatus(tableResult.success);
+      
+      if (!tableResult.success) {
+        setIsNetworkIssue(true);
+        setErrorMessage('Signup table access issue: ' + tableResult.message);
+      } else {
+        toast.success('Database connection successful!');
+      }
+    } catch (error) {
+      console.error('Connection check error:', error);
+      setConnectionStatus(false);
+      setIsNetworkIssue(true);
+      setErrorMessage('Failed to check database connection');
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <div className="flex items-center justify-between mb-8">
@@ -137,20 +195,48 @@ const Registration = () => {
         <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
       </section>
 
-      {connectionStatus === false && (
-        <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
-          <WifiOff className="h-4 w-4 text-yellow-400" />
-          <AlertDescription className="text-yellow-200 ml-2">
-            Unable to connect to the database. Some features may not work properly.
+      {isTestingConnection && (
+        <Alert className="bg-blue-900/30 border-blue-800 mb-6">
+          <Info className="h-4 w-4 text-blue-400" />
+          <AlertDescription className="text-blue-200 ml-2 flex items-center">
+            Testing database connection...
+            <div className="ml-2 animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
           </AlertDescription>
         </Alert>
       )}
 
-      {tableStatus === false && connectionStatus === true && (
+      {connectionStatus === false && !isTestingConnection && (
+        <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
+          <WifiOff className="h-4 w-4 text-yellow-400" />
+          <AlertDescription className="text-yellow-200 ml-2">
+            Unable to connect to the database. Some features may not work properly.
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 bg-yellow-800/50 border-yellow-700 text-yellow-200 hover:bg-yellow-700"
+              onClick={retryConnectionTest}
+              disabled={isTestingConnection}
+            >
+              Retry Connection
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {tableStatus === false && connectionStatus === true && !isTestingConnection && (
         <Alert className="bg-yellow-900/30 border-yellow-800 mb-6">
           <Info className="h-4 w-4 text-yellow-400" />
           <AlertDescription className="text-yellow-200 ml-2">
             Connected to the database, but cannot access the signup table. Registration may fail.
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 bg-yellow-800/50 border-yellow-700 text-yellow-200 hover:bg-yellow-700"
+              onClick={retryConnectionTest}
+              disabled={isTestingConnection}
+            >
+              Retry Connection
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -212,7 +298,7 @@ const Registration = () => {
 
         <Button
           type="submit"
-          disabled={isLoading || connectionStatus === false}
+          disabled={isLoading || isTestingConnection || connectionStatus === false}
           className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}

@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on mount
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -45,7 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     checkSession();
 
-    // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
@@ -59,24 +57,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // Cleanup function
     return () => {
       authListener?.subscription.unsubscribe();
     };
   }, []);
 
-  // Sign up function with improved error handling and storage
   const signUp = async (email: string, password: string, confirmPassword: string) => {
     try {
       setIsLoading(true);
       
-      // Verify that passwords match
       if (password !== confirmPassword) {
         toast.error('Passwords do not match');
         return { error: new Error('Passwords do not match') };
       }
       
-      // First, store the signup data in the signup table
       const signupResult = await storeSignupData(email, password, confirmPassword);
       
       if (!signupResult.success) {
@@ -85,13 +79,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error(signupResult.message || 'Failed to store signup information') };
       }
       
-      // Try with main client for auth
       let response = await supabase.auth.signUp({
         email,
         password,
       });
       
-      // If main client fails, try with fallback
       if (response.error && response.error.message.includes('fetch')) {
         console.log('Main client failed, trying fallback...');
         const fallbackClient = createFallbackClient();
@@ -130,18 +122,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Sign in function with fallback mechanism
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // Try with main client first
       let response = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      // If main client fails, try with fallback
       if (response.error && response.error.message.includes('fetch')) {
         console.log('Main signin failed, trying fallback...');
         const fallbackClient = createFallbackClient();
@@ -180,7 +169,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Sign out function
   const signOut = async () => {
     try {
       setIsLoading(true);

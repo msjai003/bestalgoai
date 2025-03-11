@@ -61,6 +61,13 @@ export const storeSignupData = async (email: string, password: string, confirmPa
   try {
     console.log('Attempting to store signup data for:', email);
     
+    if (!email || !password || !confirmPassword) {
+      return { 
+        success: false, 
+        message: 'Missing required fields for signup' 
+      };
+    }
+    
     // Check if the record already exists to avoid duplicates
     const { data: existingData, error: checkError } = await supabase
       .from('signup')
@@ -85,14 +92,14 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       };
     }
     
-    // Insert the new signup record with proper data types
-    const { data, error } = await supabase
+    // Simpler insert approach with explicit data
+    const { error } = await supabase
       .from('signup')
-      .insert([{ 
-        email, 
-        password,
-        confirm_password: confirmPassword 
-      }]);
+      .insert({
+        email: email,
+        password: password,
+        confirm_password: confirmPassword
+      });
     
     if (error) {
       console.error('Error storing signup data:', error);
