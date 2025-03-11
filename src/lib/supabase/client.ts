@@ -1,11 +1,37 @@
+// This file now provides mock functionality instead of connecting to Supabase
 
-import { createClient } from '@supabase/supabase-js';
+// Mock client with dummy methods
+const createMockClient = () => {
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      signUp: async () => ({ data: null, error: null }),
+      signInWithPassword: async () => ({ data: null, error: null }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({ 
+        data: { subscription: { unsubscribe: () => {} } },
+        error: null
+      })
+    },
+    from: (table: string) => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: null, error: null }),
+          limit: () => ({ data: [], error: null })
+        }),
+        limit: () => ({ data: [], error: null }),
+        order: () => ({ data: [], error: null })
+      }),
+      insert: async () => ({ data: null, error: null })
+    })
+  };
+};
 
-// Supabase URL and anon key - these should be public values
-export const supabaseUrl = 'https://ohryyssrykyrmkdttaet.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ocnl5c3NyeWt5cm1rZHR0YWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTIyMDgsImV4cCI6MjA1NzE2ODIwOH0.gQrW_Ki_YnnOeKOmMpJ1MQe8fkOMQ-oEbdzNKoRDDH0';
+// Mock values that were previously used to connect to Supabase
+export const supabaseUrl = 'mock-url';
+export const supabaseAnonKey = 'mock-key';
 
-// Get the current site URL for redirects
+// Get the current site URL for redirects (keeping this functionality)
 export const getSiteUrl = () => {
   if (typeof window !== 'undefined') {
     return window.location.origin;
@@ -13,64 +39,19 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Create a simplified fetch handler that adds CORS headers and better error handling
-const customFetch = (url: RequestInfo | URL, options?: RequestInit) => {
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...(options?.headers || {}),
-      'X-Client-Info': 'supabase-js-web/2.49.1',
-      'Access-Control-Allow-Origin': '*', // Add CORS header
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-    },
-    mode: 'cors', // Explicitly set CORS mode
-  }).catch(error => {
-    console.error(`Fetch error for ${url}:`, error);
-    throw error;
-  });
-};
+// Create a mock supabase client
+export const supabase = createMockClient();
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-    global: {
-      fetch: customFetch
-    }
-  }
-);
-
-// Create a fallback client with less restrictive settings
+// Mock fallback client function
 export const createFallbackClient = () => {
-  try {
-    return createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: true,
-        detectSessionInUrl: false,
-        flowType: 'implicit'
-      },
-      global: {
-        fetch: customFetch
-      }
-    });
-  } catch (error) {
-    console.error("Failed to create fallback client:", error);
-    return null;
-  }
+  console.log('Creating mock fallback client');
+  return createMockClient();
 };
 
-// Log the current site URL on load for debugging
+// Log information for debugging purposes
 if (typeof window !== 'undefined') {
+  console.log('Database connection removed - using mock client');
   console.log('Current site URL for redirects:', getSiteUrl());
   console.log('Browser: ', navigator.userAgent || 'Unknown');
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
-  console.log('Supabase connection initialized with URL:', supabaseUrl);
 }
