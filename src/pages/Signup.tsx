@@ -102,18 +102,6 @@ const Signup = () => {
           </div>
           
           <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
-          </div>
-
-          <div>
             <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
             <Input
               id="mobileNumber"
@@ -121,6 +109,18 @@ const Signup = () => {
               value={mobileNumber}
               onChange={(e) => setMobileNumber(e.target.value)}
               placeholder="Enter your mobile number"
+              className="bg-gray-800/50 border-gray-700 text-white h-12"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
             />
           </div>
