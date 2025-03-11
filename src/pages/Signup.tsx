@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, ChevronLeft, X, Info } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, Info, User, Mail, Phone, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Signup = () => {
@@ -91,62 +91,77 @@ const Signup = () => {
         <div className="space-y-4">
           <div>
             <Label htmlFor="name" className="text-gray-300 mb-2 block">Full Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your full name"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
-            <Input
-              id="mobileNumber"
-              type="tel"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              placeholder="Enter your mobile number"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+              />
+            </div>
           </div>
           
           <div>
             <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+              <Input
+                id="mobileNumber"
+                type="tel"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="Enter your mobile number"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+              />
+            </div>
           </div>
           
           <div>
             <Label htmlFor="password" className="text-gray-300 mb-2 block">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+              />
+            </div>
           </div>
 
           <div>
             <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+              />
+            </div>
           </div>
         </div>
 
