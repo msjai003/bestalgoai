@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Registration = () => {
@@ -14,6 +14,7 @@ const Registration = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isNetworkIssue, setIsNetworkIssue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Registration = () => {
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setIsNetworkIssue(false);
     setIsLoading(true);
 
     try {
@@ -54,14 +56,25 @@ const Registration = () => {
       const { error } = await signUp(email, password);
       
       if (error) {
-        setErrorMessage(error.message || 'Failed to create account');
+        if (error.message?.includes('fetch') || error.message?.includes('network') || 
+            error.message?.includes('Failed to connect')) {
+          setIsNetworkIssue(true);
+          setErrorMessage('Network connection issue. Please check your internet connection and try again.');
+        } else {
+          setErrorMessage(error.message || 'Failed to create account');
+        }
       } else {
         toast.success('Signup was successful!');
         navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        setIsNetworkIssue(true);
+        setErrorMessage('Network connection issue. Please check your internet connection and try again.');
+      } else {
+        setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +103,13 @@ const Registration = () => {
       </section>
 
       {errorMessage && (
-        <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
-          <AlertTriangle className="h-4 w-4 text-red-400" />
-          <AlertDescription className="text-red-200 ml-2">
+        <Alert className={`${isNetworkIssue ? 'bg-yellow-900/30 border-yellow-800' : 'bg-red-900/30 border-red-800'} mb-6`} variant="destructive">
+          {isNetworkIssue ? (
+            <WifiOff className="h-4 w-4 text-yellow-400" />
+          ) : (
+            <AlertTriangle className="h-4 w-4 text-red-400" />
+          )}
+          <AlertDescription className={`${isNetworkIssue ? 'text-yellow-200' : 'text-red-200'} ml-2`}>
             {errorMessage}
           </AlertDescription>
         </Alert>

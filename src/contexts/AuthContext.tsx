@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase, createFallbackClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 interface User {
@@ -65,16 +64,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Sign up function
+  // Sign up function with retry mechanism
   const signUp = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // Register user with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
+      // Try with main client first
+      let response = await supabase.auth.signUp({
         email,
         password,
       });
+      
+      // If main client fails, try with fallback
+      if (response.error && response.error.message.includes('fetch')) {
+        console.log('Main client failed, trying fallback...');
+        const fallbackClient = createFallbackClient();
+        
+        if (fallbackClient) {
+          response = await fallbackClient.auth.signUp({
+            email,
+            password,
+          });
+        }
+      }
+      
+      const { data, error } = response;
 
       if (error) {
         console.error('Signup error:', error);
@@ -84,42 +98,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Store data in signup table
       if (data?.user) {
-        const { error: insertError } = await supabase
-          .from('signup')
-          .insert([{ email, password }]);
+        try {
+          const { error: insertError } = await supabase
+            .from('signup')
+            .insert([{ email, password }]);
 
-        if (insertError) {
-          console.error('Error storing signup data:', insertError);
-          toast.error('Account created but profile data not saved');
-        } else {
-          toast.success('Account created successfully!');
+          if (insertError) {
+            console.error('Error storing signup data:', insertError);
+            // Don't fail the signup if just this part fails
+            toast.warning('Account created but some profile data may not be saved');
+          } else {
+            toast.success('Account created successfully!');
+          }
+
+          setUser({
+            id: data.user.id,
+            email: data.user.email || '',
+          });
+        } catch (insertErr) {
+          console.error('Exception storing signup data:', insertErr);
+          // Still consider signup successful if auth worked
+          toast.warning('Account created but profile data not saved');
         }
-
-        setUser({
-          id: data.user.id,
-          email: data.user.email || '',
-        });
       }
 
       return { error: null };
     } catch (error) {
       console.error('Error during signup:', error);
+      toast.error('Network error during signup. Please try again.');
       return { error: error as Error };
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Sign in function
+  // Sign in function with fallback mechanism
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // Authenticate user with Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Try with main client first
+      let response = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      // If main client fails, try with fallback
+      if (response.error && response.error.message.includes('fetch')) {
+        console.log('Main signin failed, trying fallback...');
+        const fallbackClient = createFallbackClient();
+        
+        if (fallbackClient) {
+          response = await fallbackClient.auth.signInWithPassword({
+            email,
+            password,
+          });
+        }
+      }
+      
+      const { data, error } = response;
 
       if (error) {
         console.error('Login error:', error);
@@ -138,6 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: null };
     } catch (error) {
       console.error('Error during sign in:', error);
+      toast.error('Network error during login. Please try again.');
       return { error: error as Error };
     } finally {
       setIsLoading(false);
