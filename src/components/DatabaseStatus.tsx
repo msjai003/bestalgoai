@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -26,8 +27,8 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection - using the mock client
-      const { data, error } = supabase
+      // Test Supabase connection
+      const { data, error } = await supabase
         .from('_supabase_schema_information')
         .select('*');
       
@@ -63,7 +64,7 @@ const DatabaseStatus: React.FC = () => {
     for (const tableName of expectedTables) {
       try {
         // First check if the table exists
-        const { data, error } = supabase
+        const { data, error } = await supabase
           .from(tableName)
           .select('count');
         
@@ -100,7 +101,7 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
-      const { data, error } = supabase
+      const { data, error } = await supabase
         .from(tableName)
         .select('*');
       

@@ -27,7 +27,6 @@ const DatabaseInfo: React.FC = () => {
         // Add/update user profile
         const { error: userError } = await supabase
           .from('users')
-          .select('*')
           .upsert({
             id: userId,
             name: 'Test User',
@@ -46,7 +45,6 @@ const DatabaseInfo: React.FC = () => {
       // Add sample feedback
       const { error: feedbackError } = await supabase
         .from('feedback')
-        .select('*')
         .insert({
           name: 'Sample User',
           email: 'sample@example.com',
