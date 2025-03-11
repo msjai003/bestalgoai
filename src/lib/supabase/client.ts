@@ -20,7 +20,9 @@ const customFetch = (url: RequestInfo | URL, options?: RequestInit) => {
     headers: {
       ...(options?.headers || {}),
       'X-Client-Info': 'supabase-js-web/2.49.1',
-      'Access-Control-Allow-Origin': '*' // Add CORS header
+      'Access-Control-Allow-Origin': '*', // Add CORS header
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
     },
     mode: 'cors', // Explicitly set CORS mode
   }).catch(error => {
@@ -70,4 +72,5 @@ if (typeof window !== 'undefined') {
   console.log('Current site URL for redirects:', getSiteUrl());
   console.log('Browser: ', navigator.userAgent || 'Unknown');
   console.log('Online status: ', navigator.onLine ? 'Online' : 'Offline');
+  console.log('Supabase connection initialized with URL:', supabaseUrl);
 }

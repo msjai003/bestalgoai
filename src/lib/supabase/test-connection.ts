@@ -21,7 +21,7 @@ export const testSupabaseConnection = async () => {
       console.error('Connection test error:', error);
       return {
         success: false,
-        message: error.message || "Failed to connect to database"
+        message: error?.message || "Failed to connect to database"
       };
     }
   } catch (error: any) {
@@ -54,7 +54,7 @@ export const testTableAccess = async (tableName: string) => {
       console.error(`Table access error (${tableName}):`, error);
       return {
         success: false,
-        message: error.message || `Failed to connect to ${tableName} table`
+        message: error?.message || `Failed to connect to ${tableName} table`
       };
     }
   }
@@ -101,7 +101,7 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       console.error('Error checking existing signup:', checkError);
       return { 
         success: false, 
-        message: checkError.message || 'Failed to check existing signup information' 
+        message: checkError?.message || 'Failed to check existing signup information' 
       };
     }
     
@@ -127,7 +127,7 @@ export const storeSignupData = async (email: string, password: string, confirmPa
       console.error('Error storing signup data:', error);
       return { 
         success: false, 
-        message: error.message || 'Failed to store signup information' 
+        message: error?.message || 'Failed to store signup information' 
       };
     }
     
