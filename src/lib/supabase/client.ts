@@ -14,27 +14,25 @@ export const getSiteUrl = () => {
 // Mock Supabase client
 export const supabase = {
   auth: {
-    signUp: async () => ({ data: null, error: { message: 'Database connection removed' } }),
-    signInWithPassword: async () => ({ data: null, error: { message: 'Database connection removed' } }),
-    signOut: async () => ({ error: null }),
-    getSession: async () => ({ data: { session: null }, error: null }),
+    signUp: () => ({ data: null, error: { message: 'Database connection removed' } }),
+    signInWithPassword: () => ({ data: null, error: { message: 'Database connection removed' } }),
+    signOut: () => ({ error: null }),
+    getSession: () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ subscription: { unsubscribe: () => {} } }),
   },
-  from: (tableName) => ({
-    select: (columns) => ({
-      limit: (limitNum) => ({
-        order: (orderBy) => ({
+  from: () => ({
+    select: () => ({
+      limit: () => ({
+        order: () => ({
           data: [],
           error: { message: 'Database connection removed' }
-        }),
-        data: [],
-        error: { message: 'Database connection removed' }
+        })
       }),
-      insert: (data) => ({ 
+      insert: () => ({ 
         data: null, 
         error: { message: 'Database connection removed' } 
       }),
-      upsert: (data) => ({
+      upsert: () => ({
         data: null,
         error: { message: 'Database connection removed' }
       }),
@@ -43,12 +41,12 @@ export const supabase = {
     })
   }),
   storage: {
-    from: (bucketName) => ({
-      upload: async () => ({ data: null, error: { message: 'Database connection removed' } }),
+    from: () => ({
+      upload: () => ({ data: null, error: { message: 'Database connection removed' } }),
       getPublicUrl: () => ({ data: { publicUrl: '' }, error: null }),
     })
   },
-  channel: (channelName) => ({
+  channel: () => ({
     on: () => ({
       subscribe: () => {}
     })
