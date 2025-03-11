@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Send, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -15,6 +16,7 @@ const FeedbackForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     // Validate inputs
@@ -45,40 +47,7 @@ const FeedbackForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
-      if (!validateForm()) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Simulate form submission with a timeout
-      setTimeout(() => {
-        // Success message
-        toast({
-          title: "Signup submitted",
-          description: "Thank you for signing up!",
-        });
-
-        // Reset form
-        setName('');
-        setEmail('');
-        setMobileNumber('');
-        setMessage('');
-        setIsSubmitting(false);
-      }, 800);
-    } catch (error: any) {
-      console.error('Error in feedback submission:', error);
-      setErrorMessage(error.message || "An unexpected error occurred");
-      toast({
-        title: "Submission failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-    }
+    navigate('/signup');
   };
 
   return (
@@ -142,11 +111,10 @@ const FeedbackForm: React.FC = () => {
         
         <Button
           type="submit"
-          disabled={isSubmitting}
           className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl"
         >
           <Send className="w-5 h-5" />
-          <span>{isSubmitting ? "Submitting..." : "Sign Up"}</span>
+          <span>Sign Up</span>
         </Button>
       </form>
     </div>

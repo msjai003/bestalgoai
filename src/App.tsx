@@ -12,6 +12,7 @@ import Blog from "./pages/Blog";
 import Support from "./pages/Support";
 import Auth from "./pages/Auth";
 import Registration from "./pages/Registration";
+import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -44,6 +45,7 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/registration" element={<Registration />} />
+      <Route path="/signup" element={<Signup />} />
       <Route path="/onboarding" element={<Onboarding />} />
       
       {/* All routes are public */}
