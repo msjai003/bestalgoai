@@ -6,7 +6,6 @@ import { Features } from '@/components/Features';
 import { CTA } from '@/components/CTA';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
-import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,14 +35,8 @@ const Index = () => {
     
     setIsSubmitting(true);
     
-    try {
-      // Insert feedback into the database
-      const { error } = await supabase
-        .from('feedback')
-        .insert([feedbackForm]);
-        
-      if (error) throw error;
-      
+    // Mock form submission
+    setTimeout(() => {
       toast.success('Thank you for your feedback!');
       
       // Reset form
@@ -52,12 +45,9 @@ const Index = () => {
         email: '',
         message: ''
       });
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-      toast.error('Could not submit feedback. Please try again later.');
-    } finally {
+      
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   return (

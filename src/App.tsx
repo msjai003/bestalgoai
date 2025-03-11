@@ -31,7 +31,6 @@ import RiskManagement from "./pages/RiskManagement";
 import BrokerIntegration from "./pages/BrokerIntegration";
 import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
-import DatabaseInfo from '@/pages/DatabaseInfo';
 
 const queryClient = new QueryClient();
 
@@ -65,7 +64,6 @@ function AppRoutes() {
       <Route path="/broker-integration" element={<BrokerIntegration />} />
       <Route path="/broker-credentials" element={<BrokerCredentials />} />
       <Route path="/terms" element={<Terms />} />
-      <Route path="/database" element={<DatabaseInfo />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -48,14 +48,6 @@ const Header: React.FC = () => {
           >
             Contact
           </Link>
-          
-          <Link
-            to="/database"
-            className="text-gray-300 hover:text-white transition-colors"
-          >
-            Database
-          </Link>
-          
           <Link
             to="/dashboard"
             className="text-gray-300 hover:text-white transition-colors"
@@ -102,14 +94,6 @@ const Header: React.FC = () => {
               >
                 Contact
               </Link>
-              
-              <Link
-                to="/database"
-                className="text-gray-300 hover:text-white transition-colors block py-2"
-              >
-                Database
-              </Link>
-              
               <Link
                 to="/dashboard"
                 className="text-gray-300 hover:text-white transition-colors block py-2"
