@@ -3,8 +3,8 @@ import { supabase } from "./client";
 
 export const testSupabaseConnection = async () => {
   try {
-    // Simple ping to check connection
-    const { error } = await supabase.from('test_connection').select('*').limit(1);
+    // Test connection to the signup table
+    const { data, error } = await supabase.from('signup').select('count').limit(1);
     
     // If we can connect successfully
     if (!error) {

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +7,22 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,16 +36,19 @@ const Auth = () => {
         return;
       }
 
-      // Demo login functionality without actual database connection
-      setTimeout(() => {
-        // Simulating successful login
-        navigate('/dashboard');
-        setIsLoading(false);
-      }, 1000);
+      // Call signIn from AuthContext
+      const { error } = await signIn(email, password);
       
+      if (error) {
+        setErrorMessage(error.message || 'Invalid email or password');
+      } else {
+        toast.success('Login successful!');
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };

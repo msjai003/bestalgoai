@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
@@ -14,8 +15,15 @@ const Registration = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,15 +50,19 @@ const Registration = () => {
         return;
       }
 
-      // Simulate registration
-      setTimeout(() => {
-        navigate('/onboarding');
-        setIsLoading(false);
-      }, 1000);
+      // Call signUp from AuthContext
+      const { error } = await signUp(email, password);
       
+      if (error) {
+        setErrorMessage(error.message || 'Failed to create account');
+      } else {
+        toast.success('Signup was successful!');
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
