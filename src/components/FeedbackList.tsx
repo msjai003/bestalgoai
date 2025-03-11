@@ -1,51 +1,83 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase/client';
 
-// Mock feedback data
-const mockFeedback = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    message: 'Great application! I really enjoy using the trading algorithms.',
-    created_at: '2025-03-05T10:30:00Z'
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    message: 'The UI is intuitive and the backtesting feature is amazing!',
-    created_at: '2025-03-04T15:45:00Z'
-  },
-  {
-    id: '3',
-    name: 'Michael Smith',
-    email: 'michael@example.com',
-    message: 'Would love to see more educational resources about trading strategies.',
-    created_at: '2025-03-03T09:15:00Z'
-  }
-];
+interface SignupRecord {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+}
 
 const FeedbackList: React.FC = () => {
-  return (
-    <div className="space-y-4">
-      <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg mb-4">
-        <p className="text-yellow-300 text-sm mb-2">⚠️ Demo Mode</p>
-        <p className="text-gray-400 text-sm">Database connection has been removed. Showing mock feedback data.</p>
+  const [signups, setSignups] = useState<SignupRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSignups = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('signup')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        setSignups(data || []);
+      } catch (err: any) {
+        console.error('Error fetching signups:', err);
+        setError(err.message || 'Failed to load signups');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSignups();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg">
+        <p className="text-gray-400 text-sm">Loading sign ups...</p>
       </div>
-      
-      {mockFeedback.map((feedback) => (
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg">
+        <p className="text-red-200 text-sm">Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (signups.length === 0) {
+    return (
+      <div className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg">
+        <p className="text-gray-400 text-sm">No sign ups yet. Be the first to sign up!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">      
+      {signups.map((signup) => (
         <div 
-          key={feedback.id} 
+          key={signup.id} 
           className="p-4 bg-gray-800/40 border border-gray-700 rounded-lg"
         >
           <div className="flex justify-between items-start mb-2">
-            <h3 className="font-medium text-white">{feedback.name}</h3>
+            <h3 className="font-medium text-white">{signup.name}</h3>
             <span className="text-xs text-gray-400">
-              {new Date(feedback.created_at).toLocaleDateString()}
+              {new Date(signup.created_at).toLocaleDateString()}
             </span>
           </div>
-          <p className="text-gray-300 text-sm mb-2">{feedback.message}</p>
+          <p className="text-gray-300 text-sm mb-2">{signup.message}</p>
         </div>
       ))}
     </div>

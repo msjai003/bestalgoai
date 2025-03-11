@@ -1,133 +1,112 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ExternalLink, ListX, List } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import DatabaseStatus from '@/components/DatabaseStatus';
-import FeedbackList from '@/components/FeedbackList';
-import FeedbackForm from '@/components/FeedbackForm';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
-import Header from '@/components/Header';
+import { Info, RefreshCw } from 'lucide-react';
 
-const DatabaseInfo: React.FC = () => {
-  const [showFeedback, setShowFeedback] = useState(false);
+const DatabaseInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const addSampleData = async () => {
+  const populateSampleData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      setIsLoading(true);
-      // Add sample user (only works if already authenticated)
-      const { data: authData } = await supabase.auth.getSession();
-      
-      if (authData.session?.user) {
-        // User is logged in, use their ID
-        const userId = authData.session.user.id;
-        
-        // Add/update user profile
-        const { error: userError } = await supabase
-          .from('users')
-          .upsert({
-            id: userId,
-            name: 'Test User',
-            email: authData.session.user.email,
-            phonenumber: '555-123-4567'
-          });
-          
-        if (userError) throw userError;
-        
-        toast.success('User profile updated successfully!');
-      } else {
-        // No user logged in, create sample feedback only
-        toast.info('Not logged in. Only creating sample feedback.');
-      }
-      
-      // Add sample feedback
-      const { error: feedbackError } = await supabase
-        .from('feedback')
+      // Add sample signup
+      const { error: signupError } = await supabase
+        .from('signup')
         .insert({
           name: 'Sample User',
           email: 'sample@example.com',
-          message: 'This is a sample feedback message to test the database connection.'
+          message: 'I am interested in algorithmic trading!'
         });
-        
-      if (feedbackError) throw feedbackError;
-      
+
+      if (signupError) {
+        throw new Error(`Error adding sample signup: ${signupError.message}`);
+      }
+
+      // Get the latest signup records
+      const { data: signups, error: fetchError } = await supabase
+        .from('signup')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (fetchError) {
+        throw new Error(`Error fetching signup data: ${fetchError.message}`);
+      }
+
+      setResult({
+        success: true,
+        message: 'Sample data added successfully!',
+        data: {
+          signups
+        }
+      });
+
       toast.success('Sample data added successfully!');
-    } catch (error: any) {
-      console.error('Error adding sample data:', error);
-      toast.error(error.message || 'Failed to add sample data');
+    } catch (err: any) {
+      console.error('Error populating sample data:', err);
+      setError(err.message || 'An error occurred while adding sample data');
+      toast.error(err.message || 'Failed to add sample data');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
-      <Header />
+    <div className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-2xl font-bold mb-6">Database Information</h1>
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center mb-8">
-          <Link to="/" className="text-gray-400 mr-4">
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Database Information</h1>
-        </div>
-
-        <DatabaseStatus />
+      <section className="mb-8 p-6 bg-gray-800/40 border border-gray-700 rounded-lg">
+        <h2 className="text-xl font-medium mb-4">Test Database Connection</h2>
+        <p className="text-gray-300 mb-4">
+          Click the button below to add a sample signup record to the database and verify the connection:
+        </p>
         
-        <div className="mt-8 space-y-4">
-          <Button 
-            onClick={addSampleData}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 rounded-xl shadow-lg"
-          >
-            {isLoading ? 'Adding Sample Data...' : 'Add Sample Data'}
-          </Button>
-          
-          <div className="flex justify-between items-center mt-8 mb-4">
-            <h2 className="text-xl font-semibold text-white">Feedback Data</h2>
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowFeedback(!showFeedback)}
-              className="text-blue-400"
-            >
-              {showFeedback ? (
-                <><ListX className="h-4 w-4 mr-2" /> Hide Feedback</>
-              ) : (
-                <><List className="h-4 w-4 mr-2" /> Show Feedback</>
-              )}
-            </Button>
-          </div>
-          
-          {showFeedback && (
-            <div className="grid md:grid-cols-2 gap-6">
+        <Button 
+          onClick={populateSampleData} 
+          disabled={isLoading}
+          className="w-full md:w-auto flex items-center gap-2"
+        >
+          {isLoading ? 'Adding...' : 'Add Sample Signup'}
+          {isLoading && <RefreshCw className="animate-spin h-4 w-4" />}
+        </Button>
+        
+        {error && (
+          <Alert className="mt-4 bg-red-900/30 border-red-700">
+            <AlertDescription className="text-red-200">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {result && (
+          <div className="mt-6">
+            <Alert className="bg-green-900/30 border-green-700 mb-4">
+              <Info className="h-4 w-4 text-green-400" />
+              <AlertDescription className="text-green-200 ml-2">
+                {result.message}
+              </AlertDescription>
+            </Alert>
+            
+            {result.data?.signups && (
               <div>
-                <h3 className="text-lg font-medium text-white mb-4">Recent Feedback</h3>
-                <FeedbackList />
+                <h3 className="text-lg font-medium mb-2">Recent Signups:</h3>
+                <div className="bg-gray-900/50 p-4 rounded-lg overflow-x-auto">
+                  <pre className="text-xs text-gray-300 whitespace-pre-wrap">
+                    {JSON.stringify(result.data.signups, null, 2)}
+                  </pre>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-medium text-white mb-4">Submit Feedback</h3>
-                <FeedbackForm />
-              </div>
-            </div>
-          )}
-          
-          <Separator className="my-6" />
-          
-          <div className="flex justify-center">
-            <a 
-              href="https://supabase.com/dashboard/project/fzvrozrjtvflksumiqsk/editor" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center text-blue-400 hover:text-blue-300"
-            >
-              <ExternalLink className="h-4 w-4 mr-1" />
-              <span>Open Supabase SQL Editor</span>
-            </a>
+            )}
           </div>
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 };

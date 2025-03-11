@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Send, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase/client';
 
 const FeedbackForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -53,37 +54,51 @@ const FeedbackForm: React.FC = () => {
         return;
       }
 
-      console.log("Mock feedback submission:", { name, email, message });
+      // Submit to the new signup table
+      const { data, error } = await supabase
+        .from('signup')
+        .insert({
+          name,
+          email,
+          message
+        });
       
-      // Simulate a successful submission with a delay
-      setTimeout(() => {
+      if (error) {
+        console.error('Error submitting feedback:', error);
+        setErrorMessage(error.message || "Failed to submit your information");
+        toast({
+          title: "Submission failed",
+          description: error.message || "There was a problem submitting your information",
+          variant: "destructive",
+        });
+      } else {
         // Success message
         toast({
-          title: "Feedback submitted",
-          description: "Thank you for your feedback! (Demo mode - no database connection)",
+          title: "Signup submitted",
+          description: "Thank you for signing up!",
         });
 
         // Reset form
         setName('');
         setEmail('');
         setMessage('');
-        setIsSubmitting(false);
-      }, 1000);
+      }
     } catch (error: any) {
       console.error('Error in feedback submission:', error);
-      setErrorMessage("Database connection has been removed from the project");
+      setErrorMessage(error.message || "An unexpected error occurred");
       toast({
         title: "Submission failed",
-        description: "Database connection has been removed from the project",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700">
-      <h2 className="text-xl font-semibold mb-4">Share Your Feedback</h2>
+      <h2 className="text-xl font-semibold mb-4">Sign Up for Updates</h2>
       
       {errorMessage && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
@@ -117,7 +132,7 @@ const FeedbackForm: React.FC = () => {
         </div>
         
         <div>
-          <Label htmlFor="message" className="text-sm text-gray-300">Your Feedback</Label>
+          <Label htmlFor="message" className="text-sm text-gray-300">Your Message</Label>
           <Textarea
             id="message"
             value={message}
@@ -134,7 +149,7 @@ const FeedbackForm: React.FC = () => {
           className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl"
         >
           <Send className="w-5 h-5" />
-          <span>{isSubmitting ? "Submitting..." : "Submit Feedback"}</span>
+          <span>{isSubmitting ? "Submitting..." : "Sign Up"}</span>
         </Button>
       </form>
     </div>

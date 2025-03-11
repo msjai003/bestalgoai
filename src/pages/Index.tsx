@@ -10,44 +10,61 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase/client';
 
 const Index = () => {
-  const [feedbackForm, setFeedbackForm] = useState({
+  const [signupForm, setSignupForm] = useState({
     name: '',
     email: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFeedbackChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFeedbackForm(prev => ({ ...prev, [name]: value }));
+    setSignupForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!feedbackForm.name || !feedbackForm.email || !feedbackForm.message) {
+    if (!signupForm.name || !signupForm.email || !signupForm.message) {
       toast.error('Please fill in all fields');
       return;
     }
     
     setIsSubmitting(true);
     
-    // Mock form submission
-    setTimeout(() => {
-      toast.success('Thank you for your feedback!');
+    try {
+      // Submit to the signup table
+      const { error } = await supabase
+        .from('signup')
+        .insert({
+          name: signupForm.name,
+          email: signupForm.email,
+          message: signupForm.message
+        });
       
-      // Reset form
-      setFeedbackForm({
-        name: '',
-        email: '',
-        message: ''
-      });
-      
+      if (error) {
+        toast.error(error.message || 'Failed to submit your information');
+        console.error('Signup submission error:', error);
+      } else {
+        toast.success('Thank you for signing up!');
+        
+        // Reset form
+        setSignupForm({
+          name: '',
+          email: '',
+          message: ''
+        });
+      }
+    } catch (error: any) {
+      console.error('Error submitting signup:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -58,12 +75,12 @@ const Index = () => {
         <Features />
         <CTA />
         
-        {/* Feedback Section */}
+        {/* Signup Section */}
         <section className="py-12 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center">Share Your Feedback</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Sign Up for Updates</h2>
             <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700">
-              <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+              <form onSubmit={handleSignupSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
                     Your Name
@@ -71,8 +88,8 @@ const Index = () => {
                   <Input 
                     id="name"
                     name="name"
-                    value={feedbackForm.name}
-                    onChange={handleFeedbackChange}
+                    value={signupForm.name}
+                    onChange={handleSignupChange}
                     className="bg-gray-700/50 border-gray-600"
                     placeholder="Enter your name"
                   />
@@ -86,8 +103,8 @@ const Index = () => {
                     id="email"
                     name="email"
                     type="email"
-                    value={feedbackForm.email}
-                    onChange={handleFeedbackChange}
+                    value={signupForm.email}
+                    onChange={handleSignupChange}
                     className="bg-gray-700/50 border-gray-600"
                     placeholder="your@email.com"
                   />
@@ -95,15 +112,15 @@ const Index = () => {
                 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">
-                    Your Feedback
+                    Your Message
                   </label>
                   <Textarea 
                     id="message"
                     name="message"
-                    value={feedbackForm.message}
-                    onChange={handleFeedbackChange}
+                    value={signupForm.message}
+                    onChange={handleSignupChange}
                     className="bg-gray-700/50 border-gray-600 min-h-[100px]"
-                    placeholder="What do you think about our platform?"
+                    placeholder="Tell us why you're interested in our platform"
                   />
                 </div>
                 
@@ -112,7 +129,7 @@ const Index = () => {
                   className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                  {isSubmitting ? 'Submitting...' : 'Sign Up Now'}
                 </Button>
               </form>
             </div>
