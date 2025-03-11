@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, ChevronLeft, X, Info, User, Mail, Phone, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -17,6 +18,7 @@ const Signup = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,12 +45,17 @@ const Signup = () => {
         return;
       }
 
-      // Simulate signup process
-      setTimeout(() => {
-        toast.success('Signup was successful!');
-        navigate('/dashboard');
+      // Call the signUp method from AuthContext
+      const { error } = await signUp(email, password, confirmPassword);
+      
+      if (error) {
+        setErrorMessage(error.message);
         setIsLoading(false);
-      }, 1500);
+        return;
+      }
+
+      // Navigate to dashboard on success (the toast is shown by the auth context)
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
@@ -100,6 +107,7 @@ const Signup = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                required
               />
             </div>
           </div>
@@ -115,6 +123,7 @@ const Signup = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                required
               />
             </div>
           </div>
@@ -130,6 +139,7 @@ const Signup = () => {
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="Enter your mobile number"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                required
               />
             </div>
           </div>
@@ -145,6 +155,7 @@ const Signup = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                required
               />
             </div>
           </div>
@@ -160,6 +171,7 @@ const Signup = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                required
               />
             </div>
           </div>
