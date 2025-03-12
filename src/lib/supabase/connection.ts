@@ -5,7 +5,7 @@ export async function testTableAccess() {
   try {
     const { data, error } = await supabase
       .from('signup')
-      .select('*');
+      .select();
     
     if (error) {
       console.error('Error accessing Supabase table:', error);

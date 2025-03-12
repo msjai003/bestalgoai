@@ -12,12 +12,30 @@ export const supabase = {
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
   },
-  from: () => ({
-    select: () => ({ data: [], error: null }),
-    insert: () => ({ data: [], error: null }),
-    update: () => ({ data: [], error: null }),
+  from: (tableName) => ({
+    select: (query = '*') => ({
+      order: (column, { ascending } = { ascending: false }) => ({
+        limit: (limit) => ({
+          data: [],
+          error: null
+        }),
+        data: [],
+        error: null
+      }),
+      data: [],
+      error: null
+    }),
+    insert: (data) => ({ data: [], error: null }),
+    update: (data) => ({ data: [], error: null }),
     delete: () => ({ data: [], error: null }),
+    count: () => ({ data: 0, error: null }),
   }),
+  storage: {
+    from: (bucketName) => ({
+      upload: async () => ({ data: null, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+    }),
+  },
 };
 
 // Get the current site URL for redirects

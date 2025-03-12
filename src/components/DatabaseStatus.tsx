@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -30,7 +29,7 @@ const DatabaseStatus: React.FC = () => {
       // Test Supabase connection
       const { data, error } = await supabase
         .from('_supabase_schema_information')
-        .select('*');
+        .select();
       
       if (error) {
         throw error;
@@ -66,7 +65,7 @@ const DatabaseStatus: React.FC = () => {
         // First check if the table exists
         const { data, error } = await supabase
           .from(tableName)
-          .select('count');
+          .select();
         
         if (error) {
           console.error(`Error checking table ${tableName}:`, error);
@@ -103,7 +102,7 @@ const DatabaseStatus: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from(tableName)
-        .select('*');
+        .select();
       
       if (error) {
         throw error;

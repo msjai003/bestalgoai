@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase/client';
@@ -32,7 +31,7 @@ const DatabaseInfo = () => {
       // Get the latest signup records
       const { data: signups, error: fetchError } = await supabase
         .from('signup')
-        .select('*')
+        .select()
         .order('created_at', { ascending: false })
         .limit(5);
 

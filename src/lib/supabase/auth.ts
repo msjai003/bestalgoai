@@ -54,7 +54,7 @@ export const testFetchUserProfiles = async () => {
   try {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('*');
+      .select();
 
     if (error) {
       console.error("Error fetching user profiles:", error);

@@ -6,7 +6,7 @@ export const testSupabaseConnection = async () => {
     const startTime = Date.now();
     
     // Try to access the users table for a more complete connection test
-    const { data, error } = await supabase.from('users').select('count');
+    const { data, error } = await supabase.from('users').select().count();
     const endTime = Date.now();
     
     if (error) {
@@ -51,7 +51,7 @@ export const testSupabaseConnection = async () => {
 export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
-    const { data, error } = await supabase.from(tableName).select('count');
+    const { data, error } = await supabase.from(tableName).select().count();
     
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);
