@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +13,8 @@ import { StrategyFilter } from "@/components/strategy/StrategyFilter";
 import { Star, User } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { StrategyCategory } from "@/types/strategy";
+import { Json } from "@/integrations/supabase/types";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -26,6 +27,7 @@ interface Strategy {
   isWishlisted: boolean;
   legs?: any;
   createdBy?: string;
+  category?: StrategyCategory;
   performance: {
     winRate: string;
     avgProfit: string;
@@ -74,20 +76,26 @@ const StrategyManagement = () => {
           if (error) throw error;
           
           // Convert Supabase data to match local storage format
-          const supabaseStrategies = data.map(strategy => ({
+          const supabaseStrategies: Strategy[] = data.map(strategy => ({
             id: strategy.id,
             name: strategy.name,
-            description: strategy.description,
+            description: strategy.description || "",
             isCustom: true,
             isLive: false, // Default to paper trading
             isWishlisted: true,
             legs: strategy.legs,
             createdBy: strategy.created_by || user.email,
-            performance: strategy.performance || {
-              winRate: "N/A",
-              avgProfit: "N/A",
-              drawdown: "N/A"
-            }
+            performance: typeof strategy.performance === 'object' && strategy.performance !== null
+              ? {
+                  winRate: strategy.performance.winRate || "N/A",
+                  avgProfit: strategy.performance.avgProfit || "N/A",
+                  drawdown: strategy.performance.drawdown || "N/A"
+                }
+              : {
+                  winRate: "N/A",
+                  avgProfit: "N/A",
+                  drawdown: "N/A"
+                }
           }));
           
           // Merge strategies from Supabase with local strategies
@@ -114,7 +122,10 @@ const StrategyManagement = () => {
     if (selectedFilter === "all") {
       return strategies;
     }
-    return strategies.filter(strategy => strategy.category === selectedFilter);
+    // Only filter by category if it exists
+    return strategies.filter(strategy => 
+      strategy.category === selectedFilter
+    );
   };
 
   const predefinedWishlistedStrategies = filterStrategies(
