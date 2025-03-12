@@ -1,8 +1,14 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader } from 'lucide-react';
 
 const plans = [
   {
@@ -34,6 +40,67 @@ const plans = [
 ];
 
 const PricingPage = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+
+  const handlePlanSelection = async (planName: string, planPrice: string) => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to select a plan",
+        variant: "destructive",
+      });
+      // Save the plan info in sessionStorage to potentially use after login
+      sessionStorage.setItem('selectedPlan', JSON.stringify({ name: planName, price: planPrice }));
+      navigate('/auth');
+      return;
+    }
+
+    // Set loading state for the specific button
+    setIsLoading(`${planName}-${planPrice}`);
+
+    try {
+      // Insert plan selection into the database
+      const { error } = await supabase
+        .from('plan_details')
+        .insert({
+          user_id: user.id,
+          plan_name: planName,
+          plan_price: planPrice,
+        });
+
+      if (error) {
+        console.error('Error saving plan selection:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save your plan selection. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `You've selected the ${planName} plan!`,
+          variant: "default",
+        });
+        
+        // Redirect to subscription page or dashboard
+        navigate('/subscription');
+      }
+    } catch (error) {
+      console.error('Error in plan selection:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white pb-16">
       <Header />
@@ -78,8 +145,15 @@ const PricingPage = () => {
               </ul>
               <Button 
                 className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                onClick={() => handlePlanSelection(plan.name, plan.price)}
+                disabled={isLoading === `${plan.name}-${plan.price}`}
               >
-                Get Started
+                {isLoading === `${plan.name}-${plan.price}` ? (
+                  <>
+                    <Loader className="h-4 w-4 animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : "Get Started"}
               </Button>
             </div>
           ))}

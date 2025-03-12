@@ -1,7 +1,13 @@
+
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
@@ -29,13 +35,117 @@ const plans = [
   }
 ];
 
+interface PlanDetails {
+  id: string;
+  plan_name: string;
+  plan_price: string;
+  selected_at: string;
+}
+
 const Subscription = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const handleBackClick = () => {
-    // Check if we came from dashboard (premium icon) or settings
-    const fromPath = document.referrer.includes('/dashboard') ? '/dashboard' : '/settings';
-    navigate(fromPath);
+  // Fetch user's plan details when component mounts
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching plan details:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load your subscription details.",
+            variant: "destructive",
+          });
+        } else if (data) {
+          setUserPlan(data as PlanDetails);
+        }
+      } catch (error) {
+        console.error('Error in fetching plan:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserPlan();
+  }, [user, toast]);
+
+  const handlePlanSelect = async (planName: string, planPrice: string) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to select a plan",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      // Insert plan selection into the database
+      const { error } = await supabase
+        .from('plan_details')
+        .insert({
+          user_id: user.id,
+          plan_name: planName,
+          plan_price: planPrice,
+        });
+
+      if (error) {
+        console.error('Error saving plan selection:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save your plan selection. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `You've selected the ${planName} plan!`,
+          variant: "default",
+        });
+        
+        // Refresh the page to show the updated plan
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error in plan selection:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper to format the expiration date
+  const formatExpirationDate = () => {
+    if (!userPlan) return "";
+    
+    const selectedDate = new Date(userPlan.selected_at);
+    // Add 30 days to the selected date (mock expiration)
+    const expirationDate = new Date(selectedDate);
+    expirationDate.setDate(expirationDate.getDate() + 30);
+    
+    // Format as "MMM DD, YYYY"
+    return expirationDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   return (
@@ -56,25 +166,44 @@ const Subscription = () => {
       </header>
 
       <main className="pt-20 px-4 pb-24">
-        <section className="mb-8">
-          <div className="bg-gradient-to-br from-[#FF00D4]/10 to-purple-900/20 rounded-2xl p-6 border border-[#FF00D4]/20 shadow-lg">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-[#FF00D4] font-bold text-xl">Pro Plan</h2>
-                <p className="text-gray-400 text-sm">Valid until Mar 15, 2025</p>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <Loader className="h-8 w-8 animate-spin text-[#FF00D4]" />
+          </div>
+        ) : userPlan ? (
+          <section className="mb-8">
+            <div className="bg-gradient-to-br from-[#FF00D4]/10 to-purple-900/20 rounded-2xl p-6 border border-[#FF00D4]/20 shadow-lg">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-[#FF00D4] font-bold text-xl">{userPlan.plan_name} Plan</h2>
+                  <p className="text-gray-400 text-sm">Valid until {formatExpirationDate()}</p>
+                </div>
+                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">Active</span>
               </div>
-              <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">Active</span>
+              <div className="flex justify-between items-center">
+                <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-gray-400">/month</span></p>
+                <Button 
+                  className="bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90"
+                  onClick={() => navigate('/pricing')}
+                >
+                  Upgrade Plan
+                </Button>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <p className="text-2xl font-bold">₹2,999<span className="text-sm text-gray-400">/month</span></p>
+          </section>
+        ) : (
+          <section className="mb-8">
+            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 shadow-lg">
+              <p className="text-center text-gray-400 mb-4">You don't have an active subscription plan.</p>
               <Button 
-                className="bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90"
+                className="w-full bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90"
+                onClick={() => navigate('/pricing')}
               >
-                Upgrade Plan
+                Choose a Plan
               </Button>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
@@ -116,6 +245,7 @@ const Subscription = () => {
                       ? "bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90" 
                       : "border border-[#FF00D4] text-[#FF00D4] bg-transparent hover:bg-[#FF00D4]/10"
                   )}
+                  onClick={() => handlePlanSelect(plan.name, plan.price)}
                 >
                   Select Plan
                 </Button>
