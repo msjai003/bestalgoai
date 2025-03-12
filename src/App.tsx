@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
@@ -38,6 +39,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<Index />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
@@ -46,26 +48,91 @@ function AppRoutes() {
       <Route path="/auth" element={<Auth />} />
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/onboarding" element={<Onboarding />} />
-      
-      {/* All routes are public */}
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/strategy-builder" element={<StrategyBuilder />} />
-      <Route path="/strategy-selection" element={<StrategySelection />} />
-      <Route path="/strategy-details/:id" element={<StrategyDetails />} />
-      <Route path="/strategy-management" element={<StrategyManagement />} />
-      <Route path="/backtest" element={<BacktestReport />} />
-      <Route path="/live-trading" element={<LiveTrading />} />
-      <Route path="/alerts" element={<Alerts />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/subscription" element={<Subscription />} />
-      <Route path="/community" element={<CommunityLearning />} />
-      <Route path="/logout" element={<Logout />} />
-      <Route path="/risk-management" element={<RiskManagement />} />
-      <Route path="/broker-integration" element={<BrokerIntegration />} />
-      <Route path="/broker-credentials" element={<BrokerCredentials />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/logout" element={<Logout />} />
+      
+      {/* Protected routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/onboarding" element={
+        <ProtectedRoute>
+          <Onboarding />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-builder" element={
+        <ProtectedRoute>
+          <StrategyBuilder />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-selection" element={
+        <ProtectedRoute>
+          <StrategySelection />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-details/:id" element={
+        <ProtectedRoute>
+          <StrategyDetails />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-management" element={
+        <ProtectedRoute>
+          <StrategyManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/backtest" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/live-trading" element={
+        <ProtectedRoute>
+          <LiveTrading />
+        </ProtectedRoute>
+      } />
+      <Route path="/alerts" element={
+        <ProtectedRoute>
+          <Alerts />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
+      <Route path="/subscription" element={
+        <ProtectedRoute>
+          <Subscription />
+        </ProtectedRoute>
+      } />
+      <Route path="/community" element={
+        <ProtectedRoute>
+          <CommunityLearning />
+        </ProtectedRoute>
+      } />
+      <Route path="/risk-management" element={
+        <ProtectedRoute>
+          <RiskManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/broker-integration" element={
+        <ProtectedRoute>
+          <BrokerIntegration />
+        </ProtectedRoute>
+      } />
+      <Route path="/broker-credentials" element={
+        <ProtectedRoute>
+          <BrokerCredentials />
+        </ProtectedRoute>
+      } />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

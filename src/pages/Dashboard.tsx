@@ -1,5 +1,5 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Link } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronRight, TrendingUp, Loader } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Mock data since database connection is removed
 const mockPerformanceData = [
@@ -37,7 +38,21 @@ const mockStrategies = [
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
+  // Check if user is logged in, if not redirect to auth page
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the dashboard.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+    }
+  }, [user, navigate, toast]);
+
   React.useEffect(() => {
     toast({
       title: "Demo Mode Active",
@@ -45,6 +60,18 @@ const Dashboard = () => {
       variant: "default",
     });
   }, [toast]);
+
+  // If still checking authentication, show loading
+  if (user === null) {
+    return (
+      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin text-[#FF00D4] mx-auto mb-4" />
+          <p className="text-white">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-900 min-h-screen">
