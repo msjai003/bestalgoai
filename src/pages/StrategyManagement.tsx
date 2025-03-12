@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
+
+interface Strategy {
+  id: number | string;
+  name: string;
+  description: string;
+  isCustom: boolean;
+  isLive: boolean;
+  isWishlisted: boolean;
+  legs?: any;
+  createdBy?: string;
+  performance: {
+    winRate: string;
+    avgProfit: string;
+    drawdown: string;
+  };
+}
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
@@ -36,7 +53,7 @@ const StrategyManagement = () => {
     const fetchStrategies = async () => {
       // Get strategies from localStorage first
       const storedStrategies = localStorage.getItem('wishlistedStrategies');
-      let localStrategies: any[] = [];
+      let localStrategies: Strategy[] = [];
       
       if (storedStrategies) {
         try {

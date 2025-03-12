@@ -181,9 +181,14 @@ const StrategySelection = () => {
                     strategies.map((strategy) => (
                       <StrategyCard 
                         key={strategy.id}
-                        strategy={strategy}
-                        onWishlist={handleToggleWishlist}
-                        onLiveMode={handleToggleLiveMode}
+                        id={strategy.id}
+                        name={strategy.name}
+                        description={strategy.description}
+                        performance={strategy.performance}
+                        isLive={strategy.isLive}
+                        isCustom={false}
+                        onDelete={() => handleToggleWishlist(strategy.id, false)}
+                        onToggleLiveMode={() => handleToggleLiveMode(strategy.id)}
                       />
                     ))
                   )}
