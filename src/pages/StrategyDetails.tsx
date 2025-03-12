@@ -1,18 +1,51 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { predefinedStrategies } from "@/constants/strategy-data";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const strategyId = parseInt(id || "0", 10);
   const strategy = predefinedStrategies.find((s) => s.id === strategyId);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Check if the strategy is wishlisted on component mount
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!user || !strategy) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('strategy_selections')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('strategy_id', strategy.id)
+          .single();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking wishlist status:', error);
+          return;
+        }
+        
+        setIsWishlisted(!!data);
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
+      }
+    };
+    
+    checkWishlistStatus();
+  }, [user, strategy]);
 
   if (!strategy) {
     return (
@@ -34,12 +67,71 @@ const StrategyDetails = () => {
     );
   }
 
-  const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-    toast({
-      title: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
-      description: `Strategy has been ${isWishlisted ? 'removed from' : 'added to'} your wishlist`,
-    });
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to add strategies to your wishlist",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      if (!isWishlisted) {
+        // Add to wishlist
+        const { error } = await supabase.from('strategy_selections')
+          .insert({
+            user_id: user.id,
+            strategy_id: strategy.id,
+            strategy_name: strategy.name,
+            strategy_description: strategy.description
+          });
+          
+        if (error) {
+          console.error('Error adding to wishlist:', error);
+          toast({
+            title: "Error",
+            description: "Failed to add strategy to wishlist",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        setIsWishlisted(true);
+        toast({
+          title: "Added to wishlist",
+          description: "Strategy has been added to your wishlist",
+        });
+      } else {
+        // Remove from wishlist
+        const { error } = await supabase.from('strategy_selections')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('strategy_id', strategy.id);
+          
+        if (error) {
+          console.error('Error removing from wishlist:', error);
+          toast({
+            title: "Error",
+            description: "Failed to remove strategy from wishlist",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        setIsWishlisted(false);
+        toast({
+          title: "Removed from wishlist",
+          description: "Strategy has been removed from your wishlist",
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist status:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,7 +147,18 @@ const StrategyDetails = () => {
 
         <Card className="bg-gray-800 border border-gray-700 shadow-lg">
           <CardContent className="p-6">
-            <h1 className="text-2xl font-bold mb-4">{strategy.name}</h1>
+            <div className="flex justify-between items-start">
+              <h1 className="text-2xl font-bold mb-4">{strategy.name}</h1>
+              <Button 
+                size="icon"
+                variant="ghost"
+                className={`${isWishlisted ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-500`}
+                onClick={handleToggleWishlist}
+                disabled={isLoading}
+              >
+                <Heart className="h-5 w-5" fill={isWishlisted ? "currentColor" : "none"} />
+              </Button>
+            </div>
             <p className="text-gray-400 mb-6">{strategy.description}</p>
 
             <div className="mb-4">
@@ -91,10 +194,7 @@ const StrategyDetails = () => {
               </ScrollArea>
             </div>
 
-            <div className="flex justify-between items-center">
-              <Button onClick={handleToggleWishlist} variant="outline">
-                {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-              </Button>
+            <div className="flex justify-end items-center">
               <Button>Deploy Strategy</Button>
             </div>
           </CardContent>

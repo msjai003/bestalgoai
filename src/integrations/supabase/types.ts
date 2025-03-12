@@ -33,6 +33,33 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_selections: {
+        Row: {
+          created_at: string | null
+          id: string
+          strategy_description: string | null
+          strategy_id: number
+          strategy_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          strategy_description?: string | null
+          strategy_id: number
+          strategy_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          strategy_description?: string | null
+          strategy_id?: number
+          strategy_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null

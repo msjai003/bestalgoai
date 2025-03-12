@@ -12,54 +12,86 @@ import { predefinedStrategies } from "@/constants/strategy-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [strategies, setStrategies] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedWishlist = localStorage.getItem('wishlistedStrategies');
-    let wishlistedIds: number[] = [];
-    
-    if (storedWishlist) {
+    const fetchStrategies = async () => {
+      setIsLoading(true);
+      
       try {
-        const parsed = JSON.parse(storedWishlist);
-        wishlistedIds = parsed.map((s: any) => s.id);
+        // Start with predefined strategies
+        let strategiesWithStatus = predefinedStrategies.map(strategy => ({
+          ...strategy,
+          isWishlisted: false,
+          isLive: false
+        }));
+        
+        // If user is logged in, fetch their wishlisted strategies from Supabase
+        if (user) {
+          const { data, error } = await supabase
+            .from('strategy_selections')
+            .select('strategy_id')
+            .eq('user_id', user.id);
+            
+          if (error) {
+            console.error("Error fetching wishlisted strategies:", error);
+            toast({
+              title: "Error fetching wishlist",
+              description: "There was a problem loading your wishlisted strategies",
+              variant: "destructive"
+            });
+          } else if (data) {
+            // Mark strategies as wishlisted
+            const wishlistedIds = data.map(item => item.strategy_id);
+            strategiesWithStatus = strategiesWithStatus.map(strategy => ({
+              ...strategy,
+              isWishlisted: wishlistedIds.includes(strategy.id)
+            }));
+          }
+        }
+        
+        setStrategies(strategiesWithStatus);
       } catch (error) {
-        console.error("Error parsing wishlisted strategies:", error);
+        console.error("Error setting up strategies:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
     
-    setStrategies(predefinedStrategies.map(strategy => ({
-      ...strategy,
-      isWishlisted: wishlistedIds.includes(strategy.id),
-      isLive: false
-    })));
-  }, []);
+    fetchStrategies();
+  }, [user, toast]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
   };
 
-  const handleToggleWishlist = (id: number) => {
-    const updatedStrategies = strategies.map(strategy => {
-      if (strategy.id === id) {
-        return { ...strategy, isWishlisted: !strategy.isWishlisted };
-      }
-      return strategy;
-    });
-    setStrategies(updatedStrategies);
+  const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
+    // Update UI immediately
+    setStrategies(prev => 
+      prev.map(strategy => 
+        strategy.id === id 
+          ? { ...strategy, isWishlisted } 
+          : strategy
+      )
+    );
     
     const strategy = strategies.find(s => s.id === id);
-    const newWishlistStatus = !strategy?.isWishlisted;
     
     toast({
-      title: newWishlistStatus ? "Added to wishlist" : "Removed from wishlist",
-      description: `Strategy has been ${newWishlistStatus ? 'added to' : 'removed from'} your wishlist`
+      title: isWishlisted ? "Added to wishlist" : "Removed from wishlist",
+      description: `Strategy has been ${isWishlisted ? 'added to' : 'removed from'} your wishlist`
     });
     
+    // Local storage backup for offline functionality
     const storedWishlist = localStorage.getItem('wishlistedStrategies');
     let wishlistedStrategies: any[] = [];
     
@@ -71,7 +103,7 @@ const StrategySelection = () => {
       }
     }
     
-    if (newWishlistStatus) {
+    if (isWishlisted) {
       if (!wishlistedStrategies.some(s => s.id === id)) {
         const strategyToAdd = strategies.find(s => s.id === id);
         if (strategyToAdd) {
@@ -143,14 +175,18 @@ const StrategySelection = () => {
             <div className="flex-1 overflow-auto scrollbar-none">
               {selectedTab === "predefined" ? (
                 <div className="grid grid-cols-1 gap-3 pb-4">
-                  {strategies.map((strategy) => (
-                    <StrategyCard 
-                      key={strategy.id}
-                      strategy={strategy}
-                      onWishlist={handleToggleWishlist}
-                      onLiveMode={handleToggleLiveMode}
-                    />
-                  ))}
+                  {isLoading ? (
+                    <div className="text-center py-8 text-gray-400">Loading strategies...</div>
+                  ) : (
+                    strategies.map((strategy) => (
+                      <StrategyCard 
+                        key={strategy.id}
+                        strategy={strategy}
+                        onWishlist={handleToggleWishlist}
+                        onLiveMode={handleToggleLiveMode}
+                      />
+                    ))
+                  )}
                 </div>
               ) : (
                 <CustomStrategyWizard onSubmit={handleDeployStrategy} />

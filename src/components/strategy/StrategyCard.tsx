@@ -3,6 +3,9 @@ import { ChevronRight, Heart, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface StrategyCardProps {
   strategy: {
@@ -17,7 +20,7 @@ interface StrategyCardProps {
       drawdown: string;
     };
   };
-  onWishlist?: (id: number) => void;
+  onWishlist?: (id: number, isWishlisted: boolean) => void;
   onLiveMode?: (id: number) => void;
   onSelect?: () => void;
 }
@@ -29,11 +32,62 @@ export const StrategyCard = ({
   onSelect 
 }: StrategyCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleStrategySelect = () => {
     navigate(`/strategy-details/${strategy.id}`);
     if (onSelect) {
       onSelect();
+    }
+  };
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      if (!strategy.isWishlisted) {
+        // Add to wishlist in Supabase
+        const { error } = await supabase.from('strategy_selections')
+          .insert({
+            user_id: user.id,
+            strategy_id: strategy.id,
+            strategy_name: strategy.name,
+            strategy_description: strategy.description
+          });
+          
+        if (error) {
+          console.error('Error adding strategy to wishlist:', error);
+          throw error;
+        }
+      } else {
+        // Remove from wishlist in Supabase
+        const { error } = await supabase.from('strategy_selections')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('strategy_id', strategy.id);
+          
+        if (error) {
+          console.error('Error removing strategy from wishlist:', error);
+          throw error;
+        }
+      }
+      
+      // Notify parent component
+      if (onWishlist) {
+        onWishlist(strategy.id, !strategy.isWishlisted);
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist status:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -50,13 +104,9 @@ export const StrategyCard = ({
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className={`${strategy.isWishlisted ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-500`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onWishlist) {
-                    onWishlist(strategy.id);
-                  }
-                }}
+                className={`${strategy.isWishlisted ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-500 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
+                onClick={handleWishlist}
+                disabled={isLoading}
               >
                 <Heart className="h-5 w-5" fill={strategy.isWishlisted ? "currentColor" : "none"} />
               </Button>
