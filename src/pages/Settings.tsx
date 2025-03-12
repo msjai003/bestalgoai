@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Bell, Building, TrendingUp, Shield, User, HelpCircle } from "lucide-react";
@@ -12,13 +13,54 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [profilePicture, setProfilePicture] = useState<string>(
     "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
   );
+  const [userProfile, setUserProfile] = useState<{
+    full_name: string;
+    email: string;
+  }>({
+    full_name: "",
+    email: ""
+  });
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          // Get user profile from Supabase
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('full_name, email')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            return;
+          }
+
+          if (data) {
+            setUserProfile({
+              full_name: data.full_name,
+              email: data.email
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const openSecuritySettings = () => {
     setActiveDialog("securitySettings");
@@ -59,8 +101,8 @@ const Settings = () => {
               onImageChange={setProfilePicture}
             />
             <div>
-              <h2 className="text-lg font-semibold">Rahul Sharma</h2>
-              <p className="text-sm text-gray-400">rahul.s@gmail.com</p>
+              <h2 className="text-lg font-semibold">{userProfile.full_name || "User"}</h2>
+              <p className="text-sm text-gray-400">{userProfile.email || "No email available"}</p>
               <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-gradient-to-r from-pink-600 to-purple-600">
                 Premium Trader
               </span>
