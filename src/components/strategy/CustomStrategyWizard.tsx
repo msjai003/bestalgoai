@@ -55,10 +55,35 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const [showDeploymentDialog, setShowDeploymentDialog] = useState(false);
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
   const [isDuplicateName, setIsDuplicateName] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const { toast } = useToast();
   const { user } = useAuth();
 
   const currentLeg = formData.legs[formData.currentLegIndex];
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+          
+          if (error) throw error;
+          
+          if (data) {
+            setUserName(data.full_name);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   useEffect(() => {
     const checkDuplicateNames = async () => {
@@ -218,7 +243,8 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           name: strategyName,
           description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
           legs: legsAsJson,
-          is_active: true
+          is_active: true,
+          created_by: userName || user.email // Include user's name or default to email
         }).select();
         
         if (error) throw error;
@@ -257,6 +283,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         isLive: mode === 'real',
         isWishlisted: true,
         legs: formData.legs,
+        createdBy: "Guest User", // Default for non-logged in users
         performance: {
           winRate: "N/A",
           avgProfit: "N/A",

@@ -11,12 +11,15 @@ import { TradingModeConfirmationDialog } from "@/components/strategy/TradingMode
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 import { StrategyFilter } from "@/components/strategy/StrategyFilter";
 import { Star, User } from 'lucide-react';
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   
@@ -30,16 +33,65 @@ const StrategyManagement = () => {
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
 
   useEffect(() => {
-    const storedStrategies = localStorage.getItem('wishlistedStrategies');
-    if (storedStrategies) {
-      try {
-        const parsedStrategies = JSON.parse(storedStrategies);
-        setWishlistedStrategies(parsedStrategies);
-      } catch (error) {
-        console.error("Error parsing wishlisted strategies:", error);
+    const fetchStrategies = async () => {
+      // Get strategies from localStorage first
+      const storedStrategies = localStorage.getItem('wishlistedStrategies');
+      let localStrategies: any[] = [];
+      
+      if (storedStrategies) {
+        try {
+          localStrategies = JSON.parse(storedStrategies);
+        } catch (error) {
+          console.error("Error parsing wishlisted strategies:", error);
+        }
       }
-    }
-  }, []);
+
+      // If user is logged in, fetch strategies from Supabase
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('custom_strategies')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+          
+          // Convert Supabase data to match local storage format
+          const supabaseStrategies = data.map(strategy => ({
+            id: strategy.id,
+            name: strategy.name,
+            description: strategy.description,
+            isCustom: true,
+            isLive: false, // Default to paper trading
+            isWishlisted: true,
+            legs: strategy.legs,
+            createdBy: strategy.created_by || user.email,
+            performance: strategy.performance || {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          }));
+          
+          // Merge strategies from Supabase with local strategies
+          // (avoiding duplicates by name)
+          const supabaseStrategyNames = supabaseStrategies.map(s => s.name.toLowerCase());
+          const filteredLocalStrategies = localStrategies.filter(
+            s => !s.isCustom || !supabaseStrategyNames.includes(s.name.toLowerCase())
+          );
+          
+          setWishlistedStrategies([...filteredLocalStrategies, ...supabaseStrategies]);
+        } catch (error) {
+          console.error("Error fetching strategies from Supabase:", error);
+          setWishlistedStrategies(localStrategies);
+        }
+      } else {
+        setWishlistedStrategies(localStrategies);
+      }
+    };
+    
+    fetchStrategies();
+  }, [user]);
 
   const filterStrategies = (strategies: any[]) => {
     if (selectedFilter === "all") {
@@ -64,8 +116,30 @@ const StrategyManagement = () => {
     setDeleteConfirmOpen(true);
   };
   
-  const confirmDeleteStrategy = () => {
+  const confirmDeleteStrategy = async () => {
     if (!strategyToDelete) return;
+    
+    if (user && typeof strategyToDelete.id === 'string' && strategyToDelete.id.includes('-')) {
+      try {
+        const { error } = await supabase
+          .from('custom_strategies')
+          .delete()
+          .eq('id', strategyToDelete.id)
+          .eq('user_id', user.id);
+          
+        if (error) throw error;
+      } catch (error) {
+        console.error("Error deleting strategy from Supabase:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete strategy from database",
+          variant: "destructive"
+        });
+        setDeleteConfirmOpen(false);
+        setStrategyToDelete(null);
+        return;
+      }
+    }
     
     const updatedStrategies = wishlistedStrategies.filter(strategy => strategy.id !== strategyToDelete.id);
     setWishlistedStrategies(updatedStrategies);
@@ -96,7 +170,7 @@ const StrategyManagement = () => {
     setConfirmationOpen(true);
   };
 
-  const confirmModeChange = () => {
+  const confirmModeChange = async () => {
     if (currentStrategyId === null || targetMode === null) return;
     
     const updatedStrategies = wishlistedStrategies.map(strategy => {
