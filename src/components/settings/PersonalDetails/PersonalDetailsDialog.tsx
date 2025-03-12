@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { ContactInfoForm } from "./ContactInfoForm";
 import { DialogNavigation } from "./DialogNavigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PersonalDetailsDialogProps {
   open: boolean;
@@ -23,9 +25,10 @@ export const PersonalDetailsDialog = ({
   onOpenChange,
   onOpenSecuritySettings,
 }: PersonalDetailsDialogProps) => {
+  const { user } = useAuth();
   const [formState, setFormState] = useState({
-    fullName: "Rahul Sharma",
-    email: "rahul.s@gmail.com",
+    fullName: "",
+    email: "",
     phone: "+91 98765 43210",
     dateOfBirth: "15 Aug 1990",
   });
@@ -42,6 +45,39 @@ export const PersonalDetailsDialog = ({
     dateOfBirth: false
   });
 
+  // Fetch user profile data when the dialog opens
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user && open) {
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('full_name, email, mobile_number')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            return;
+          }
+
+          if (data) {
+            setFormState(prev => ({
+              ...prev,
+              fullName: data.full_name || "",
+              email: data.email || "",
+              phone: data.mobile_number || "+91 98765 43210"
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user, open]);
+
   const toggleEditMode = (field: keyof typeof editMode) => {
     setEditMode(prev => ({
       ...prev,
@@ -56,9 +92,34 @@ export const PersonalDetailsDialog = ({
     }));
   };
 
-  const handleSaveChanges = () => {
-    toast.success("Personal details updated successfully");
-    onOpenChange(false);
+  const handleSaveChanges = async () => {
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({
+            full_name: formState.fullName,
+            email: formState.email,
+            mobile_number: formState.phone,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating user profile:', error);
+          toast.error("Failed to update profile");
+          return;
+        }
+
+        toast.success("Personal details updated successfully");
+        onOpenChange(false);
+      } catch (error) {
+        console.error('Error updating user profile:', error);
+        toast.error("An error occurred while updating profile");
+      }
+    } else {
+      toast.error("You must be logged in to update your profile");
+    }
   };
 
   const goToNextPage = () => {
