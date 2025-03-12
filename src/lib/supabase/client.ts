@@ -6,7 +6,7 @@ export const supabaseAnonKey = 'mock-key';
 // Create a mock client to maintain API compatibility
 export const supabase = {
   auth: {
-    signUp: async ({ email, password, options } = {}) => ({ data: null, error: null }),
+    signUp: async ({ email, password, options } = { email: '', password: '', options: undefined }) => ({ data: null, error: null }),
     signInWithPassword: async () => ({ data: { user: { id: 'mock-id', email: 'mock@email.com' } }, error: null }),
     signOut: async () => ({ error: null }),
     getSession: async () => ({ data: { session: null }, error: null }),
