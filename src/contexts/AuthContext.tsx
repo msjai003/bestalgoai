@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase/client';
 
 interface User {
   id: string;
@@ -20,50 +19,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Mock auth
   useEffect(() => {
-    // Check active session on component mount
-    const checkSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error checking session:', error);
-          return;
-        }
-        
-        if (data.session) {
-          setUser({
-            id: data.session.user.id,
-            email: data.session.user.email || '',
-          });
-        }
-      } catch (error) {
-        console.error('Session check error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-
-    // Set up auth state change listener
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-        });
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
-
-    // Cleanup subscription
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // Check if there's a user in localStorage (mock persistence)
+    const storedUser = localStorage.getItem('mockUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string, confirmPassword: string) => {
@@ -74,18 +39,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.error('Passwords do not match');
         return { error: new Error('Passwords do not match') };
       }
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        return { error };
+
+      // Demo mode behavior - accept any email with "demo" in it
+      if (!email.includes('demo')) {
+        toast.error('In demo mode, use an email containing "demo"');
+        return { error: new Error('In demo mode, use an email containing "demo"') };
       }
       
-      toast.success('Account created successfully! Check your email for verification.');
+      // Mock user creation
+      const newUser = {
+        id: `user-${Date.now()}`,
+        email,
+      };
+
+      // Store the mock user
+      localStorage.setItem('mockUser', JSON.stringify(newUser));
+      setUser(newUser);
+      
+      toast.success('Account created successfully!');
       return { error: null };
     } catch (error) {
       console.error('Error during signup:', error);
@@ -100,21 +71,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        return { error };
+      // Demo mode behavior - accept any email with "demo" in it
+      if (!email.includes('demo')) {
+        toast.error('In demo mode, use an email containing "demo"');
+        return { error: new Error('In demo mode, use an email containing "demo"') };
       }
       
+      // Mock user sign in
+      const mockUser = {
+        id: `user-${Date.now()}`,
+        email,
+      };
+      
+      localStorage.setItem('mockUser', JSON.stringify(mockUser));
+      setUser(mockUser);
+      
       toast.success('Login successful!');
-      setUser({
-        id: data.user.id,
-        email: data.user.email || '',
-      });
       return { error: null };
     } catch (error) {
       console.error('Error during sign in:', error);
@@ -128,14 +100,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Successfully signed out');
-        setUser(null);
-      }
+      localStorage.removeItem('mockUser');
+      setUser(null);
+      toast.success('Successfully signed out');
     } catch (error) {
       console.error('Error during sign out:', error);
       toast.error('Error signing out');

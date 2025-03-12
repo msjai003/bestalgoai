@@ -1,10 +1,24 @@
 
-// Import Supabase client
-import { createClient } from '@supabase/supabase-js';
+// Mock Supabase client for frontend-only operation
+export const supabaseUrl = 'mock-url';
+export const supabaseAnonKey = 'mock-key';
 
-// Supabase project credentials
-export const supabaseUrl = 'https://ohryyssrykyrmkdttaet.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ocnl5c3NyeWt5cm1rZHR0YWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1OTIyMDgsImV4cCI6MjA1NzE2ODIwOH0.gQrW_Ki_YnnOeKOmMpJ1MQe8fkOMQ-oEbdzNKoRDDH0';
+// Create a mock client to maintain API compatibility
+export const supabase = {
+  auth: {
+    signUp: async () => ({ data: null, error: null }),
+    signInWithPassword: async () => ({ data: { user: { id: 'mock-id', email: 'mock@email.com' } }, error: null }),
+    signOut: async () => ({ error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+  },
+  from: () => ({
+    select: () => ({ data: [], error: null }),
+    insert: () => ({ data: [], error: null }),
+    update: () => ({ data: [], error: null }),
+    delete: () => ({ data: [], error: null }),
+  }),
+};
 
 // Get the current site URL for redirects
 export const getSiteUrl = () => {
@@ -14,11 +28,8 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Initialize Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 // Create a fallback client function
 export const createFallbackClient = () => {
-  console.log('Creating Supabase client for project: ohryyssrykyrmkdttaet');
+  console.log('Creating mock Supabase client');
   return supabase;
 };

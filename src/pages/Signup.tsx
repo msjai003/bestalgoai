@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,9 +44,17 @@ const Signup = () => {
         return;
       }
 
-      // Call the signUp method from AuthContext
-      // For now, we'll just pass email and password to the auth context
-      // In a real app, you might want to store name and mobile number in a user profile table
+      // Mock user data storage - in a real app, this would go to the database
+      const userData = {
+        name,
+        email,
+        mobileNumber,
+      };
+      
+      // Store in localStorage for demo purposes
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      // Call the signUp method from our mock AuthContext
       const { error } = await signUp(email, password, confirmPassword);
       
       if (error) {
@@ -55,9 +62,6 @@ const Signup = () => {
         setIsLoading(false);
         return;
       }
-
-      // Store additional user data (name, mobile) if needed
-      // This could be saved to a user profile table in Supabase
       
       toast.success('Account created successfully!');
       // Navigate to dashboard on success
