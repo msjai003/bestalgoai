@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -6,7 +7,6 @@ import { Link } from "react-router-dom";
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronRight, TrendingUp, Loader } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Mock data since database connection is removed
@@ -53,14 +53,6 @@ const Dashboard = () => {
     }
   }, [user, navigate, toast]);
 
-  React.useEffect(() => {
-    toast({
-      title: "Demo Mode Active",
-      description: "Database connection has been removed. Showing mock data.",
-      variant: "default",
-    });
-  }, [toast]);
-
   // If still checking authentication, show loading
   if (user === null) {
     return (
@@ -77,10 +69,6 @@ const Dashboard = () => {
     <div className="bg-gray-900 min-h-screen">
       <Header />
       <main className="pt-16 pb-20">
-        <div className="p-4 bg-yellow-900/30 border border-yellow-700 m-4 rounded-lg">
-          <p className="text-yellow-200 text-sm">⚠️ Demo Mode: Database connection has been removed. Showing mock data.</p>
-        </div>
-        
         <section id="portfolio-overview" className="p-4">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 shadow-xl border border-gray-800">
             <div className="flex justify-between items-start mb-4">
