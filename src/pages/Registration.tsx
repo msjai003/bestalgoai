@@ -13,6 +13,8 @@ const Registration = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, user } = useAuth();
@@ -32,7 +34,7 @@ const Registration = () => {
 
     try {
       // Basic validation
-      if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+      if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !mobileNumber.trim()) {
         setErrorMessage('Please fill in all fields');
         setIsLoading(false);
         return;
@@ -50,8 +52,13 @@ const Registration = () => {
         return;
       }
 
-      // Call signUp from AuthContext with all three parameters
-      const { error } = await signUp(email, password, confirmPassword);
+      // Call signUp from AuthContext with all four parameters
+      const { error } = await signUp(
+        email, 
+        password, 
+        confirmPassword, 
+        { fullName, mobileNumber }
+      );
       
       if (error) {
         console.error('Registration error details:', error);
@@ -109,6 +116,18 @@ const Registration = () => {
       <form onSubmit={handleRegistration} className="space-y-6">
         <div className="space-y-4">
           <div>
+            <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name</Label>
+            <Input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="John Doe"
+              className="bg-gray-800/50 border-gray-700 text-white h-12"
+            />
+          </div>
+          
+          <div>
             <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
             <Input
               id="email"
@@ -116,6 +135,18 @@ const Registration = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
+              className="bg-gray-800/50 border-gray-700 text-white h-12"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
+            <Input
+              id="mobileNumber"
+              type="tel"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              placeholder="+1 (123) 456-7890"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
             />
           </div>
