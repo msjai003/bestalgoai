@@ -44,18 +44,14 @@ const Signup = () => {
         return;
       }
 
-      // Mock user data storage - in a real app, this would go to the database
+      // Prepare userData to send with signUp
       const userData = {
-        name,
-        email,
-        mobileNumber,
+        fullName: name,
+        mobileNumber: mobileNumber
       };
       
-      // Store in localStorage for demo purposes
-      localStorage.setItem('userData', JSON.stringify(userData));
-
-      // Call the signUp method from our mock AuthContext
-      const { error } = await signUp(email, password, confirmPassword);
+      // Call the signUp method from AuthContext with userData
+      const { error } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
         setErrorMessage(error.message);
@@ -69,6 +65,7 @@ const Signup = () => {
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };

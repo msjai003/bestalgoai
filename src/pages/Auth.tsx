@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -78,7 +77,7 @@ const Auth = () => {
       <Alert className="bg-blue-900/30 border-blue-800 mb-6">
         <Info className="h-4 w-4 text-blue-400" />
         <AlertDescription className="text-blue-200 ml-2">
-          Database connection has been removed. For demo, use email containing "demo" (e.g., demo@example.com).
+          Enter your email and password to login. New users can register from the sign up page.
         </AlertDescription>
       </Alert>
 

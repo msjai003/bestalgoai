@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface User {
   id: string;
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, confirmPassword: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -19,19 +20,59 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock auth
+  // Check for existing session on mount
   useEffect(() => {
-    // Check if there's a user in localStorage (mock persistence)
-    const storedUser = localStorage.getItem('mockUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error checking auth session:', error);
+        }
+        
+        if (data.session?.user) {
+          setUser({
+            id: data.session.user.id,
+            email: data.session.user.email || '',
+          });
+        }
+      } catch (error) {
+        console.error('Error during session check:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+          });
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const signUp = async (email: string, password: string, confirmPassword: string) => {
+  const signUp = async (
+    email: string, 
+    password: string, 
+    confirmPassword: string, 
+    userData: { fullName: string, mobileNumber: string }
+  ) => {
     try {
       setIsLoading(true);
       
@@ -40,25 +81,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // Demo mode behavior - accept any email with "demo" in it
-      if (!email.includes('demo')) {
-        toast.error('In demo mode, use an email containing "demo"');
-        return { error: new Error('In demo mode, use an email containing "demo"') };
+      // Call Supabase auth signup
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: userData.fullName,
+            mobile_number: userData.mobileNumber,
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Error during signup:', error);
+        toast.error(error.message);
+        return { error };
       }
       
-      // Mock user creation
-      const newUser = {
-        id: `user-${Date.now()}`,
-        email,
-      };
-
-      // Store the mock user
-      localStorage.setItem('mockUser', JSON.stringify(newUser));
-      setUser(newUser);
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+        });
+        toast.success('Account created successfully!');
+      } else {
+        // User might need to confirm their email
+        toast.info('Please check your email to confirm your account');
+      }
       
-      toast.success('Account created successfully!');
       return { error: null };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during signup:', error);
       toast.error('Error during signup');
       return { error: error as Error };
@@ -71,24 +124,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Demo mode behavior - accept any email with "demo" in it
-      if (!email.includes('demo')) {
-        toast.error('In demo mode, use an email containing "demo"');
-        return { error: new Error('In demo mode, use an email containing "demo"') };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Error during sign in:', error);
+        toast.error(error.message);
+        return { error };
       }
       
-      // Mock user sign in
-      const mockUser = {
-        id: `user-${Date.now()}`,
-        email,
-      };
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+        });
+        toast.success('Login successful!');
+      }
       
-      localStorage.setItem('mockUser', JSON.stringify(mockUser));
-      setUser(mockUser);
-      
-      toast.success('Login successful!');
       return { error: null };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during sign in:', error);
       toast.error('Error during login');
       return { error: error as Error };
@@ -100,10 +156,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       setIsLoading(true);
-      localStorage.removeItem('mockUser');
-      setUser(null);
-      toast.success('Successfully signed out');
-    } catch (error) {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error during sign out:', error);
+        toast.error(error.message);
+      } else {
+        setUser(null);
+        toast.success('Successfully signed out');
+      }
+    } catch (error: any) {
       console.error('Error during sign out:', error);
       toast.error('Error signing out');
     } finally {
