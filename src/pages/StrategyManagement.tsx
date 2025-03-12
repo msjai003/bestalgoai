@@ -37,17 +37,17 @@ const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [wishlistedStrategies, setWishlistedStrategies] = useState<any[]>([]);
+  const [wishlistedStrategies, setWishlistedStrategies] = useState<Strategy[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   
   // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
+  const [currentStrategyId, setCurrentStrategyId] = useState<number | string | null>(null);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
+  const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
 
   useEffect(() => {
     const fetchStrategies = async () => {
@@ -110,7 +110,7 @@ const StrategyManagement = () => {
     fetchStrategies();
   }, [user]);
 
-  const filterStrategies = (strategies: any[]) => {
+  const filterStrategies = (strategies: Strategy[]) => {
     if (selectedFilter === "all") {
       return strategies;
     }
@@ -125,7 +125,7 @@ const StrategyManagement = () => {
     wishlistedStrategies.filter(strategy => strategy.isCustom)
   );
 
-  const handleDeleteStrategy = (id: number) => {
+  const handleDeleteStrategy = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -178,7 +178,7 @@ const StrategyManagement = () => {
     setStrategyToDelete(null);
   };
 
-  const handleToggleLiveMode = (id: number) => {
+  const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
