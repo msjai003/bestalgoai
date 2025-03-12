@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -87,9 +88,12 @@ const StrategyManagement = () => {
             createdBy: strategy.created_by || user.email,
             performance: typeof strategy.performance === 'object' && strategy.performance !== null
               ? {
-                  winRate: strategy.performance.winRate || "N/A",
-                  avgProfit: strategy.performance.avgProfit || "N/A",
-                  drawdown: strategy.performance.drawdown || "N/A"
+                  winRate: typeof strategy.performance === 'object' && 'winRate' in strategy.performance 
+                    ? String(strategy.performance.winRate) : "N/A",
+                  avgProfit: typeof strategy.performance === 'object' && 'avgProfit' in strategy.performance 
+                    ? String(strategy.performance.avgProfit) : "N/A",
+                  drawdown: typeof strategy.performance === 'object' && 'drawdown' in strategy.performance 
+                    ? String(strategy.performance.drawdown) : "N/A"
                 }
               : {
                   winRate: "N/A",

@@ -115,6 +115,47 @@ const StrategySelection = () => {
     }
     
     localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
+    
+    // If user is logged in, also save to Supabase
+    if (user) {
+      try {
+        if (isWishlisted) {
+          // Add to wishlist in Supabase
+          const { error } = await supabase
+            .from('strategy_selections')
+            .insert({
+              user_id: user.id,
+              strategy_id: id,
+              strategy_name: strategy?.name || '',
+              strategy_description: strategy?.description || ''
+            });
+            
+          if (error) throw error;
+        } else {
+          // Remove from wishlist in Supabase
+          const { error } = await supabase
+            .from('strategy_selections')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('strategy_id', id);
+            
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error('Error updating wishlist in Supabase:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update wishlist in database",
+          variant: "destructive"
+        });
+      }
+    } else if (isWishlisted) {
+      // Prompt user to login if they're trying to add to wishlist but not logged in
+      toast({
+        title: "Login Required",
+        description: "Please login to save strategies to your wishlist permanently",
+      });
+    }
   };
 
   const handleToggleLiveMode = (id: number) => {
@@ -179,17 +220,55 @@ const StrategySelection = () => {
                     <div className="text-center py-8 text-gray-400">Loading strategies...</div>
                   ) : (
                     strategies.map((strategy) => (
-                      <StrategyCard 
-                        key={strategy.id}
-                        id={strategy.id}
-                        name={strategy.name}
-                        description={strategy.description}
-                        performance={strategy.performance}
-                        isLive={strategy.isLive}
-                        isCustom={false}
-                        onDelete={() => handleToggleWishlist(strategy.id, false)}
-                        onToggleLiveMode={() => handleToggleLiveMode(strategy.id)}
-                      />
+                      <div key={strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-semibold text-white">{strategy.name}</h3>
+                            <p className="text-sm text-gray-400">{strategy.description}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            {user && (
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className={`${strategy.isWishlisted ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-400`}
+                                onClick={() => handleToggleWishlist(strategy.id, !strategy.isWishlisted)}
+                                aria-label={strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                              >
+                                <Heart className="h-4 w-4" fill={strategy.isWishlisted ? "currentColor" : "none"} />
+                              </Button>
+                            )}
+                            
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-400`}
+                              onClick={() => handleToggleLiveMode(strategy.id)}
+                              aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400">Win Rate:</span>
+                              <span className="text-green-400">{strategy.performance.winRate}</span>
+                            </div>
+                            
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-blue-400 hover:text-blue-300 border-gray-700"
+                              onClick={() => navigate(`/strategy-details/${strategy.id}`)}
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
