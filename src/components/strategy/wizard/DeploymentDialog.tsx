@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DeploymentDialogProps {
   open: boolean;
@@ -23,14 +24,16 @@ export const DeploymentDialog = ({
   strategyName,
 }: DeploymentDialogProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleDeployStrategy = (mode: "paper" | "real") => {
-    // Add the strategy to Custom Strategy wishlist
-    toast({
-      title: "Strategy Added to Wishlist",
-      description: `${strategyName} has been added to your Custom Strategy wishlist in ${mode === "paper" ? "Paper Trade" : "Real"} mode.`,
-      duration: 3000,
-    });
+    if (!user) {
+      toast({
+        title: "Sign in Required",
+        description: "Your strategy will be saved locally. Sign in to fully save your strategies.",
+        duration: 5000,
+      });
+    }
     
     onDeployStrategy(mode);
   };
@@ -64,7 +67,7 @@ export const DeploymentDialog = ({
           </Button>
         </div>
         <div className="mt-4 p-4 bg-gray-700/50 rounded-lg text-gray-300 text-sm">
-          <p>Real Mode will execute actual trades based on your configured strategy. Please ensure your brokerage account is connected and properly configured.</p>
+          <p>{user ? "Your strategy will be saved to your account and can be accessed across devices." : "Sign in to save your strategies permanently and access them across devices."}</p>
         </div>
       </DialogContent>
     </Dialog>

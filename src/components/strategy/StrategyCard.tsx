@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface StrategyCardProps {
   strategy: {
@@ -14,6 +15,7 @@ interface StrategyCardProps {
     description: string;
     isWishlisted?: boolean;
     isLive?: boolean;
+    isCustom?: boolean;
     performance?: {
       winRate: string;
       avgProfit: string;
@@ -33,6 +35,7 @@ export const StrategyCard = ({
 }: StrategyCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
   const handleStrategySelect = () => {
@@ -67,6 +70,11 @@ export const StrategyCard = ({
           console.error('Error adding strategy to wishlist:', error);
           throw error;
         }
+        
+        toast({
+          title: "Added to wishlist",
+          description: `${strategy.name} has been added to your wishlist`,
+        });
       } else {
         // Remove from wishlist in Supabase
         const { error } = await supabase.from('strategy_selections')
@@ -78,6 +86,11 @@ export const StrategyCard = ({
           console.error('Error removing strategy from wishlist:', error);
           throw error;
         }
+        
+        toast({
+          title: "Removed from wishlist",
+          description: `${strategy.name} has been removed from your wishlist`,
+        });
       }
       
       // Notify parent component
@@ -86,6 +99,11 @@ export const StrategyCard = ({
       }
     } catch (error) {
       console.error('Error toggling wishlist status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist status. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

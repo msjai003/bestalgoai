@@ -7,6 +7,8 @@ import { WizardControls } from "./wizard/WizardControls";
 import { StrategyDetailsDialog } from "./wizard/StrategyDetailsDialog";
 import { DeploymentDialog } from "./wizard/DeploymentDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const INITIAL_LEG: StrategyLeg = {
   id: uuidv4(),
@@ -53,28 +55,48 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
   const [isDuplicateName, setIsDuplicateName] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const currentLeg = formData.legs[formData.currentLegIndex];
 
   useEffect(() => {
-    if (strategyName.trim() === "") {
-      setIsDuplicateName(false);
-      return;
-    }
+    const checkDuplicateNames = async () => {
+      if (strategyName.trim() === "" || !user) {
+        setIsDuplicateName(false);
+        return;
+      }
 
-    const storedStrategies = localStorage.getItem('wishlistedStrategies');
-    if (storedStrategies) {
       try {
-        const parsedStrategies = JSON.parse(storedStrategies);
-        const isDuplicate = parsedStrategies.some(
-          (strategy: any) => strategy.name?.toLowerCase() === strategyName.trim().toLowerCase()
-        );
+        const { data: customData, error: customError } = await supabase
+          .from('custom_strategies')
+          .select('name')
+          .eq('user_id', user.id)
+          .ilike('name', strategyName.trim());
+
+        if (customError) throw customError;
+
+        const storedStrategies = localStorage.getItem('wishlistedStrategies');
+        let localStrategies: any[] = [];
+        
+        if (storedStrategies) {
+          try {
+            localStrategies = JSON.parse(storedStrategies);
+          } catch (err) {
+            console.error("Error parsing local strategies:", err);
+          }
+        }
+        
+        const isDuplicate = (customData && customData.length > 0) || 
+          localStrategies.some(strategy => strategy.name?.toLowerCase() === strategyName.trim().toLowerCase());
+        
         setIsDuplicateName(isDuplicate);
       } catch (error) {
         console.error("Error checking strategy names:", error);
       }
-    }
-  }, [strategyName]);
+    };
+
+    checkDuplicateNames();
+  }, [strategyName, user]);
 
   const updateCurrentLeg = (updates: Partial<StrategyLeg>) => {
     const updatedLegs = [...formData.legs];
@@ -170,7 +192,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setShowStrategyDetails(true);
   };
 
-  const handleDeployStrategy = (mode: "paper" | "real") => {
+  const handleDeployStrategy = async (mode: "paper" | "real") => {
     if (isDuplicateName) {
       toast({
         title: "Duplicate Strategy Name",
@@ -184,6 +206,69 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setDeploymentMode(mode);
     setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
+    
+    if (user) {
+      try {
+        const { data, error } = await supabase.from('custom_strategies').insert({
+          user_id: user.id,
+          name: strategyName,
+          description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
+          legs: formData.legs,
+          is_active: true
+        }).select();
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Strategy Created",
+          description: `${strategyName} has been saved and deployed in ${mode === 'paper' ? 'Paper Trading' : 'Real'} mode.`,
+          duration: 5000,
+        });
+      } catch (error: any) {
+        console.error('Error saving custom strategy:', error);
+        toast({
+          title: "Error Saving Strategy",
+          description: error.message || "There was a problem saving your strategy.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    } else {
+      const storedWishlist = localStorage.getItem('wishlistedStrategies');
+      let wishlistedStrategies: any[] = [];
+      
+      if (storedWishlist) {
+        try {
+          wishlistedStrategies = JSON.parse(storedWishlist);
+        } catch (error) {
+          console.error("Error parsing wishlisted strategies:", error);
+        }
+      }
+      
+      const newStrategy = {
+        id: Math.floor(Math.random() * 1000) + 1,
+        name: strategyName,
+        description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
+        isCustom: true,
+        isLive: mode === 'real',
+        isWishlisted: true,
+        legs: formData.legs,
+        performance: {
+          winRate: "N/A",
+          avgProfit: "N/A",
+          drawdown: "N/A"
+        }
+      };
+      
+      wishlistedStrategies.push(newStrategy);
+      localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
+      
+      toast({
+        title: "Strategy Deployed Locally",
+        description: `${strategyName} has been added to your wishlist in ${mode === "paper" ? "Paper Trading" : "Real"} mode. Sign in to save permanently.`,
+        duration: 5000,
+      });
+    }
     
     onSubmit({
       name: strategyName,
