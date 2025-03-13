@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string, 
     confirmPassword: string, 
     userData: { fullName: string, mobileNumber: string, tradingExperience: string }
-  ) => {
+  ): Promise<{ error: Error | null, data?: { user: User | null } }> {
     try {
       setIsLoading(true);
       
@@ -144,12 +144,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (data.user) {
-        setUser({
+        const user: User = {
           id: data.user.id,
           email: data.user.email || '',
-        });
+        };
+        setUser(user);
         toast.success('Account created successfully!');
-        return { error: null, data: { user: data.user } };
+        return { error: null, data: { user } };
       } else {
         toast.info('Please check your email to confirm your account');
         return { error: null, data: { user: null } };
@@ -164,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error: Error | null, data?: { user: User | null } }> {
     try {
       setIsLoading(true);
       
@@ -180,11 +181,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (data.user) {
-        setUser({
+        const user: User = {
           id: data.user.id,
           email: data.user.email || '',
-        });
+        };
+        setUser(user);
         toast.success('Login successful!');
+        return { error: null, data: { user } };
       }
       
       return { error: null };
