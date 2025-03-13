@@ -52,7 +52,7 @@ export const PersonalDetailsDialog = ({
         try {
           const { data, error } = await supabase
             .from('user_profiles')
-            .select('full_name, email, mobile_number')
+            .select('full_name, email, mobile_number, profile_picture')
             .eq('id', user.id)
             .single();
 
@@ -68,6 +68,10 @@ export const PersonalDetailsDialog = ({
               email: data.email || "",
               phone: data.mobile_number || "+91 98765 43210"
             }));
+            
+            if (data.profile_picture) {
+              setProfilePicture(data.profile_picture);
+            }
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -90,6 +94,27 @@ export const PersonalDetailsDialog = ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleProfilePictureChange = async (url: string) => {
+    setProfilePicture(url);
+    
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({ profile_picture: url })
+          .eq('id', user.id);
+          
+        if (error) {
+          console.error('Error updating profile picture:', error);
+          toast.error("Failed to update profile picture");
+        }
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+        toast.error("Failed to update profile picture");
+      }
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -167,7 +192,7 @@ export const PersonalDetailsDialog = ({
               }}
               onToggleEditMode={(field) => toggleEditMode(field)}
               onFieldChange={handleFieldChange}
-              onProfilePictureChange={setProfilePicture}
+              onProfilePictureChange={handleProfilePictureChange}
             />
           )}
           

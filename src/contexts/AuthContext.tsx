@@ -10,8 +10,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string }) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
+  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -149,11 +149,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: data.user.email || '',
         });
         toast.success('Account created successfully!');
+        return { error: null, data: { user: data.user } };
       } else {
         toast.info('Please check your email to confirm your account');
+        return { error: null, data: { user: null } };
       }
       
-      return { error: null };
     } catch (error: any) {
       console.error('Error during signup:', error);
       toast.error('Error during signup');

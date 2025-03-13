@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +25,11 @@ const Settings = () => {
   const [userProfile, setUserProfile] = useState<{
     full_name: string;
     email: string;
+    profile_picture: string | null;
   }>({
     full_name: "",
-    email: ""
+    email: "",
+    profile_picture: null
   });
 
   useEffect(() => {
@@ -38,7 +39,7 @@ const Settings = () => {
           // Get user profile from Supabase
           const { data, error } = await supabase
             .from('user_profiles')
-            .select('full_name, email')
+            .select('full_name, email, profile_picture')
             .eq('id', user.id)
             .single();
 
@@ -50,8 +51,13 @@ const Settings = () => {
           if (data) {
             setUserProfile({
               full_name: data.full_name,
-              email: data.email
+              email: data.email,
+              profile_picture: data.profile_picture
             });
+            
+            if (data.profile_picture) {
+              setProfilePicture(data.profile_picture);
+            }
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -61,6 +67,27 @@ const Settings = () => {
 
     fetchUserProfile();
   }, [user]);
+
+  const handleProfilePictureChange = async (newImageUrl: string) => {
+    setProfilePicture(newImageUrl);
+    
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('user_profiles')
+          .update({ profile_picture: newImageUrl })
+          .eq('id', user.id);
+          
+        if (error) {
+          toast.error("Failed to update profile picture");
+          console.error("Error updating profile picture:", error);
+        }
+      } catch (error) {
+        console.error("Error updating profile picture:", error);
+        toast.error("Failed to update profile picture");
+      }
+    }
+  };
 
   const openSecuritySettings = () => {
     setActiveDialog("securitySettings");
@@ -98,7 +125,7 @@ const Settings = () => {
           <div className="flex items-center space-x-4">
             <ProfilePictureUpload 
               currentImageUrl={profilePicture}
-              onImageChange={setProfilePicture}
+              onImageChange={handleProfilePictureChange}
             />
             <div>
               <h2 className="text-lg font-semibold">{userProfile.full_name || "User"}</h2>
@@ -161,7 +188,6 @@ const Settings = () => {
         </section>
       </main>
 
-      {/* Dialogs */}
       <SecuritySettingsDialog
         open={activeDialog === "securitySettings"}
         onOpenChange={(open) => setActiveDialog(open ? "securitySettings" : null)}

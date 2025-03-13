@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfilePictureUploadProps {
   currentImageUrl: string;
@@ -29,9 +31,11 @@ export function ProfilePictureUpload({
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isUploading, setIsUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,14 +64,67 @@ export function ProfilePictureUpload({
     reader.readAsDataURL(file);
   };
 
-  const handleSaveImage = () => {
+  const uploadToSupabase = async (dataUrl: string): Promise<string | null> => {
+    if (!user) {
+      toast.error("You must be logged in to upload a profile picture");
+      return null;
+    }
+    
+    try {
+      setIsUploading(true);
+      
+      // Convert data URL to Blob
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      
+      // Generate a unique file name
+      const fileExt = blob.type.split('/')[1];
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('profile_pictures')
+        .upload(filePath, blob);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile_pictures')
+        .getPublicUrl(filePath);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      toast.error('Failed to upload profile picture');
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveImage = async () => {
     if (previewUrl) {
-      // In a real implementation, we would apply the zoom, rotation and position
-      // to the image by rendering to a canvas before saving
-      onImageChange(previewUrl);
-      toast.success("Profile picture updated successfully");
-      setIsDialogOpen(false);
-      resetImageState();
+      try {
+        // In a real implementation, we would apply the zoom, rotation and position
+        // to the image by rendering to a canvas before saving
+        
+        // Upload the image to Supabase
+        const uploadedUrl = await uploadToSupabase(previewUrl);
+        
+        if (uploadedUrl) {
+          onImageChange(uploadedUrl);
+          toast.success("Profile picture updated successfully");
+          setIsDialogOpen(false);
+          resetImageState();
+        }
+      } catch (error) {
+        console.error("Error saving profile picture:", error);
+        toast.error("Failed to update profile picture");
+      }
     }
   };
 
@@ -155,7 +212,7 @@ export function ProfilePictureUpload({
             className="object-cover"
           />
           <AvatarFallback className="bg-gray-800 text-white text-lg">
-            {currentImageUrl ? 'RS' : '?'}
+            {currentImageUrl ? 'U' : '?'}
           </AvatarFallback>
         </Avatar>
         <button
@@ -253,9 +310,10 @@ export function ProfilePictureUpload({
                   
                   <Button 
                     onClick={handleSaveImage}
+                    disabled={isUploading}
                     className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-white py-5 rounded-xl font-medium"
                   >
-                    <Check className="w-4 h-4 mr-2" /> Apply
+                    {isUploading ? 'Uploading...' : <><Check className="w-4 h-4 mr-2" /> Apply</>}
                   </Button>
                 </div>
               </div>

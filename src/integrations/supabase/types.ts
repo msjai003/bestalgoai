@@ -109,6 +109,7 @@ export type Database = {
           full_name: string
           id: string
           mobile_number: string
+          profile_picture: string | null
           trading_experience: string | null
           updated_at: string | null
         }
@@ -118,6 +119,7 @@ export type Database = {
           full_name: string
           id: string
           mobile_number: string
+          profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
         }
@@ -127,6 +129,7 @@ export type Database = {
           full_name?: string
           id?: string
           mobile_number?: string
+          profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
         }
