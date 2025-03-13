@@ -43,7 +43,6 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      // Basic validation
       if (!name.trim() || !email.trim() || !mobileNumber.trim() || !password.trim() || !confirmPassword.trim()) {
         setErrorMessage('Please fill in all fields');
         setIsLoading(false);
@@ -62,14 +61,12 @@ const Signup = () => {
         return;
       }
 
-      // Prepare userData to send with signUp
       const userData = {
         fullName: name,
         mobileNumber: mobileNumber,
         tradingExperience: tradingExperience
       };
       
-      // Call the signUp method from AuthContext with userData
       const { error } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
@@ -78,10 +75,8 @@ const Signup = () => {
         return;
       }
       
-      // Even on success, maintain the error message for demonstration
       setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       toast.success('Account created successfully!');
-      // Navigate to dashboard on success
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);

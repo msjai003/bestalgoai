@@ -111,6 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
           if (profileError) {
             console.error('Error creating profile for demo user:', profileError);
+            // We show the warning but still proceed with the user creation
+            toast.warning('Profile data might be incomplete');
           } else {
             console.log('Successfully created profile for demo user');
           }
@@ -120,6 +122,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(mockUser);
         toast.success('Demo account created successfully!');
+        
+        // Always show the database configuration message but don't return it as an error
+        toast.info('Database configuration issue. For demo, use email containing "demo"');
+        
         return { error: null, data: { user: mockUser } };
       }
 
@@ -137,11 +143,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        // Always show the demo suggestion for all errors
-        toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         console.error('Error during signup:', error);
+        toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         return { error };
       }
+      
+      // Always show the information message about demo emails
+      toast.info('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       
       if (data?.user) {
         const user: User = {

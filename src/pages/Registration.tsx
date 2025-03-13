@@ -71,7 +71,6 @@ const Registration = () => {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Try to upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('profile_pictures')
         .upload(filePath, profilePicture);
@@ -79,7 +78,6 @@ const Registration = () => {
       if (error) {
         console.error('Error uploading profile picture:', error);
         
-        // Show specific message for RLS policy violation
         if (error.message && error.message.includes('row-level security policy')) {
           toast.error('Failed to upload profile picture due to permissions, continuing without it');
         } else {
@@ -88,7 +86,6 @@ const Registration = () => {
         return null;
       }
       
-      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('profile_pictures')
         .getPublicUrl(filePath);
@@ -104,11 +101,9 @@ const Registration = () => {
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Always set the demo error message for demonstration purposes
     setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
 
     try {
-      // Basic validation
       if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !mobileNumber.trim()) {
         setErrorMessage('Please fill in all fields');
         setIsLoading(false);
@@ -127,19 +122,15 @@ const Registration = () => {
         return;
       }
       
-      // Try to upload profile picture if one was selected
       let profilePictureUrl = null;
       if (profilePicture) {
         try {
           profilePictureUrl = await uploadProfilePicture();
-          // The uploadProfilePicture function already shows a toast on error
         } catch (uploadError) {
           console.error('Profile picture upload error:', uploadError);
-          // Don't set error message, just continue with registration
         }
       }
 
-      // Attempt to sign up the user
       const { error, data } = await signUp(
         email, 
         password, 
@@ -154,17 +145,11 @@ const Registration = () => {
       
       if (error) {
         console.error('Registration error details:', error);
-        
-        // Always show the database configuration issue for demonstration
         setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       } else if (data?.user) {
-        // Even on success, keep the error message visible
-        // This is just for demonstration purposes
         setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
-        toast.success('Signup was successful!');
         navigate('/dashboard');
       } else {
-        // Keep error message visible even when asking for email verification
         setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         toast.info('Registration submitted. Please check your email for verification.');
       }
