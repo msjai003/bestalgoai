@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, Info, GraduationCap, Eye, EyeOff, Upload, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff, Upload, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   Select,
@@ -24,7 +24,7 @@ const Registration = () => {
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [tradingExperience, setTradingExperience] = useState('beginner');
-  const [errorMessage, setErrorMessage] = useState<string | null>('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -101,7 +101,7 @@ const Registration = () => {
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+    setErrorMessage(null);
 
     try {
       if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !mobileNumber.trim()) {
@@ -145,17 +145,15 @@ const Registration = () => {
       
       if (error) {
         console.error('Registration error details:', error);
-        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+        setErrorMessage(error.message || 'Error creating account');
       } else if (data?.user) {
-        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         navigate('/dashboard');
       } else {
-        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         toast.info('Registration submitted. Please check your email for verification.');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+      setErrorMessage(error.message || 'Error creating account');
     } finally {
       setIsLoading(false);
     }
@@ -195,13 +193,6 @@ const Registration = () => {
         <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
         <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
       </section>
-
-      <Alert className="bg-blue-900/30 border-blue-800 mb-6">
-        <Info className="h-4 w-4 text-blue-400" />
-        <AlertDescription className="text-blue-200 ml-2">
-          For demo, use email containing "demo" (e.g., demo@example.com). Profile picture uploads require server configuration.
-        </AlertDescription>
-      </Alert>
 
       {errorMessage && (
         <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">

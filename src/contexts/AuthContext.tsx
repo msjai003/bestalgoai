@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -122,10 +121,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(mockUser);
         toast.success('Demo account created successfully!');
-        
-        // Always show the database configuration message but don't return it as an error
-        toast.info('Database configuration issue. For demo, use email containing "demo"');
-        
         return { error: null, data: { user: mockUser } };
       }
 
@@ -144,12 +139,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Error during signup:', error);
-        toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+        toast.error(error.message);
         return { error };
       }
-      
-      // Always show the information message about demo emails
-      toast.info('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       
       if (data?.user) {
         const user: User = {
@@ -206,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
     } catch (error: any) {
       console.error('Error during signup:', error);
-      toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+      toast.error(error.message || 'Error during signup');
       return { error: error as Error };
     } finally {
       setIsLoading(false);

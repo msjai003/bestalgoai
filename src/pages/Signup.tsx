@@ -8,7 +8,6 @@ import {
   AlertTriangle, 
   ChevronLeft, 
   X, 
-  Info, 
   User, 
   Mail, 
   Phone, 
@@ -32,14 +31,14 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tradingExperience, setTradingExperience] = useState('beginner');
-  const [errorMessage, setErrorMessage] = useState<string | null>('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+    setErrorMessage(null);
     setIsLoading(true);
 
     try {
@@ -70,17 +69,16 @@ const Signup = () => {
       const { error } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
-        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+        setErrorMessage(error.message || 'Error creating account');
         setIsLoading(false);
         return;
       }
       
-      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
-      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+      setErrorMessage(error.message || 'Error creating account');
     } finally {
       setIsLoading(false);
     }
@@ -116,13 +114,6 @@ const Signup = () => {
           </AlertDescription>
         </Alert>
       )}
-
-      <Alert className="bg-blue-900/30 border-blue-800 mb-6">
-        <Info className="h-4 w-4 text-blue-400" />
-        <AlertDescription className="text-blue-200 ml-2">
-          For demo, use email containing "demo" (e.g., demo@example.com).
-        </AlertDescription>
-      </Alert>
 
       <form onSubmit={handleSignup} className="space-y-6">
         <div className="space-y-4">
