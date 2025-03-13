@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: null, data: { user: mockUser } };
       }
 
+      // First try to sign up the user with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -112,12 +113,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
           
           if (!signInError && signInData.user) {
+            // Check if profile exists
             const { data: profileData, error: profileError } = await supabase
               .from('user_profiles')
               .select('*')
               .eq('id', signInData.user.id)
               .single();
             
+            // If profile doesn't exist, create one
             if (profileError && profileError.code === 'PGRST116') {
               const profileData = {
                 id: signInData.user.id,
@@ -155,15 +158,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
           return { error };
         } 
-        // Handle specific database error for profiles table
-        else if (error.message.includes('Database error saving new user')) {
-          console.error('Database error - likely profiles table issue:', error);
-          toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
-          return { error };
-        }
-        else if (error) {
+        else {
           console.error('Error during signup:', error);
-          toast.error(error.message || 'Error during signup');
+          
+          // Provide more user-friendly error message
+          if (error.message.includes('Database error saving new user')) {
+            toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+          } else {
+            toast.error(error.message || 'Error during signup');
+          }
+          
           return { error };
         }
       }
