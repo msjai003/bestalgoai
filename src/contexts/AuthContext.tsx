@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +21,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -47,7 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     checkSession();
     
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
@@ -81,20 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // First check if user already exists in auth system
-      const { data: existingUser, error: checkError } = await supabase.auth.admin
-        .getUserByEmail(email)
-        .catch(() => ({ data: null, error: null }));
-
-      // If we can't check (likely because admin API is not available in client), proceed normally
-      // If user exists but was deleted from profiles, we should show a different message
-      if (existingUser) {
-        console.log('User exists in auth but may have been deleted from profiles');
-        toast.error('This email is already registered. Please use the login page or contact support if you need to recover your account.');
-        return { error: new Error('User already registered') };
-      }
-
-      // Call Supabase auth signup
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -110,9 +93,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         console.error('Error during signup:', error);
         
-        // Special handling for "User already registered" error
         if (error.message.includes('User already registered')) {
-          toast.error('This email is already registered. Please use the login page instead.');
+          toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
         } else {
           toast.error(error.message);
         }
@@ -127,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         toast.success('Account created successfully!');
       } else {
-        // User might need to confirm their email
         toast.info('Please check your email to confirm your account');
       }
       
@@ -178,11 +159,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // First, check if there's a valid session
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (sessionData.session) {
-        // If there's a valid session, sign out normally
         const { error } = await supabase.auth.signOut();
         
         if (error) {
@@ -192,16 +171,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           toast.success('Successfully signed out');
         }
       } else {
-        // If there's no valid session, just clear the user state
         console.log('No active session found, clearing local user state');
       }
       
-      // Regardless of the outcome, clear the user state
       setUser(null);
       
     } catch (error: any) {
       console.error('Error during sign out:', error);
-      // Even if there's an error, clear the user state to avoid getting stuck
       setUser(null);
       toast.error('Error signing out, but session has been cleared locally');
     } finally {
