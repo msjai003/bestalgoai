@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,6 @@ const Registration = () => {
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
@@ -43,7 +41,6 @@ const Registration = () => {
     setIsLoading(true);
 
     try {
-      // Basic validation
       if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !mobileNumber.trim()) {
         setErrorMessage('Please fill in all fields');
         setIsLoading(false);
@@ -62,7 +59,6 @@ const Registration = () => {
         return;
       }
 
-      // Call signUp from AuthContext with all required parameters
       const { error } = await signUp(
         email, 
         password, 
@@ -169,7 +165,6 @@ const Registration = () => {
             />
           </div>
           
-          {/* Trading Experience Field */}
           <div>
             <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level</Label>
             <div className="relative">
