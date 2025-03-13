@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string, 
     confirmPassword: string, 
     userData: { fullName: string, mobileNumber: string, tradingExperience: string }
-  ): Promise<{ error: Error | null, data?: { user: User | null } }> {
+  ) => {
     try {
       setIsLoading(true);
       
@@ -79,7 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // Try to sign up the user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -92,25 +90,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      // If there's a "user already registered" error, check if the profile exists
       if (error && error.message.includes('User already registered')) {
-        // Try to sign in silently to get the user ID
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
         if (!signInError && signInData.user) {
-          // Check if a profile exists for this user
           const { data: profileData, error: profileError } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('id', signInData.user.id)
             .single();
           
-          // If no profile exists, create one and proceed with sign in
-          if (profileError && profileError.code === 'PGRST116') { // No profile found
-            // Create profile directly in the database
+          if (profileError && profileError.code === 'PGRST116') {
             const { error: insertError } = await supabase
               .from('user_profiles')
               .insert({
@@ -122,7 +115,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               });
             
             if (!insertError) {
-              // Set user and return success
               setUser({
                 id: signInData.user.id,
                 email: signInData.user.email || '',
@@ -133,11 +125,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
         
-        // If we couldn't recover the account, show the standard error
         toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
         return { error };
       } else if (error) {
-        // Handle other errors
         console.error('Error during signup:', error);
         toast.error(error.message);
         return { error };
@@ -165,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signIn = async (email: string, password: string): Promise<{ error: Error | null, data?: { user: User | null } }> {
+  const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
