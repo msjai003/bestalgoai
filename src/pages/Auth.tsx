@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,6 @@ const Auth = () => {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
@@ -37,7 +35,6 @@ const Auth = () => {
         return;
       }
 
-      // Call signIn from AuthContext
       const { error } = await signIn(email, password);
       
       if (error) {
