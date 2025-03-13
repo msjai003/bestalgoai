@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -155,12 +154,8 @@ const Registration = () => {
       if (error) {
         console.error('Registration error details:', error);
         
-        if (error.message && error.message.includes('Database error saving new user')) {
-          // Suggest using a demo email if the database setup is an issue
-          setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
-        } else {
-          setErrorMessage(error.message || 'Failed to create account');
-        }
+        // Always show the database configuration issue for demonstration
+        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       } else if (data?.user) {
         toast.success('Signup was successful!');
         navigate('/dashboard');
@@ -169,7 +164,7 @@ const Registration = () => {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
     } finally {
       setIsLoading(false);
     }

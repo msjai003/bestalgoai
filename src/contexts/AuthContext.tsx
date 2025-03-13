@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,6 +85,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: `demo-${Date.now()}`,
           email: email,
         };
+        
+        // Simulate storing the user profile for demo purposes
+        console.log('Demo mode: Simulating user_profiles table insertion for:', {
+          id: mockUser.id,
+          full_name: userData.fullName,
+          email: mockUser.email,
+          mobile_number: userData.mobileNumber,
+          trading_experience: userData.tradingExperience,
+          profile_picture: userData.profilePictureUrl || null
+        });
+        
         setUser(mockUser);
         toast.success('Demo account created successfully!');
         return { error: null, data: { user: mockUser } };
@@ -105,71 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        // Handle specific error for existing users
-        if (error.message.includes('User already registered')) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-          
-          if (!signInError && signInData.user) {
-            // Check if profile exists
-            const { data: profileData, error: profileError } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', signInData.user.id)
-              .single();
-            
-            // If profile doesn't exist, create one
-            if (profileError && profileError.code === 'PGRST116') {
-              const profileData = {
-                id: signInData.user.id,
-                email: email,
-                full_name: userData.fullName,
-                mobile_number: userData.mobileNumber,
-                trading_experience: userData.tradingExperience
-              };
-              
-              // Add profile picture URL if provided
-              if (userData.profilePictureUrl) {
-                profileData['profile_picture'] = userData.profilePictureUrl;
-              }
-              
-              try {
-                const { error: insertError } = await supabase
-                  .from('user_profiles')
-                  .insert(profileData);
-                
-                if (!insertError) {
-                  setUser({
-                    id: signInData.user.id,
-                    email: signInData.user.email || '',
-                  });
-                  toast.success('Account recovered successfully!');
-                  return { error: null };
-                }
-              } catch (insertCatchError) {
-                console.error('Error inserting user profile:', insertCatchError);
-                toast.warning('Signed in but unable to update profile data');
-              }
-            }
-          }
-          
-          toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
-          return { error };
-        } 
-        else {
-          console.error('Error during signup:', error);
-          
-          // Provide more user-friendly error message
-          if (error.message.includes('Database error saving new user')) {
-            toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
-          } else {
-            toast.error(error.message || 'Error during signup');
-          }
-          
-          return { error };
-        }
+        // Always show the demo suggestion for all errors to ensure users can proceed
+        toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+        console.error('Error during signup:', error);
+        return { error };
       }
       
       if (data?.user) {
@@ -189,7 +138,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (updateError) {
               console.error('Error updating profile picture:', updateError);
               toast.warning('Profile created but couldn\'t save profile picture');
-              // We don't return error here as the user is still successfully created
             }
           } catch (pictureError) {
             console.error('Error saving profile picture:', pictureError);
@@ -207,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
     } catch (error: any) {
       console.error('Error during signup:', error);
-      toast.error('Error during signup');
+      toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       return { error: error as Error };
     } finally {
       setIsLoading(false);
