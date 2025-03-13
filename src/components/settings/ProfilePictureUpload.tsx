@@ -29,10 +29,7 @@ export const ProfilePictureUpload = ({
       return;
     }
     
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image is too large. Maximum size is 5MB.");
-      return;
-    }
+    // Removed file size check to allow any size
 
     setIsUploading(true);
 

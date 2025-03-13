@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,11 +44,6 @@ const Registration = () => {
       
       if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
         setErrorMessage("Please select an image file (JPEG, PNG, GIF, WEBP)");
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage("Image is too large. Maximum size is 5MB.");
         return;
       }
       
@@ -239,7 +233,7 @@ const Registration = () => {
                 className="hidden" 
               />
             </div>
-            <p className="text-xs text-gray-400 mt-2">Max size: 5MB</p>
+            <p className="text-xs text-gray-400 mt-2">Upload any size image</p>
           </div>
 
           <div>
