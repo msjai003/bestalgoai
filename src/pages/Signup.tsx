@@ -1,12 +1,30 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, ChevronLeft, X, Info, User, Mail, Phone, Lock } from 'lucide-react';
+import { 
+  AlertTriangle, 
+  ChevronLeft, 
+  X, 
+  Info, 
+  User, 
+  Mail, 
+  Phone, 
+  Lock,
+  GraduationCap
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -14,6 +32,7 @@ const Signup = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [tradingExperience, setTradingExperience] = useState('beginner');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -47,7 +66,8 @@ const Signup = () => {
       // Prepare userData to send with signUp
       const userData = {
         fullName: name,
-        mobileNumber: mobileNumber
+        mobileNumber: mobileNumber,
+        tradingExperience: tradingExperience
       };
       
       // Call the signUp method from AuthContext with userData
@@ -103,7 +123,7 @@ const Signup = () => {
 
       <form onSubmit={handleSignup} className="space-y-6">
         <div className="space-y-4">
-          {/* Name Field - Prominently displayed */}
+          {/* Name Field */}
           <div>
             <Label htmlFor="name" className="text-gray-300 mb-2 block">Full Name</Label>
             <div className="relative">
@@ -136,7 +156,7 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Mobile Number Field - Prominently displayed */}
+          {/* Mobile Number Field */}
           <div>
             <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
             <div className="relative">
@@ -150,6 +170,24 @@ const Signup = () => {
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
                 required
               />
+            </div>
+          </div>
+          
+          {/* Trading Experience Field - New! */}
+          <div>
+            <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level</Label>
+            <div className="relative">
+              <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
+              <Select value={tradingExperience} onValueChange={setTradingExperience}>
+                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10">
+                  <SelectValue placeholder="Select your experience level" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           

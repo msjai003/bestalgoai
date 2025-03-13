@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string }) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string, 
     password: string, 
     confirmPassword: string, 
-    userData: { fullName: string, mobileNumber: string }
+    userData: { fullName: string, mobileNumber: string, tradingExperience: string }
   ) => {
     try {
       setIsLoading(true);
@@ -88,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           data: {
             full_name: userData.fullName,
             mobile_number: userData.mobileNumber,
+            trading_experience: userData.tradingExperience
           }
         }
       });
