@@ -54,6 +54,7 @@ export const ProfilePictureUpload = ({
 
       // Call the onImageChange callback to update the parent component
       onImageChange(publicUrl);
+      toast.success("Profile picture uploaded successfully");
 
     } catch (error: any) {
       console.error('Error uploading profile picture:', error);

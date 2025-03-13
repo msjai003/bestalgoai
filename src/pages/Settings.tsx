@@ -30,37 +30,49 @@ const Settings = () => {
     email: "",
     profile_picture: null
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user) {
-        try {
-          // Get user profile from Supabase
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .select('full_name, email, profile_picture')
-            .eq('id', user.id)
-            .single();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        console.log("Fetching profile for user ID:", user.id);
+        
+        // Get user profile from Supabase
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('full_name, email, profile_picture')
+          .eq('id', user.id)
+          .single();
 
-          if (error) {
-            console.error('Error fetching user profile:', error);
-            return;
-          }
-
-          if (data) {
-            setUserProfile({
-              full_name: data.full_name,
-              email: data.email,
-              profile_picture: data.profile_picture
-            });
-            
-            if (data.profile_picture) {
-              setProfilePicture(data.profile_picture);
-            }
-          }
-        } catch (error) {
+        if (error) {
           console.error('Error fetching user profile:', error);
+          // If the profile doesn't exist, we'll use the user data from auth
+          setUserProfile({
+            full_name: user.user_metadata?.full_name || "",
+            email: user.email || "",
+            profile_picture: user.user_metadata?.profile_picture_url || null
+          });
+        } else if (data) {
+          console.log("Profile data retrieved:", data);
+          setUserProfile({
+            full_name: data.full_name || "",
+            email: data.email || "",
+            profile_picture: data.profile_picture
+          });
+          
+          if (data.profile_picture) {
+            setProfilePicture(data.profile_picture);
+          }
         }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -68,25 +80,33 @@ const Settings = () => {
   }, [user]);
 
   const handleProfilePictureChange = async (newImageUrl: string) => {
+    if (!user) {
+      toast.error("You must be logged in to update your profile picture");
+      return;
+    }
+    
     setProfilePicture(newImageUrl);
     
-    if (user) {
-      try {
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({ profile_picture: newImageUrl })
-          .eq('id', user.id);
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ profile_picture: newImageUrl })
+        .eq('id', user.id);
           
-        if (error) {
-          toast.error("Failed to update profile picture");
-          console.error("Error updating profile picture:", error);
-        } else {
-          toast.success("Profile picture updated successfully");
-        }
-      } catch (error) {
-        console.error("Error updating profile picture:", error);
+      if (error) {
         toast.error("Failed to update profile picture");
+        console.error("Error updating profile picture:", error);
+      } else {
+        toast.success("Profile picture updated successfully");
+        // Update the local state
+        setUserProfile(prev => ({
+          ...prev,
+          profile_picture: newImageUrl
+        }));
       }
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast.error("Failed to update profile picture");
     }
   };
 
@@ -122,62 +142,70 @@ const Settings = () => {
       </header>
 
       <main className="pt-16 pb-24">
-        <section className="px-4 py-6">
-          <div className="flex items-center space-x-4">
-            <ProfilePictureUpload 
-              currentImageUrl={profilePicture}
-              onImageChange={handleProfilePictureChange}
-            />
-            <div>
-              <h2 className="text-lg font-semibold">{userProfile.full_name || "User"}</h2>
-              <p className="text-sm text-gray-400">{userProfile.email || "No email available"}</p>
-              <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-gradient-to-r from-pink-600 to-purple-600">
-                Premium Trader
-              </span>
-            </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-spin h-8 w-8 border-4 border-pink-500 rounded-full border-t-transparent"></div>
           </div>
-        </section>
-
-        <section className="px-4">
-          <div className="space-y-4">
-            <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Account Settings</h3>
-              <div className="space-y-3">
-                <SettingsLink 
-                  icon={<User className="w-5 h-5 text-pink-500" />} 
-                  label="Personal Details" 
-                  onClick={() => setActiveDialog("personalDetails")}
+        ) : (
+          <>
+            <section className="px-4 py-6">
+              <div className="flex items-center space-x-4">
+                <ProfilePictureUpload 
+                  currentImageUrl={profilePicture}
+                  onImageChange={handleProfilePictureChange}
                 />
-                <SettingsLink 
-                  icon={<Shield className="w-5 h-5 text-pink-500" />} 
-                  label="Security Settings" 
-                  onClick={() => setActiveDialog("securitySettings")}
-                />
-                <SettingsLink 
-                  icon={<Bell className="w-5 h-5 text-pink-500" />} 
-                  label="Notifications" 
-                  onClick={() => navigate("/notifications")}
-                />
+                <div>
+                  <h2 className="text-lg font-semibold">{userProfile.full_name || "User"}</h2>
+                  <p className="text-sm text-gray-400">{userProfile.email || "No email available"}</p>
+                  <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-gradient-to-r from-pink-600 to-purple-600">
+                    Premium Trader
+                  </span>
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Trading Settings</h3>
-              <div className="space-y-3">
-                <SettingsLink 
-                  icon={<Building className="w-5 h-5 text-pink-500" />} 
-                  label="Broker Integration" 
-                  onClick={() => navigate("/broker-integration")}
-                />
-                <SettingsLink 
-                  icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
-                  label="Risk Management" 
-                  onClick={() => navigate("/risk-management")}
-                />
+            <section className="px-4">
+              <div className="space-y-4">
+                <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                  <h3 className="text-sm font-medium text-gray-400 mb-3">Account Settings</h3>
+                  <div className="space-y-3">
+                    <SettingsLink 
+                      icon={<User className="w-5 h-5 text-pink-500" />} 
+                      label="Personal Details" 
+                      onClick={() => setActiveDialog("personalDetails")}
+                    />
+                    <SettingsLink 
+                      icon={<Shield className="w-5 h-5 text-pink-500" />} 
+                      label="Security Settings" 
+                      onClick={() => setActiveDialog("securitySettings")}
+                    />
+                    <SettingsLink 
+                      icon={<Bell className="w-5 h-5 text-pink-500" />} 
+                      label="Notifications" 
+                      onClick={() => navigate("/notifications")}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                  <h3 className="text-sm font-medium text-gray-400 mb-3">Trading Settings</h3>
+                  <div className="space-y-3">
+                    <SettingsLink 
+                      icon={<Building className="w-5 h-5 text-pink-500" />} 
+                      label="Broker Integration" 
+                      onClick={() => navigate("/broker-integration")}
+                    />
+                    <SettingsLink 
+                      icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
+                      label="Risk Management" 
+                      onClick={() => navigate("/risk-management")}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          </>
+        )}
 
         <section className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
           <Button 
