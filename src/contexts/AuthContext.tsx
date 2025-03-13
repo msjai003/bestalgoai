@@ -81,6 +81,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
+      // First check if user already exists in auth system
+      const { data: existingUser, error: checkError } = await supabase.auth.admin
+        .getUserByEmail(email)
+        .catch(() => ({ data: null, error: null }));
+
+      // If we can't check (likely because admin API is not available in client), proceed normally
+      // If user exists but was deleted from profiles, we should show a different message
+      if (existingUser) {
+        console.log('User exists in auth but may have been deleted from profiles');
+        toast.error('This email is already registered. Please use the login page or contact support if you need to recover your account.');
+        return { error: new Error('User already registered') };
+      }
+
       // Call Supabase auth signup
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -96,7 +109,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Error during signup:', error);
-        toast.error(error.message);
+        
+        // Special handling for "User already registered" error
+        if (error.message.includes('User already registered')) {
+          toast.error('This email is already registered. Please use the login page instead.');
+        } else {
+          toast.error(error.message);
+        }
+        
         return { error };
       }
       
