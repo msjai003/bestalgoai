@@ -29,7 +29,7 @@ export const ProfilePictureUpload = ({
       return;
     }
     
-    // Removed file size check to allow any size
+    // No file size check - allow any size
 
     setIsUploading(true);
 

@@ -51,11 +51,11 @@ const Settings = () => {
 
         if (error) {
           console.error('Error fetching user profile:', error);
-          // If the profile doesn't exist, we'll use the user data from auth
+          // Fix: Don't attempt to access user_metadata since it doesn't exist on the User type
           setUserProfile({
-            full_name: user.user_metadata?.full_name || "",
+            full_name: "",
             email: user.email || "",
-            profile_picture: user.user_metadata?.profile_picture_url || null
+            profile_picture: null
           });
         } else if (data) {
           console.log("Profile data retrieved:", data);

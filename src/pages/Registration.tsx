@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff, Upload, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -220,7 +220,7 @@ const Registration = () => {
               ) : (
                 <div className="w-24 h-24 rounded-full bg-gray-800 border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-750 transition-colors">
                   <label htmlFor="profile-picture" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-                    <Upload className="w-8 h-8 text-gray-400" />
+                    <UserIcon className="w-8 h-8 text-gray-400" />
                     <span className="text-xs text-gray-400 mt-1">Upload</span>
                   </label>
                 </div>
@@ -233,7 +233,7 @@ const Registration = () => {
                 className="hidden" 
               />
             </div>
-            <p className="text-xs text-gray-400 mt-2">Upload any size image</p>
+            <p className="text-xs text-gray-400 mt-2">Profile picture is optional</p>
           </div>
 
           <div>
