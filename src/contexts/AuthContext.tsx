@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,52 +77,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (password !== confirmPassword) {
         toast.error('Passwords do not match');
         return { error: new Error('Passwords do not match') };
-      }
-
-      // For demo purposes, check if email contains "demo"
-      if (email.includes('demo')) {
-        // Create a mock successful response for demo emails
-        const mockUser: User = {
-          id: `demo-${Date.now()}`,
-          email: email,
-        };
-        
-        console.log('Demo mode: Simulating user_profiles table insertion for:', {
-          id: mockUser.id,
-          full_name: userData.fullName,
-          email: mockUser.email,
-          mobile_number: userData.mobileNumber,
-          trading_experience: userData.tradingExperience,
-          profile_picture: userData.profilePictureUrl || null
-        });
-        
-        // Create a direct insert into user_profiles table for demo user
-        try {
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              id: mockUser.id,
-              full_name: userData.fullName,
-              email: mockUser.email,
-              mobile_number: userData.mobileNumber,
-              trading_experience: userData.tradingExperience,
-              profile_picture: userData.profilePictureUrl || null
-            });
-            
-          if (profileError) {
-            console.error('Error creating profile for demo user:', profileError);
-            // We show the warning but still proceed with the user creation
-            toast.warning('Profile data might be incomplete');
-          } else {
-            console.log('Successfully created profile for demo user');
-          }
-        } catch (profileInsertError) {
-          console.error('Exception during profile creation for demo user:', profileInsertError);
-        }
-        
-        setUser(mockUser);
-        toast.success('Demo account created successfully!');
-        return { error: null, data: { user: mockUser } };
       }
 
       // First try to sign up the user with Supabase Auth

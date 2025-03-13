@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -40,7 +40,7 @@ const Auth = () => {
       if (error) {
         setErrorMessage(error.message || 'Invalid email or password');
       } else {
-        toast.success('Login successful!');
+        // Success handled by AuthContext's toast notification
         navigate('/dashboard');
       }
     } catch (error: any) {
@@ -146,7 +146,7 @@ const Auth = () => {
         <div className="text-center mt-6">
           <p className="text-gray-400 text-sm">
             Don't have an account? 
-            <Link to="/registration" className="text-[#FF00D4] ml-2 hover:underline">
+            <Link to="/signup" className="text-[#FF00D4] ml-2 hover:underline">
               Create an account
             </Link>
           </p>

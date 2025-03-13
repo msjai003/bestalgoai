@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import {
   Lock,
   GraduationCap
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Select,
@@ -70,11 +70,10 @@ const Signup = () => {
       
       if (error) {
         setErrorMessage(error.message || 'Error creating account');
-        setIsLoading(false);
         return;
       }
       
-      toast.success('Account created successfully!');
+      // AuthContext will show success toast
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
