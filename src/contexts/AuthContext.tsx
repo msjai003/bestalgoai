@@ -11,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
-  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
+  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string, 
     password: string, 
     confirmPassword: string, 
-    userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string }
+    userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }
   ) => {
     try {
       setIsLoading(true);
@@ -149,14 +149,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // If user successfully created, add profile picture if provided
         if (userData.profilePictureUrl) {
-          const { error: updateError } = await supabase
-            .from('user_profiles')
-            .update({ profile_picture: userData.profilePictureUrl })
-            .eq('id', data.user.id);
-            
-          if (updateError) {
-            console.error('Error updating profile picture:', updateError);
-            // We don't return error here as the user is still successfully created
+          try {
+            const { error: updateError } = await supabase
+              .from('user_profiles')
+              .update({ profile_picture: userData.profilePictureUrl })
+              .eq('id', data.user.id);
+              
+            if (updateError) {
+              console.error('Error updating profile picture:', updateError);
+              toast.warning('Profile created but couldn\'t save profile picture');
+              // We don't return error here as the user is still successfully created
+            }
+          } catch (pictureError) {
+            console.error('Error saving profile picture:', pictureError);
+            toast.warning('Profile created but couldn\'t save profile picture');
           }
         }
         

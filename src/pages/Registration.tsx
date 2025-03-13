@@ -78,7 +78,7 @@ const Registration = () => {
       
       if (error) {
         console.error('Error uploading profile picture:', error);
-        toast.error('Failed to upload profile picture');
+        toast.error('Failed to upload profile picture, continuing without it');
         return null;
       }
       
@@ -89,7 +89,7 @@ const Registration = () => {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      toast.error('Failed to upload profile picture');
+      toast.error('Failed to upload profile picture, continuing without it');
       return null;
     }
   };
@@ -120,9 +120,13 @@ const Registration = () => {
       
       let profilePictureUrl = null;
       if (profilePicture) {
-        profilePictureUrl = await uploadProfilePicture();
-        if (!profilePictureUrl) {
-          toast.error('Failed to upload profile picture, continuing without it');
+        try {
+          profilePictureUrl = await uploadProfilePicture();
+          // No need for additional error handling here as uploadProfilePicture already shows a toast
+        } catch (uploadError) {
+          console.error('Profile picture upload error:', uploadError);
+          // Don't set error message, just continue with registration
+          // The toast is already shown in uploadProfilePicture
         }
       }
 
