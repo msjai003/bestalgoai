@@ -125,24 +125,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Exception during profile creation:', profileInsertError);
         }
         
-        // If user successfully created, add profile picture if provided
-        if (userData.profilePictureUrl) {
-          try {
-            const { error: updateError } = await supabase
-              .from('user_profiles')
-              .update({ profile_picture: userData.profilePictureUrl })
-              .eq('id', data.user.id);
-              
-            if (updateError) {
-              console.error('Error updating profile picture:', updateError);
-              toast.warning('Profile created but couldn\'t save profile picture');
-            }
-          } catch (pictureError) {
-            console.error('Error saving profile picture:', pictureError);
-            toast.warning('Profile created but couldn\'t save profile picture');
-          }
-        }
-        
         setUser(user);
         toast.success('Account created successfully!');
         return { error: null, data: { user } };

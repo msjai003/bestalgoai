@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -19,9 +20,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
-  const [profilePicture, setProfilePicture] = useState<string>(
-    "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
-  );
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<{
     full_name: string;
     email: string;
@@ -81,6 +80,8 @@ const Settings = () => {
         if (error) {
           toast.error("Failed to update profile picture");
           console.error("Error updating profile picture:", error);
+        } else {
+          toast.success("Profile picture updated successfully");
         }
       } catch (error) {
         console.error("Error updating profile picture:", error);

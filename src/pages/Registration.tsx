@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff, Upload, User as UserIcon } from 'lucide-react';
-import { toast } from 'sonner';
 import { 
   Select,
   SelectContent,
@@ -44,12 +44,12 @@ const Registration = () => {
       const file = e.target.files[0];
       
       if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
-        toast.error("Please select an image file (JPEG, PNG, GIF, WEBP)");
+        setErrorMessage("Please select an image file (JPEG, PNG, GIF, WEBP)");
         return;
       }
       
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image is too large. Maximum size is 5MB.");
+        setErrorMessage("Image is too large. Maximum size is 5MB.");
         return;
       }
       
@@ -77,12 +77,6 @@ const Registration = () => {
       
       if (error) {
         console.error('Error uploading profile picture:', error);
-        
-        if (error.message && error.message.includes('row-level security policy')) {
-          toast.error('Failed to upload profile picture due to permissions, continuing without it');
-        } else {
-          toast.error('Failed to upload profile picture, continuing without it');
-        }
         return null;
       }
       
@@ -93,7 +87,6 @@ const Registration = () => {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      toast.error('Failed to upload profile picture, continuing without it');
       return null;
     }
   };
@@ -105,7 +98,7 @@ const Registration = () => {
 
     try {
       if (!email.trim() || !password.trim() || !confirmPassword.trim() || !fullName.trim() || !mobileNumber.trim()) {
-        setErrorMessage('Please fill in all fields');
+        setErrorMessage('Please fill in all required fields');
         setIsLoading(false);
         return;
       }
@@ -128,6 +121,7 @@ const Registration = () => {
           profilePictureUrl = await uploadProfilePicture();
         } catch (uploadError) {
           console.error('Profile picture upload error:', uploadError);
+          // Continue with registration even if image upload fails
         }
       }
 
@@ -149,7 +143,7 @@ const Registration = () => {
       } else if (data?.user) {
         navigate('/dashboard');
       } else {
-        toast.info('Registration submitted. Please check your email for verification.');
+        setErrorMessage('Registration submitted. Please check your email for verification.');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -249,7 +243,7 @@ const Registration = () => {
           </div>
 
           <div>
-            <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name</Label>
+            <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name <span className="text-red-400">*</span></Label>
             <Input
               id="fullName"
               type="text"
@@ -257,11 +251,12 @@ const Registration = () => {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
+              required
             />
           </div>
           
           <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
+            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address <span className="text-red-400">*</span></Label>
             <Input
               id="email"
               type="email"
@@ -269,11 +264,12 @@ const Registration = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
+              required
             />
           </div>
           
           <div>
-            <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
+            <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number <span className="text-red-400">*</span></Label>
             <Input
               id="mobileNumber"
               type="tel"
@@ -281,14 +277,15 @@ const Registration = () => {
               onChange={(e) => setMobileNumber(e.target.value)}
               placeholder="+1 (123) 456-7890"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
+              required
             />
           </div>
           
           <div>
-            <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level</Label>
+            <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level <span className="text-red-400">*</span></Label>
             <div className="relative">
               <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
-              <Select value={tradingExperience} onValueChange={setTradingExperience}>
+              <Select value={tradingExperience} onValueChange={setTradingExperience} required>
                 <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10">
                   <SelectValue placeholder="Select your experience level" />
                 </SelectTrigger>
@@ -302,7 +299,7 @@ const Registration = () => {
           </div>
           
           <div>
-            <Label htmlFor="password" className="text-gray-300 mb-2 block">Password</Label>
+            <Label htmlFor="password" className="text-gray-300 mb-2 block">Password <span className="text-red-400">*</span></Label>
             <div className="relative">
               <Input
                 id="password"
@@ -311,6 +308,7 @@ const Registration = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pr-10"
+                required
               />
               <button 
                 type="button"
@@ -324,7 +322,7 @@ const Registration = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password <span className="text-red-400">*</span></Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -333,6 +331,7 @@ const Registration = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pr-10"
+                required
               />
               <button 
                 type="button"

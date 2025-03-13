@@ -146,7 +146,7 @@ const Auth = () => {
         <div className="text-center mt-6">
           <p className="text-gray-400 text-sm">
             Don't have an account? 
-            <Link to="/signup" className="text-[#FF00D4] ml-2 hover:underline">
+            <Link to="/registration" className="text-[#FF00D4] ml-2 hover:underline">
               Create an account
             </Link>
           </p>
