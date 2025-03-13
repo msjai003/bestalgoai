@@ -96,6 +96,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           profile_picture: userData.profilePictureUrl || null
         });
         
+        // Create a direct insert into user_profiles table for demo user
+        try {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: mockUser.id,
+              full_name: userData.fullName,
+              email: mockUser.email,
+              mobile_number: userData.mobileNumber,
+              trading_experience: userData.tradingExperience,
+              profile_picture: userData.profilePictureUrl || null
+            });
+            
+          if (profileError) {
+            console.error('Error creating profile for demo user:', profileError);
+          } else {
+            console.log('Successfully created profile for demo user');
+          }
+        } catch (profileInsertError) {
+          console.error('Exception during profile creation for demo user:', profileInsertError);
+        }
+        
         setUser(mockUser);
         toast.success('Demo account created successfully!');
         return { error: null, data: { user: mockUser } };
@@ -126,6 +148,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: data.user.id,
           email: data.user.email || '',
         };
+        
+        // Explicitly insert into user_profiles table to ensure profile is created
+        try {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: data.user.id,
+              full_name: userData.fullName,
+              email: data.user.email || '',
+              mobile_number: userData.mobileNumber,
+              trading_experience: userData.tradingExperience,
+              profile_picture: userData.profilePictureUrl || null
+            });
+            
+          if (profileError) {
+            console.error('Error creating profile for new user:', profileError);
+            toast.warning('Account created but profile may not be complete');
+          }
+        } catch (profileInsertError) {
+          console.error('Exception during profile creation:', profileInsertError);
+        }
         
         // If user successfully created, add profile picture if provided
         if (userData.profilePictureUrl) {
