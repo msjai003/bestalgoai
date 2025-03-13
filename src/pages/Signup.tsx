@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -33,14 +32,14 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tradingExperience, setTradingExperience] = useState('beginner');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
+    setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
     setIsLoading(true);
 
     try {
@@ -74,17 +73,19 @@ const Signup = () => {
       const { error } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         setIsLoading(false);
         return;
       }
       
+      // Even on success, maintain the error message for demonstration
+      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       toast.success('Account created successfully!');
       // Navigate to dashboard on success
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
     } finally {
       setIsLoading(false);
     }
@@ -121,9 +122,15 @@ const Signup = () => {
         </Alert>
       )}
 
+      <Alert className="bg-blue-900/30 border-blue-800 mb-6">
+        <Info className="h-4 w-4 text-blue-400" />
+        <AlertDescription className="text-blue-200 ml-2">
+          For demo, use email containing "demo" (e.g., demo@example.com).
+        </AlertDescription>
+      </Alert>
+
       <form onSubmit={handleSignup} className="space-y-6">
         <div className="space-y-4">
-          {/* Name Field */}
           <div>
             <Label htmlFor="name" className="text-gray-300 mb-2 block">Full Name</Label>
             <div className="relative">
@@ -156,7 +163,6 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Mobile Number Field */}
           <div>
             <Label htmlFor="mobileNumber" className="text-gray-300 mb-2 block">Mobile Number</Label>
             <div className="relative">
@@ -173,7 +179,6 @@ const Signup = () => {
             </div>
           </div>
           
-          {/* Trading Experience Field - New! */}
           <div>
             <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level</Label>
             <div className="relative">

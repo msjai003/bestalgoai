@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // For demo purposes only, check if email contains "demo"
+      // For demo purposes, check if email contains "demo"
       if (email.includes('demo')) {
         // Create a mock successful response for demo emails
         const mockUser: User = {
@@ -86,7 +87,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: email,
         };
         
-        // Simulate storing the user profile for demo purposes
         console.log('Demo mode: Simulating user_profiles table insertion for:', {
           id: mockUser.id,
           full_name: userData.fullName,
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        // Always show the demo suggestion for all errors to ensure users can proceed
+        // Always show the demo suggestion for all errors
         toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         console.error('Error during signup:', error);
         return { error };

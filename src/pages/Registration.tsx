@@ -24,7 +24,7 @@ const Registration = () => {
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [tradingExperience, setTradingExperience] = useState('beginner');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -103,8 +103,9 @@ const Registration = () => {
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
     setIsLoading(true);
+    // Always set the demo error message for demonstration purposes
+    setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
 
     try {
       // Basic validation
@@ -157,9 +158,14 @@ const Registration = () => {
         // Always show the database configuration issue for demonstration
         setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
       } else if (data?.user) {
+        // Even on success, keep the error message visible
+        // This is just for demonstration purposes
+        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         toast.success('Signup was successful!');
         navigate('/dashboard');
       } else {
+        // Keep error message visible even when asking for email verification
+        setErrorMessage('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
         toast.info('Registration submitted. Please check your email for verification.');
       }
     } catch (error: any) {
