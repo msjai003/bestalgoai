@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
-  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
+  signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string, 
     password: string, 
     confirmPassword: string, 
-    userData: { fullName: string, mobileNumber: string, tradingExperience: string }
+    userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string }
   ) => {
     try {
       setIsLoading(true);
@@ -104,15 +105,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .single();
           
           if (profileError && profileError.code === 'PGRST116') {
+            const profileData = {
+              id: signInData.user.id,
+              email: email,
+              full_name: userData.fullName,
+              mobile_number: userData.mobileNumber,
+              trading_experience: userData.tradingExperience
+            };
+            
+            // Add profile picture URL if provided
+            if (userData.profilePictureUrl) {
+              profileData['profile_picture'] = userData.profilePictureUrl;
+            }
+            
             const { error: insertError } = await supabase
               .from('user_profiles')
-              .insert({
-                id: signInData.user.id,
-                email: email,
-                full_name: userData.fullName,
-                mobile_number: userData.mobileNumber,
-                trading_experience: userData.tradingExperience
-              });
+              .insert(profileData);
             
             if (!insertError) {
               setUser({
@@ -138,6 +146,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: data.user.id,
           email: data.user.email || '',
         };
+        
+        // If user successfully created, add profile picture if provided
+        if (userData.profilePictureUrl) {
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ profile_picture: userData.profilePictureUrl })
+            .eq('id', data.user.id);
+            
+          if (updateError) {
+            console.error('Error updating profile picture:', updateError);
+            // We don't return error here as the user is still successfully created
+          }
+        }
+        
         setUser(user);
         toast.success('Account created successfully!');
         return { error: null, data: { user } };

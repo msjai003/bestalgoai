@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -44,13 +43,11 @@ const Registration = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
-      // Validate file type
       if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
         toast.error("Please select an image file (JPEG, PNG, GIF, WEBP)");
         return;
       }
       
-      // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image is too large. Maximum size is 5MB.");
         return;
@@ -58,7 +55,6 @@ const Registration = () => {
       
       setProfilePicture(file);
       
-      // Create a preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfilePicturePreview(e.target?.result as string);
@@ -67,24 +63,24 @@ const Registration = () => {
     }
   };
 
-  const uploadProfilePicture = async (userId: string): Promise<string | null> => {
+  const uploadProfilePicture = async (): Promise<string | null> => {
     if (!profilePicture) return null;
     
     try {
       const fileExt = profilePicture.name.split('.').pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('profile_pictures')
         .upload(filePath, profilePicture);
       
       if (error) {
-        throw error;
+        console.error('Error uploading profile picture:', error);
+        toast.error('Failed to upload profile picture');
+        return null;
       }
       
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile_pictures')
         .getPublicUrl(filePath);
@@ -120,33 +116,31 @@ const Registration = () => {
         setIsLoading(false);
         return;
       }
+      
+      let profilePictureUrl = null;
+      if (profilePicture) {
+        profilePictureUrl = await uploadProfilePicture();
+        if (!profilePictureUrl) {
+          toast.error('Failed to upload profile picture, continuing without it');
+        }
+      }
 
       const { error, data } = await signUp(
         email, 
         password, 
         confirmPassword, 
-        { fullName, mobileNumber, tradingExperience }
+        { 
+          fullName, 
+          mobileNumber, 
+          tradingExperience,
+          profilePictureUrl 
+        }
       );
       
       if (error) {
         console.error('Registration error details:', error);
         setErrorMessage(error.message || 'Failed to create account');
       } else if (data?.user) {
-        // Upload profile picture if one was selected
-        const profilePictureUrl = await uploadProfilePicture(data.user.id);
-        
-        if (profilePictureUrl) {
-          // Update user profile with profile picture URL
-          const { error: updateError } = await supabase
-            .from('user_profiles')
-            .update({ profile_picture: profilePictureUrl })
-            .eq('id', data.user.id);
-          
-          if (updateError) {
-            console.error('Error updating profile with picture:', updateError);
-          }
-        }
-        
         toast.success('Signup was successful!');
         navigate('/dashboard');
       }
@@ -211,7 +205,6 @@ const Registration = () => {
 
       <form onSubmit={handleRegistration} className="space-y-6">
         <div className="space-y-4">
-          {/* Profile Picture Upload */}
           <div className="flex flex-col items-center mb-6">
             <Label className="text-gray-300 mb-2 block text-center">Profile Picture (Optional)</Label>
             <div className="relative group">
