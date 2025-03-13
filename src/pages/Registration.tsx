@@ -6,8 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, Info } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, Info, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +22,7 @@ const Registration = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [tradingExperience, setTradingExperience] = useState('beginner');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, user } = useAuth();
@@ -52,12 +60,12 @@ const Registration = () => {
         return;
       }
 
-      // Call signUp from AuthContext with all four parameters
+      // Call signUp from AuthContext with all required parameters
       const { error } = await signUp(
         email, 
         password, 
         confirmPassword, 
-        { fullName, mobileNumber }
+        { fullName, mobileNumber, tradingExperience }
       );
       
       if (error) {
@@ -149,6 +157,24 @@ const Registration = () => {
               placeholder="+1 (123) 456-7890"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
             />
+          </div>
+          
+          {/* Trading Experience Field */}
+          <div>
+            <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level</Label>
+            <div className="relative">
+              <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
+              <Select value={tradingExperience} onValueChange={setTradingExperience}>
+                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10">
+                  <SelectValue placeholder="Select your experience level" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div>
