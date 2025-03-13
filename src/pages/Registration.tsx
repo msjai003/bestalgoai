@@ -78,7 +78,13 @@ const Registration = () => {
       
       if (error) {
         console.error('Error uploading profile picture:', error);
-        toast.error('Failed to upload profile picture, continuing without it');
+        
+        // Check for RLS policy violation
+        if (error.message && error.message.includes('row-level security policy')) {
+          toast.error('Failed to upload profile picture, continuing without it');
+        } else {
+          toast.error('Failed to upload profile picture, continuing without it');
+        }
         return null;
       }
       
@@ -144,7 +150,12 @@ const Registration = () => {
       
       if (error) {
         console.error('Registration error details:', error);
-        setErrorMessage(error.message || 'Failed to create account');
+        
+        if (error.message && error.message.includes('Database error saving new user')) {
+          setErrorMessage('Database setup issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+        } else {
+          setErrorMessage(error.message || 'Failed to create account');
+        }
       } else if (data?.user) {
         toast.success('Signup was successful!');
         navigate('/dashboard');
@@ -195,7 +206,7 @@ const Registration = () => {
       <Alert className="bg-blue-900/30 border-blue-800 mb-6">
         <Info className="h-4 w-4 text-blue-400" />
         <AlertDescription className="text-blue-200 ml-2">
-          Database connection has been removed. For demo, use email containing "demo" (e.g., demo@example.com).
+          For demo, use email containing "demo" (e.g., demo@example.com). Profile picture uploads require server configuration.
         </AlertDescription>
       </Alert>
 

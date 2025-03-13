@@ -79,6 +79,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
+      // For demo purposes only, check if email contains "demo"
+      if (email.includes('demo')) {
+        // Create a mock successful response for demo emails
+        const mockUser: User = {
+          id: `demo-${Date.now()}`,
+          email: email,
+        };
+        setUser(mockUser);
+        toast.success('Demo account created successfully!');
+        return { error: null, data: { user: mockUser } };
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -91,57 +103,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      if (error && error.message.includes('User already registered')) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (!signInError && signInData.user) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', signInData.user.id)
-            .single();
+      if (error) {
+        // Handle specific error for existing users
+        if (error.message.includes('User already registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
           
-          if (profileError && profileError.code === 'PGRST116') {
-            const profileData = {
-              id: signInData.user.id,
-              email: email,
-              full_name: userData.fullName,
-              mobile_number: userData.mobileNumber,
-              trading_experience: userData.tradingExperience
-            };
-            
-            // Add profile picture URL if provided
-            if (userData.profilePictureUrl) {
-              profileData['profile_picture'] = userData.profilePictureUrl;
-            }
-            
-            const { error: insertError } = await supabase
+          if (!signInError && signInData.user) {
+            const { data: profileData, error: profileError } = await supabase
               .from('user_profiles')
-              .insert(profileData);
+              .select('*')
+              .eq('id', signInData.user.id)
+              .single();
             
-            if (!insertError) {
-              setUser({
+            if (profileError && profileError.code === 'PGRST116') {
+              const profileData = {
                 id: signInData.user.id,
-                email: signInData.user.email || '',
-              });
-              toast.success('Account recovered successfully!');
-              return { error: null };
+                email: email,
+                full_name: userData.fullName,
+                mobile_number: userData.mobileNumber,
+                trading_experience: userData.tradingExperience
+              };
+              
+              // Add profile picture URL if provided
+              if (userData.profilePictureUrl) {
+                profileData['profile_picture'] = userData.profilePictureUrl;
+              }
+              
+              try {
+                const { error: insertError } = await supabase
+                  .from('user_profiles')
+                  .insert(profileData);
+                
+                if (!insertError) {
+                  setUser({
+                    id: signInData.user.id,
+                    email: signInData.user.email || '',
+                  });
+                  toast.success('Account recovered successfully!');
+                  return { error: null };
+                }
+              } catch (insertCatchError) {
+                console.error('Error inserting user profile:', insertCatchError);
+                toast.warning('Signed in but unable to update profile data');
+              }
             }
           }
+          
+          toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
+          return { error };
+        } 
+        // Handle specific database error for profiles table
+        else if (error.message.includes('Database error saving new user')) {
+          console.error('Database error - likely profiles table issue:', error);
+          toast.error('Database configuration issue. For demo, use email containing "demo" (e.g., demo@example.com)');
+          return { error };
         }
-        
-        toast.error('This email is already registered. Please use the login page instead or contact support if you need to recover your account.');
-        return { error };
-      } else if (error) {
-        console.error('Error during signup:', error);
-        toast.error(error.message);
-        return { error };
+        else if (error) {
+          console.error('Error during signup:', error);
+          toast.error(error.message || 'Error during signup');
+          return { error };
+        }
       }
       
-      if (data.user) {
+      if (data?.user) {
         const user: User = {
           id: data.user.id,
           email: data.user.email || '',
