@@ -58,7 +58,6 @@ export const StrategySection = ({
                 ? "Click \"Add Strategy\" to view strategies. Tap the ❤️ heart icon to add a strategy to your wishlist." 
                 : emptyMessage}
             </p>
-            {/* Removed the Browse Strategies button for Predefined strategies section */}
             {title !== "Predefined Strategies" && showEmptyStateButton && actionButtonText && actionButtonPath && (
               <Button 
                 onClick={() => navigate(actionButtonPath)}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -148,7 +149,7 @@ const StrategyDetails = () => {
               <Button 
                 size="icon"
                 variant="ghost"
-                className={`${isWishlisted ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-500`}
+                className="text-pink-500 hover:text-pink-400"
                 onClick={handleToggleWishlist}
                 disabled={isLoading}
               >
