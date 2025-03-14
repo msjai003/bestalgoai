@@ -20,6 +20,120 @@ export interface Strategy {
   selectedBroker?: string;
 }
 
+// Helper function to fetch strategies from database
+const fetchUserStrategySelections = async (userId: string | undefined) => {
+  if (!userId) return [];
+  
+  const { data: selections, error } = await supabase
+    .from('strategy_selections')
+    .select('strategy_id, quantity')
+    .eq('user_id', userId);
+    
+  if (error) {
+    console.error("Error fetching strategy selections:", error);
+    throw error;
+  }
+  
+  return selections || [];
+};
+
+// Helper function to map predefined strategies with user selections
+const mapStrategiesWithSelections = (
+  predefinedStrategies: any[],
+  selections: any[]
+) => {
+  return predefinedStrategies.map(strategy => ({
+    ...strategy,
+    isWishlisted: selections.some(item => item.strategy_id === strategy.id),
+    isLive: false,
+    quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0,
+    selectedBroker: ""
+  }));
+};
+
+// Helper function to add strategy to wishlist
+const addToWishlist = async (
+  userId: string,
+  strategyId: number,
+  strategyName: string,
+  strategyDescription: string
+) => {
+  const { error } = await supabase
+    .from('strategy_selections')
+    .insert({
+      user_id: userId,
+      strategy_id: strategyId,
+      strategy_name: strategyName,
+      strategy_description: strategyDescription
+    });
+    
+  if (error) throw error;
+};
+
+// Helper function to remove strategy from wishlist
+const removeFromWishlist = async (userId: string, strategyId: number) => {
+  const { error } = await supabase
+    .from('strategy_selections')
+    .delete()
+    .eq('user_id', userId)
+    .eq('strategy_id', strategyId);
+    
+  if (error) throw error;
+};
+
+// Helper function to update local storage wishlist
+const updateLocalStorageWishlist = (
+  strategyId: number,
+  isWishlisted: boolean,
+  strategies: Strategy[]
+) => {
+  const storedWishlist = localStorage.getItem('wishlistedStrategies');
+  let wishlistedStrategies: any[] = [];
+  
+  if (storedWishlist) {
+    try {
+      wishlistedStrategies = JSON.parse(storedWishlist);
+    } catch (error) {
+      console.error("Error parsing wishlisted strategies:", error);
+    }
+  }
+  
+  if (isWishlisted) {
+    if (!wishlistedStrategies.some(s => s.id === strategyId)) {
+      const strategyToAdd = strategies.find(s => s.id === strategyId);
+      if (strategyToAdd) {
+        wishlistedStrategies.push({...strategyToAdd, isWishlisted: true});
+      }
+    }
+  } else {
+    wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== strategyId);
+  }
+  
+  localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
+};
+
+// Helper function to save strategy configuration to database
+const saveStrategyConfiguration = async (
+  userId: string,
+  strategyId: number,
+  strategyName: string,
+  strategyDescription: string,
+  quantity: number,
+  brokerId: string
+) => {
+  const { error } = await supabase
+    .from('strategy_selections')
+    .upsert({
+      user_id: userId,
+      strategy_id: strategyId,
+      strategy_name: strategyName,
+      strategy_description: strategyDescription,
+      quantity: quantity
+    });
+
+  if (error) throw error;
+};
+
 export const useStrategy = (predefinedStrategies: any[]) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,11 +149,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
   // Load strategies from database
   useEffect(() => {
-    const fetchStrategies = async () => {
+    const loadStrategies = async () => {
       setIsLoading(true);
       
       try {
-        let strategiesWithStatus = predefinedStrategies.map(strategy =>({
+        let strategiesWithStatus = predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,
           isLive: false,
@@ -48,26 +162,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         }));
         
         if (user) {
-          const { data: selections, error } = await supabase
-            .from('strategy_selections')
-            .select('strategy_id, quantity, selected_broker')
-            .eq('user_id', user.id);
-            
-          if (error) {
-            console.error("Error fetching wishlisted strategies:", error);
-            toast({
-              title: "Error fetching wishlist",
-              description: "There was a problem loading your wishlisted strategies",
-              variant: "destructive"
-            });
-          } else if (selections) {
-            strategiesWithStatus = strategiesWithStatus.map(strategy => ({
-              ...strategy,
-              isWishlisted: selections.some(item => item.strategy_id === strategy.id),
-              quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0,
-              selectedBroker: selections.find(item => item.strategy_id === strategy.id)?.selected_broker || ""
-            }));
-          }
+          const selections = await fetchUserStrategySelections(user.id);
+          strategiesWithStatus = mapStrategiesWithSelections(predefinedStrategies, selections);
         }
         
         setStrategies(strategiesWithStatus);
@@ -78,8 +174,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       }
     };
     
-    fetchStrategies();
-  }, [user, toast, predefinedStrategies]);
+    loadStrategies();
+  }, [user, predefinedStrategies]);
 
   const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
     setStrategies(prev => 
@@ -97,51 +193,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       description: `Strategy has been ${isWishlisted ? 'added to' : 'removed from'} your wishlist`
     });
     
-    const storedWishlist = localStorage.getItem('wishlistedStrategies');
-    let wishlistedStrategies: any[] = [];
-    
-    if (storedWishlist) {
-      try {
-        wishlistedStrategies = JSON.parse(storedWishlist);
-      } catch (error) {
-        console.error("Error parsing wishlisted strategies:", error);
-      }
-    }
-    
-    if (isWishlisted) {
-      if (!wishlistedStrategies.some(s => s.id === id)) {
-        const strategyToAdd = strategies.find(s => s.id === id);
-        if (strategyToAdd) {
-          wishlistedStrategies.push({...strategyToAdd, isWishlisted: true});
-        }
-      }
-    } else {
-      wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== id);
-    }
-    
-    localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
+    updateLocalStorageWishlist(id, isWishlisted, strategies);
     
     if (user) {
       try {
-        if (isWishlisted) {
-          const { error } = await supabase
-            .from('strategy_selections')
-            .insert({
-              user_id: user.id,
-              strategy_id: id,
-              strategy_name: strategy?.name || '',
-              strategy_description: strategy?.description || ''
-            });
-            
-          if (error) throw error;
+        if (isWishlisted && strategy) {
+          await addToWishlist(user.id, id, strategy.name, strategy.description);
         } else {
-          const { error } = await supabase
-            .from('strategy_selections')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('strategy_id', id);
-            
-          if (error) throw error;
+          await removeFromWishlist(user.id, id);
         }
       } catch (error) {
         console.error('Error updating wishlist in Supabase:', error);
@@ -159,19 +218,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   };
 
-  const handleToggleLiveMode = (id: number) => {
-    const strategy = strategies.find(s => s.id === id);
-    const newStatus = !strategy?.isLive;
-    
-    if (newStatus) {
-      setSelectedStrategyId(id);
-      setTargetMode("live");
-      setConfirmDialogOpen(true);
-    } else {
-      updateLiveMode(id, false);
-    }
-  };
-
   const updateLiveMode = (id: number, isLive: boolean) => {
     setStrategies(prev => 
       prev.map(strategy => {
@@ -186,6 +232,19 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       title: isLive ? "Strategy set to live mode" : "Strategy set to paper mode",
       description: `Strategy is now in ${isLive ? 'live' : 'paper'} trading mode`,
     });
+  };
+
+  const handleToggleLiveMode = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    const newStatus = !strategy?.isLive;
+    
+    if (newStatus) {
+      setSelectedStrategyId(id);
+      setTargetMode("live");
+      setConfirmDialogOpen(true);
+    } else {
+      updateLiveMode(id, false);
+    }
   };
 
   const handleConfirmLiveMode = () => {
@@ -228,18 +287,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        const { error } = await supabase
-          .from('strategy_selections')
-          .upsert({
-            user_id: user.id,
-            strategy_id: selectedStrategyId,
-            strategy_name: strategy.name,
-            strategy_description: strategy.description,
-            quantity: pendingQuantity,
-            selected_broker: brokerId
-          });
-
-        if (error) throw error;
+        await saveStrategyConfiguration(
+          user.id,
+          selectedStrategyId,
+          strategy.name,
+          strategy.description,
+          pendingQuantity,
+          brokerId
+        );
         
         setStrategies(prev => 
           prev.map(s => 
