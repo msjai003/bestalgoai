@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -29,7 +30,6 @@ export const PersonalDetailsDialog = ({
     fullName: "",
     email: "",
     phone: "+91 98765 43210",
-    dateOfBirth: "15 Aug 1990",
   });
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,8 +40,7 @@ export const PersonalDetailsDialog = ({
   const [editMode, setEditMode] = useState({
     fullName: false,
     email: false,
-    phone: false,
-    dateOfBirth: false
+    phone: false
   });
 
   useEffect(() => {
@@ -196,10 +195,8 @@ export const PersonalDetailsDialog = ({
           {currentPage === 2 && (
             <ContactInfoForm
               phone={formState.phone}
-              dateOfBirth={formState.dateOfBirth}
               editMode={{
-                phone: editMode.phone,
-                dateOfBirth: editMode.dateOfBirth
+                phone: editMode.phone
               }}
               onToggleEditMode={(field) => toggleEditMode(field)}
               onFieldChange={handleFieldChange}

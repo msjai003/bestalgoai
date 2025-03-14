@@ -8,20 +8,17 @@ import { useNavigate } from "react-router-dom";
 
 interface ContactInfoFormProps {
   phone: string;
-  dateOfBirth: string;
   editMode: {
     phone: boolean;
-    dateOfBirth: boolean;
   };
-  onToggleEditMode: (field: "phone" | "dateOfBirth") => void;
-  onFieldChange: (field: "phone" | "dateOfBirth", value: string) => void;
+  onToggleEditMode: (field: "phone") => void;
+  onFieldChange: (field: "phone", value: string) => void;
   onSaveChanges: () => void;
   onOpenSecuritySettings: () => void;
 }
 
 export const ContactInfoForm = ({
   phone,
-  dateOfBirth,
   editMode,
   onToggleEditMode,
   onFieldChange,
@@ -51,27 +48,6 @@ export const ContactInfoForm = ({
           onChange={(e) => onFieldChange("phone", e.target.value)}
           className={`w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 ${!editMode.phone ? 'cursor-not-allowed opacity-80' : ''}`}
           readOnly={!editMode.phone}
-        />
-      </div>
-      
-      <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-        <div className="flex justify-between items-center">
-          <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm text-gray-400">Date of Birth</Label>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 text-gray-400 hover:text-white"
-            onClick={() => onToggleEditMode("dateOfBirth")}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-        <Input
-          id="dateOfBirth"
-          value={dateOfBirth}
-          onChange={(e) => onFieldChange("dateOfBirth", e.target.value)}
-          className={`w-full bg-transparent border-none mt-1 focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 ${!editMode.dateOfBirth ? 'cursor-not-allowed opacity-80' : ''}`}
-          readOnly={!editMode.dateOfBirth}
         />
       </div>
       
