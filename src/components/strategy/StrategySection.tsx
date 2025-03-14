@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -40,7 +41,7 @@ export const StrategySection = ({
           <Button 
             variant="outline"
             size="sm"
-            className="bg-gray-900 hover:bg-gray-800 border border-gray-700 text-green-500"
+            className="bg-black hover:bg-gray-800 border border-gray-700 text-green-500"
             onClick={() => navigate(actionButtonPath)}
           >
             <Plus className="h-4 w-4 mr-1 text-green-500" />
@@ -57,7 +58,7 @@ export const StrategySection = ({
               <Button 
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
-                className="bg-gray-900 hover:bg-gray-800 border border-gray-700 text-green-500"
+                className="bg-black hover:bg-gray-800 border border-gray-700 text-green-500"
               >
                 <Plus className="h-4 w-4 mr-1 text-green-500" />
                 Browse Strategies

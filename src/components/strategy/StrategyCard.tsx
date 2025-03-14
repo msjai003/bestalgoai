@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CreditCard, MoreVertical, Play, Trash2, Plus } from 'lucide-react';
 import {
@@ -99,10 +98,9 @@ export const StrategyCard = ({
       <div className="mt-4 flex justify-end">
         <Button
           onClick={handleSelect}
-          className="bg-gray-900 hover:bg-gray-800 border border-gray-700 text-green-500"
+          className="bg-black text-green-500 hover:bg-gray-800 border border-gray-700"
           size="sm"
         >
-          <Plus className="h-4 w-4 mr-1 text-green-500" />
           Select
         </Button>
       </div>
