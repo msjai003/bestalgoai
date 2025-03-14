@@ -180,17 +180,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
+      // Get current session first
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (sessionData.session) {
+        // Only proceed with signOut if there's an active session
         const { error } = await supabase.auth.signOut();
         
         if (error) {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
-          // Show success toast only when we have successfully signed out
-          // and only once
+          // Show success toast only once and only if session existed
           toast.success('Successfully signed out');
         }
       } else {
@@ -198,6 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Don't show a toast if there's no active session
       }
       
+      // Always clear the local user state
       setUser(null);
       
     } catch (error: any) {
