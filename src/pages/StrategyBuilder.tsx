@@ -158,10 +158,6 @@ const StrategyBuilder = () => {
                 <h4 className="font-medium text-gray-300">Position</h4>
                 <p>{formData.position}</p>
               </div>
-              <div>
-                <h4 className="font-medium text-gray-300">Quantity</h4>
-                <p>{formData.quantity}</p>
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

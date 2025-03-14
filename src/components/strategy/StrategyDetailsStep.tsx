@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,10 +40,6 @@ export const StrategyDetailsStep = ({
         <div>
           <h4 className="text-white font-medium mb-2">Position</h4>
           <p className="text-gray-300">{formData.position}</p>
-        </div>
-        <div>
-          <h4 className="text-white font-medium mb-2">Quantity</h4>
-          <p className="text-gray-300">{formData.quantity}</p>
         </div>
         <div>
           <h4 className="text-white font-medium mb-2">Target</h4>
