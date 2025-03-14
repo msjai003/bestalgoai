@@ -258,7 +258,7 @@ const StrategySelection = () => {
                               <span className="text-green-400">{strategy.performance.winRate}</span>
                             </div>
                             
-                            <div className="flex gap-2">
+                            <div>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -266,15 +266,6 @@ const StrategySelection = () => {
                                 onClick={() => navigate(`/strategy-details/${strategy.id}`)}
                               >
                                 View Details
-                              </Button>
-                              
-                              <Button
-                                size="sm"
-                                className="bg-gray-600 hover:bg-gray-500 text-green-500 border border-gray-500"
-                                onClick={() => handleSelectStrategy(strategy.id)}
-                              >
-                                <Check className="h-4 w-4 mr-1" />
-                                Select
                               </Button>
                             </div>
                           </div>
@@ -297,3 +288,4 @@ const StrategySelection = () => {
 };
 
 export default StrategySelection;
+
