@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +18,6 @@ const FeedbackForm: React.FC = () => {
   const navigate = useNavigate();
 
   const validateForm = () => {
-    // Validate inputs
     if (!name.trim() || !email.trim() || !mobileNumber.trim() || !message.trim()) {
       setErrorMessage("Please fill out all fields");
       toast({
@@ -30,7 +28,6 @@ const FeedbackForm: React.FC = () => {
       return false;
     }
 
-    // Simple email validation
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       setErrorMessage("Please enter a valid email address");
       toast({
@@ -80,7 +77,7 @@ const FeedbackForm: React.FC = () => {
             type="tel"
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
-            placeholder="Enter your mobile number"
+            placeholder="Enter your 10 digit mobile number"
             className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
           />
         </div>
@@ -92,7 +89,7 @@ const FeedbackForm: React.FC = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
+            placeholder="Enter your email address"
             className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
           />
         </div>

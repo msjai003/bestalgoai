@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -135,7 +134,7 @@ const Registration = () => {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="John Doe"
+              placeholder="Enter your name"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
               required
             />
@@ -148,7 +147,7 @@ const Registration = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="Enter your email address"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
               required
             />
@@ -161,7 +160,7 @@ const Registration = () => {
               type="tel"
               value={mobileNumber}
               onChange={(e) => setMobileNumber(e.target.value)}
-              placeholder="+1 (123) 456-7890"
+              placeholder="Enter your 10 digit mobile number"
               className="bg-gray-800/50 border-gray-700 text-white h-12"
               required
             />

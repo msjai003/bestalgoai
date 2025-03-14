@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -73,7 +72,6 @@ const Signup = () => {
         return;
       }
       
-      // AuthContext will show success toast
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -125,7 +123,7 @@ const Signup = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
+                placeholder="Enter your name"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
                 required
               />
@@ -141,7 +139,7 @@ const Signup = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="Enter your email address"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
                 required
               />
@@ -157,7 +155,7 @@ const Signup = () => {
                 type="tel"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="Enter your mobile number"
+                placeholder="Enter your 10 digit mobile number"
                 className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
                 required
               />
