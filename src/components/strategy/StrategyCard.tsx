@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CreditCard, MoreVertical, Play, Trash2 } from 'lucide-react';
+import { CreditCard, MoreVertical, Play, Trash2, Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +9,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate } from 'react-router-dom';
 
 interface StrategyCardProps {
-  id: number;
+  id: number | string;
   name: string;
   description: string;
   performance: {
@@ -21,9 +22,9 @@ interface StrategyCardProps {
   };
   isLive: boolean;
   isCustom: boolean;
-  createdBy?: string; // Add creator name display
-  onDelete: (id: number) => void;
-  onToggleLiveMode: (id: number) => void;
+  createdBy?: string;
+  onDelete: (id: number | string) => void;
+  onToggleLiveMode: (id: number | string) => void;
 }
 
 export const StrategyCard = ({
@@ -37,6 +38,12 @@ export const StrategyCard = ({
   onDelete,
   onToggleLiveMode
 }: StrategyCardProps) => {
+  const navigate = useNavigate();
+  
+  const handleSelect = () => {
+    navigate(`/backtest?strategyId=${id}`);
+  };
+
   return (
     <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative">
       <div className="flex justify-between items-start">
@@ -87,6 +94,17 @@ export const StrategyCard = ({
           <p className="text-xs text-gray-400">Drawdown</p>
           <p className="text-xs font-medium text-white">{performance.drawdown}</p>
         </div>
+      </div>
+      
+      <div className="mt-4 flex justify-end">
+        <Button
+          onClick={handleSelect}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          size="sm"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Select
+        </Button>
       </div>
       
       <div className="absolute top-2 right-12">
