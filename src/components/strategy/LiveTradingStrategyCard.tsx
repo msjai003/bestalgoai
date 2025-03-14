@@ -1,22 +1,10 @@
 
 import React from "react";
-import { AlertCircle, BarChart2, ChevronRight, Settings, ToggleLeft, ToggleRight } from "lucide-react";
+import { BarChart2, ChevronRight, Settings, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-
-interface Strategy {
-  id: number;
-  name: string;
-  description?: string;
-  isLive: boolean;
-  quantity?: number;
-  pnl?: string;
-  successRate?: string;
-  instrument?: string;
-  selectedBroker?: string;
-}
+import { Strategy } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;

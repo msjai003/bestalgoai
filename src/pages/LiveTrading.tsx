@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TradingModeFilter } from "@/components/strategy/TradingModeFilter";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
+import { BrokerSelectionDialog } from "@/components/strategy/BrokerSelectionDialog";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
@@ -20,6 +21,8 @@ const LiveTrading = () => {
     setShowConfirmationDialog,
     showQuantityDialog,
     setShowQuantityDialog,
+    showBrokerDialog,
+    setShowBrokerDialog,
     targetMode,
     handleTradingToggle,
     handleModeChange,
@@ -29,6 +32,8 @@ const LiveTrading = () => {
     cancelModeChange,
     handleQuantitySubmit,
     handleCancelQuantity,
+    handleBrokerSubmit,
+    handleCancelBroker,
     navigate
   } = useLiveTrading();
 
@@ -88,6 +93,13 @@ const LiveTrading = () => {
         onOpenChange={setShowQuantityDialog}
         onConfirm={handleQuantitySubmit}
         onCancel={handleCancelQuantity}
+      />
+      
+      <BrokerSelectionDialog
+        open={showBrokerDialog}
+        onOpenChange={setShowBrokerDialog}
+        onConfirm={handleBrokerSubmit}
+        onCancel={handleCancelBroker}
       />
     </div>
   );
