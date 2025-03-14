@@ -99,7 +99,7 @@ export const StrategyCard = ({
       <div className="mt-4 flex justify-end">
         <Button
           onClick={handleSelect}
-          className="bg-gray-800 text-green-500 hover:bg-gray-700 border border-gray-600"
+          className="bg-gray-600 text-green-500 hover:bg-gray-500 border border-gray-500"
           size="sm"
         >
           Select

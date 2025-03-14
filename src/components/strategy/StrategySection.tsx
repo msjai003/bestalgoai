@@ -41,7 +41,7 @@ export const StrategySection = ({
           <Button 
             variant="outline"
             size="sm"
-            className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-green-500"
+            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
             onClick={() => navigate(actionButtonPath)}
           >
             <Plus className="h-4 w-4 mr-1 text-green-500" />
@@ -58,7 +58,7 @@ export const StrategySection = ({
               <Button 
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
-                className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-green-500"
+                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
               >
                 <Plus className="h-4 w-4 mr-1 text-green-500" />
                 Browse Strategies
