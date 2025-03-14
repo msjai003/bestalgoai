@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +19,6 @@ const StrategyDetails = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Check if the strategy is wishlisted on component mount
   useEffect(() => {
     const checkWishlistStatus = async () => {
       if (!user || !strategy) return;
@@ -80,7 +78,6 @@ const StrategyDetails = () => {
     
     try {
       if (!isWishlisted) {
-        // Add to wishlist
         const { error } = await supabase.from('strategy_selections')
           .insert({
             user_id: user.id,
@@ -105,7 +102,6 @@ const StrategyDetails = () => {
           description: "Strategy has been added to your wishlist",
         });
       } else {
-        // Remove from wishlist
         const { error } = await supabase.from('strategy_selections')
           .delete()
           .eq('user_id', user.id)

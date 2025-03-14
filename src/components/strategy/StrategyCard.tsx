@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CreditCard, MoreVertical, Play, Trash2, Plus } from 'lucide-react';
 import {
@@ -64,7 +63,7 @@ export const StrategyCard = ({
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onDelete(id)}
-              className="cursor-pointer focus:bg-gray-700 text-red-400"
+              className="cursor-pointer focus:bg-gray-700 text-pink-500"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Remove from Wishlist
