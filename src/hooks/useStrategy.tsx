@@ -1,139 +1,21 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Strategy } from "./strategy/types";
+import { 
+  fetchUserStrategySelections,
+  mapStrategiesWithSelections
+} from "./strategy/strategyHelpers";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  updateLocalStorageWishlist
+} from "./strategy/useStrategyWishlist";
+import { saveStrategyConfiguration } from "./strategy/useStrategyConfiguration";
 
-export interface Strategy {
-  id: number;
-  name: string;
-  description: string;
-  performance: {
-    winRate: string;
-    avgProfit: string;
-    drawdown: string;
-  };
-  isWishlisted: boolean;
-  isLive: boolean;
-  quantity: number;
-  selectedBroker?: string;
-}
-
-// Helper function to fetch strategies from database
-const fetchUserStrategySelections = async (userId: string | undefined) => {
-  if (!userId) return [];
-  
-  const { data: selections, error } = await supabase
-    .from('strategy_selections')
-    .select('strategy_id, quantity, selected_broker')
-    .eq('user_id', userId);
-    
-  if (error) {
-    console.error("Error fetching strategy selections:", error);
-    throw error;
-  }
-  
-  return selections || [];
-};
-
-// Helper function to map predefined strategies with user selections
-const mapStrategiesWithSelections = (
-  predefinedStrategies: any[],
-  selections: any[]
-) => {
-  return predefinedStrategies.map(strategy => ({
-    ...strategy,
-    isWishlisted: selections.some(item => item.strategy_id === strategy.id),
-    isLive: false,
-    quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0,
-    selectedBroker: selections.find(item => item.strategy_id === strategy.id)?.selected_broker || ""
-  }));
-};
-
-// Helper function to add strategy to wishlist
-const addToWishlist = async (
-  userId: string,
-  strategyId: number,
-  strategyName: string,
-  strategyDescription: string
-) => {
-  const { error } = await supabase
-    .from('strategy_selections')
-    .insert({
-      user_id: userId,
-      strategy_id: strategyId,
-      strategy_name: strategyName,
-      strategy_description: strategyDescription
-    });
-    
-  if (error) throw error;
-};
-
-// Helper function to remove strategy from wishlist
-const removeFromWishlist = async (userId: string, strategyId: number) => {
-  const { error } = await supabase
-    .from('strategy_selections')
-    .delete()
-    .eq('user_id', userId)
-    .eq('strategy_id', strategyId);
-    
-  if (error) throw error;
-};
-
-// Helper function to update local storage wishlist
-const updateLocalStorageWishlist = (
-  strategyId: number,
-  isWishlisted: boolean,
-  strategies: Strategy[]
-) => {
-  const storedWishlist = localStorage.getItem('wishlistedStrategies');
-  let wishlistedStrategies: any[] = [];
-  
-  if (storedWishlist) {
-    try {
-      wishlistedStrategies = JSON.parse(storedWishlist);
-    } catch (error) {
-      console.error("Error parsing wishlisted strategies:", error);
-    }
-  }
-  
-  if (isWishlisted) {
-    if (!wishlistedStrategies.some(s => s.id === strategyId)) {
-      const strategyToAdd = strategies.find(s => s.id === strategyId);
-      if (strategyToAdd) {
-        wishlistedStrategies.push({...strategyToAdd, isWishlisted: true});
-      }
-    }
-  } else {
-    wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== strategyId);
-  }
-  
-  localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
-};
-
-// Helper function to save strategy configuration to database
-const saveStrategyConfiguration = async (
-  userId: string,
-  strategyId: number,
-  strategyName: string,
-  strategyDescription: string,
-  quantity: number,
-  brokerId: string
-) => {
-  const { error } = await supabase
-    .from('strategy_selections')
-    .upsert({
-      user_id: userId,
-      strategy_id: strategyId,
-      strategy_name: strategyName,
-      strategy_description: strategyDescription,
-      quantity: quantity,
-      selected_broker: brokerId
-    });
-
-  if (error) throw error;
-};
+export type { Strategy } from "./strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const navigate = useNavigate();
