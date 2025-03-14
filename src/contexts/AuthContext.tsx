@@ -119,10 +119,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
           if (profileError) {
             console.error('Error creating profile for new user:', profileError);
-            toast.warning('Account created but profile may not be complete');
+            // Removed the toast warning message here
           }
         } catch (profileInsertError) {
           console.error('Exception during profile creation:', profileInsertError);
+          // No toast warning here either
         }
         
         setUser(user);
