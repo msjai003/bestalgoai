@@ -2,7 +2,7 @@
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3, Heart } from "lucide-react";
+import { Calendar, ArrowRight, AlertTriangle, Info, Play, Clock3, Heart, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
@@ -72,6 +72,17 @@ const StrategySelection = () => {
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
+  };
+
+  const handleSelectStrategy = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    toast({
+      title: "Strategy Selected",
+      description: `${strategy?.name} strategy has been selected for deployment.`
+    });
+    
+    // Navigate to backtest page with the strategy ID
+    navigate(`/backtest?strategyId=${id}`);
   };
 
   const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
@@ -258,14 +269,25 @@ const StrategySelection = () => {
                               <span className="text-green-400">{strategy.performance.winRate}</span>
                             </div>
                             
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-blue-400 hover:text-blue-300 border-gray-700"
-                              onClick={() => navigate(`/strategy-details/${strategy.id}`)}
-                            >
-                              View Details
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-blue-400 hover:text-blue-300 border-gray-700"
+                                onClick={() => navigate(`/strategy-details/${strategy.id}`)}
+                              >
+                                View Details
+                              </Button>
+                              
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={() => handleSelectStrategy(strategy.id)}
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Select
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
