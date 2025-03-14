@@ -45,7 +45,7 @@ export const ActionButtons = ({
             className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
             onClick={handleCredentialsSubmit}
           >
-            Continue to Verification
+            Continue to Settings
           </Button>
           <Button
             variant="outline"
@@ -53,24 +53,6 @@ export const ActionButtons = ({
             onClick={handleReset}
           >
             Cancel
-          </Button>
-        </>
-      );
-    case "verification":
-      return (
-        <>
-          <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
-            onClick={handleCredentialsSubmit}
-          >
-            Verify & Continue
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold"
-            onClick={() => setConnectionStep("credentials")}
-          >
-            Back
           </Button>
         </>
       );
@@ -86,7 +68,7 @@ export const ActionButtons = ({
           <Button
             variant="outline"
             className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold"
-            onClick={() => setConnectionStep("verification")}
+            onClick={() => setConnectionStep("credentials")}
           >
             Back
           </Button>
