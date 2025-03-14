@@ -12,6 +12,8 @@ export interface Strategy {
   isLive: boolean;
   quantity: number;
   selectedBroker?: string;
+  pnl?: string;
+  successRate?: string;
 }
 
 export interface StrategySelection {

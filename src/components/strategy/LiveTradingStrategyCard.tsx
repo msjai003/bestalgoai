@@ -44,7 +44,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <div className="bg-gray-800/50 p-3 rounded-lg cursor-pointer" onClick={onViewDetails}>
                 <p className="text-gray-400 text-xs mb-1">Success Rate</p>
                 <div className="flex items-center">
-                  <p className="text-white text-lg font-semibold">{strategy.successRate || "N/A"}</p>
+                  <p className="text-white text-lg font-semibold">{strategy.successRate || strategy.performance?.winRate || "N/A"}</p>
                   <BarChart2 className="w-4 h-4 text-gray-400 ml-1" />
                 </div>
               </div>
