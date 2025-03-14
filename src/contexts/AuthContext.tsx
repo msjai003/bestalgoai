@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +18,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Flag to track if logout toast has been shown
+// Using a module-level variable to track toast status
+// This ensures it persists between renders but resets on page refresh
 let logoutToastShown = false;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -192,9 +194,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else if (!logoutToastShown) {
-          // Only show success toast if it hasn't been shown yet
+          // Only show the toast if it hasn't been shown already
           toast.success('Successfully signed out');
-          // Set flag to prevent duplicate toasts
+          // Mark toast as shown to prevent duplicates
           logoutToastShown = true;
         }
       } else {
