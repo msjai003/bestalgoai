@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
+import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -21,6 +24,10 @@ const StrategySelection = () => {
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const [strategies, setStrategies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
+  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
+  const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchStrategies = async () => {
@@ -36,7 +43,7 @@ const StrategySelection = () => {
         if (user) {
           const { data, error } = await supabase
             .from('strategy_selections')
-            .select('strategy_id')
+            .select('strategy_id, quantity')
             .eq('user_id', user.id);
             
           if (error) {
@@ -50,7 +57,8 @@ const StrategySelection = () => {
             const wishlistedIds = data.map(item => item.strategy_id);
             strategiesWithStatus = strategiesWithStatus.map(strategy => ({
               ...strategy,
-              isWishlisted: wishlistedIds.includes(strategy.id)
+              isWishlisted: wishlistedIds.includes(strategy.id),
+              quantity: data.find(item => item.strategy_id === strategy.id)?.quantity || 0
             }));
           }
         }
@@ -159,25 +167,98 @@ const StrategySelection = () => {
   };
 
   const handleToggleLiveMode = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    const newStatus = !strategy?.isLive;
+    
+    if (newStatus) {
+      // If enabling live mode, open confirmation dialog
+      setSelectedStrategyId(id);
+      setTargetMode("live");
+      setConfirmDialogOpen(true);
+    } else {
+      // If disabling live mode, directly update
+      updateLiveMode(id, false);
+    }
+  };
+
+  const updateLiveMode = (id: number, isLive: boolean) => {
     setStrategies(prev => 
       prev.map(strategy => {
         if (strategy.id === id) {
-          const newStatus = !strategy.isLive;
-          
-          toast({
-            title: newStatus ? "Strategy set to live mode" : "Strategy set to paper mode",
-            description: `Strategy is now in ${newStatus ? 'live' : 'paper'} trading mode`,
-          });
-          
-          if (newStatus) {
-            navigate("/live-trading");
-          }
-          
-          return { ...strategy, isLive: newStatus };
+          return { ...strategy, isLive };
         }
         return strategy;
       })
     );
+    
+    toast({
+      title: isLive ? "Strategy set to live mode" : "Strategy set to paper mode",
+      description: `Strategy is now in ${isLive ? 'live' : 'paper'} trading mode`,
+    });
+  };
+
+  const handleConfirmLiveMode = () => {
+    setConfirmDialogOpen(false);
+    if (selectedStrategyId !== null) {
+      updateLiveMode(selectedStrategyId, true);
+      setQuantityDialogOpen(true);
+    }
+  };
+
+  const handleCancelLiveMode = () => {
+    setConfirmDialogOpen(false);
+    setSelectedStrategyId(null);
+  };
+
+  const handleQuantitySubmit = async (quantity: number) => {
+    setQuantityDialogOpen(false);
+    
+    if (selectedStrategyId !== null && user) {
+      try {
+        // Update the quantity in the database
+        const { error } = await supabase
+          .from('strategy_selections')
+          .upsert({
+            user_id: user.id,
+            strategy_id: selectedStrategyId,
+            strategy_name: strategies.find(s => s.id === selectedStrategyId)?.name || '',
+            strategy_description: strategies.find(s => s.id === selectedStrategyId)?.description || '',
+            quantity: quantity
+          }, {
+            onConflict: 'user_id,strategy_id'
+          });
+
+        if (error) throw error;
+        
+        // Update local state
+        setStrategies(prev => 
+          prev.map(strategy => 
+            strategy.id === selectedStrategyId 
+              ? { ...strategy, quantity } 
+              : strategy
+          )
+        );
+
+        toast({
+          title: "Quantity Updated",
+          description: `Trading quantity set to ${quantity}`,
+        });
+        
+        navigate("/live-trading");
+      } catch (error) {
+        console.error('Error saving quantity in Supabase:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update trading quantity",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const handleCancelQuantity = () => {
+    setQuantityDialogOpen(false);
+    setSelectedStrategyId(null);
   };
 
   return (
@@ -281,6 +362,21 @@ const StrategySelection = () => {
           </section>
         </main>
       </TooltipProvider>
+      
+      <TradingModeConfirmationDialog 
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        targetMode={targetMode}
+        onConfirm={handleConfirmLiveMode}
+        onCancel={handleCancelLiveMode}
+      />
+      
+      <QuantityInputDialog 
+        open={quantityDialogOpen}
+        onOpenChange={setQuantityDialogOpen}
+        onConfirm={handleQuantitySubmit}
+        onCancel={handleCancelQuantity}
+      />
       
       <BottomNav />
     </div>
