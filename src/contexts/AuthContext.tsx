@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -186,6 +187,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
+          // Only show this toast once during the entire logout flow
+          // This is the ONLY place where the success toast should be shown
           toast.success('Successfully signed out');
         }
       } else {
