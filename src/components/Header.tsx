@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,9 +16,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const handleLogout = async () => {
-    // Use the Logout page for consistent logout experience
-    // This prevents duplicate toast notifications
+  const handleLogout = () => {
     navigate('/logout');
   };
   
