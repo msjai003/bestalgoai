@@ -1,17 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { ConnectionStep } from "@/types/broker";
+import { Loader2 } from "lucide-react";
 
 interface ConnectionStepActionsProps {
   connectionStep: ConnectionStep;
   onSubmit: () => void;
   onBack: () => void;
+  isSubmitting?: boolean;
 }
 
 export const ConnectionStepActions = ({ 
   connectionStep, 
   onSubmit, 
-  onBack 
+  onBack,
+  isSubmitting = false
 }: ConnectionStepActionsProps) => {
   
   const getButtonText = () => {
@@ -39,13 +42,22 @@ export const ConnectionStepActions = ({
       <Button
         className="w-full h-12 bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
         onClick={onSubmit}
+        disabled={isSubmitting}
       >
-        {getButtonText()}
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <span>Submitting...</span>
+          </>
+        ) : (
+          getButtonText()
+        )}
       </Button>
       <Button
         variant="outline"
         className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold"
         onClick={onBack}
+        disabled={isSubmitting}
       >
         {getBackButtonText()}
       </Button>

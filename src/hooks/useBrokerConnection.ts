@@ -3,9 +3,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ConnectionStep, BrokerCredentials, BrokerPermissions } from "@/types/broker";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useBrokerConnection = (selectedBroker: any) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [connectionStep, setConnectionStep] = useState<ConnectionStep>("credentials");
   const [credentials, setCredentials] = useState<BrokerCredentials>({
     username: "",
@@ -20,8 +23,9 @@ export const useBrokerConnection = (selectedBroker: any) => {
     trading: false
   });
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCredentialsSubmit = () => {
+  const handleCredentialsSubmit = async () => {
     if (!credentials.username || !credentials.password) {
       toast.error("Please enter your username and password");
       return;
@@ -59,14 +63,49 @@ export const useBrokerConnection = (selectedBroker: any) => {
     }
   };
 
-  const handleSettingsSubmit = () => {
+  const handleSettingsSubmit = async () => {
     if (!selectedAccount) {
       toast.error("Please select an account type");
       return;
     }
 
-    setConnectionStep("success");
-    setShowSuccessDialog(true);
+    if (!user) {
+      toast.error("You must be logged in to connect a broker");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Save broker credentials to the database
+      const { data, error } = await supabase
+        .from('broker_credentials')
+        .insert({
+          user_id: user.id,
+          broker_id: selectedBroker.id,
+          broker_name: selectedBroker.name,
+          username: credentials.username,
+          password: credentials.password,
+          api_key: credentials.apiKey || null,
+          two_factor_secret: credentials.twoFactorSecret || null,
+          status: 'pending'
+        });
+
+      if (error) {
+        console.error("Error saving broker credentials:", error);
+        toast.error("Failed to save broker credentials");
+        setIsSubmitting(false);
+        return;
+      }
+
+      setConnectionStep("success");
+      setShowSuccessDialog(true);
+    } catch (error) {
+      console.error("Exception saving broker credentials:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleComplete = () => {
@@ -98,6 +137,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
     handleCredentialsSubmit,
     handleSettingsSubmit,
     handleComplete,
-    handleBack
+    handleBack,
+    isSubmitting
   };
 };

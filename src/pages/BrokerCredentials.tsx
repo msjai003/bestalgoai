@@ -38,7 +38,8 @@ const BrokerCredentials = () => {
     handleCredentialsSubmit,
     handleSettingsSubmit,
     handleComplete,
-    handleBack
+    handleBack,
+    isSubmitting
   } = useBrokerConnection(selectedBroker);
 
   if (!selectedBroker) {
@@ -109,6 +110,7 @@ const BrokerCredentials = () => {
           connectionStep={connectionStep}
           onSubmit={handleStepSubmit}
           onBack={handleBack}
+          isSubmitting={isSubmitting}
         />
       </section>
 

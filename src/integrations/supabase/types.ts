@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      broker_credentials: {
+        Row: {
+          api_key: string | null
+          broker_id: number
+          broker_name: string
+          created_at: string
+          id: string
+          password: string
+          status: string
+          two_factor_secret: string | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          api_key?: string | null
+          broker_id: number
+          broker_name: string
+          created_at?: string
+          id?: string
+          password: string
+          status?: string
+          two_factor_secret?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          api_key?: string | null
+          broker_id?: number
+          broker_name?: string
+          created_at?: string
+          id?: string
+          password?: string
+          status?: string
+          two_factor_secret?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           created_at: string | null
