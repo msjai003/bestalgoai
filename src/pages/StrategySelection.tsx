@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,14 +27,12 @@ const StrategySelection = () => {
       setIsLoading(true);
       
       try {
-        // Start with predefined strategies
         let strategiesWithStatus = predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,
           isLive: false
         }));
         
-        // If user is logged in, fetch their wishlisted strategies from Supabase
         if (user) {
           const { data, error } = await supabase
             .from('strategy_selections')
@@ -50,7 +47,6 @@ const StrategySelection = () => {
               variant: "destructive"
             });
           } else if (data) {
-            // Mark strategies as wishlisted
             const wishlistedIds = data.map(item => item.strategy_id);
             strategiesWithStatus = strategiesWithStatus.map(strategy => ({
               ...strategy,
@@ -81,12 +77,10 @@ const StrategySelection = () => {
       description: `${strategy?.name} strategy has been selected for deployment.`
     });
     
-    // Navigate to backtest page with the strategy ID
     navigate(`/backtest?strategyId=${id}`);
   };
 
   const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
-    // Update UI immediately
     setStrategies(prev => 
       prev.map(strategy => 
         strategy.id === id 
@@ -102,7 +96,6 @@ const StrategySelection = () => {
       description: `Strategy has been ${isWishlisted ? 'added to' : 'removed from'} your wishlist`
     });
     
-    // Local storage backup for offline functionality
     const storedWishlist = localStorage.getItem('wishlistedStrategies');
     let wishlistedStrategies: any[] = [];
     
@@ -127,11 +120,9 @@ const StrategySelection = () => {
     
     localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
     
-    // If user is logged in, also save to Supabase
     if (user) {
       try {
         if (isWishlisted) {
-          // Add to wishlist in Supabase
           const { error } = await supabase
             .from('strategy_selections')
             .insert({
@@ -143,7 +134,6 @@ const StrategySelection = () => {
             
           if (error) throw error;
         } else {
-          // Remove from wishlist in Supabase
           const { error } = await supabase
             .from('strategy_selections')
             .delete()
@@ -161,7 +151,6 @@ const StrategySelection = () => {
         });
       }
     } else if (isWishlisted) {
-      // Prompt user to login if they're trying to add to wishlist but not logged in
       toast({
         title: "Login Required",
         description: "Please login to save strategies to your wishlist permanently",
@@ -281,7 +270,7 @@ const StrategySelection = () => {
                               
                               <Button
                                 size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white"
+                                className="bg-gray-600 hover:bg-gray-500 text-green-500 border border-gray-500"
                                 onClick={() => handleSelectStrategy(strategy.id)}
                               >
                                 <Check className="h-4 w-4 mr-1" />
