@@ -262,7 +262,7 @@ const StrategySelection = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-blue-400 hover:text-blue-300 border-gray-700"
+                                className="text-green-500 hover:text-green-400 bg-gray-700 hover:bg-gray-600 border-gray-600"
                                 onClick={() => navigate(`/strategy-details/${strategy.id}`)}
                               >
                                 View Details
@@ -288,4 +288,3 @@ const StrategySelection = () => {
 };
 
 export default StrategySelection;
-
