@@ -42,7 +42,7 @@ export const BrokerSelectionDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  // Fetch available brokers from the database
+  // Fetch available brokers from the database when dialog opens
   useEffect(() => {
     const fetchBrokers = async () => {
       if (!user || !open) return;
@@ -61,6 +61,8 @@ export const BrokerSelectionDialog = ({
         // Set default selection if brokers exist
         if (data && data.length > 0) {
           setSelectedBroker(data[0].id);
+        } else {
+          setSelectedBroker("");
         }
       } catch (error) {
         console.error('Error fetching brokers:', error);
@@ -94,13 +96,13 @@ export const BrokerSelectionDialog = ({
           </div>
         ) : brokers.length === 0 ? (
           <div className="py-4 text-center">
-            <p className="text-gray-400 mb-4">No connected brokers found.</p>
+            <p className="text-gray-400 mb-4">You need to connect a broker before starting live trading.</p>
             <Button 
               variant="outline" 
               className="border-blue-500 text-blue-400 hover:bg-blue-900/20"
               onClick={() => {
                 onCancel();
-                // This will navigate to broker integration page
+                // Navigate to broker integration page
                 window.location.href = '/broker-integration';
               }}
             >
