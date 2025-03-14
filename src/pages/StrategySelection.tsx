@@ -34,14 +34,15 @@ const StrategySelection = () => {
       setIsLoading(true);
       
       try {
-        let strategiesWithStatus = predefinedStrategies.map(strategy => ({
+        let strategiesWithStatus = predefinedStrategies.map(strategy =>({
           ...strategy,
           isWishlisted: false,
-          isLive: false
+          isLive: false,
+          quantity: 0
         }));
         
         if (user) {
-          const { data, error } = await supabase
+          const { data: selections, error } = await supabase
             .from('strategy_selections')
             .select('strategy_id, quantity')
             .eq('user_id', user.id);
@@ -53,12 +54,11 @@ const StrategySelection = () => {
               description: "There was a problem loading your wishlisted strategies",
               variant: "destructive"
             });
-          } else if (data) {
-            const wishlistedIds = data.map(item => item.strategy_id);
+          } else if (selections) {
             strategiesWithStatus = strategiesWithStatus.map(strategy => ({
               ...strategy,
-              isWishlisted: wishlistedIds.includes(strategy.id),
-              quantity: data.find(item => item.strategy_id === strategy.id)?.quantity || 0
+              isWishlisted: selections.some(item => item.strategy_id === strategy.id),
+              quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0
             }));
           }
         }
@@ -171,12 +171,10 @@ const StrategySelection = () => {
     const newStatus = !strategy?.isLive;
     
     if (newStatus) {
-      // If enabling live mode, open confirmation dialog
       setSelectedStrategyId(id);
       setTargetMode("live");
       setConfirmDialogOpen(true);
     } else {
-      // If disabling live mode, directly update
       updateLiveMode(id, false);
     }
   };
@@ -215,27 +213,29 @@ const StrategySelection = () => {
     
     if (selectedStrategyId !== null && user) {
       try {
-        // Update the quantity in the database
+        const strategy = strategies.find(s => s.id === selectedStrategyId);
+        
+        if (!strategy) {
+          throw new Error("Strategy not found");
+        }
+
         const { error } = await supabase
           .from('strategy_selections')
           .upsert({
             user_id: user.id,
             strategy_id: selectedStrategyId,
-            strategy_name: strategies.find(s => s.id === selectedStrategyId)?.name || '',
-            strategy_description: strategies.find(s => s.id === selectedStrategyId)?.description || '',
+            strategy_name: strategy.name,
+            strategy_description: strategy.description,
             quantity: quantity
-          }, {
-            onConflict: 'user_id,strategy_id'
           });
 
         if (error) throw error;
         
-        // Update local state
         setStrategies(prev => 
-          prev.map(strategy => 
-            strategy.id === selectedStrategyId 
-              ? { ...strategy, quantity } 
-              : strategy
+          prev.map(s => 
+            s.id === selectedStrategyId 
+              ? { ...s, quantity } 
+              : s
           )
         );
 
@@ -246,7 +246,7 @@ const StrategySelection = () => {
         
         navigate("/live-trading");
       } catch (error) {
-        console.error('Error saving quantity in Supabase:', error);
+        console.error('Error saving quantity:', error);
         toast({
           title: "Error",
           description: "Failed to update trading quantity",
