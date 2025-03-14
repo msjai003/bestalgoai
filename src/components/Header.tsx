@@ -18,9 +18,9 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   
   const handleLogout = async () => {
-    // Call signOut without showing additional toasts
-    await signOut();
-    navigate('/');
+    // Use the Logout page for consistent logout experience
+    // This prevents duplicate toast notifications
+    navigate('/logout');
   };
   
   return (

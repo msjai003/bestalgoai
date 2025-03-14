@@ -11,6 +11,7 @@ const Logout = () => {
     const handleLogout = async () => {
       try {
         // Call signOut without showing any additional toasts
+        // The toast is already shown in AuthContext
         await signOut();
         // Redirect to home page after logout
         navigate('/');

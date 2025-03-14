@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,7 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // First try to sign up the user with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -104,7 +102,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: data.user.email || '',
         };
         
-        // Explicitly insert into user_profiles table to ensure profile is created
         try {
           const { error: profileError } = await supabase
             .from('user_profiles')
@@ -180,26 +177,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Check if we already have an active session before attempting to sign out
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (sessionData.session) {
-        // Only proceed with signOut if there's an active session
         const { error } = await supabase.auth.signOut();
         
         if (error) {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
-          // Show toast only once when we have a successful signout
           toast.success('Successfully signed out');
         }
       } else {
         console.log('No active session found, clearing local user state');
-        // Don't show a toast if there's no active session
       }
       
-      // Always clear the local user state
       setUser(null);
       
     } catch (error: any) {
