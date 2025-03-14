@@ -10,6 +10,7 @@ const Logout = () => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
+        // This will handle the toast notification internally
         await signOut();
         // Redirect to home page after successful logout
         navigate('/');

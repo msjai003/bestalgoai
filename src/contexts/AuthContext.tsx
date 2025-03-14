@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -188,10 +189,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
+          // Show success toast only when we have successfully signed out
+          // and only once
           toast.success('Successfully signed out');
         }
       } else {
         console.log('No active session found, clearing local user state');
+        // Don't show a toast if there's no active session
       }
       
       setUser(null);

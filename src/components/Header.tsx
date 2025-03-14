@@ -18,6 +18,7 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   
   const handleLogout = async () => {
+    // This will trigger the signOut function which handles all the toast notification logic
     await signOut();
     navigate('/');
   };
