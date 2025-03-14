@@ -9,6 +9,7 @@ import { predefinedStrategies } from "@/constants/strategy-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
+import { BrokerSelectionDialog } from "@/components/strategy/BrokerSelectionDialog";
 import { PredefinedStrategyList } from "@/components/strategy/PredefinedStrategyList";
 import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigation";
 import { useStrategy } from "@/hooks/useStrategy";
@@ -25,6 +26,8 @@ const StrategySelection = () => {
     setConfirmDialogOpen,
     quantityDialogOpen,
     setQuantityDialogOpen,
+    brokerDialogOpen,
+    setBrokerDialogOpen,
     targetMode,
     selectedStrategyId,
     handleToggleWishlist,
@@ -32,7 +35,9 @@ const StrategySelection = () => {
     handleConfirmLiveMode,
     handleCancelLiveMode,
     handleQuantitySubmit,
-    handleCancelQuantity
+    handleCancelQuantity,
+    handleBrokerSubmit,
+    handleCancelBroker
   } = useStrategy(predefinedStrategies);
 
   const handleDeployStrategy = () => {
@@ -82,6 +87,13 @@ const StrategySelection = () => {
         onOpenChange={setQuantityDialogOpen}
         onConfirm={handleQuantitySubmit}
         onCancel={handleCancelQuantity}
+      />
+      
+      <BrokerSelectionDialog
+        open={brokerDialogOpen}
+        onOpenChange={setBrokerDialogOpen}
+        onConfirm={handleBrokerSubmit}
+        onCancel={handleCancelBroker}
       />
       
       <BottomNav />

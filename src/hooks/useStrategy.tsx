@@ -17,6 +17,7 @@ export interface Strategy {
   isWishlisted: boolean;
   isLive: boolean;
   quantity: number;
+  selectedBroker?: string;
 }
 
 export const useStrategy = (predefinedStrategies: any[]) => {
@@ -27,8 +28,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [isLoading, setIsLoading] = useState(true);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
+  const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
+  const [pendingQuantity, setPendingQuantity] = useState<number>(0);
 
   // Load strategies from database
   useEffect(() => {
@@ -40,13 +43,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           ...strategy,
           isWishlisted: false,
           isLive: false,
-          quantity: 0
+          quantity: 0,
+          selectedBroker: ""
         }));
         
         if (user) {
           const { data: selections, error } = await supabase
             .from('strategy_selections')
-            .select('strategy_id, quantity')
+            .select('strategy_id, quantity, selected_broker')
             .eq('user_id', user.id);
             
           if (error) {
@@ -60,7 +64,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             strategiesWithStatus = strategiesWithStatus.map(strategy => ({
               ...strategy,
               isWishlisted: selections.some(item => item.strategy_id === strategy.id),
-              quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0
+              quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0,
+              selectedBroker: selections.find(item => item.strategy_id === strategy.id)?.selected_broker || ""
             }));
           }
         }
@@ -196,8 +201,24 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setSelectedStrategyId(null);
   };
 
-  const handleQuantitySubmit = async (quantity: number) => {
+  const handleQuantitySubmit = (quantity: number) => {
     setQuantityDialogOpen(false);
+    
+    if (selectedStrategyId !== null) {
+      // Store the quantity but don't save to database yet
+      setPendingQuantity(quantity);
+      // Open broker selection dialog
+      setBrokerDialogOpen(true);
+    }
+  };
+
+  const handleCancelQuantity = () => {
+    setQuantityDialogOpen(false);
+    setSelectedStrategyId(null);
+  };
+
+  const handleBrokerSubmit = async (brokerId: string) => {
+    setBrokerDialogOpen(false);
     
     if (selectedStrategyId !== null && user) {
       try {
@@ -214,7 +235,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             strategy_id: selectedStrategyId,
             strategy_name: strategy.name,
             strategy_description: strategy.description,
-            quantity: quantity
+            quantity: pendingQuantity,
+            selected_broker: brokerId
           });
 
         if (error) throw error;
@@ -222,31 +244,36 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         setStrategies(prev => 
           prev.map(s => 
             s.id === selectedStrategyId 
-              ? { ...s, quantity } 
+              ? { ...s, quantity: pendingQuantity, selectedBroker: brokerId } 
               : s
           )
         );
 
         toast({
-          title: "Quantity Updated",
-          description: `Trading quantity set to ${quantity}`,
+          title: "Strategy Configured",
+          description: `Strategy is now set up for live trading`,
         });
         
         navigate("/live-trading");
       } catch (error) {
-        console.error('Error saving quantity:', error);
+        console.error('Error saving strategy configuration:', error);
         toast({
           title: "Error",
-          description: "Failed to update trading quantity",
+          description: "Failed to save strategy configuration",
           variant: "destructive"
         });
       }
     }
   };
 
-  const handleCancelQuantity = () => {
-    setQuantityDialogOpen(false);
+  const handleCancelBroker = () => {
+    setBrokerDialogOpen(false);
     setSelectedStrategyId(null);
+    setPendingQuantity(0);
+    // If we were switching to live mode but canceled broker selection, revert back to paper
+    if (selectedStrategyId !== null) {
+      updateLiveMode(selectedStrategyId, false);
+    }
   };
 
   return {
@@ -256,6 +283,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setConfirmDialogOpen,
     quantityDialogOpen,
     setQuantityDialogOpen,
+    brokerDialogOpen,
+    setBrokerDialogOpen,
     targetMode,
     selectedStrategyId,
     handleToggleWishlist,
@@ -263,6 +292,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleConfirmLiveMode,
     handleCancelLiveMode,
     handleQuantitySubmit,
-    handleCancelQuantity
+    handleCancelQuantity,
+    handleBrokerSubmit,
+    handleCancelBroker
   };
 };

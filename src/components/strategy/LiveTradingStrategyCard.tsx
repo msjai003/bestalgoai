@@ -15,6 +15,7 @@ interface Strategy {
   pnl?: string;
   successRate?: string;
   instrument?: string;
+  selectedBroker?: string;
 }
 
 interface StrategyCardProps {
@@ -82,6 +83,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </Button>
           </div>
         </div>
+        
+        {strategy.selectedBroker && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-300 text-sm">Broker</span>
+            <span className="text-white font-medium">{strategy.selectedBroker}</span>
+          </div>
+        )}
         
         <div className="flex items-center justify-between">
           <span className="text-gray-300 text-sm">Status</span>
