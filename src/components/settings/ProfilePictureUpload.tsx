@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, UserCircle } from "lucide-react";
@@ -28,8 +27,6 @@ export const ProfilePictureUpload = ({
       toast.error("Please select an image file (JPEG, PNG, GIF, WEBP)");
       return;
     }
-    
-    // No file size check - allow any size
 
     setIsUploading(true);
 
@@ -53,8 +50,8 @@ export const ProfilePictureUpload = ({
         .getPublicUrl(filePath);
 
       // Call the onImageChange callback to update the parent component
+      // Do NOT show a toast here, since the parent will show it
       onImageChange(publicUrl);
-      toast.success("Profile picture uploaded successfully");
 
     } catch (error: any) {
       console.error('Error uploading profile picture:', error);

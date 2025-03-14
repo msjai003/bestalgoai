@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -45,7 +44,6 @@ export const PersonalDetailsDialog = ({
     dateOfBirth: false
   });
 
-  // Fetch user profile data when the dialog opens
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user && open) {
@@ -109,6 +107,8 @@ export const PersonalDetailsDialog = ({
         if (error) {
           console.error('Error updating profile picture:', error);
           toast.error("Failed to update profile picture");
+        } else {
+          toast.success("Profile picture uploaded successfully");
         }
       } catch (error) {
         console.error('Error updating profile picture:', error);
@@ -159,15 +159,12 @@ export const PersonalDetailsDialog = ({
     }
   };
 
-  // Function to handle opening the security settings dialog
   const handleOpenSecuritySettings = () => {
-    // Close the current dialog first
     onOpenChange(false);
-    // Then open the security settings dialog
     if (onOpenSecuritySettings) {
       setTimeout(() => {
         onOpenSecuritySettings();
-      }, 100); // Small delay to ensure proper dialog transition
+      }, 100);
     }
   };
 

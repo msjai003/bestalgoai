@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -119,11 +118,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
           if (profileError) {
             console.error('Error creating profile for new user:', profileError);
-            // Removed the toast warning message here
           }
         } catch (profileInsertError) {
           console.error('Exception during profile creation:', profileInsertError);
-          // No toast warning here either
         }
         
         setUser(user);

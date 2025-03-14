@@ -97,7 +97,8 @@ const Settings = () => {
         toast.error("Failed to update profile picture");
         console.error("Error updating profile picture:", error);
       } else {
-        toast.success("Profile picture updated successfully");
+        // This is the only place where the success toast should appear
+        toast.success("Profile picture uploaded successfully");
         // Update the local state
         setUserProfile(prev => ({
           ...prev,
