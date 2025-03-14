@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, X, GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -14,7 +15,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
@@ -27,8 +27,6 @@ const Registration = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
-  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -37,53 +35,6 @@ const Registration = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
-        setErrorMessage("Please select an image file (JPEG, PNG, GIF, WEBP)");
-        return;
-      }
-      
-      setProfilePicture(file);
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfilePicturePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadProfilePicture = async (): Promise<string | null> => {
-    if (!profilePicture) return null;
-    
-    try {
-      const fileExt = profilePicture.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      const { data, error } = await supabase.storage
-        .from('profile_pictures')
-        .upload(filePath, profilePicture);
-      
-      if (error) {
-        console.error('Error uploading profile picture:', error);
-        return null;
-      }
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile_pictures')
-        .getPublicUrl(filePath);
-      
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      return null;
-    }
-  };
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,16 +59,6 @@ const Registration = () => {
         setIsLoading(false);
         return;
       }
-      
-      let profilePictureUrl = null;
-      if (profilePicture) {
-        try {
-          profilePictureUrl = await uploadProfilePicture();
-        } catch (uploadError) {
-          console.error('Profile picture upload error:', uploadError);
-          // Continue with registration even if image upload fails
-        }
-      }
 
       const { error, data } = await signUp(
         email, 
@@ -126,8 +67,7 @@ const Registration = () => {
         { 
           fullName, 
           mobileNumber, 
-          tradingExperience,
-          profilePictureUrl 
+          tradingExperience
         }
       );
       
@@ -153,11 +93,6 @@ const Registration = () => {
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  const removeProfilePicture = () => {
-    setProfilePicture(null);
-    setProfilePicturePreview(null);
   };
 
   return (
@@ -193,49 +128,6 @@ const Registration = () => {
 
       <form onSubmit={handleRegistration} className="space-y-6">
         <div className="space-y-4">
-          <div className="flex flex-col items-center mb-6">
-            <Label className="text-gray-300 mb-2 block text-center">Profile Picture (Optional)</Label>
-            <div className="relative group">
-              {profilePicturePreview ? (
-                <div className="relative">
-                  <Avatar className="w-24 h-24 border-2 border-pink-600">
-                    <AvatarImage 
-                      src={profilePicturePreview} 
-                      alt="Profile" 
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-gray-800 text-white text-lg">
-                      {fullName ? fullName.charAt(0).toUpperCase() : <UserIcon className="h-10 w-10" />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button 
-                    type="button" 
-                    onClick={removeProfilePicture} 
-                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"
-                    aria-label="Remove profile picture"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-800 border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-750 transition-colors">
-                  <label htmlFor="profile-picture" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-                    <UserIcon className="w-8 h-8 text-gray-400" />
-                    <span className="text-xs text-gray-400 mt-1">Upload</span>
-                  </label>
-                </div>
-              )}
-              <input 
-                id="profile-picture" 
-                type="file" 
-                accept="image/jpeg, image/png, image/gif, image/webp" 
-                onChange={handleFileChange} 
-                className="hidden" 
-              />
-            </div>
-            <p className="text-xs text-gray-400 mt-2">Profile picture is optional</p>
-          </div>
-
           <div>
             <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name <span className="text-red-400">*</span></Label>
             <Input
