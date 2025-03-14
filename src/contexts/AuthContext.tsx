@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,11 +17,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Flag to track if logout toast has been shown
+let logoutToastShown = false;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Reset the toast flag when the component mounts
   useEffect(() => {
+    logoutToastShown = false;
+    
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -186,10 +191,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error during sign out:', error);
           toast.error(error.message);
-        } else {
-          // Only show this toast once during the entire logout flow
-          // This is the ONLY place where the success toast should be shown
+        } else if (!logoutToastShown) {
+          // Only show success toast if it hasn't been shown yet
           toast.success('Successfully signed out');
+          // Set flag to prevent duplicate toasts
+          logoutToastShown = true;
         }
       } else {
         console.log('No active session found, clearing local user state');

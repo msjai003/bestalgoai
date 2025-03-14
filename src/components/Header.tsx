@@ -19,7 +19,6 @@ const Header: React.FC = () => {
   
   const handleLogout = () => {
     // Navigate to the logout page instead of calling signOut directly
-    // This ensures the logout flow is consistent and toast is only shown once
     navigate('/logout');
   };
   
