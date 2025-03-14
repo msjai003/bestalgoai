@@ -197,7 +197,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Error during sign out:', error);
       setUser(null);
-      toast.error('Error signing out, but session has been cleared locally');
     } finally {
       setIsLoading(false);
     }
