@@ -10,7 +10,7 @@ const Logout = () => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // Call signOut, which already includes a toast in AuthContext.tsx
+        // Call signOut which will show the toast in AuthContext
         await signOut();
         // Redirect to home page after logout
         navigate('/');

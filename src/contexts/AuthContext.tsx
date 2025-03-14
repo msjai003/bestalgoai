@@ -187,7 +187,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
-          // Only show the toast notification here, not in the Logout component
+          // IMPORTANT: Only show the toast message here
+          // and nowhere else in the logout flow
           toast.success('Successfully signed out');
         }
       } else {
