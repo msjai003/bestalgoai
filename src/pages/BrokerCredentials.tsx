@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CredentialsForm } from "@/components/broker-integration/CredentialsForm";
-import { VerificationForm } from "@/components/broker-integration/VerificationForm";
 import { AccountSettings } from "@/components/broker-integration/AccountSettings";
 import { SuccessDialog } from "@/components/broker-integration/SuccessDialog";
 import { BrokerHeader } from "@/components/broker-integration/BrokerHeader";
@@ -58,14 +57,6 @@ const BrokerCredentials = () => {
             onBack={handleBack}
           />
         );
-      case "verification":
-        return (
-          <VerificationForm
-            credentials={credentials}
-            setCredentials={setCredentials}
-            onBack={handleBack}
-          />
-        );
       case "settings":
         return (
           <AccountSettings
@@ -85,7 +76,6 @@ const BrokerCredentials = () => {
   const handleStepSubmit = () => {
     switch (connectionStep) {
       case "credentials":
-      case "verification":
         handleCredentialsSubmit();
         break;
       case "settings":

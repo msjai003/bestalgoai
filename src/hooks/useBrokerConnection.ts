@@ -36,31 +36,9 @@ export const useBrokerConnection = (selectedBroker: any) => {
       return;
     }
 
-    // If currently on credentials step, move to verification
-    if (connectionStep === "credentials") {
-      setConnectionStep("verification");
-      toast.info("Please enter the verification code sent to your email");
-      return;
-    }
-
-    // If on verification step, validate the 2FA code
-    if (connectionStep === "verification") {
-      if (!credentials.twoFactorCode || credentials.twoFactorCode.length !== 6) {
-        toast.error("Please enter a valid 6-digit verification code");
-        return;
-      }
-
-      toast.info("Verifying code...");
-      
-      setTimeout(() => {
-        if (credentials.twoFactorCode === "123456") {
-          setConnectionStep("settings");
-          toast.success("Verification successful");
-        } else {
-          toast.error("Invalid verification code. Please try again.");
-        }
-      }, 1500);
-    }
+    // Move directly to settings instead of verification
+    setConnectionStep("settings");
+    toast.success("Credentials accepted");
   };
 
   const handleSettingsSubmit = async () => {
@@ -117,10 +95,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const handleBack = () => {
     if (connectionStep === "credentials") {
       navigate("/broker-integration");
-    } else if (connectionStep === "verification") {
-      setConnectionStep("credentials");
     } else if (connectionStep === "settings") {
-      setConnectionStep("verification");
+      setConnectionStep("credentials");
     }
   };
 

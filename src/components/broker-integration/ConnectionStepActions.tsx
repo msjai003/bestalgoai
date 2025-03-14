@@ -20,9 +20,7 @@ export const ConnectionStepActions = ({
   const getButtonText = () => {
     switch (connectionStep) {
       case "credentials":
-        return "Continue to Verification";
-      case "verification":
-        return "Verify & Continue";
+        return "Continue to Settings";
       case "settings":
         return "Connect Broker";
       default:

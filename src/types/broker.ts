@@ -22,4 +22,4 @@ export interface BrokerPermissions {
   trading: boolean;
 }
 
-export type ConnectionStep = "selection" | "credentials" | "verification" | "settings" | "success";
+export type ConnectionStep = "selection" | "credentials" | "settings" | "success";
