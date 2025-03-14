@@ -53,7 +53,11 @@ export const StrategySection = ({
       <div className="space-y-4">
         {strategies.length === 0 ? (
           <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 flex flex-col items-center justify-center">
-            <p className="text-gray-400 mb-4">{emptyMessage}</p>
+            <p className="text-gray-400 mb-4">
+              {title === "Predefined Strategies" 
+                ? "Click \"Add Strategy\" to view strategies. Tap the ❤️ heart icon to add a strategy to your wishlist." 
+                : emptyMessage}
+            </p>
             {/* Removed the Browse Strategies button for Predefined strategies section */}
             {title !== "Predefined Strategies" && showEmptyStateButton && actionButtonText && actionButtonPath && (
               <Button 
