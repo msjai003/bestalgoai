@@ -33,7 +33,6 @@ import RiskManagement from "./pages/RiskManagement";
 import BrokerIntegration from "./pages/BrokerIntegration";
 import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
-import Wishlist from "./pages/Wishlist";
 
 const queryClient = new QueryClient();
 
@@ -56,11 +55,6 @@ function AppRoutes() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/wishlist" element={
-        <ProtectedRoute>
-          <Wishlist />
         </ProtectedRoute>
       } />
       <Route path="/onboarding" element={
