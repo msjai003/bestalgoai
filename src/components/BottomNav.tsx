@@ -13,7 +13,7 @@ export const BottomNav = () => {
         </Link>
         <Link to="/strategy-management" className="flex flex-col items-center p-2">
           <i className={`fa-solid fa-chart-simple ${location.pathname === '/strategy-management' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Strategies</span>
+          <span className="text-xs text-gray-400 mt-1">Wishlist</span>
         </Link>
         <Link to="/live-trading" className="flex flex-col items-center p-2">
           <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
