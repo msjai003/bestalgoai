@@ -180,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Get current session first
+      // Check if we already have an active session before attempting to sign out
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (sessionData.session) {
@@ -191,7 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else {
-          // Show success toast only once and only if session existed
+          // Show toast only once when we have a successful signout
           toast.success('Successfully signed out');
         }
       } else {
