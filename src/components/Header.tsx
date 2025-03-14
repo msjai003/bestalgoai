@@ -18,8 +18,8 @@ const Header: React.FC = () => {
   const { user } = useAuth();
   
   const handleLogout = () => {
-    // Simply navigate to the logout page
-    // This ensures the logout flow is consistent
+    // Navigate to the logout page instead of calling signOut directly
+    // This ensures the logout flow is consistent and toast is only shown once
     navigate('/logout');
   };
   
