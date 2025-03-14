@@ -1,134 +1,129 @@
 
-import React from 'react';
-import { CreditCard, MoreVertical, Play, Trash2, Plus } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useNavigate } from 'react-router-dom';
+import { Badge } from "@/components/ui/badge";
+import { Strategy } from "@/hooks/useStrategy";
+import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyCardProps {
-  id: number | string;
-  name: string;
-  description: string;
-  performance: {
-    winRate: string;
-    avgProfit: string;
-    drawdown: string;
-  };
-  isLive: boolean;
-  isCustom: boolean;
-  createdBy?: string;
-  onDelete: (id: number | string) => void;
-  onToggleLiveMode: (id: number | string) => void;
+  strategy: Strategy;
+  onToggleWishlist: (id: number, isWishlisted: boolean) => void;
+  onToggleLiveMode: (id: number) => void;
+  isAuthenticated: boolean;
 }
 
-export const StrategyCard = ({
-  id,
-  name,
-  description,
-  performance,
-  isLive,
-  isCustom,
-  createdBy,
-  onDelete,
-  onToggleLiveMode
-}: StrategyCardProps) => {
-  const navigate = useNavigate();
-  
-  const handleSelect = () => {
-    navigate(`/backtest?strategyId=${id}`);
+export const StrategyCard: React.FC<StrategyCardProps> = ({
+  strategy,
+  onToggleWishlist,
+  onToggleLiveMode,
+  isAuthenticated
+}) => {
+  const toggleWishlist = () => {
+    onToggleWishlist(strategy.id, !strategy.isWishlisted);
+  };
+
+  const toggleLiveMode = () => {
+    onToggleLiveMode(strategy.id);
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative">
-      <div className="flex justify-between items-start">
-        <h3 className="text-white font-medium">{name}</h3>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4 text-gray-400" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white">
-            <DropdownMenuItem 
-              onClick={() => onToggleLiveMode(id)}
-              className="cursor-pointer focus:bg-gray-700"
-            >
-              <Play className="mr-2 h-4 w-4" />
-              {isLive ? "Switch to Paper Trading" : "Switch to Live Trading"}
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => onDelete(id)}
-              className="cursor-pointer focus:bg-gray-700 text-pink-500"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Remove from Wishlist
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      
-      <p className="text-gray-400 text-sm mt-1 line-clamp-2">{description}</p>
-      
-      {createdBy && (
-        <div className="mt-2 text-xs text-gray-400">
-          <span>Created by: {createdBy}</span>
-        </div>
-      )}
+    <Card className="bg-gray-800 border-gray-700 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="p-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-1">
+                {strategy.name}
+              </h3>
+              <div className="flex gap-2 mb-2">
+                <Badge 
+                  variant="outline" 
+                  className="bg-blue-900/30 text-blue-300 border-blue-800"
+                >
+                  Win Rate: {strategy.performance.winRate}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-green-900/30 text-green-300 border-green-800"
+                >
+                  Avg. Profit: {strategy.performance.avgProfit}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-red-900/30 text-red-300 border-red-800"
+                >
+                  Max Drawdown: {strategy.performance.drawdown}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"}
+                      onClick={toggleWishlist}
+                      disabled={!isAuthenticated}
+                    >
+                      <HeartIcon size={20} className={strategy.isWishlisted ? "fill-red-400" : ""} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-        <div className="bg-gray-700/50 p-1 rounded">
-          <p className="text-xs text-gray-400">Win Rate</p>
-          <p className="text-xs font-medium text-white">{performance.winRate}</p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400"}
+                      onClick={toggleLiveMode}
+                      disabled={!isAuthenticated}
+                    >
+                      {strategy.isLive ? (
+                        <StopCircleIcon size={20} />
+                      ) : (
+                        <PlayIcon size={20} />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{strategy.isLive ? "Disable live trading" : "Enable live trading"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+          
+          <p className="text-gray-300 text-sm mb-3">
+            {strategy.description}
+          </p>
+          
+          {strategy.isLive && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="bg-gray-700/50 p-2 rounded">
+                <p className="text-xs text-gray-400">Quantity</p>
+                <p className="text-white font-medium">{strategy.quantity || 0}</p>
+              </div>
+              
+              {strategy.selectedBroker && (
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <p className="text-xs text-gray-400">Broker</p>
+                  <p className="text-white font-medium">{strategy.selectedBroker}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <div className="bg-gray-700/50 p-1 rounded">
-          <p className="text-xs text-gray-400">Avg. Profit</p>
-          <p className="text-xs font-medium text-white">{performance.avgProfit}</p>
-        </div>
-        <div className="bg-gray-700/50 p-1 rounded">
-          <p className="text-xs text-gray-400">Drawdown</p>
-          <p className="text-xs font-medium text-white">{performance.drawdown}</p>
-        </div>
-      </div>
-      
-      <div className="mt-4 flex justify-end">
-        <Button
-          onClick={handleSelect}
-          className="bg-gray-600 text-green-500 hover:bg-gray-500 border border-gray-500"
-          size="sm"
-        >
-          Select
-        </Button>
-      </div>
-      
-      <div className="absolute top-2 right-12">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={`h-2 w-2 rounded-full ${isLive ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-          </TooltipTrigger>
-          <TooltipContent className="bg-gray-800 border-gray-700">
-            <p className="text-xs">{isLive ? "Live Trading" : "Paper Trading"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      
-      {isCustom && (
-        <div className="absolute bottom-4 right-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <CreditCard className="h-4 w-4 text-blue-500" />
-            </TooltipTrigger>
-            <TooltipContent className="bg-gray-800 border-gray-700">
-              <p className="text-xs">Custom Strategy</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };

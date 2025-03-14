@@ -26,7 +26,7 @@ const fetchUserStrategySelections = async (userId: string | undefined) => {
   
   const { data: selections, error } = await supabase
     .from('strategy_selections')
-    .select('strategy_id, quantity')
+    .select('strategy_id, quantity, selected_broker')
     .eq('user_id', userId);
     
   if (error) {
@@ -47,7 +47,7 @@ const mapStrategiesWithSelections = (
     isWishlisted: selections.some(item => item.strategy_id === strategy.id),
     isLive: false,
     quantity: selections.find(item => item.strategy_id === strategy.id)?.quantity || 0,
-    selectedBroker: ""
+    selectedBroker: selections.find(item => item.strategy_id === strategy.id)?.selected_broker || ""
   }));
 };
 
@@ -128,7 +128,8 @@ const saveStrategyConfiguration = async (
       strategy_id: strategyId,
       strategy_name: strategyName,
       strategy_description: strategyDescription,
-      quantity: quantity
+      quantity: quantity,
+      selected_broker: brokerId
     });
 
   if (error) throw error;

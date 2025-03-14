@@ -122,6 +122,7 @@ export type Database = {
           created_at: string | null
           id: string
           quantity: number | null
+          selected_broker: string | null
           strategy_description: string | null
           strategy_id: number
           strategy_name: string
@@ -131,6 +132,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           quantity?: number | null
+          selected_broker?: string | null
           strategy_description?: string | null
           strategy_id: number
           strategy_name: string
@@ -140,6 +142,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           quantity?: number | null
+          selected_broker?: string | null
           strategy_description?: string | null
           strategy_id?: number
           strategy_name?: string
