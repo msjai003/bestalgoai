@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -51,7 +52,7 @@ export const useLiveTrading = () => {
     dialogState.setShowQuantityDialog(true);
   };
 
-  const confirmModeChange = () => {
+  const confirmModeChange = async () => {
     if (dialogState.targetStrategyId === null || dialogState.targetMode === null) return;
     
     dialogState.setShowConfirmationDialog(false);
@@ -59,7 +60,7 @@ export const useLiveTrading = () => {
     if (dialogState.targetMode === 'live') {
       dialogState.setShowQuantityDialog(true);
     } else {
-      updateLiveMode(dialogState.targetStrategyId, false);
+      await updateLiveMode(dialogState.targetStrategyId, false);
       dialogState.resetDialogState();
     }
   };
@@ -154,6 +155,15 @@ export const useLiveTrading = () => {
       if (!strategy) return;
       
       if (!isLive) {
+        // When toggling to paper mode, update the database record to paper trade
+        console.log("Updating strategy to paper trading mode in database:", {
+          user_id: user.id,
+          strategy_id: id,
+          trade_type: "paper trade",
+          quantity: 0,
+          selected_broker: ""
+        });
+        
         const { error } = await supabase
           .from('strategy_selections')
           .update({
@@ -164,7 +174,10 @@ export const useLiveTrading = () => {
           .eq('user_id', user.id)
           .eq('strategy_id', id);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating strategy to paper mode:", error);
+          throw error;
+        }
         
         toast({
           title: "Paper Trading Activated Successfully",
@@ -173,6 +186,7 @@ export const useLiveTrading = () => {
         });
       }
       
+      // Update the local state to reflect the changes
       const updatedStrategies = strategies.map(s => {
         if (s.id === id) {
           return { 
