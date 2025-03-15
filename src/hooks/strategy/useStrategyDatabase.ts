@@ -21,29 +21,44 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
   // If user is logged in, fetch strategies from database
   if (userId) {
     try {
+      // Fetch strategy selections
       const { data, error } = await supabase
         .from('strategy_selections')
-        .select('*, broker_credentials(broker_name)')
+        .select('*')
         .eq('user_id', userId);
         
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Map database data to Strategy type
-        const dbStrategies: Strategy[] = data.map(item => ({
-          id: item.strategy_id,
-          name: item.strategy_name,
-          description: item.strategy_description || "",
-          isWishlisted: true,
-          isLive: Boolean(item.quantity > 0 && item.selected_broker),
-          quantity: item.quantity || 0,
-          selectedBroker: item.selected_broker ? 
-            (item.broker_credentials?.broker_name || "Unknown Broker") : "",
-          performance: {
-            winRate: "N/A",
-            avgProfit: "N/A",
-            drawdown: "N/A"
+        // For each strategy with a broker, fetch the broker name
+        const dbStrategies = await Promise.all(data.map(async (item) => {
+          let brokerName = "";
+          
+          // If there's a selected broker, fetch its name
+          if (item.selected_broker) {
+            try {
+              const brokerData = await fetchBrokerById(item.selected_broker);
+              brokerName = brokerData?.broker_name || "Unknown Broker";
+            } catch (err) {
+              console.error("Error fetching broker name:", err);
+              brokerName = "Unknown Broker";
+            }
           }
+          
+          return {
+            id: item.strategy_id,
+            name: item.strategy_name,
+            description: item.strategy_description || "",
+            isWishlisted: true,
+            isLive: Boolean(item.quantity > 0 && item.selected_broker),
+            quantity: item.quantity || 0,
+            selectedBroker: brokerName,
+            performance: {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          };
         }));
         
         strategies = dbStrategies;
