@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +11,7 @@ import {
   fetchBrokerById
 } from "./useStrategyDatabase";
 import { saveStrategyConfiguration } from "./useStrategyConfiguration";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useLiveTrading = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -22,7 +22,6 @@ export const useLiveTrading = () => {
   const dialogState = useStrategyDialogs();
   const filterState = useStrategyFiltering(strategies);
   
-  // Load strategies when the component mounts or user changes
   useEffect(() => {
     const fetchStrategies = async () => {
       if (user) {
@@ -37,7 +36,6 @@ export const useLiveTrading = () => {
   const handleToggleLiveMode = (id: number) => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
-      // If already in paper mode, don't prompt to change anything
       if (!strategy.isLive) {
         return;
       }
@@ -98,15 +96,19 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
-      await updateStrategyLiveConfig(
-        user.id,
-        dialogState.targetStrategyId,
-        strategy.name,
-        strategy.description,
-        dialogState.pendingQuantity,
-        brokerName,
-        "live trade"
-      );
+      const { error } = await supabase
+        .from('strategy_selections')
+        .update({
+          strategy_name: strategy.name,
+          strategy_description: strategy.description,
+          quantity: dialogState.pendingQuantity,
+          selected_broker: brokerName,
+          trade_type: "live trade"
+        })
+        .eq('user_id', user.id)
+        .eq('strategy_id', dialogState.targetStrategyId);
+        
+      if (error) throw error;
       
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
@@ -151,32 +153,24 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
-      // Set trade type based on isLive parameter
-      const tradeType = isLive ? "live trade" : "paper trade";
-
-      // Use saveStrategyConfiguration to ensure paper trade status is preserved
       if (!isLive) {
-        // When switching to paper mode, directly save to database with paper trade type
-        await saveStrategyConfiguration(
-          user.id,
-          id,
-          strategy.name,
-          strategy.description,
-          0, // Set quantity to 0 for paper trading
-          "", // Clear broker selection for paper trading
-          "paper trade" // Explicitly set trade_type to paper trade
-        );
+        const { error } = await supabase
+          .from('strategy_selections')
+          .update({
+            trade_type: "paper trade",
+            quantity: 0,
+            selected_broker: ""
+          })
+          .eq('user_id', user.id)
+          .eq('strategy_id', id);
+          
+        if (error) throw error;
         
         toast({
           title: "Paper Trading Activated Successfully",
           description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
           variant: "default"
         });
-      } else {
-        // For live mode, we'll go through the regular flow with dialogs
-        // The trade type will be set in handleBrokerSubmit
-        // This code branch should not be reached directly from this function
-        console.log("Switching to live mode is handled through the quantity and broker dialogs");
       }
       
       const updatedStrategies = strategies.map(s => {
@@ -184,7 +178,7 @@ export const useLiveTrading = () => {
           return { 
             ...s, 
             isLive,
-            tradeType, // Update the tradeType property explicitly
+            tradeType: isLive ? "live trade" : "paper trade",
             ...(!isLive && { quantity: 0, selectedBroker: "" })
           };
         }
