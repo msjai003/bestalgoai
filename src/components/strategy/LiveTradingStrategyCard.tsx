@@ -103,7 +103,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </div>
         <Button
           variant="outline"
-          size="sm"
           onClick={onViewDetails}
           className="text-green-400 bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 flex-1"
         >
