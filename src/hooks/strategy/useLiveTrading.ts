@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -143,7 +144,7 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
-      const tradeType = isLive ? "live trade" : "paper";
+      const tradeType = isLive ? "live trade" : "paper trade";
       
       if (!isLive) {
         await updateStrategyLiveConfig(
@@ -157,7 +158,7 @@ export const useLiveTrading = () => {
         );
         
         toast({
-          title: "Paper Trading Enabled",
+          title: "Paper Trading Activated Successfully",
           description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
           variant: "default"
         });

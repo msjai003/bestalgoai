@@ -39,7 +39,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           isLive: Boolean(item.quantity > 0 && item.selected_broker),
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
-          tradeType: item.trade_type || "paper", // Include trade_type in local state
+          tradeType: item.trade_type || "paper trade", // Updated default to "paper trade"
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -68,14 +68,14 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  tradeType: string = "paper" // New parameter with default value
+  tradeType: string = "paper trade" // Updated default to "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
     brokerName,
-    tradeType // Log trade_type parameter
+    tradeType
   });
   
   const { error } = await supabase
@@ -87,7 +87,7 @@ export const updateStrategyLiveConfig = async (
       strategy_description: strategyDescription,
       quantity: quantity || 0,
       selected_broker: brokerName,
-      trade_type: tradeType // Save trade_type in database
+      trade_type: tradeType
     });
     
   if (error) {
