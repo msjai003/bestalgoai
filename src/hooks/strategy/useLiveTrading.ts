@@ -38,12 +38,16 @@ export const useLiveTrading = () => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
       if (!strategy.isLive) {
-        return;
+        // If strategy is currently in paper mode and user wants to switch to live mode
+        dialogState.setTargetStrategyId(id);
+        dialogState.setTargetMode('live');
+        dialogState.setShowConfirmationDialog(true);
+      } else {
+        // If strategy is currently in live mode and user wants to switch to paper mode
+        dialogState.setTargetStrategyId(id);
+        dialogState.setTargetMode('paper');
+        dialogState.setShowConfirmationDialog(true);
       }
-      
-      dialogState.setTargetStrategyId(id);
-      dialogState.setTargetMode('paper');
-      dialogState.setShowConfirmationDialog(true);
     }
   };
 
@@ -58,6 +62,7 @@ export const useLiveTrading = () => {
     dialogState.setShowConfirmationDialog(false);
     
     if (dialogState.targetMode === 'live') {
+      // User is switching from paper to live mode
       dialogState.setShowQuantityDialog(true);
     } else {
       try {
@@ -141,6 +146,8 @@ export const useLiveTrading = () => {
           })
           .eq('user_id', user.id)
           .eq('strategy_id', dialogState.targetStrategyId);
+          
+        console.log("Updated existing record for live trading:", updateResult);
       } else {
         // Insert new record
         updateResult = await supabase
@@ -154,6 +161,8 @@ export const useLiveTrading = () => {
             selected_broker: brokerName,
             trade_type: "live trade"
           });
+          
+        console.log("Inserted new record for live trading:", updateResult);
       }
         
       if (updateResult.error) {
@@ -273,6 +282,7 @@ export const useLiveTrading = () => {
           variant: "default"
         });
       }
+      // Update for switching back to Live mode is handled in handleBrokerSubmit
       
       // Update the local state to reflect the changes
       const updatedStrategies = strategies.map(s => {
