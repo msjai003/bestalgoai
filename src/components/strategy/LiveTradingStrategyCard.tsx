@@ -1,19 +1,22 @@
 
 import React from "react";
-import { BarChart2, ChevronRight, Settings } from "lucide-react";
+import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Strategy } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;
+  onToggleLiveMode: () => void;
   onEditQuantity: () => void;
   onViewDetails: () => void;
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
+  onToggleLiveMode,
   onEditQuantity,
   onViewDetails
 }) => {
@@ -26,9 +29,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
           )}
         </div>
-        <Badge className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'} px-2 py-1 rounded-md text-xs font-medium`}>
-          {strategy.isLive ? 'Live Trading' : 'Paper Trading'}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400">
+            {strategy.isLive ? "Live" : "Paper"}
+          </span>
+          <Switch
+            checked={strategy.isLive}
+            onCheckedChange={onToggleLiveMode}
+            className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
+          />
+        </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -90,7 +100,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </div>
       </div>
       
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-center">
         <Button
           variant="outline"
           size="sm"
