@@ -18,6 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -41,6 +43,8 @@ export const BrokerSelectionDialog = ({
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBrokers = async () => {
@@ -91,7 +95,11 @@ export const BrokerSelectionDialog = ({
   const navigateToBrokerIntegration = () => {
     onCancel();
     // Navigate to broker integration page
-    window.location.href = '/broker-integration';
+    navigate('/broker-integration');
+    toast({
+      title: "Action Required",
+      description: "Please connect a broker first to proceed with live trading",
+    });
   };
 
   return (
