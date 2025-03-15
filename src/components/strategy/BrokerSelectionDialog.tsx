@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -49,16 +50,21 @@ export const BrokerSelectionDialog = ({
       
       setIsLoading(true);
       try {
+        console.log("Fetching brokers for user:", user.id);
         const { data, error } = await supabase
           .from('broker_credentials')
           .select('id, broker_name')
           .eq('user_id', user.id)
           .eq('status', 'connected');
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching brokers:', error);
+          throw error;
+        }
         
         console.log("Fetched brokers:", data);
         setBrokers(data || []);
+        
         // Set default selection if brokers exist
         if (data && data.length > 0) {
           setSelectedBroker(data[0].id);
@@ -72,7 +78,9 @@ export const BrokerSelectionDialog = ({
       }
     };
     
-    fetchBrokers();
+    if (open) {
+      fetchBrokers();
+    }
   }, [user, open]);
 
   const handleConfirm = () => {
@@ -94,7 +102,7 @@ export const BrokerSelectionDialog = ({
         
         {isLoading ? (
           <div className="flex justify-center py-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
         ) : brokers.length === 0 ? (
           <div className="py-4 text-center">
@@ -119,7 +127,7 @@ export const BrokerSelectionDialog = ({
               </SelectTrigger>
               <SelectContent className="bg-gray-700 border-gray-600 text-white">
                 {brokers.map((broker) => (
-                  <SelectItem key={broker.id} value={broker.id}>
+                  <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600">
                     {broker.broker_name}
                   </SelectItem>
                 ))}
