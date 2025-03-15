@@ -105,7 +105,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           variant="outline"
           size="sm"
           onClick={onViewDetails}
-          className="text-white border-gray-700 hover:bg-gray-700 flex-1"
+          className="text-green-400 bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 flex-1"
         >
           View Details
           <ChevronRight className="ml-1 h-4 w-4" />
