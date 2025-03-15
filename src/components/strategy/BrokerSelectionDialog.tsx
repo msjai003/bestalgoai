@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -18,7 +16,8 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -89,71 +88,76 @@ export const BrokerSelectionDialog = ({
     }
   };
 
+  const navigateToBrokerIntegration = () => {
+    onCancel();
+    // Navigate to broker integration page
+    window.location.href = '/broker-integration';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Select Broker</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Choose a broker to use with this strategy
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="bg-gray-800 border-gray-700 text-white p-0 overflow-hidden max-w-md">
+        <div className="relative">
+          <DialogHeader className="p-6 pb-3">
+            <DialogTitle className="text-xl font-semibold text-center">Select Broker</DialogTitle>
+            <button
+              onClick={onCancel}
+              className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <p className="text-gray-400 text-sm text-center mt-1">
+              Choose a broker to use with this strategy
+            </p>
+          </DialogHeader>
+        </div>
         
         {isLoading ? (
-          <div className="flex justify-center py-6">
+          <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
         ) : brokers.length === 0 ? (
-          <div className="py-4 text-center">
-            <p className="text-gray-400 mb-4">You need to connect a broker before starting live trading.</p>
+          <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+            <p className="text-gray-300 mb-6">
+              You need to connect a broker before starting live trading.
+            </p>
             <Button 
-              variant="outline" 
-              className="border-blue-500 text-blue-400 hover:bg-blue-900/20"
-              onClick={() => {
-                onCancel();
-                // Navigate to broker integration page
-                window.location.href = '/broker-integration';
-              }}
+              variant="default"
+              className={cn(
+                "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md",
+                "transition-all duration-200"
+              )}
+              onClick={navigateToBrokerIntegration}
             >
               Connect a Broker
             </Button>
           </div>
         ) : (
-          <div className="py-4">
-            <Select value={selectedBroker} onValueChange={setSelectedBroker}>
-              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                <SelectValue placeholder="Select a broker" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-700 border-gray-600 text-white">
-                {brokers.map((broker) => (
-                  <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600 text-white hover:bg-gray-600">
-                    {broker.broker_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-        
-        {brokers.length > 0 && (
-          <DialogFooter className="flex gap-2 sm:justify-end">
-            <Button 
-              type="button"
-              variant="secondary" 
-              className="bg-gray-700 hover:bg-gray-600 text-gray-200"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
+          <div className="p-6 pt-0">
+            <div className="mb-6">
+              <Select value={selectedBroker} onValueChange={setSelectedBroker}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white w-full">
+                  <SelectValue placeholder="Select a broker" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-700 border-gray-600 text-white">
+                  {brokers.map((broker) => (
+                    <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600 text-white hover:bg-gray-600">
+                      {broker.broker_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <Button 
               variant="default"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full py-6"
               onClick={handleConfirm}
               disabled={!selectedBroker}
             >
-              Confirm
+              Confirm Selection
             </Button>
-          </DialogFooter>
+          </div>
         )}
       </DialogContent>
     </Dialog>

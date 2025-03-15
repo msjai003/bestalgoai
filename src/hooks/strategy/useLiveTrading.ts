@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -71,10 +70,8 @@ export const useLiveTrading = () => {
   const handleQuantitySubmit = (quantity: number) => {
     if (dialogState.targetStrategyId === null) return;
     
-    dialogState.setPendingQuantity(quantity);
-    dialogState.setShowQuantityDialog(false);
-    // Show broker selection dialog immediately after quantity is submitted
-    dialogState.setShowBrokerDialog(true);
+    // Use the helper method from useStrategyDialogs to transition from quantity to broker dialog
+    dialogState.openBrokerDialogAfterQuantity(quantity);
   };
 
   const handleCancelQuantity = () => {
