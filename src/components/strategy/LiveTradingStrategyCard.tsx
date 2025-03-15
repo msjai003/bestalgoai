@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BarChart2, ChevronRight, Settings, ToggleLeft, ToggleRight } from "lucide-react";
+import { BarChart2, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -8,14 +8,12 @@ import { Strategy } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;
-  onToggleLiveMode: () => void;
   onEditQuantity: () => void;
   onViewDetails: () => void;
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
-  onToggleLiveMode,
   onEditQuantity,
   onViewDetails
 }) => {
@@ -97,43 +95,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           variant="outline"
           size="sm"
           onClick={onViewDetails}
-          className="text-white border-gray-700 hover:bg-gray-700"
+          className="text-white border-gray-700 hover:bg-gray-700 w-full"
         >
           View Details
           <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={strategy.isLive ? "outline" : "secondary"}
-                size="sm"
-                onClick={onToggleLiveMode}
-                className={`flex items-center ${
-                  strategy.isLive 
-                    ? 'text-blue-400 border-blue-900/50 hover:bg-blue-900/20' 
-                    : 'text-green-400 bg-green-900/20 border-green-900/50 hover:bg-green-900/30'
-                }`}
-              >
-                {strategy.isLive ? (
-                  <>
-                    <ToggleLeft className="w-4 h-4 mr-1" />
-                    Switch to Paper
-                  </>
-                ) : (
-                  <>
-                    <ToggleRight className="w-4 h-4 mr-1" />
-                    Switch to Live
-                  </>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-gray-800 text-white border-gray-700">
-              <p>Switch to {strategy.isLive ? 'paper' : 'live'} trading</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
     </div>
   );

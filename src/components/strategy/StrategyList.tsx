@@ -5,14 +5,12 @@ import { StrategyCard } from "@/components/strategy/LiveTradingStrategyCard";
 
 interface StrategyListProps {
   strategies: Strategy[];
-  onToggleLiveMode: (id: number) => void;
   onEditQuantity: (id: number) => void;
   onViewDetails: (id: number) => void;
 }
 
 export const StrategyList: React.FC<StrategyListProps> = ({
   strategies,
-  onToggleLiveMode,
   onEditQuantity,
   onViewDetails
 }) => {
@@ -22,7 +20,6 @@ export const StrategyList: React.FC<StrategyListProps> = ({
         <StrategyCard 
           key={strategy.id}
           strategy={strategy}
-          onToggleLiveMode={() => onToggleLiveMode(strategy.id)}
           onEditQuantity={() => onEditQuantity(strategy.id)}
           onViewDetails={() => onViewDetails(strategy.id)}
         />

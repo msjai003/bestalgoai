@@ -26,7 +26,6 @@ const LiveTrading = () => {
     targetMode,
     handleTradingToggle,
     handleModeChange,
-    handleToggleLiveMode,
     handleOpenQuantityDialog,
     confirmModeChange,
     cancelModeChange,
@@ -63,7 +62,6 @@ const LiveTrading = () => {
         {strategies.length > 0 ? (
           <StrategyList 
             strategies={strategies}
-            onToggleLiveMode={handleToggleLiveMode}
             onEditQuantity={handleOpenQuantityDialog}
             onViewDetails={(id) => navigate(`/strategy-details/${id}`)}
           />
