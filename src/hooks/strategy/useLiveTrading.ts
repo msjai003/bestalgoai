@@ -167,6 +167,13 @@ export const useLiveTrading = () => {
           null,
           tradeType // Set to "paper" when disabling live mode
         );
+        
+        // Display toast message when switching to paper mode
+        toast({
+          title: "Paper Trading Enabled",
+          description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
+          variant: "default"
+        });
       }
       
       // Update local state
@@ -184,11 +191,6 @@ export const useLiveTrading = () => {
       
       setStrategies(updatedStrategies);
       localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
-      
-      toast({
-        title: isLive ? "Strategy set to live mode" : "Strategy set to paper mode",
-        description: `Strategy is now in ${isLive ? 'live' : 'paper'} trading mode`,
-      });
     } catch (error) {
       console.error("Error updating strategy mode:", error);
       toast({
