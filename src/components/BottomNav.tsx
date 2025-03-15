@@ -31,23 +31,21 @@ export const BottomNav = () => {
           <span className="text-xs text-gray-400 mt-1">Wishlist</span>
         </Link>
         
-        <div className="flex flex-col items-center p-2 relative">
+        <div className="flex flex-col items-center p-2">
           <Link to="/live-trading" className="flex flex-col items-center">
             <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
             <span className="text-xs text-gray-400 mt-1">Trading</span>
           </Link>
           
-          {location.pathname === '/live-trading' && (
-            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg p-2 shadow-lg border border-gray-700 flex items-center gap-2 whitespace-nowrap">
-              <span className={`text-xs ${!isPaperMode ? 'text-white font-semibold' : 'text-gray-300'}`}>Live</span>
-              <Switch 
-                checked={isPaperMode}
-                onCheckedChange={handleTradingModeChange}
-                className={isPaperMode ? "bg-green-500" : "bg-red-500"}
-              />
-              <span className={`text-xs ${isPaperMode ? 'text-green-400 font-semibold' : 'text-gray-300'}`}>Paper</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-[10px] ${!isPaperMode ? 'text-white font-semibold' : 'text-gray-400'}`}>Live</span>
+            <Switch 
+              checked={isPaperMode}
+              onCheckedChange={handleTradingModeChange}
+              className={`h-3 w-7 ${isPaperMode ? "bg-green-500" : "bg-red-500"}`}
+            />
+            <span className={`text-[10px] ${isPaperMode ? 'text-green-400 font-semibold' : 'text-gray-400'}`}>Paper</span>
+          </div>
         </div>
         
         <Link to="/settings" className="flex flex-col items-center p-2">
