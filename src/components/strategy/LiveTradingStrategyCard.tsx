@@ -29,16 +29,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">
-            {strategy.isLive ? "Live" : "Paper"}
-          </span>
-          <Switch
-            checked={strategy.isLive}
-            onCheckedChange={onToggleLiveMode}
-            className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
-          />
-        </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -100,12 +90,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </div>
       </div>
       
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">
+            {strategy.isLive ? "Live" : "Paper"}
+          </span>
+          <Switch
+            checked={strategy.isLive}
+            onCheckedChange={onToggleLiveMode}
+            className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
+          />
+        </div>
         <Button
           variant="outline"
           size="sm"
           onClick={onViewDetails}
-          className="text-white border-gray-700 hover:bg-gray-700 w-full"
+          className="text-white border-gray-700 hover:bg-gray-700 flex-1"
         >
           View Details
           <ChevronRight className="ml-1 h-4 w-4" />
