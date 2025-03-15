@@ -25,7 +25,7 @@ import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
 interface BrokerSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (brokerId: string) => void;
+  onConfirm: (brokerId: string, brokerName: string) => void;
   onCancel: () => void;
 }
 
@@ -87,8 +87,12 @@ export const BrokerSelectionDialog = ({
 
   const handleConfirm = () => {
     if (selectedBroker) {
-      console.log("Confirming with broker ID:", selectedBroker);
-      onConfirm(selectedBroker);
+      const selectedBrokerObj = brokers.find(broker => broker.id === selectedBroker);
+      if (selectedBrokerObj) {
+        console.log("Confirming with broker name:", selectedBrokerObj.broker_name);
+        // Pass both ID and name to the parent component
+        onConfirm(selectedBroker, selectedBrokerObj.broker_name);
+      }
     }
   };
 

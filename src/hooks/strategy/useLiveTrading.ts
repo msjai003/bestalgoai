@@ -80,20 +80,13 @@ export const useLiveTrading = () => {
     dialogState.resetDialogState();
   };
   
-  const handleBrokerSubmit = async (brokerId: string) => {
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
     if (dialogState.targetStrategyId === null || !user) return;
     
     try {
-      console.log("Processing broker selection:", brokerId);
+      console.log("Processing broker selection:", brokerId, "with name:", brokerName);
       
-      // Get broker name for display
-      const brokerData = await fetchBrokerById(brokerId);
-      if (!brokerData) throw new Error("Broker not found");
-      
-      const brokerName = brokerData.broker_name || "Unknown Broker";
-      console.log("Selected broker:", brokerName);
-      
-      // Update strategy in database
+      // Update strategy in database - now pass the brokerName directly
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
@@ -101,16 +94,17 @@ export const useLiveTrading = () => {
         user_id: user.id,
         strategy_id: dialogState.targetStrategyId,
         quantity: dialogState.pendingQuantity,
-        broker: brokerId
+        broker_name: brokerName
       });
       
+      // Pass brokerName directly to the broker name parameter instead of brokerId
       await updateStrategyLiveConfig(
         user.id,
         dialogState.targetStrategyId,
         strategy.name,
         strategy.description,
         dialogState.pendingQuantity,
-        brokerId
+        brokerName // Use broker name directly instead of ID
       );
       
       // Update local state
@@ -120,7 +114,7 @@ export const useLiveTrading = () => {
             ...s, 
             isLive: true, 
             quantity: dialogState.pendingQuantity, 
-            selectedBroker: brokerName 
+            selectedBroker: brokerName // Use broker name directly
           };
         }
         return s;

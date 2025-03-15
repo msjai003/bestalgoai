@@ -30,35 +30,20 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // For each strategy with a broker, fetch the broker name
-        const dbStrategies = await Promise.all(data.map(async (item) => {
-          let brokerName = "";
-          
-          // If there's a selected broker, fetch its name
-          if (item.selected_broker) {
-            try {
-              const brokerData = await fetchBrokerById(item.selected_broker);
-              brokerName = brokerData?.broker_name || "Unknown Broker";
-            } catch (err) {
-              console.error("Error fetching broker name:", err);
-              brokerName = "Unknown Broker";
-            }
+        // Map database strategies directly to our format
+        const dbStrategies = data.map(item => ({
+          id: item.strategy_id,
+          name: item.strategy_name,
+          description: item.strategy_description || "",
+          isWishlisted: true,
+          isLive: Boolean(item.quantity > 0 && item.selected_broker),
+          quantity: item.quantity || 0,
+          selectedBroker: item.selected_broker || "", // Use the broker name directly from the database
+          performance: {
+            winRate: "N/A",
+            avgProfit: "N/A",
+            drawdown: "N/A"
           }
-          
-          return {
-            id: item.strategy_id,
-            name: item.strategy_name,
-            description: item.strategy_description || "",
-            isWishlisted: true,
-            isLive: Boolean(item.quantity > 0 && item.selected_broker),
-            quantity: item.quantity || 0,
-            selectedBroker: brokerName,
-            performance: {
-              winRate: "N/A",
-              avgProfit: "N/A",
-              drawdown: "N/A"
-            }
-          };
         }));
         
         strategies = dbStrategies;
@@ -81,13 +66,13 @@ export const updateStrategyLiveConfig = async (
   strategyName: string,
   strategyDescription: string,
   quantity: number,
-  brokerId: string | null
+  brokerName: string | null // Changed from brokerId to brokerName
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
-    brokerId
+    brokerName // Store broker name directly
   });
   
   const { error } = await supabase
@@ -98,7 +83,7 @@ export const updateStrategyLiveConfig = async (
       strategy_name: strategyName,
       strategy_description: strategyDescription,
       quantity: quantity || 0,
-      selected_broker: brokerId
+      selected_broker: brokerName // Store broker name directly
     });
     
   if (error) {

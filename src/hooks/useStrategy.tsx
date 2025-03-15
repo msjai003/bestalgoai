@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -147,9 +146,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setQuantityDialogOpen(false);
     
     if (selectedStrategyId !== null) {
-      // Store the quantity but don't save to database yet
       setPendingQuantity(quantity);
-      // Open broker selection dialog
       setBrokerDialogOpen(true);
     }
   };
@@ -159,7 +156,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setSelectedStrategyId(null);
   };
 
-  const handleBrokerSubmit = async (brokerId: string) => {
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
     setBrokerDialogOpen(false);
     
     if (selectedStrategyId !== null && user) {
@@ -176,13 +173,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.name,
           strategy.description,
           pendingQuantity,
-          brokerId
+          brokerName
         );
         
         setStrategies(prev => 
           prev.map(s => 
             s.id === selectedStrategyId 
-              ? { ...s, quantity: pendingQuantity, selectedBroker: brokerId } 
+              ? { ...s, quantity: pendingQuantity, selectedBroker: brokerName } 
               : s
           )
         );
@@ -208,7 +205,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setBrokerDialogOpen(false);
     setSelectedStrategyId(null);
     setPendingQuantity(0);
-    // If we were switching to live mode but canceled broker selection, revert back to paper
     if (selectedStrategyId !== null) {
       updateLiveMode(selectedStrategyId, false);
     }

@@ -8,7 +8,7 @@ export const saveStrategyConfiguration = async (
   strategyName: string,
   strategyDescription: string,
   quantity: number,
-  brokerId: string
+  brokerName: string // Changed from brokerId to brokerName
 ): Promise<void> => {
   const { error } = await supabase
     .from('strategy_selections')
@@ -18,7 +18,7 @@ export const saveStrategyConfiguration = async (
       strategy_name: strategyName,
       strategy_description: strategyDescription,
       quantity: quantity,
-      selected_broker: brokerId
+      selected_broker: brokerName // Store broker name directly
     });
 
   if (error) throw error;
