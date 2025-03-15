@@ -1,7 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export const BottomNav = () => {
@@ -17,15 +17,16 @@ export const BottomNav = () => {
     }
   }, []);
 
-  const handleTradingModeChange = (checked: boolean) => {
-    setIsPaperMode(checked);
+  const handleTradingModeChange = () => {
+    const newMode = !isPaperMode;
+    setIsPaperMode(newMode);
     // Save mode to localStorage
-    localStorage.setItem('tradingMode', checked ? 'paper' : 'live');
+    localStorage.setItem('tradingMode', newMode ? 'paper' : 'live');
     
     toast({
-      title: checked ? "Paper Trading Mode" : "Live Trading Mode",
-      description: `Switched to ${checked ? "paper" : "live"} trading mode`,
-      variant: checked ? "default" : "destructive",
+      title: newMode ? "Paper Trading Mode" : "Live Trading Mode",
+      description: `Switched to ${newMode ? "paper" : "live"} trading mode`,
+      variant: newMode ? "default" : "destructive",
     });
   };
 
@@ -48,15 +49,18 @@ export const BottomNav = () => {
             <span className="text-xs text-gray-400 mt-1">Trading</span>
           </Link>
           
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-[10px] ${!isPaperMode ? 'text-white font-semibold' : 'text-gray-400'}`}>Live</span>
-            <Switch 
-              checked={isPaperMode}
-              onCheckedChange={handleTradingModeChange}
-              className={`h-3 w-7 ${isPaperMode ? "bg-green-500" : "bg-red-500"}`}
-            />
-            <span className={`text-[10px] ${isPaperMode ? 'text-green-400 font-semibold' : 'text-gray-400'}`}>Paper</span>
-          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleTradingModeChange}
+            className={`text-[10px] mt-1 h-6 px-2 py-0 rounded-full ${
+              isPaperMode 
+                ? "bg-green-500/20 text-green-400 hover:bg-green-500/30" 
+                : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+            }`}
+          >
+            {isPaperMode ? "Paper Mode" : "Live Mode"}
+          </Button>
         </div>
         
         <Link to="/settings" className="flex flex-col items-center p-2">
