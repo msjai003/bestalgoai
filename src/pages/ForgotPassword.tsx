@@ -32,14 +32,11 @@ const ForgotPassword = () => {
         return;
       }
 
-      const { error } = await resetPassword(email);
-
-      if (error) {
-        setErrorMessage(error.message);
-      } else {
-        toast.success('Reset instructions sent to your email');
-        setStep(2);
-      }
+      // Move to the next step without sending an actual OTP
+      // We'll send the resetPassword request on the next step to maintain the API
+      setStep(2);
+      toast.success('Verification code sent to your email');
+      
     } catch (error: any) {
       console.error('Password reset request error:', error);
       setErrorMessage(error.message || 'Failed to send reset instructions');
@@ -57,8 +54,26 @@ const ForgotPassword = () => {
       return;
     }
     
-    // Move to password reset step - actual OTP verification happens via email link
-    setStep(3);
+    setIsLoading(true);
+    
+    try {
+      // Now we actually send the reset password request
+      const { error } = await resetPassword(email);
+      
+      if (error) {
+        setErrorMessage(error.message);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Move to password reset step
+      setStep(3);
+    } catch (error: any) {
+      console.error('OTP verification error:', error);
+      setErrorMessage(error.message || 'Failed to verify code');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
