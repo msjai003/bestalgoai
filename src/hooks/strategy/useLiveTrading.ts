@@ -21,6 +21,7 @@ export const useLiveTrading = () => {
   const dialogState = useStrategyDialogs();
   const filterState = useStrategyFiltering(strategies);
   
+  // Load strategies when the component mounts or user changes
   useEffect(() => {
     const fetchStrategies = async () => {
       if (user) {
