@@ -129,7 +129,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="bg-gray-800 text-white border-gray-700">
               <p>Switch to {strategy.isLive ? 'paper' : 'live'} trading</p>
             </TooltipContent>
           </Tooltip>

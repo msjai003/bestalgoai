@@ -142,7 +142,7 @@ export const BrokerSelectionDialog = ({
               onClick={handleConfirm}
               disabled={!selectedBroker}
             >
-              OK
+              Confirm
             </Button>
           </DialogFooter>
         )}
