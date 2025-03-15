@@ -14,15 +14,18 @@ export const saveStrategyConfiguration = async (
   // First check if a record already exists
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
-    .select('id')
+    .select('id, trade_type')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
     .maybeSingle();
     
   if (checkError) throw checkError;
   
-  // If record exists, update it. Otherwise, insert a new one
+  // If record exists, update it but preserve existing trade_type if it was "paper trade"
   if (data) {
+    // Preserve "paper trade" setting if it was already set to that
+    const preservedTradeType = data.trade_type === "paper trade" ? "paper trade" : tradeType;
+    
     const { error } = await supabase
       .from('strategy_selections')
       .update({
@@ -30,7 +33,7 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
-        trade_type: tradeType
+        trade_type: preservedTradeType
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);

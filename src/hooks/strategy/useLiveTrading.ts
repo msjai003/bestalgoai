@@ -150,19 +150,21 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
+      // Explicitly set the trade type based on isLive parameter
       const tradeType = isLive ? "live trade" : "paper trade";
       
+      // Ensure we're passing the correct trade_type to the database
+      await updateStrategyLiveConfig(
+        user.id,
+        id,
+        strategy.name,
+        strategy.description,
+        isLive ? (strategy.quantity || 0) : 0,
+        isLive ? strategy.selectedBroker : null,
+        tradeType  // Pass correct trade_type explicitly
+      );
+      
       if (!isLive) {
-        await updateStrategyLiveConfig(
-          user.id,
-          id,
-          strategy.name,
-          strategy.description,
-          0,
-          null,
-          tradeType
-        );
-        
         toast({
           title: "Paper Trading Activated Successfully",
           description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
@@ -175,7 +177,7 @@ export const useLiveTrading = () => {
           return { 
             ...s, 
             isLive,
-            tradeType,
+            tradeType, // Update the tradeType property explicitly
             ...(!isLive && { quantity: 0, selectedBroker: "" })
           };
         }
