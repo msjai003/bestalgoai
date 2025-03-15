@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -55,7 +54,7 @@ export const BrokerSelectionDialog = ({
       try {
         console.log("Fetching brokers for user:", user.id);
         
-        // Use the fetchUserBrokers function from useStrategyDatabase
+        // Fetch only the brokers that the user has connected in Supabase
         const brokerData = await fetchUserBrokers(user.id);
         console.log("Fetched brokers:", brokerData);
         
