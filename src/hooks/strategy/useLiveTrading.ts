@@ -129,6 +129,7 @@ export const useLiveTrading = () => {
     
     setPendingQuantity(quantity);
     setShowQuantityDialog(false);
+    // Show broker selection dialog immediately after quantity is submitted
     setShowBrokerDialog(true);
   };
 
@@ -142,6 +143,8 @@ export const useLiveTrading = () => {
     if (targetStrategyId === null || !user) return;
     
     try {
+      console.log("Processing broker selection:", brokerId);
+      
       // Get broker name for display
       const { data: brokerData, error: brokerError } = await supabase
         .from('broker_credentials')
@@ -161,6 +164,13 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
+      console.log("Updating strategy in database:", {
+        user_id: user.id,
+        strategy_id: targetStrategyId,
+        quantity: pendingQuantity,
+        broker: brokerId
+      });
+      
       const { error } = await supabase
         .from('strategy_selections')
         .upsert({
@@ -172,7 +182,10 @@ export const useLiveTrading = () => {
           selected_broker: brokerId
         });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating strategy selection:', error);
+        throw error;
+      }
       
       // Update local state
       const updatedStrategies = strategies.map(s => {

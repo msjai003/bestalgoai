@@ -40,10 +40,9 @@ export const BrokerSelectionDialog = ({
 }: BrokerSelectionDialogProps) => {
   const [selectedBroker, setSelectedBroker] = useState("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  // Fetch available brokers from the database when dialog opens
   useEffect(() => {
     const fetchBrokers = async () => {
       if (!user || !open) return;
@@ -127,7 +126,7 @@ export const BrokerSelectionDialog = ({
               </SelectTrigger>
               <SelectContent className="bg-gray-700 border-gray-600 text-white">
                 {brokers.map((broker) => (
-                  <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600">
+                  <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600 text-white hover:bg-gray-600">
                     {broker.broker_name}
                   </SelectItem>
                 ))}
