@@ -132,7 +132,7 @@ export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: 
  * Fetches all available brokers for a user
  */
 export const fetchUserBrokers = async (userId: string): Promise<Array<{id: string, broker_name: string}>> => {
-  console.log("Fetching all brokers for user:", userId);
+  console.log("Fetching connected brokers for user:", userId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
@@ -145,6 +145,6 @@ export const fetchUserBrokers = async (userId: string): Promise<Array<{id: strin
     throw error;
   }
   
-  console.log("Fetched user brokers:", data);
+  console.log("Fetched connected brokers:", data);
   return data || [];
 };

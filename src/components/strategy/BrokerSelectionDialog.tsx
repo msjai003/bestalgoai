@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -55,8 +56,9 @@ export const BrokerSelectionDialog = ({
         console.log("Fetching brokers for user:", user.id);
         
         // Fetch only the brokers that the user has connected in Supabase
+        // This function now only returns brokers with status='connected'
         const brokerData = await fetchUserBrokers(user.id);
-        console.log("Fetched brokers:", brokerData);
+        console.log("Fetched connected brokers:", brokerData);
         
         setBrokers(brokerData || []);
         
@@ -112,9 +114,9 @@ export const BrokerSelectionDialog = ({
             >
               <X className="h-5 w-5" />
             </button>
-            <p className="text-gray-400 text-sm text-center mt-1">
-              Choose a broker to use with this strategy
-            </p>
+            <DialogDescription className="text-gray-400 text-sm text-center mt-1">
+              Choose a connected broker to use with this strategy
+            </DialogDescription>
           </DialogHeader>
         </div>
         

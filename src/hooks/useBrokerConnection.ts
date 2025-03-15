@@ -55,7 +55,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
     setIsSubmitting(true);
 
     try {
-      // Save broker credentials to the database
+      // Save broker credentials to the database with status 'connected'
       const { data, error } = await supabase
         .from('broker_credentials')
         .insert({
@@ -66,7 +66,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           password: credentials.password,
           api_key: credentials.apiKey || null,
           two_factor_secret: credentials.twoFactorSecret || null,
-          status: 'pending'
+          status: 'connected' // Changed from 'pending' to 'connected'
         });
 
       if (error) {
@@ -76,6 +76,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
         return;
       }
 
+      console.log("Broker connected successfully:", selectedBroker.name);
       setConnectionStep("success");
       setShowSuccessDialog(true);
     } catch (error) {
@@ -88,8 +89,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
 
   const handleComplete = () => {
     setShowSuccessDialog(false);
-    toast.success(`Your request has been submitted to our technical team`);
-    navigate('/'); // Changed from '/dashboard' to '/' to navigate to home page
+    toast.success(`Your broker ${selectedBroker.name} has been connected successfully`);
+    navigate('/'); // Navigate to home page
   };
 
   const handleBack = () => {

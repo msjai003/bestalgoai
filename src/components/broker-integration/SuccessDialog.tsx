@@ -27,10 +27,10 @@ export const SuccessDialog = ({
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <Check className="w-5 h-5 text-green-500" />
-            Submission Received
+            Broker Connected Successfully
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            Thank you for your submission. We have successfully recorded your details, and our technical team will be in touch with you shortly.
+            Your broker has been successfully connected. You can now use it for live trading strategies.
           </DialogDescription>
         </DialogHeader>
 
@@ -49,19 +49,19 @@ export const SuccessDialog = ({
             </div>
             <div className="ml-auto flex items-center">
               <span className="bg-green-900/50 text-green-500 text-xs px-2 py-1 rounded">
-                Pending
+                Connected
               </span>
             </div>
           </div>
 
           <div className="text-sm text-gray-400">
             <p className="flex items-center gap-1">
-              <Plug className="w-3 h-3" /> Request submitted at {new Date().toLocaleTimeString()}
+              <Plug className="w-3 h-3" /> Connected at {new Date().toLocaleTimeString()}
             </p>
             <p className="flex items-center gap-1 mt-1">
               <Shield className="w-3 h-3" /> {permissions.trading
-                ? "Trading access requested"
-                : "Read-only access requested"}
+                ? "Trading access enabled"
+                : "Read-only access enabled"}
             </p>
           </div>
         </div>
