@@ -20,6 +20,7 @@ import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -53,23 +54,16 @@ export const BrokerSelectionDialog = ({
       setIsLoading(true);
       try {
         console.log("Fetching brokers for user:", user.id);
-        const { data, error } = await supabase
-          .from('broker_credentials')
-          .select('id, broker_name')
-          .eq('user_id', user.id)
-          .eq('status', 'connected');
-          
-        if (error) {
-          console.error('Error fetching brokers:', error);
-          throw error;
-        }
         
-        console.log("Fetched brokers:", data);
-        setBrokers(data || []);
+        // Use the fetchUserBrokers function from useStrategyDatabase
+        const brokerData = await fetchUserBrokers(user.id);
+        console.log("Fetched brokers:", brokerData);
+        
+        setBrokers(brokerData || []);
         
         // Set default selection if brokers exist
-        if (data && data.length > 0) {
-          setSelectedBroker(data[0].id);
+        if (brokerData && brokerData.length > 0) {
+          setSelectedBroker(brokerData[0].id);
         } else {
           setSelectedBroker("");
         }
