@@ -39,7 +39,7 @@ export const BrokerSelectionDialog = ({
   onConfirm,
   onCancel,
 }: BrokerSelectionDialogProps) => {
-  const [selectedBroker, setSelectedBroker] = useState("");
+  const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
@@ -68,6 +68,11 @@ export const BrokerSelectionDialog = ({
         }
       } catch (error) {
         console.error('Error fetching brokers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load your connected brokers",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -76,7 +81,7 @@ export const BrokerSelectionDialog = ({
     if (open) {
       fetchBrokers();
     }
-  }, [user, open]);
+  }, [user, open, toast]);
 
   const handleConfirm = () => {
     if (selectedBroker) {
