@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChevronLeft, X, Info, AlertTriangle, ArrowRight } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const ForgotPassword = () => {
@@ -18,6 +18,7 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { resetPassword, updatePassword } = useAuth();
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +28,11 @@ const ForgotPassword = () => {
     try {
       if (!email.trim()) {
         setErrorMessage('Please enter your email address.');
+        setIsLoading(false);
         return;
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/reset-password',
-      });
+      const { error } = await resetPassword(email);
 
       if (error) {
         setErrorMessage(error.message);
@@ -85,11 +85,7 @@ const ForgotPassword = () => {
         return;
       }
 
-      // This is typically handled via the email link flow with Supabase
-      // This function handles when the user is already on a valid reset token session
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+      const { error } = await updatePassword(newPassword);
 
       if (error) {
         setErrorMessage(error.message);
