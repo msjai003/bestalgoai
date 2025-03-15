@@ -57,6 +57,7 @@ export const BrokerSelectionDialog = ({
           
         if (error) throw error;
         
+        console.log("Fetched brokers:", data);
         setBrokers(data || []);
         // Set default selection if brokers exist
         if (data && data.length > 0) {
@@ -76,6 +77,7 @@ export const BrokerSelectionDialog = ({
 
   const handleConfirm = () => {
     if (selectedBroker) {
+      console.log("Confirming with broker ID:", selectedBroker);
       onConfirm(selectedBroker);
     }
   };
