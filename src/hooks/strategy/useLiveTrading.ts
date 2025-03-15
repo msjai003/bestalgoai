@@ -61,7 +61,12 @@ export const useLiveTrading = () => {
       dialogState.setShowQuantityDialog(true);
     } else {
       try {
+        // Ensure we await the update to complete
         await updateLiveMode(dialogState.targetStrategyId, false);
+        toast({
+          title: "Success",
+          description: "Strategy switched to paper trading mode",
+        });
         dialogState.resetDialogState();
       } catch (error) {
         console.error("Error in confirmModeChange:", error);
@@ -107,22 +112,53 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
-      // Direct database update for live trading
-      const { error } = await supabase
+      // First check if a record exists
+      const { data: existingRecord, error: checkError } = await supabase
         .from('strategy_selections')
-        .update({
-          strategy_name: strategy.name,
-          strategy_description: strategy.description,
-          quantity: dialogState.pendingQuantity,
-          selected_broker: brokerName,
-          trade_type: "live trade"
-        })
+        .select('id')
         .eq('user_id', user.id)
-        .eq('strategy_id', dialogState.targetStrategyId);
+        .eq('strategy_id', dialogState.targetStrategyId)
+        .maybeSingle();
         
-      if (error) {
-        console.error("Database update error:", error);
-        throw error;
+      if (checkError) {
+        console.error("Error checking existing record:", checkError);
+        throw checkError;
+      }
+      
+      let updateResult;
+      
+      // If record exists, update it; otherwise, insert a new one
+      if (existingRecord) {
+        // Direct database update for live trading
+        updateResult = await supabase
+          .from('strategy_selections')
+          .update({
+            strategy_name: strategy.name,
+            strategy_description: strategy.description,
+            quantity: dialogState.pendingQuantity,
+            selected_broker: brokerName,
+            trade_type: "live trade"
+          })
+          .eq('user_id', user.id)
+          .eq('strategy_id', dialogState.targetStrategyId);
+      } else {
+        // Insert new record
+        updateResult = await supabase
+          .from('strategy_selections')
+          .insert({
+            user_id: user.id,
+            strategy_id: dialogState.targetStrategyId,
+            strategy_name: strategy.name,
+            strategy_description: strategy.description || "",
+            quantity: dialogState.pendingQuantity,
+            selected_broker: brokerName,
+            trade_type: "live trade"
+          });
+      }
+        
+      if (updateResult.error) {
+        console.error("Database update error:", updateResult.error);
+        throw updateResult.error;
       }
       
       // Update local state after successful database update
@@ -196,6 +232,7 @@ export const useLiveTrading = () => {
         let updateResult;
         
         if (data) {
+          console.log("Existing record found, updating to paper trade mode");
           updateResult = await supabase
             .from('strategy_selections')
             .update({
@@ -205,8 +242,11 @@ export const useLiveTrading = () => {
             })
             .eq('user_id', user.id)
             .eq('strategy_id', id);
+            
+          console.log("Update result:", updateResult);
         } else {
           // If no record exists, create one with paper trading defaults
+          console.log("No existing record found, creating new record with paper trade mode");
           updateResult = await supabase
             .from('strategy_selections')
             .insert({
@@ -218,6 +258,8 @@ export const useLiveTrading = () => {
               quantity: 0,
               selected_broker: ""
             });
+            
+          console.log("Insert result:", updateResult);
         }
         
         if (updateResult.error) {
@@ -254,6 +296,7 @@ export const useLiveTrading = () => {
         description: "Failed to update strategy mode",
         variant: "destructive"
       });
+      throw error; // Re-throw so caller can handle if needed
     }
   };
 
