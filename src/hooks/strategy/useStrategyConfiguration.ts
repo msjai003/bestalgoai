@@ -22,9 +22,13 @@ export const saveStrategyConfiguration = async (
   if (checkError) throw checkError;
   
   // If record exists, update it but preserve existing trade_type if it was "paper trade"
+  // or if the incoming trade_type is "paper trade"
   if (data) {
-    // Preserve "paper trade" setting if it was already set to that
-    const preservedTradeType = data.trade_type === "paper trade" ? "paper trade" : tradeType;
+    // If either the existing trade_type is "paper trade" or the requested trade_type is "paper trade",
+    // set to "paper trade". This ensures that once paper trade is selected, it remains set.
+    const preservedTradeType = data.trade_type === "paper trade" || tradeType === "paper trade" 
+      ? "paper trade" 
+      : tradeType;
     
     const { error } = await supabase
       .from('strategy_selections')

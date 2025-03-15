@@ -11,6 +11,7 @@ import {
   updateStrategyLiveConfig,
   fetchBrokerById
 } from "./useStrategyDatabase";
+import { saveStrategyConfiguration } from "./useStrategyConfiguration";
 
 export const useLiveTrading = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -150,26 +151,32 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
-      // Explicitly set the trade type based on isLive parameter
+      // Set trade type based on isLive parameter
       const tradeType = isLive ? "live trade" : "paper trade";
-      
-      // Ensure we're passing the correct trade_type to the database
-      await updateStrategyLiveConfig(
-        user.id,
-        id,
-        strategy.name,
-        strategy.description,
-        isLive ? (strategy.quantity || 0) : 0,
-        isLive ? strategy.selectedBroker : null,
-        tradeType  // Pass correct trade_type explicitly
-      );
-      
+
+      // Use saveStrategyConfiguration to ensure paper trade status is preserved
       if (!isLive) {
+        // When switching to paper mode, directly save to database with paper trade type
+        await saveStrategyConfiguration(
+          user.id,
+          id,
+          strategy.name,
+          strategy.description,
+          0, // Set quantity to 0 for paper trading
+          "", // Clear broker selection for paper trading
+          "paper trade" // Explicitly set trade_type to paper trade
+        );
+        
         toast({
           title: "Paper Trading Activated Successfully",
           description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
           variant: "default"
         });
+      } else {
+        // For live mode, we'll go through the regular flow with dialogs
+        // The trade type will be set in handleBrokerSubmit
+        // This code branch should not be reached directly from this function
+        console.log("Switching to live mode is handled through the quantity and broker dialogs");
       }
       
       const updatedStrategies = strategies.map(s => {
