@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   isLoading: boolean;
 }
 
@@ -213,8 +214,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+
+      if (error) {
+        console.error('Error during password reset:', error);
+        toast.error(error.message);
+        return { error };
+      }
+      
+      toast.success('Password reset instructions sent to your email');
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error during password reset:', error);
+      toast.error('Error sending password reset instructions');
+      return { error: error as Error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Error updating password:', error);
+        toast.error(error.message);
+        return { error };
+      }
+      
+      toast.success('Password updated successfully');
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      toast.error('Error updating password');
+      return { error: error as Error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      signIn, 
+      signUp, 
+      signOut, 
+      resetPassword,
+      updatePassword,
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
