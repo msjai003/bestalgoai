@@ -39,13 +39,13 @@ export const BottomNav = () => {
           
           {location.pathname === '/live-trading' && (
             <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg p-2 shadow-lg border border-gray-700 flex items-center gap-2 whitespace-nowrap">
-              <span className="text-xs text-gray-300">Live</span>
+              <span className={`text-xs ${!isPaperMode ? 'text-white font-semibold' : 'text-gray-300'}`}>Live</span>
               <Switch 
                 checked={isPaperMode}
                 onCheckedChange={handleTradingModeChange}
                 className={isPaperMode ? "bg-green-500" : "bg-red-500"}
               />
-              <span className="text-xs text-gray-300">Paper</span>
+              <span className={`text-xs ${isPaperMode ? 'text-green-400 font-semibold' : 'text-gray-300'}`}>Paper</span>
             </div>
           )}
         </div>
