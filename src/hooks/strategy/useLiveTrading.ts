@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +35,13 @@ export const useLiveTrading = () => {
   const handleToggleLiveMode = (id: number) => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
+      // If already in paper mode, don't prompt to change anything
+      if (!strategy.isLive) {
+        return;
+      }
+      
       dialogState.setTargetStrategyId(id);
-      dialogState.setTargetMode(strategy.isLive ? 'paper' : 'live');
+      dialogState.setTargetMode('paper');
       dialogState.setShowConfirmationDialog(true);
     }
   };

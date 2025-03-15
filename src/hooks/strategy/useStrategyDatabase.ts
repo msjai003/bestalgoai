@@ -36,10 +36,11 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           name: item.strategy_name,
           description: item.strategy_description || "",
           isWishlisted: true,
-          isLive: Boolean(item.quantity > 0 && item.selected_broker),
+          // Only set isLive to true if trade_type is explicitly "live trade"
+          isLive: item.trade_type === "live trade",
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
-          tradeType: item.trade_type || "paper trade", // Updated default to "paper trade"
+          tradeType: item.trade_type || "paper trade",
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
