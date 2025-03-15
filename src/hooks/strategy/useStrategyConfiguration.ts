@@ -8,7 +8,8 @@ export const saveStrategyConfiguration = async (
   strategyName: string,
   strategyDescription: string,
   quantity: number,
-  brokerName: string // Changed from brokerId to brokerName
+  brokerName: string,
+  tradeType: string = "live trade" // Add trade_type parameter with default value
 ): Promise<void> => {
   const { error } = await supabase
     .from('strategy_selections')
@@ -18,7 +19,8 @@ export const saveStrategyConfiguration = async (
       strategy_name: strategyName,
       strategy_description: strategyDescription,
       quantity: quantity,
-      selected_broker: brokerName // Store broker name directly
+      selected_broker: brokerName,
+      trade_type: tradeType // Include trade_type in the upsert operation
     });
 
   if (error) throw error;

@@ -126,6 +126,7 @@ export type Database = {
           strategy_description: string | null
           strategy_id: number
           strategy_name: string
+          trade_type: string | null
           user_id: string
         }
         Insert: {
@@ -136,6 +137,7 @@ export type Database = {
           strategy_description?: string | null
           strategy_id: number
           strategy_name: string
+          trade_type?: string | null
           user_id: string
         }
         Update: {
@@ -146,6 +148,7 @@ export type Database = {
           strategy_description?: string | null
           strategy_id?: number
           strategy_name?: string
+          trade_type?: string | null
           user_id?: string
         }
         Relationships: []

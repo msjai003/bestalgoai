@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-300 text-sm">Broker</span>
             <span className="text-white font-medium">{strategy.selectedBroker}</span>
+          </div>
+        )}
+        
+        {/* Add trade type display */}
+        {strategy.tradeType && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-300 text-sm">Trade Type</span>
+            <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400' : 'text-blue-400 border-blue-400'}`}>
+              {strategy.tradeType}
+            </Badge>
           </div>
         )}
         

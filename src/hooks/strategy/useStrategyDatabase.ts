@@ -38,7 +38,8 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           isWishlisted: true,
           isLive: Boolean(item.quantity > 0 && item.selected_broker),
           quantity: item.quantity || 0,
-          selectedBroker: item.selected_broker || "", // Use the broker name directly from the database
+          selectedBroker: item.selected_broker || "",
+          tradeType: item.trade_type || "paper", // Include trade_type in local state
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -66,13 +67,15 @@ export const updateStrategyLiveConfig = async (
   strategyName: string,
   strategyDescription: string,
   quantity: number,
-  brokerName: string | null // Changed from brokerId to brokerName
+  brokerName: string | null,
+  tradeType: string = "paper" // New parameter with default value
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
-    brokerName // Store broker name directly
+    brokerName,
+    tradeType // Log trade_type parameter
   });
   
   const { error } = await supabase
@@ -83,7 +86,8 @@ export const updateStrategyLiveConfig = async (
       strategy_name: strategyName,
       strategy_description: strategyDescription,
       quantity: quantity || 0,
-      selected_broker: brokerName // Store broker name directly
+      selected_broker: brokerName,
+      trade_type: tradeType // Save trade_type in database
     });
     
   if (error) {

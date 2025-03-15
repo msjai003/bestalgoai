@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -104,7 +105,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setStrategies(prev => 
       prev.map(strategy => {
         if (strategy.id === id) {
-          return { ...strategy, isLive };
+          return { 
+            ...strategy, 
+            isLive,
+            tradeType: isLive ? "live trade" : "paper" // Set tradeType based on isLive status
+          };
         }
         return strategy;
       })
@@ -167,19 +172,26 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
+        // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
           strategy.name,
           strategy.description,
           pendingQuantity,
-          brokerName
+          brokerName,
+          "live trade" // Set trade_type to "live trade"
         );
         
         setStrategies(prev => 
           prev.map(s => 
             s.id === selectedStrategyId 
-              ? { ...s, quantity: pendingQuantity, selectedBroker: brokerName } 
+              ? { 
+                  ...s, 
+                  quantity: pendingQuantity, 
+                  selectedBroker: brokerName,
+                  tradeType: "live trade" // Add tradeType to local state
+                } 
               : s
           )
         );

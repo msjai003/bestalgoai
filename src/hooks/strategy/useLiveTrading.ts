@@ -86,7 +86,7 @@ export const useLiveTrading = () => {
     try {
       console.log("Processing broker selection:", brokerId, "with name:", brokerName);
       
-      // Update strategy in database - now pass the brokerName directly
+      // Update strategy in database - now pass the brokerName directly and trade_type
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
@@ -94,17 +94,19 @@ export const useLiveTrading = () => {
         user_id: user.id,
         strategy_id: dialogState.targetStrategyId,
         quantity: dialogState.pendingQuantity,
-        broker_name: brokerName
+        broker_name: brokerName,
+        trade_type: "live trade"
       });
       
-      // Pass brokerName directly to the broker name parameter instead of brokerId
+      // Pass trade_type parameter with "live trade" value
       await updateStrategyLiveConfig(
         user.id,
         dialogState.targetStrategyId,
         strategy.name,
         strategy.description,
         dialogState.pendingQuantity,
-        brokerName // Use broker name directly instead of ID
+        brokerName,
+        "live trade" // Added trade_type parameter
       );
       
       // Update local state
@@ -114,7 +116,8 @@ export const useLiveTrading = () => {
             ...s, 
             isLive: true, 
             quantity: dialogState.pendingQuantity, 
-            selectedBroker: brokerName // Use broker name directly
+            selectedBroker: brokerName,
+            tradeType: "live trade" // Update local state with trade_type
           };
         }
         return s;
@@ -150,6 +153,9 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
+      // Set trade_type based on isLive status
+      const tradeType = isLive ? "live trade" : "paper";
+      
       if (!isLive) {
         // Update database
         await updateStrategyLiveConfig(
@@ -158,7 +164,8 @@ export const useLiveTrading = () => {
           strategy.name,
           strategy.description,
           0,
-          null
+          null,
+          tradeType // Set to "paper" when disabling live mode
         );
       }
       
@@ -168,6 +175,7 @@ export const useLiveTrading = () => {
           return { 
             ...s, 
             isLive,
+            tradeType,
             ...(!isLive && { quantity: 0, selectedBroker: "" })
           };
         }
