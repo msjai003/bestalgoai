@@ -78,21 +78,53 @@ export const updateStrategyLiveConfig = async (
     tradeType
   });
   
-  const { error } = await supabase
+  // First check if a record already exists for this user and strategy
+  const { data, error: checkError } = await supabase
     .from('strategy_selections')
-    .upsert({
-      user_id: userId,
-      strategy_id: strategyId,
-      strategy_name: strategyName,
-      strategy_description: strategyDescription,
-      quantity: quantity || 0,
-      selected_broker: brokerName,
-      trade_type: tradeType
-    });
+    .select('id')
+    .eq('user_id', userId)
+    .eq('strategy_id', strategyId)
+    .maybeSingle();
     
-  if (error) {
-    console.error("Error updating strategy config:", error);
-    throw error;
+  if (checkError) {
+    console.error("Error checking existing strategy:", checkError);
+    throw checkError;
+  }
+  
+  // If record exists, update it. Otherwise, insert a new one
+  let updateResult;
+  
+  if (data) {
+    // Update existing record
+    updateResult = await supabase
+      .from('strategy_selections')
+      .update({
+        quantity: quantity || 0,
+        selected_broker: brokerName,
+        trade_type: tradeType,
+        strategy_name: strategyName,
+        strategy_description: strategyDescription
+      })
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId);
+  } else {
+    // Insert new record
+    updateResult = await supabase
+      .from('strategy_selections')
+      .insert({
+        user_id: userId,
+        strategy_id: strategyId,
+        strategy_name: strategyName,
+        strategy_description: strategyDescription,
+        quantity: quantity || 0,
+        selected_broker: brokerName,
+        trade_type: tradeType
+      });
+  }
+  
+  if (updateResult.error) {
+    console.error("Error updating strategy config:", updateResult.error);
+    throw updateResult.error;
   }
 };
 
