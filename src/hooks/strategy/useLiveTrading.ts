@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -18,11 +17,9 @@ export const useLiveTrading = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // Use our custom hooks
   const dialogState = useStrategyDialogs();
   const filterState = useStrategyFiltering(strategies);
   
-  // Load strategies on component mount
   useEffect(() => {
     const fetchStrategies = async () => {
       if (user) {
@@ -34,7 +31,6 @@ export const useLiveTrading = () => {
     fetchStrategies();
   }, [user]);
 
-  // Handler functions for strategy actions
   const handleToggleLiveMode = (id: number) => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
@@ -54,11 +50,9 @@ export const useLiveTrading = () => {
     
     dialogState.setShowConfirmationDialog(false);
     
-    // If switching to live mode, open quantity dialog
     if (dialogState.targetMode === 'live') {
       dialogState.setShowQuantityDialog(true);
     } else {
-      // Switching to paper mode
       updateLiveMode(dialogState.targetStrategyId, false);
       dialogState.resetDialogState();
     }
@@ -71,7 +65,6 @@ export const useLiveTrading = () => {
   const handleQuantitySubmit = (quantity: number) => {
     if (dialogState.targetStrategyId === null) return;
     
-    // Use the helper method from useStrategyDialogs to transition from quantity to broker dialog
     dialogState.openBrokerDialogAfterQuantity(quantity);
   };
 
@@ -86,7 +79,6 @@ export const useLiveTrading = () => {
     try {
       console.log("Processing broker selection:", brokerId, "with name:", brokerName);
       
-      // Update strategy in database - now pass the brokerName directly and trade_type
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
@@ -98,7 +90,6 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
-      // Pass trade_type parameter with "live trade" value
       await updateStrategyLiveConfig(
         user.id,
         dialogState.targetStrategyId,
@@ -106,10 +97,9 @@ export const useLiveTrading = () => {
         strategy.description,
         dialogState.pendingQuantity,
         brokerName,
-        "live trade" // Added trade_type parameter
+        "live trade"
       );
       
-      // Update local state
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
           return { 
@@ -117,7 +107,7 @@ export const useLiveTrading = () => {
             isLive: true, 
             quantity: dialogState.pendingQuantity, 
             selectedBroker: brokerName,
-            tradeType: "live trade" // Update local state with trade_type
+            tradeType: "live trade"
           };
         }
         return s;
@@ -153,11 +143,9 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
-      // Set trade_type based on isLive status
       const tradeType = isLive ? "live trade" : "paper";
       
       if (!isLive) {
-        // Update database
         await updateStrategyLiveConfig(
           user.id,
           id,
@@ -165,10 +153,9 @@ export const useLiveTrading = () => {
           strategy.description,
           0,
           null,
-          tradeType // Set to "paper" when disabling live mode
+          tradeType
         );
         
-        // Display toast message when switching to paper mode
         toast({
           title: "Paper Trading Enabled",
           description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
@@ -176,7 +163,6 @@ export const useLiveTrading = () => {
         });
       }
       
-      // Update local state
       const updatedStrategies = strategies.map(s => {
         if (s.id === id) {
           return { 
@@ -202,7 +188,6 @@ export const useLiveTrading = () => {
   };
 
   return {
-    // Combine states and methods from both hooks
     ...filterState,
     strategies: filterState.filteredStrategies,
     ...dialogState,
