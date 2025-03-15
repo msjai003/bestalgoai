@@ -60,8 +60,17 @@ export const useLiveTrading = () => {
     if (dialogState.targetMode === 'live') {
       dialogState.setShowQuantityDialog(true);
     } else {
-      await updateLiveMode(dialogState.targetStrategyId, false);
-      dialogState.resetDialogState();
+      try {
+        await updateLiveMode(dialogState.targetStrategyId, false);
+        dialogState.resetDialogState();
+      } catch (error) {
+        console.error("Error in confirmModeChange:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update strategy mode",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -89,7 +98,8 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      console.log("Updating strategy in database:", {
+      // Explicitly set trade_type to "live trade" for clarity
+      console.log("Updating strategy in database for live trading:", {
         user_id: user.id,
         strategy_id: dialogState.targetStrategyId,
         quantity: dialogState.pendingQuantity,
@@ -97,6 +107,7 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
+      // Direct database update for live trading
       const { error } = await supabase
         .from('strategy_selections')
         .update({
@@ -109,8 +120,12 @@ export const useLiveTrading = () => {
         .eq('user_id', user.id)
         .eq('strategy_id', dialogState.targetStrategyId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Database update error:", error);
+        throw error;
+      }
       
+      // Update local state after successful database update
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
           return { 
@@ -155,7 +170,7 @@ export const useLiveTrading = () => {
       if (!strategy) return;
       
       if (!isLive) {
-        // When toggling to paper mode, update the database record to paper trade
+        // For paper trading, directly update the database
         console.log("Updating strategy to paper trading mode in database:", {
           user_id: user.id,
           strategy_id: id,
@@ -164,19 +179,50 @@ export const useLiveTrading = () => {
           selected_broker: ""
         });
         
-        const { error } = await supabase
+        // First check if the record exists
+        const { data, error: checkError } = await supabase
           .from('strategy_selections')
-          .update({
-            trade_type: "paper trade",
-            quantity: 0,
-            selected_broker: ""
-          })
+          .select('id')
           .eq('user_id', user.id)
-          .eq('strategy_id', id);
+          .eq('strategy_id', id)
+          .maybeSingle();
           
-        if (error) {
-          console.error("Error updating strategy to paper mode:", error);
-          throw error;
+        if (checkError) {
+          console.error("Error checking strategy record:", checkError);
+          throw checkError;
+        }
+        
+        // If the record exists, update it; otherwise, insert it
+        let updateResult;
+        
+        if (data) {
+          updateResult = await supabase
+            .from('strategy_selections')
+            .update({
+              trade_type: "paper trade",
+              quantity: 0,
+              selected_broker: ""
+            })
+            .eq('user_id', user.id)
+            .eq('strategy_id', id);
+        } else {
+          // If no record exists, create one with paper trading defaults
+          updateResult = await supabase
+            .from('strategy_selections')
+            .insert({
+              user_id: user.id,
+              strategy_id: id,
+              strategy_name: strategy.name,
+              strategy_description: strategy.description || "",
+              trade_type: "paper trade",
+              quantity: 0,
+              selected_broker: ""
+            });
+        }
+        
+        if (updateResult.error) {
+          console.error("Error updating strategy to paper mode:", updateResult.error);
+          throw updateResult.error;
         }
         
         toast({
