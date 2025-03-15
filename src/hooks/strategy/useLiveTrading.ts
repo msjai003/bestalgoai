@@ -4,196 +4,124 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./types";
-import { supabase } from "@/integrations/supabase/client";
+import { useStrategyDialogs } from "./useStrategyDialogs";
+import { useStrategyFiltering } from "./useStrategyFiltering";
+import { 
+  loadUserStrategies, 
+  updateStrategyLiveConfig,
+  fetchBrokerById
+} from "./useStrategyDatabase";
 
 export const useLiveTrading = () => {
-  const [timeFrame, setTimeFrame] = useState("1D");
-  const [isActive, setIsActive] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<"all" | "live" | "paper">("all");
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // Dialog states
-  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
-  const [showBrokerDialog, setShowBrokerDialog] = useState(false);
-  const [targetStrategyId, setTargetStrategyId] = useState<number | null>(null);
-  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
-  const [pendingQuantity, setPendingQuantity] = useState<number>(0);
-
+  // Use our custom hooks
+  const dialogState = useStrategyDialogs();
+  const filterState = useStrategyFiltering(strategies);
+  
+  // Load strategies on component mount
   useEffect(() => {
-    const loadStrategies = async () => {
-      // First try to get from localStorage for immediate display
-      const storedStrategies = localStorage.getItem('wishlistedStrategies');
-      if (storedStrategies) {
-        try {
-          const parsedStrategies = JSON.parse(storedStrategies);
-          setStrategies(parsedStrategies);
-        } catch (error) {
-          console.error("Error parsing wishlisted strategies:", error);
-        }
-      }
-      
-      // If user is logged in, fetch strategies from database
+    const fetchStrategies = async () => {
       if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('strategy_selections')
-            .select('*')
-            .eq('user_id', user.id);
-            
-          if (error) throw error;
-          
-          if (data && data.length > 0) {
-            // Map database data to Strategy type
-            const dbStrategies: Strategy[] = data.map(item => ({
-              id: item.strategy_id,
-              name: item.strategy_name,
-              description: item.strategy_description || "",
-              isWishlisted: true,
-              isLive: Boolean(item.quantity > 0 && item.selected_broker),
-              quantity: item.quantity || 0,
-              selectedBroker: item.selected_broker || "",
-              performance: {
-                winRate: "N/A",
-                avgProfit: "N/A",
-                drawdown: "N/A"
-              }
-            }));
-            
-            setStrategies(dbStrategies);
-            localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));
-          }
-        } catch (error) {
-          console.error("Error fetching strategies from database:", error);
-        }
+        const loadedStrategies = await loadUserStrategies(user.id);
+        setStrategies(loadedStrategies);
       }
     };
     
-    loadStrategies();
+    fetchStrategies();
   }, [user]);
 
-  const handleTradingToggle = () => {
-    setIsActive(!isActive);
-    
-    toast({
-      title: !isActive ? "Trading started" : "Trading stopped",
-      description: !isActive ? "Your strategies are now actively trading" : "Your strategies are now paused",
-    });
-  };
-
-  const handleModeChange = (mode: "all" | "live" | "paper") => {
-    setSelectedMode(mode);
-  };
-
+  // Handler functions for strategy actions
   const handleToggleLiveMode = (id: number) => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
-      setTargetStrategyId(id);
-      setTargetMode(strategy.isLive ? 'paper' : 'live');
-      setShowConfirmationDialog(true);
+      dialogState.setTargetStrategyId(id);
+      dialogState.setTargetMode(strategy.isLive ? 'paper' : 'live');
+      dialogState.setShowConfirmationDialog(true);
     }
   };
 
   const handleOpenQuantityDialog = (id: number) => {
-    setTargetStrategyId(id);
-    setShowQuantityDialog(true);
+    dialogState.setTargetStrategyId(id);
+    dialogState.setShowQuantityDialog(true);
   };
 
   const confirmModeChange = () => {
-    if (targetStrategyId === null || targetMode === null) return;
+    if (dialogState.targetStrategyId === null || dialogState.targetMode === null) return;
     
-    setShowConfirmationDialog(false);
+    dialogState.setShowConfirmationDialog(false);
     
     // If switching to live mode, open quantity dialog
-    if (targetMode === 'live') {
-      setShowQuantityDialog(true);
+    if (dialogState.targetMode === 'live') {
+      dialogState.setShowQuantityDialog(true);
     } else {
       // Switching to paper mode
-      updateLiveMode(targetStrategyId, false);
-      setTargetStrategyId(null);
-      setTargetMode(null);
+      updateLiveMode(dialogState.targetStrategyId, false);
+      dialogState.resetDialogState();
     }
   };
 
   const cancelModeChange = () => {
-    setShowConfirmationDialog(false);
-    setTargetStrategyId(null);
-    setTargetMode(null);
+    dialogState.resetDialogState();
   };
 
   const handleQuantitySubmit = (quantity: number) => {
-    if (targetStrategyId === null) return;
+    if (dialogState.targetStrategyId === null) return;
     
-    setPendingQuantity(quantity);
-    setShowQuantityDialog(false);
+    dialogState.setPendingQuantity(quantity);
+    dialogState.setShowQuantityDialog(false);
     // Show broker selection dialog immediately after quantity is submitted
-    setShowBrokerDialog(true);
+    dialogState.setShowBrokerDialog(true);
   };
 
   const handleCancelQuantity = () => {
-    setShowQuantityDialog(false);
-    setTargetStrategyId(null);
-    setTargetMode(null);
+    dialogState.setShowQuantityDialog(false);
+    dialogState.resetDialogState();
   };
   
   const handleBrokerSubmit = async (brokerId: string) => {
-    if (targetStrategyId === null || !user) return;
+    if (dialogState.targetStrategyId === null || !user) return;
     
     try {
       console.log("Processing broker selection:", brokerId);
       
       // Get broker name for display
-      const { data: brokerData, error: brokerError } = await supabase
-        .from('broker_credentials')
-        .select('broker_name')
-        .eq('id', brokerId)
-        .single();
-        
-      if (brokerError) {
-        console.error('Error fetching broker name:', brokerError);
-        throw brokerError;
-      }
+      const brokerData = await fetchBrokerById(brokerId);
+      if (!brokerData) throw new Error("Broker not found");
       
-      const brokerName = brokerData?.broker_name || "Unknown Broker";
+      const brokerName = brokerData.broker_name || "Unknown Broker";
       console.log("Selected broker:", brokerName);
       
       // Update strategy in database
-      const strategy = strategies.find(s => s.id === targetStrategyId);
+      const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
       console.log("Updating strategy in database:", {
         user_id: user.id,
-        strategy_id: targetStrategyId,
-        quantity: pendingQuantity,
+        strategy_id: dialogState.targetStrategyId,
+        quantity: dialogState.pendingQuantity,
         broker: brokerId
       });
       
-      const { error } = await supabase
-        .from('strategy_selections')
-        .upsert({
-          user_id: user.id,
-          strategy_id: targetStrategyId,
-          strategy_name: strategy.name,
-          strategy_description: strategy.description,
-          quantity: pendingQuantity,
-          selected_broker: brokerId
-        });
-        
-      if (error) {
-        console.error('Error updating strategy selection:', error);
-        throw error;
-      }
+      await updateStrategyLiveConfig(
+        user.id,
+        dialogState.targetStrategyId,
+        strategy.name,
+        strategy.description,
+        dialogState.pendingQuantity,
+        brokerId
+      );
       
       // Update local state
       const updatedStrategies = strategies.map(s => {
-        if (s.id === targetStrategyId) {
+        if (s.id === dialogState.targetStrategyId) {
           return { 
             ...s, 
             isLive: true, 
-            quantity: pendingQuantity, 
+            quantity: dialogState.pendingQuantity, 
             selectedBroker: brokerName 
           };
         }
@@ -215,18 +143,12 @@ export const useLiveTrading = () => {
         variant: "destructive"
       });
     } finally {
-      setShowBrokerDialog(false);
-      setTargetStrategyId(null);
-      setTargetMode(null);
-      setPendingQuantity(0);
+      dialogState.resetDialogState();
     }
   };
   
   const handleCancelBroker = () => {
-    setShowBrokerDialog(false);
-    setTargetStrategyId(null);
-    setTargetMode(null);
-    setPendingQuantity(0);
+    dialogState.resetDialogState();
   };
   
   const updateLiveMode = async (id: number, isLive: boolean) => {
@@ -238,16 +160,14 @@ export const useLiveTrading = () => {
       
       if (!isLive) {
         // Update database
-        const { error } = await supabase
-          .from('strategy_selections')
-          .update({ 
-            quantity: 0,
-            selected_broker: null 
-          })
-          .eq('user_id', user.id)
-          .eq('strategy_id', id);
-          
-        if (error) throw error;
+        await updateStrategyLiveConfig(
+          user.id,
+          id,
+          strategy.name,
+          strategy.description,
+          0,
+          null
+        );
       }
       
       // Update local state
@@ -279,29 +199,11 @@ export const useLiveTrading = () => {
     }
   };
 
-  const filteredStrategies = selectedMode === "all" 
-    ? strategies 
-    : strategies.filter(strategy => 
-        (selectedMode === "live" && strategy.isLive) || 
-        (selectedMode === "paper" && !strategy.isLive)
-      );
-
   return {
-    timeFrame,
-    setTimeFrame,
-    isActive,
-    selectedMode,
-    strategies: filteredStrategies,
-    showConfirmationDialog,
-    setShowConfirmationDialog,
-    showQuantityDialog,
-    setShowQuantityDialog,
-    showBrokerDialog,
-    setShowBrokerDialog,
-    targetStrategyId,
-    targetMode,
-    handleTradingToggle,
-    handleModeChange,
+    // Combine states and methods from both hooks
+    ...filterState,
+    strategies: filterState.filteredStrategies,
+    ...dialogState,
     handleToggleLiveMode,
     handleOpenQuantityDialog,
     confirmModeChange,
