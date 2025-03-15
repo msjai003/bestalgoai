@@ -55,6 +55,12 @@ export const useStrategyDialogs = () => {
     });
   };
 
+  const openBrokerDialogAfterQuantity = (quantity: number) => {
+    setPendingQuantity(quantity);
+    setShowQuantityDialog(false);
+    setShowBrokerDialog(true);
+  };
+
   return {
     ...dialogState,
     setShowConfirmationDialog,
@@ -63,6 +69,7 @@ export const useStrategyDialogs = () => {
     setTargetStrategyId,
     setTargetMode,
     setPendingQuantity,
-    resetDialogState
+    resetDialogState,
+    openBrokerDialogAfterQuantity
   };
 };
