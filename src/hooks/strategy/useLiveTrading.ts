@@ -149,9 +149,13 @@ export const useLiveTrading = () => {
         .eq('id', brokerId)
         .single();
         
-      if (brokerError) throw brokerError;
+      if (brokerError) {
+        console.error('Error fetching broker name:', brokerError);
+        throw brokerError;
+      }
       
       const brokerName = brokerData?.broker_name || "Unknown Broker";
+      console.log("Selected broker:", brokerName);
       
       // Update strategy in database
       const strategy = strategies.find(s => s.id === targetStrategyId);
