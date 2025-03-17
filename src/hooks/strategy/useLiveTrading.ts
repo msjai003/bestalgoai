@@ -61,26 +61,28 @@ export const useLiveTrading = () => {
     
     dialogState.setShowConfirmationDialog(false);
     
-    if (dialogState.targetMode === 'live') {
-      // User is switching from paper to live mode
-      dialogState.setShowQuantityDialog(true);
-    } else {
-      try {
+    try {
+      if (dialogState.targetMode === 'live') {
+        // User is switching from paper to live mode
+        dialogState.setShowQuantityDialog(true);
+      } else {
+        // User is switching from live to paper mode
         // Ensure we await the update to complete
         await updateLiveMode(dialogState.targetStrategyId, false);
         toast({
           title: "Success",
           description: "Strategy switched to paper trading mode",
         });
-        dialogState.resetDialogState();
-      } catch (error) {
-        console.error("Error in confirmModeChange:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update strategy mode",
-          variant: "destructive"
-        });
       }
+    } catch (error) {
+      console.error("Error in confirmModeChange:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update strategy mode",
+        variant: "destructive"
+      });
+    } finally {
+      dialogState.resetDialogState();
     }
   };
 

@@ -44,6 +44,7 @@ export const TradingModeConfirmationDialog = ({
     } else {
       onCancel(); // Paper trading
     }
+    onOpenChange(false); // Close dialog after submission
   };
 
   return (
