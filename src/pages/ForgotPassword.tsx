@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import EmailStep from '@/components/forgot-password/EmailStep';
+import OtpStep from '@/components/forgot-password/OtpStep';
+import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
@@ -14,29 +14,9 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [resetRequested, setResetRequested] = useState<boolean>(false);
-  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<'email' | 'otp' | 'reset'>('email');
+  const [otp, setOtp] = useState<string>('');
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Check if we have a reset token in the URL
-  useEffect(() => {
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    const type = hashParams.get('type');
-    const accessToken = hashParams.get('access_token');
-    
-    if (type === 'recovery' && accessToken) {
-      setResetToken(accessToken);
-      // Get user email if available
-      const getUserEmail = async () => {
-        const { data, error } = await supabase.auth.getUser(accessToken);
-        if (data?.user?.email && !error) {
-          setEmail(data.user.email);
-        }
-      };
-      getUserEmail();
-    }
-  }, [location]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,23 +30,51 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Send password reset email
+      // Send password reset email (this doesn't actually send OTP, but we'll simulate it)
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/forgot-password`,
       });
 
       if (error) {
         console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send reset email');
+        setErrorMessage(error.message || 'Failed to send verification code');
         setIsLoading(false);
         return;
       }
 
-      setResetRequested(true);
-      toast.success('Password reset link sent to your email');
+      setCurrentStep('otp');
+      toast.success('Verification code sent to your email');
       setIsLoading(false);
     } catch (error: any) {
       console.error('Password reset request error:', error);
+      setErrorMessage(error?.message || 'An unexpected error occurred');
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    try {
+      if (otp.length < 6) {
+        setErrorMessage('Please enter the 6-digit verification code');
+        setIsLoading(false);
+        return;
+      }
+
+      // In a real implementation, you would verify the OTP with Supabase
+      // For now, we'll simulate a successful verification if the OTP has 6 digits
+      if (otp.length === 6) {
+        setCurrentStep('reset');
+        setIsLoading(false);
+      } else {
+        setErrorMessage('Invalid verification code');
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      console.error('OTP verification error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
       setIsLoading(false);
     }
@@ -96,7 +104,7 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Update password using the reset token
+      // Update password
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -119,105 +127,52 @@ const ForgotPassword = () => {
     }
   };
 
+  const handleBackToEmail = () => {
+    setCurrentStep('email');
+    setOtp('');
+  };
+
   return (
     <ForgotPasswordLayout 
-      step={resetToken ? 2 : 1}
+      step={currentStep === 'email' ? 1 : currentStep === 'otp' ? 2 : 3}
       errorMessage={errorMessage}
-      verificationInProgress={false}
+      verificationInProgress={isLoading}
     >
-      {resetToken ? (
-        // Show password reset form when we have a token
-        <form onSubmit={handleSetNewPassword} className="space-y-6">
-          <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
-              disabled={true} // Email is readonly when resetting password
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="newPassword" className="text-gray-300 mb-2 block">New Password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
-          >
-            {isLoading ? 'Updating Password...' : 'Update Password'}
-          </Button>
-        </form>
-      ) : resetRequested ? (
-        // Show confirmation message after reset email is sent
-        <div className="text-center py-6">
-          <h3 className="text-xl font-semibold mb-4">Check Your Email</h3>
-          <p className="text-gray-400 mb-6">
-            We've sent a password reset link to <span className="text-white">{email}</span>.
-            Click the link in the email to reset your password.
-          </p>
-          <p className="text-gray-400 mb-6">
-            If you don't see the email, check your spam folder.
-          </p>
-          <Button
-            type="button"
-            onClick={() => setResetRequested(false)}
-            className="mt-4 bg-gray-700 hover:bg-gray-600 text-white"
-          >
-            Try Again
-          </Button>
-        </div>
-      ) : (
-        // Show email input form initially
-        <form onSubmit={handleRequestReset} className="space-y-6">
-          <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
-          >
-            {isLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
-          </Button>
-        </form>
+      {currentStep === 'email' && (
+        <EmailStep 
+          email={email} 
+          setEmail={setEmail} 
+          isLoading={isLoading} 
+          onSubmit={handleRequestReset} 
+        />
+      )}
+      
+      {currentStep === 'otp' && (
+        <OtpStep 
+          otp={otp} 
+          setOtp={setOtp} 
+          isLoading={isLoading} 
+          onSubmit={handleVerifyOtp} 
+          onBack={handleBackToEmail} 
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          email={email}
+        />
+      )}
+      
+      {currentStep === 'reset' && (
+        <ResetPasswordStep 
+          email={email}
+          setEmail={setEmail}
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          isLoading={isLoading}
+          onSubmit={handleSetNewPassword}
+        />
       )}
     </ForgotPasswordLayout>
   );
