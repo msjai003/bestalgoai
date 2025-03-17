@@ -155,7 +155,8 @@ const ForgotPassword = () => {
             setConfirmPassword={setConfirmPassword}
             isLoading={isLoading} 
             onSubmit={handleResetPassword} 
-            onBack={() => setStep(1)} 
+            onBack={() => setStep(1)}
+            email={email} // Pass the email to OtpStep
           />
         );
       default:

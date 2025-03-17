@@ -15,6 +15,7 @@ interface OtpStepProps {
   setNewPassword: (password: string) => void;
   confirmPassword: string;
   setConfirmPassword: (password: string) => void;
+  email: string; // Add email prop
 }
 
 const OtpStep: React.FC<OtpStepProps> = ({ 
@@ -26,10 +27,17 @@ const OtpStep: React.FC<OtpStepProps> = ({
   newPassword,
   setNewPassword,
   confirmPassword,
-  setConfirmPassword
+  setConfirmPassword,
+  email // Include email prop
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <div className="bg-gray-800/30 p-3 rounded-md mb-4">
+        <p className="text-sm text-gray-300">
+          <span className="text-gray-400">Recovery email:</span> {email}
+        </p>
+      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="otp" className="text-gray-300 mb-2 block">Verification Code</Label>
         <p className="text-sm text-gray-400 mb-4">
