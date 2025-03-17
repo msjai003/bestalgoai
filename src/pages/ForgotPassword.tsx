@@ -15,6 +15,7 @@ const ForgotPassword = () => {
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [resendLoading, setResendLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<'email' | 'otp' | 'reset'>('email');
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ const ForgotPassword = () => {
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const { resetPassword, updatePassword } = useAuth();
 
   // Check for token in URL when component mounts (for when user returns after clicking email link)
   useEffect(() => {
@@ -118,12 +118,17 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Use the resetPassword method from useAuth context
-      const { error } = await resetPassword(email);
+      // Send OTP to user's email instead of reset link
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false,
+        }
+      });
       
       if (error) {
-        console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send verification email');
+        console.error('OTP request error:', error);
+        setErrorMessage(error.message || 'Failed to send verification code');
         setIsLoading(false);
         return;
       }
@@ -137,13 +142,48 @@ const ForgotPassword = () => {
       
       // Move to OTP step
       setCurrentStep('otp');
-      toast.success('Password reset link sent to your email. Please check your inbox.');
+      toast.success('Verification code sent to your email. Please check your inbox.');
       
     } catch (error: any) {
       console.error('Password reset request error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setErrorMessage(null);
+
+    try {
+      if (!email.trim()) {
+        setErrorMessage('Email address is missing.');
+        setResendLoading(false);
+        return;
+      }
+
+      // Resend OTP to user's email
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false,
+        }
+      });
+      
+      if (error) {
+        console.error('Resend OTP error:', error);
+        setErrorMessage(error.message || 'Failed to resend verification code');
+        setResendLoading(false);
+        return;
+      }
+      
+      toast.success('New verification code sent to your email.');
+    } catch (error: any) {
+      console.error('Resend OTP error:', error);
+      setErrorMessage(error?.message || 'Failed to resend verification code');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -159,53 +199,46 @@ const ForgotPassword = () => {
         return;
       }
 
-      // In a real implementation, verify OTP with Supabase
-      // For demo purposes, we'll directly move to the reset step
-      // and assume the OTP is valid
-      
-      if (!verificationId) {
-        setErrorMessage('Verification session expired. Please restart the process.');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Get stored email
-      const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
-      if (!storedEmail) {
-        setErrorMessage('Verification session not found. Please restart the process.');
-        setIsLoading(false);
-        return;
-      }
-      
-      setEmail(storedEmail);
-      
-      // Attempt to verify OTP through Supabase
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          email: storedEmail,
-          token: otp,
-          type: 'recovery'
-        });
-        
-        if (error) {
-          console.error('OTP verification error:', error);
-          setErrorMessage('Invalid verification code. Please try again.');
+      if (!email) {
+        if (!verificationId) {
+          setErrorMessage('Verification session expired. Please restart the process.');
           setIsLoading(false);
           return;
         }
         
-        // Move to reset step
-        setCurrentStep('reset');
-        toast.success('Verification successful');
-      } catch (verifyError: any) {
-        console.error('Error during OTP verification:', verifyError);
-        setErrorMessage(verifyError?.message || 'Error verifying code');
-        setIsLoading(false);
+        // Get stored email
+        const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
+        if (!storedEmail) {
+          setErrorMessage('Verification session not found. Please restart the process.');
+          setIsLoading(false);
+          return;
+        }
+        
+        setEmail(storedEmail);
       }
       
+      // Attempt to verify OTP through Supabase
+      const { error, data } = await supabase.auth.verifyOtp({
+        email: email,
+        token: otp,
+        type: 'email'
+      });
+      
+      if (error) {
+        console.error('OTP verification error:', error);
+        setErrorMessage('Invalid verification code. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('OTP verification successful:', data);
+      
+      // Move to reset step
+      setCurrentStep('reset');
+      toast.success('Verification successful');
     } catch (error: any) {
-      console.error('OTP verification error:', error);
-      setErrorMessage(error?.message || 'An unexpected error occurred');
+      console.error('Error during OTP verification:', error);
+      setErrorMessage(error?.message || 'Error verifying code');
     } finally {
       setIsLoading(false);
     }
@@ -235,65 +268,35 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Use the updatePassword method from useAuth context
-      const { error } = await updatePassword(newPassword);
+      // Update password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
       
       if (error) {
         console.error('Password update error:', error);
         
-        // Handle the "Auth session missing" error
         if (error.message.includes('Auth session missing')) {
-          try {
-            // Try to directly update the password using Supabase's recovery flow
-            const { data, error: updateError } = await supabase.auth.updateUser({
-              password: newPassword
-            });
-            
-            if (updateError) {
-              console.error('Password update error after handling missing session:', updateError);
-              setErrorMessage(updateError.message || 'Failed to update password');
-              setIsLoading(false);
-              return;
-            }
-            
-            if (data) {
-              // Password updated successfully
-              toast.success('Password has been reset successfully');
-              
-              // Clean up verification session if it exists
-              if (verificationId) {
-                sessionStorage.removeItem(`email_${verificationId}`);
-              }
-              
-              setTimeout(() => {
-                navigate('/auth');
-              }, 1500);
-              return;
-            }
-          } catch (updateError: any) {
-            console.error('Error during direct password update:', updateError);
-            setErrorMessage('Authentication error. Please try using the reset link from your email again.');
-            setIsLoading(false);
-            return;
-          }
+          setErrorMessage('Authentication session expired. Please restart the password reset process.');
         } else {
           setErrorMessage(error.message || 'Failed to update password');
-          setIsLoading(false);
-          return;
-        }
-      } else {
-        // Password updated successfully
-        toast.success('Password has been reset successfully');
-        
-        // Clean up verification session if it exists
-        if (verificationId) {
-          sessionStorage.removeItem(`email_${verificationId}`);
         }
         
-        setTimeout(() => {
-          navigate('/auth');
-        }, 1500);
+        setIsLoading(false);
+        return;
       }
+      
+      // Password updated successfully
+      toast.success('Password has been reset successfully');
+      
+      // Clean up verification session if it exists
+      if (verificationId) {
+        sessionStorage.removeItem(`email_${verificationId}`);
+      }
+      
+      setTimeout(() => {
+        navigate('/auth');
+      }, 1500);
     } catch (error: any) {
       console.error('Password update error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
@@ -335,6 +338,8 @@ const ForgotPassword = () => {
           confirmPassword={confirmPassword}
           setConfirmPassword={setConfirmPassword}
           email={email}
+          onResendOtp={handleResendOtp}
+          resendLoading={resendLoading}
         />
       )}
       
