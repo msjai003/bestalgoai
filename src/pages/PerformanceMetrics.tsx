@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PerformanceMetricsSection } from '@/components/performance/PerformanceMetricsSection';
 import { AchievementsSection } from '@/components/performance/AchievementsSection';
@@ -13,9 +12,9 @@ const PerformanceMetrics = () => {
       <UserProfileHeader />
       
       <main className="p-4 space-y-6">
-        <PerformanceMetricsSection />
         <AchievementsSection />
         <LeaderboardSection />
+        <PerformanceMetricsSection />
       </main>
       
       <BottomNav />
