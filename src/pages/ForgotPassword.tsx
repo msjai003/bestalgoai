@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +33,11 @@ const ForgotPassword = () => {
       const params = new URLSearchParams(window.location.search);
       const accessToken = params.get('access_token');
       const type = params.get('type');
+      const userEmail = params.get('email');
+      
+      if (userEmail) {
+        setEmail(userEmail);
+      }
       
       if (accessToken && type === 'recovery') {
         setVerificationInProgress(true);
@@ -48,6 +54,9 @@ const ForgotPassword = () => {
             setVerificationInProgress(false);
           } else {
             setResetStage('reset');
+            if (data.user?.email) {
+              setEmail(data.user.email);
+            }
             toast.success('Email verified successfully! Please set your new password');
             setVerificationInProgress(false);
           }
