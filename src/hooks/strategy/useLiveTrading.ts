@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -163,6 +164,7 @@ export const useLiveTrading = () => {
         throw updateResult.error;
       }
       
+      // Update the local state immediately to reflect changes
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
           return { 
@@ -269,11 +271,12 @@ export const useLiveTrading = () => {
         });
       }
       
+      // Immediately update UI to reflect changes
       const updatedStrategies = strategies.map(s => {
         if (s.id === id) {
           return { 
             ...s, 
-            isLive,
+            isLive: isLive,
             tradeType: isLive ? "live trade" : "paper trade",
             ...(!isLive && { quantity: 0, selectedBroker: "" })
           };
