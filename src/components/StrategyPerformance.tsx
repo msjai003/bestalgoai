@@ -2,11 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from '@/components/ui/chart';
-import { 
   Line, 
   LineChart, 
   XAxis, 
@@ -14,14 +9,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Legend,
-  Area,
-  AreaChart,
   Tooltip,
   Bar,
   BarChart
 } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { predefinedStrategies } from '@/constants/strategy-data';
+import { Progress } from '@/components/ui/progress';
 
 // Sample performance data
 const performanceData = [
@@ -34,42 +28,11 @@ const performanceData = [
 ];
 
 const strategyComparisonData = [
-  { name: 'Momentum Breakout', win: 72, loss: 28 },
-  { name: 'Mean Reversion', win: 68, loss: 32 },
-  { name: 'Trend Following', win: 58, loss: 42 },
-  { name: 'Scalping Strategy', win: 66, loss: 34 },
+  { name: 'Momentum Breakout', performance: 72, color: '#FF00D4' },
+  { name: 'Mean Reversion', performance: 68, color: '#9333ea' },
+  { name: 'Trend Following', performance: 58, color: '#818cf8' },
+  { name: 'Scalping Strategy', performance: 66, color: '#60a5fa' },
 ];
-
-const chartConfig = {
-  profit: {
-    label: 'Profit',
-    theme: {
-      light: '#10b981',
-      dark: '#10b981',
-    },
-  },
-  trades: {
-    label: 'Trades',
-    theme: {
-      light: '#6366f1',
-      dark: '#818cf8',
-    },
-  },
-  win: {
-    label: 'Win',
-    theme: {
-      light: '#10b981',
-      dark: '#10b981',
-    },
-  },
-  loss: {
-    label: 'Loss',
-    theme: {
-      light: '#ef4444',
-      dark: '#ef4444',
-    },
-  },
-};
 
 export const StrategyPerformance = () => {
   // Get the top 4 strategies by win rate
@@ -82,18 +45,78 @@ export const StrategyPerformance = () => {
     .slice(0, 4);
 
   return (
-    <section className="py-12 px-4">
+    <section className="py-8 px-4" id="strategy-performance">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-bold mb-8 text-center">Strategy Performance Analysis</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Strategy Performance</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Performance chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-80">
+        {/* Performance Metrics Card */}
+        <Card className="mb-6 border border-gray-700 bg-gray-800/50">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg font-semibold">Performance Metrics</CardTitle>
+              <button className="text-sm px-3 py-1 rounded-lg bg-[#FF00D4]/20 text-[#FF00D4] flex items-center">
+                Export <span className="ml-1">↓</span>
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="text-gray-400 text-sm">Win Rate</div>
+                <div className="text-xl font-bold text-[#FF00D4]">72.5%</div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="text-gray-400 text-sm">Max Drawdown</div>
+                <div className="text-xl font-bold text-red-400">-12.3%</div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="text-gray-400 text-sm">Sharpe Ratio</div>
+                <div className="text-xl font-bold text-green-400">2.1</div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="text-gray-400 text-sm">Avg. Profit</div>
+                <div className="text-xl font-bold text-green-400">₹1,850</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Strategy Comparison Card */}
+        <Card className="mb-6 border border-gray-700 bg-gray-800/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Strategy Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {strategyComparisonData.map((strategy, index) => (
+                <div key={index} className="bg-gray-800 rounded-lg p-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium">{strategy.name}</span>
+                    <span className="text-[#FF00D4]">+{strategy.performance}%</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full" 
+                      style={{
+                        width: `${strategy.performance}%`,
+                        backgroundColor: strategy.color
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Monthly Performance Chart */}
+        <Card className="mb-6 border border-gray-700 bg-gray-800/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Monthly Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={performanceData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis 
@@ -106,57 +129,31 @@ export const StrategyPerformance = () => {
                     tickLine={false}
                     tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
                   />
-                  <Tooltip content={<ChartTooltipContent />} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1f2937', 
+                      borderColor: '#374151',
+                      color: '#ffffff'
+                    }} 
+                  />
                   <Legend />
                   <Line
                     type="monotone"
                     dataKey="profit"
-                    stroke="#10b981"
+                    stroke="#FF00D4"
                     strokeWidth={2}
                     activeDot={{ r: 8 }}
                   />
                 </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-          
-          {/* Strategy comparison */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Strategy Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-80">
-                <BarChart data={strategyComparisonData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    type="number" 
-                    stroke="#9ca3af"
-                    tickLine={false}
-                    domain={[0, 100]}
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    stroke="#9ca3af"
-                    tickLine={false}
-                    width={120}
-                  />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend />
-                  <Bar dataKey="win" stackId="a" fill="#10b981" />
-                  <Bar dataKey="loss" stackId="a" fill="#ef4444" />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
         
-        {/* Top strategies table */}
-        <Card>
+        {/* Top Strategies Table */}
+        <Card className="border border-gray-700 bg-gray-800/50">
           <CardHeader>
-            <CardTitle>Top Performing Strategies</CardTitle>
+            <CardTitle className="text-lg font-semibold">Top Performing Strategies</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -174,7 +171,7 @@ export const StrategyPerformance = () => {
                   <TableRow key={strategy.id}>
                     <TableCell className="font-medium">{strategy.name}</TableCell>
                     <TableCell className="max-w-xs truncate">{strategy.description}</TableCell>
-                    <TableCell className="text-right font-semibold text-green-500">{strategy.performance.winRate}</TableCell>
+                    <TableCell className="text-right font-semibold text-[#FF00D4]">{strategy.performance.winRate}</TableCell>
                     <TableCell className="text-right">{strategy.performance.avgProfit}</TableCell>
                     <TableCell className="text-right text-red-500">{strategy.performance.drawdown}</TableCell>
                   </TableRow>

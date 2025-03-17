@@ -67,7 +67,7 @@ const Index = () => {
         <Hero />
         <Features />
         
-        {/* Add Strategy Performance Section */}
+        {/* Strategy Performance Section */}
         <StrategyPerformance />
         
         <CTA />
