@@ -24,6 +24,8 @@ const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSub
           placeholder="your@email.com"
           className="bg-gray-800/50 border-gray-700 text-white h-12"
           disabled={isLoading}
+          required
+          autoComplete="email"
         />
       </div>
       <Button

@@ -30,6 +30,7 @@ const ForgotPassword = () => {
     const token = searchParams.get('token');
     
     if (token) {
+      console.log("Found token in URL, verifying...");
       setVerificationInProgress(true);
       setAccessToken(token);
       
@@ -47,11 +48,13 @@ const ForgotPassword = () => {
           }
           
           if (data.session) {
+            console.log("Valid session found, moving to reset step");
             setHasValidToken(true);
             setCurrentStep('reset');
           } else {
             // Try to exchange the token for a session
             try {
+              console.log("No session found, trying to verify token...");
               const { error: refreshError } = await supabase.auth.refreshSession({
                 refresh_token: token,
               });
@@ -60,6 +63,7 @@ const ForgotPassword = () => {
                 console.error('Error refreshing session:', refreshError);
                 
                 // Try verifying the token as a recovery token
+                console.log("Trying to verify token as recovery token...");
                 const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
                   token_hash: token,
                   type: 'recovery'
@@ -73,10 +77,12 @@ const ForgotPassword = () => {
                 }
                 
                 if (verifyData.session) {
+                  console.log("Token verified, moving to reset step");
                   setHasValidToken(true);
                   setCurrentStep('reset');
                 }
               } else {
+                console.log("Session refreshed, moving to reset step");
                 setHasValidToken(true);
                 setCurrentStep('reset');
               }
@@ -101,6 +107,7 @@ const ForgotPassword = () => {
     // Check for verification ID in URL
     const urlVerificationId = searchParams.get('verification');
     if (urlVerificationId && currentStep === 'email') {
+      console.log("Found verification ID in URL, moving to OTP step");
       setVerificationId(urlVerificationId);
       setCurrentStep('otp');
     }
@@ -114,17 +121,16 @@ const ForgotPassword = () => {
     try {
       if (!email.trim()) {
         setErrorMessage('Please enter your email address.');
-        setIsLoading(false);
         return;
       }
 
+      console.log(`Requesting password reset for email: ${email}`);
       // Use the resetPassword method from useAuth context
       const { error } = await resetPassword(email);
       
       if (error) {
         console.error('Password reset request error:', error);
         setErrorMessage(error.message || 'Failed to send verification email');
-        setIsLoading(false);
         return;
       }
       
@@ -155,17 +161,13 @@ const ForgotPassword = () => {
     try {
       if (!otp.trim() || otp.length !== 6) {
         setErrorMessage('Please enter a valid 6-digit verification code');
-        setIsLoading(false);
         return;
       }
 
-      // In a real implementation, verify OTP with Supabase
-      // For demo purposes, we'll directly move to the reset step
-      // and assume the OTP is valid
+      console.log(`Verifying OTP: ${otp}`);
       
       if (!verificationId) {
         setErrorMessage('Verification session expired. Please restart the process.');
-        setIsLoading(false);
         return;
       }
       
@@ -173,7 +175,6 @@ const ForgotPassword = () => {
       const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
       if (!storedEmail) {
         setErrorMessage('Verification session not found. Please restart the process.');
-        setIsLoading(false);
         return;
       }
       
@@ -181,6 +182,7 @@ const ForgotPassword = () => {
       
       // Attempt to verify OTP through Supabase
       try {
+        console.log(`Verifying OTP for email: ${storedEmail}`);
         const { error } = await supabase.auth.verifyOtp({
           email: storedEmail,
           token: otp,
@@ -190,17 +192,16 @@ const ForgotPassword = () => {
         if (error) {
           console.error('OTP verification error:', error);
           setErrorMessage('Invalid verification code. Please try again.');
-          setIsLoading(false);
           return;
         }
         
         // Move to reset step
+        console.log("OTP verified successfully, moving to reset step");
         setCurrentStep('reset');
         toast.success('Verification successful');
       } catch (verifyError: any) {
         console.error('Error during OTP verification:', verifyError);
         setErrorMessage(verifyError?.message || 'Error verifying code');
-        setIsLoading(false);
       }
       
     } catch (error: any) {
@@ -219,22 +220,20 @@ const ForgotPassword = () => {
     try {
       if (!newPassword.trim() || !confirmPassword.trim()) {
         setErrorMessage('Please enter both password fields');
-        setIsLoading(false);
         return;
       }
 
       if (newPassword !== confirmPassword) {
         setErrorMessage('Passwords do not match');
-        setIsLoading(false);
         return;
       }
 
       if (newPassword.length < 8) {
         setErrorMessage('Password must be at least 8 characters');
-        setIsLoading(false);
         return;
       }
 
+      console.log("Updating password...");
       // Use the updatePassword method from useAuth context
       const { error } = await updatePassword(newPassword);
       
@@ -244,6 +243,7 @@ const ForgotPassword = () => {
         // Handle the "Auth session missing" error
         if (error.message.includes('Auth session missing')) {
           try {
+            console.log("Auth session missing, trying direct password update...");
             // Try to directly update the password using Supabase's recovery flow
             const { data, error: updateError } = await supabase.auth.updateUser({
               password: newPassword
@@ -252,12 +252,12 @@ const ForgotPassword = () => {
             if (updateError) {
               console.error('Password update error after handling missing session:', updateError);
               setErrorMessage(updateError.message || 'Failed to update password');
-              setIsLoading(false);
               return;
             }
             
             if (data) {
               // Password updated successfully
+              console.log("Password updated successfully");
               toast.success('Password has been reset successfully');
               
               // Clean up verification session if it exists
@@ -273,16 +273,15 @@ const ForgotPassword = () => {
           } catch (updateError: any) {
             console.error('Error during direct password update:', updateError);
             setErrorMessage('Authentication error. Please try using the reset link from your email again.');
-            setIsLoading(false);
             return;
           }
         } else {
           setErrorMessage(error.message || 'Failed to update password');
-          setIsLoading(false);
           return;
         }
       } else {
         // Password updated successfully
+        console.log("Password updated successfully");
         toast.success('Password has been reset successfully');
         
         // Clean up verification session if it exists

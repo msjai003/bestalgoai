@@ -54,71 +54,17 @@ const OtpStep: React.FC<OtpStepProps> = ({
         </p>
         
         <div className="flex justify-center mb-6">
-          <div className="flex gap-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Input
-                key={i}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                pattern="[0-9]"
-                className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
-                value={otp[i] || ''}
-                ref={el => inputRefs.current[i] = el}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  
-                  // Only allow numbers
-                  if (value && !/^[0-9]$/.test(value)) {
-                    return;
-                  }
-                  
-                  const newOtp = otp.split('');
-                  newOtp[i] = value;
-                  setOtp(newOtp.join(''));
-                  
-                  // Auto-focus next input
-                  if (value && i < 5 && inputRefs.current[i + 1]) {
-                    inputRefs.current[i + 1]?.focus();
-                  }
-                }}
-                onKeyDown={(e) => {
-                  // Handle backspace to move to previous input
-                  if (e.key === 'Backspace' && !otp[i] && i > 0) {
-                    if (inputRefs.current[i - 1]) {
-                      inputRefs.current[i - 1]?.focus();
-                    }
-                  }
-                  
-                  // Handle arrow keys
-                  if (e.key === 'ArrowLeft' && i > 0) {
-                    if (inputRefs.current[i - 1]) {
-                      inputRefs.current[i - 1]?.focus();
-                    }
-                  }
-                  
-                  if (e.key === 'ArrowRight' && i < 5) {
-                    if (inputRefs.current[i + 1]) {
-                      inputRefs.current[i + 1]?.focus();
-                    }
-                  }
-                }}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const pastedData = e.clipboardData.getData('text/plain').trim();
-                  
-                  // Check if pasted content is a valid OTP (6 digits)
-                  if (/^\d{6}$/.test(pastedData)) {
-                    setOtp(pastedData);
-                    // Focus the last input
-                    if (inputRefs.current[5]) {
-                      inputRefs.current[5]?.focus();
-                    }
-                  }
-                }}
-              />
-            ))}
-          </div>
+          <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+            <InputOTPGroup>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <InputOTPSlot
+                  key={i}
+                  index={i}
+                  className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
         </div>
       </div>
       
