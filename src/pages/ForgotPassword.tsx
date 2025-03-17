@@ -21,16 +21,67 @@ const ForgotPassword = () => {
   const [searchParams] = useSearchParams();
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [magicLinkSessionActive, setMagicLinkSessionActive] = useState<boolean>(false);
   const { resetPassword, updatePassword } = useAuth();
 
-  // Check for verification ID in URL when component mounts
+  // Check for verification ID, magic link tokens, and other parameters when component mounts
   useEffect(() => {
-    const urlVerificationId = searchParams.get('verification');
-    if (urlVerificationId && currentStep === 'email') {
-      console.log("Found verification ID in URL, moving to OTP step");
-      setVerificationId(urlVerificationId);
-      setCurrentStep('otp');
-    }
+    const checkForMagicLink = async () => {
+      const urlVerificationId = searchParams.get('verification');
+      const type = searchParams.get('type');
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      
+      // If this is a magic link authentication
+      if (type === 'recovery' || accessToken || refreshToken) {
+        console.log("Magic link authentication detected");
+        setVerificationInProgress(true);
+        
+        try {
+          // Get the user's session after magic link click
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Error getting session:', error);
+            setErrorMessage('Your password reset link is invalid or has expired.');
+            setVerificationInProgress(false);
+            return;
+          }
+          
+          if (data.session) {
+            console.log("Active session found from magic link");
+            // Extract email from the session
+            const userEmail = data.session.user.email;
+            if (userEmail) {
+              setEmail(userEmail);
+              setMagicLinkSessionActive(true);
+              // Skip directly to the password reset step
+              setCurrentStep('reset');
+              toast.success('You can now set your new password');
+            } else {
+              setErrorMessage('Could not retrieve your email. Please try again.');
+            }
+          } else {
+            setErrorMessage('Your password reset link is invalid or has expired.');
+          }
+        } catch (error) {
+          console.error('Error processing magic link:', error);
+          setErrorMessage('An error occurred while processing your password reset link.');
+        } finally {
+          setVerificationInProgress(false);
+        }
+        return;
+      }
+      
+      // Original verification ID logic
+      if (urlVerificationId && currentStep === 'email') {
+        console.log("Found verification ID in URL, moving to OTP step");
+        setVerificationId(urlVerificationId);
+        setCurrentStep('otp');
+      }
+    };
+    
+    checkForMagicLink();
   }, [searchParams, currentStep]);
 
   // Modified to address the TypeScript error
@@ -222,7 +273,7 @@ const ForgotPassword = () => {
 
       console.log("Updating password...");
       
-      // Use the session from OTP verification to update password directly
+      // Use the session from OTP verification or magic link to update password directly
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
