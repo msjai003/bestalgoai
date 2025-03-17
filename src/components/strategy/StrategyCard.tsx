@@ -4,28 +4,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyCardProps {
   strategy: Strategy;
   onToggleWishlist: (id: number, isWishlisted: boolean) => void;
-  onToggleLiveMode: (id: number) => void;
+  onDeployStrategy: (id: number) => void;
   isAuthenticated: boolean;
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   onToggleWishlist,
-  onToggleLiveMode,
+  onDeployStrategy,
   isAuthenticated
 }) => {
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
-  const toggleLiveMode = () => {
-    onToggleLiveMode(strategy.id);
+  const handleDeployClick = () => {
+    onDeployStrategy(strategy.id);
   };
 
   return (
@@ -84,19 +84,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400"}
-                      onClick={toggleLiveMode}
+                      className="text-gray-400 hover:text-green-400"
+                      onClick={handleDeployClick}
                       disabled={!isAuthenticated}
                     >
-                      {strategy.isLive ? (
-                        <StopCircleIcon size={20} />
-                      ) : (
-                        <PlayIcon size={20} />
-                      )}
+                      <Settings size={20} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{strategy.isLive ? "Disable live trading" : "Enable live trading"}</p>
+                    <p>Deploy & Configure Strategy</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -107,17 +103,28 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             {strategy.description}
           </p>
           
-          {strategy.isLive && (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="bg-gray-700/50 p-2 rounded">
-                <p className="text-xs text-gray-400">Quantity</p>
-                <p className="text-white font-medium">{strategy.quantity || 0}</p>
-              </div>
+          {(strategy.quantity > 0 || strategy.selectedBroker || strategy.tradeType) && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {strategy.quantity > 0 && (
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <p className="text-xs text-gray-400">Quantity</p>
+                  <p className="text-white font-medium">{strategy.quantity}</p>
+                </div>
+              )}
               
               {strategy.selectedBroker && (
                 <div className="bg-gray-700/50 p-2 rounded">
                   <p className="text-xs text-gray-400">Broker</p>
                   <p className="text-white font-medium">{strategy.selectedBroker}</p>
+                </div>
+              )}
+              
+              {strategy.tradeType && (
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <p className="text-xs text-gray-400">Trade Type</p>
+                  <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400/30' : 'text-blue-400 border-blue-400/30'}`}>
+                    {strategy.tradeType === 'live trade' ? 'Live' : 'Paper'}
+                  </Badge>
                 </div>
               )}
             </div>

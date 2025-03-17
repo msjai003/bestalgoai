@@ -31,7 +31,7 @@ const StrategySelection = () => {
     targetMode,
     selectedStrategyId,
     handleToggleWishlist,
-    handleToggleLiveMode,
+    handleDeployStrategy,
     handleConfirmLiveMode,
     handleCancelLiveMode,
     handleQuantitySubmit,
@@ -40,7 +40,7 @@ const StrategySelection = () => {
     handleCancelBroker
   } = useStrategy(predefinedStrategies);
 
-  const handleDeployStrategy = () => {
+  const handleCustomStrategyDeploy = () => {
     navigate("/backtest");
   };
 
@@ -63,11 +63,11 @@ const StrategySelection = () => {
                   strategies={strategies}
                   isLoading={isLoading}
                   onToggleWishlist={handleToggleWishlist}
-                  onToggleLiveMode={handleToggleLiveMode}
+                  onDeployStrategy={handleDeployStrategy}
                   user={user}
                 />
               ) : (
-                <CustomStrategyWizard onSubmit={handleDeployStrategy} />
+                <CustomStrategyWizard onSubmit={handleCustomStrategyDeploy} />
               )}
             </div>
           </section>
