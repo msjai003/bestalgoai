@@ -36,12 +36,12 @@ const ForgotPassword = () => {
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
-    // Use signInWithOtp with specific options to request a 6-digit OTP
+    // Use signInWithOtp with specific options to try forcing a numeric OTP
     const { error } = await supabase.auth.signInWithOtp({
       email: emailAddress,
       options: {
         shouldCreateUser: false, // Don't create a new user if they don't exist
-        // Forcing OTP instead of magic link
+        // Try to force OTP instead of magic link
         data: {
           otp_type: 'numeric', // Request a numeric OTP
           otp_length: 6, // Request a 6-digit OTP
@@ -83,7 +83,7 @@ const ForgotPassword = () => {
       
       // Move to OTP step
       setCurrentStep('otp');
-      toast.success('Verification code sent to your email with message "your verification otp is here"');
+      toast.success('Verification code sent. Check your email for a 6-digit code or a link with the code embedded.');
       console.log("Email sent successfully, moved to OTP step");
       
     } catch (error: any) {
