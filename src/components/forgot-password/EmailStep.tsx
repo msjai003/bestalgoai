@@ -24,12 +24,11 @@ const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSub
           placeholder="your@email.com"
           className="bg-gray-800/50 border-gray-700 text-white h-12"
           disabled={isLoading}
-          required
         />
       </div>
       <Button
         type="submit"
-        disabled={isLoading || !email.trim()}
+        disabled={isLoading || !email}
         className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
       >
         {isLoading ? 'Sending...' : 'Send Verification Code'}

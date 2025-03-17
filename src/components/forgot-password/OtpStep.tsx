@@ -1,9 +1,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { RefreshCw } from 'lucide-react';
 
 interface OtpStepProps {
   otp: string;
@@ -16,8 +16,6 @@ interface OtpStepProps {
   confirmPassword: string;
   setConfirmPassword: (password: string) => void;
   email: string;
-  onResendOtp: () => Promise<void>;
-  resendLoading: boolean;
 }
 
 const OtpStep: React.FC<OtpStepProps> = ({ 
@@ -26,10 +24,21 @@ const OtpStep: React.FC<OtpStepProps> = ({
   isLoading, 
   onSubmit, 
   onBack,
-  email,
-  onResendOtp,
-  resendLoading
+  newPassword,
+  setNewPassword,
+  confirmPassword,
+  setConfirmPassword,
+  email
 }) => {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Focus the first input on mount
+  useEffect(() => {
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, []);
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-gray-800/30 p-3 rounded-md mb-4">
@@ -45,41 +54,71 @@ const OtpStep: React.FC<OtpStepProps> = ({
         </p>
         
         <div className="flex justify-center mb-6">
-          <InputOTP 
-            maxLength={6}
-            value={otp}
-            onChange={(value) => setOtp(value)}
-            render={({ slots }) => (
-              <div className="flex gap-2">
-                {slots.map((slot, idx) => (
-                  <InputOTPGroup key={idx} className="bg-gray-800/50 border-gray-700">
-                    <InputOTPSlot 
-                      {...slot} 
-                      index={idx}
-                      className="text-white text-center w-10 h-12"
-                    />
-                  </InputOTPGroup>
-                ))}
-              </div>
-            )}
-          />
-        </div>
-
-        <div className="text-center mb-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="text-sm border-gray-700 hover:bg-gray-800 flex items-center gap-2 mx-auto" 
-            onClick={onResendOtp}
-            disabled={resendLoading}
-          >
-            {resendLoading ? (
-              <RefreshCw className="h-3 w-3 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3 w-3" />
-            )}
-            {resendLoading ? "Sending..." : "Resend verification code"}
-          </Button>
+          <div className="flex gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Input
+                key={i}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                pattern="[0-9]"
+                className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
+                value={otp[i] || ''}
+                ref={el => inputRefs.current[i] = el}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  
+                  // Only allow numbers
+                  if (value && !/^[0-9]$/.test(value)) {
+                    return;
+                  }
+                  
+                  const newOtp = otp.split('');
+                  newOtp[i] = value;
+                  setOtp(newOtp.join(''));
+                  
+                  // Auto-focus next input
+                  if (value && i < 5 && inputRefs.current[i + 1]) {
+                    inputRefs.current[i + 1]?.focus();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  // Handle backspace to move to previous input
+                  if (e.key === 'Backspace' && !otp[i] && i > 0) {
+                    if (inputRefs.current[i - 1]) {
+                      inputRefs.current[i - 1]?.focus();
+                    }
+                  }
+                  
+                  // Handle arrow keys
+                  if (e.key === 'ArrowLeft' && i > 0) {
+                    if (inputRefs.current[i - 1]) {
+                      inputRefs.current[i - 1]?.focus();
+                    }
+                  }
+                  
+                  if (e.key === 'ArrowRight' && i < 5) {
+                    if (inputRefs.current[i + 1]) {
+                      inputRefs.current[i + 1]?.focus();
+                    }
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedData = e.clipboardData.getData('text/plain').trim();
+                  
+                  // Check if pasted content is a valid OTP (6 digits)
+                  if (/^\d{6}$/.test(pastedData)) {
+                    setOtp(pastedData);
+                    // Focus the last input
+                    if (inputRefs.current[5]) {
+                      inputRefs.current[5]?.focus();
+                    }
+                  }
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
       
