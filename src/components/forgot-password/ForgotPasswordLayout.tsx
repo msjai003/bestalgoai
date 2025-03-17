@@ -1,16 +1,22 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, X, Info, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, X, Info, AlertTriangle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ForgotPasswordLayoutProps {
   step: number;
   errorMessage: string | null;
   children: React.ReactNode;
+  verificationInProgress?: boolean;
 }
 
-const ForgotPasswordLayout: React.FC<ForgotPasswordLayoutProps> = ({ step, errorMessage, children }) => {
+const ForgotPasswordLayout: React.FC<ForgotPasswordLayoutProps> = ({
+  step,
+  errorMessage,
+  children,
+  verificationInProgress = false
+}) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <div className="flex items-center justify-between mb-8">
@@ -54,7 +60,15 @@ const ForgotPasswordLayout: React.FC<ForgotPasswordLayoutProps> = ({ step, error
       )}
 
       <div className="max-w-md mx-auto">
-        {children}
+        {verificationInProgress ? (
+          <div className="text-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-[#FF00D4] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Verifying your request...</h3>
+            <p className="text-gray-400">Please wait while we verify your password reset link.</p>
+          </div>
+        ) : (
+          children
+        )}
 
         <div className="text-center mt-6">
           <p className="text-gray-400 text-sm">

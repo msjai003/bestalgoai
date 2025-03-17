@@ -25,6 +25,7 @@ const ForgotPassword = () => {
   const [cooldownActive, setCooldownActive] = useState<boolean>(false);
   const [cooldownTime, setCooldownTime] = useState<number>(0);
   const [resetStage, setResetStage] = useState<'request' | 'reset'>('request');
+  const [verificationInProgress, setVerificationInProgress] = useState<boolean>(true);
   const navigate = useNavigate();
 
   // Check if we have an access token in the URL (this means the user clicked the reset link in email)
@@ -36,6 +37,7 @@ const ForgotPassword = () => {
       
       if (accessToken && type === 'recovery') {
         // If we have a recovery token, we're in the reset stage
+        setVerificationInProgress(true);
         try {
           // Set the session with the token
           const { data, error } = await supabase.auth.setSession({
@@ -47,19 +49,23 @@ const ForgotPassword = () => {
             console.error('Error setting session:', error);
             setErrorMessage('Invalid or expired reset link. Please try again.');
             setResetStage('request');
+            setVerificationInProgress(false);
           } else {
             // Successfully authenticated with the token
             setResetStage('reset');
-            toast.info('Please set your new password');
+            toast.success('Email verified successfully! Please set your new password');
+            setVerificationInProgress(false);
           }
         } catch (error) {
           console.error('Error processing reset token:', error);
           setErrorMessage('An error occurred. Please try again.');
           setResetStage('request');
+          setVerificationInProgress(false);
         }
       } else {
         // No token, so we're in the request stage
         setResetStage('request');
+        setVerificationInProgress(false);
       }
     };
     
@@ -197,6 +203,7 @@ const ForgotPassword = () => {
     <ForgotPasswordLayout 
       step={resetStage === 'request' ? 1 : 2} 
       errorMessage={errorMessage}
+      verificationInProgress={verificationInProgress}
     >
       {resetStage === 'request' ? (
         // Email request form
