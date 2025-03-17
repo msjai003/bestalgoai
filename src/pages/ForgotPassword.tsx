@@ -33,7 +33,14 @@ const ForgotPassword = () => {
       
       if (error) {
         console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send reset instructions');
+        
+        // Handle timeout errors specifically
+        if (error.status === 504 || error.message?.includes('timeout')) {
+          setErrorMessage('The server took too long to respond. Please try again.');
+        } else {
+          setErrorMessage(error.message || 'Failed to send reset instructions');
+        }
+        
         setIsLoading(false);
         return;
       }
@@ -44,7 +51,13 @@ const ForgotPassword = () => {
       
     } catch (error: any) {
       console.error('Password reset request error:', error);
-      setErrorMessage(error.message || 'Failed to send reset instructions');
+      
+      // Check for timeout or network errors
+      if (error.status === 504 || error.message?.includes('timeout')) {
+        setErrorMessage('Network timeout. Please check your connection and try again.');
+      } else {
+        setErrorMessage(error.message || 'Failed to send reset instructions');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +99,12 @@ const ForgotPassword = () => {
       const { error: updateError } = await updatePassword(newPassword);
 
       if (updateError) {
-        setErrorMessage(updateError.message);
+        // Handle timeout errors specifically
+        if (updateError.status === 504 || updateError.message?.includes('timeout')) {
+          setErrorMessage('The server took too long to respond. Please try again.');
+        } else {
+          setErrorMessage(updateError.message);
+        }
       } else {
         toast.success('Password has been reset successfully');
         // Redirect to login after successful reset
@@ -94,7 +112,13 @@ const ForgotPassword = () => {
       }
     } catch (error: any) {
       console.error('Password reset error:', error);
-      setErrorMessage(error.message || 'Failed to reset password');
+      
+      // Check for timeout or network errors
+      if (error.status === 504 || error.message?.includes('timeout')) {
+        setErrorMessage('Network timeout. Please check your connection and try again.');
+      } else {
+        setErrorMessage(error.message || 'Failed to reset password');
+      }
     } finally {
       setIsLoading(false);
     }
