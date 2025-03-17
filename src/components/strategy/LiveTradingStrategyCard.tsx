@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BarChart2, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,7 +102,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <span className={`text-sm ${!strategy.isLive ? "text-blue-400" : "text-gray-400"}`}>
-            Paper
+            Paper Trade
           </span>
           <Switch
             checked={strategy.isLive}
@@ -109,7 +110,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
           />
           <span className={`text-sm ${strategy.isLive ? "text-pink-400" : "text-gray-400"}`}>
-            Live
+            Live Trade
           </span>
         </div>
         <Button

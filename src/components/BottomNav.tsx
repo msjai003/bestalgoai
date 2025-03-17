@@ -19,12 +19,10 @@ export const BottomNav = () => {
           <span className="text-xs text-gray-400 mt-1">Wishlist</span>
         </Link>
         
-        <div className="flex flex-col items-center p-2">
-          <Link to="/live-trading" className="flex flex-col items-center">
-            <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-            <span className="text-xs text-gray-400 mt-1">Trading</span>
-          </Link>
-        </div>
+        <Link to="/live-trading" className="flex flex-col items-center p-2">
+          <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
+          <span className="text-xs text-gray-400 mt-1">Trading</span>
+        </Link>
         
         <Link to="/settings" className="flex flex-col items-center p-2">
           <i className={`fa-solid fa-gear ${location.pathname === '/settings' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>

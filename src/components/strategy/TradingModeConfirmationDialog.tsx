@@ -69,7 +69,7 @@ export const TradingModeConfirmationDialog = ({
             </div>
             <div className="flex items-center gap-2">
               <span className={`text-sm ${!isLiveMode ? "text-blue-400 font-medium" : "text-gray-400"}`}>
-                Paper
+                Paper Trade
               </span>
               <Switch 
                 checked={isLiveMode} 
@@ -77,7 +77,7 @@ export const TradingModeConfirmationDialog = ({
                 className={`${isLiveMode ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
               />
               <span className={`text-sm ${isLiveMode ? "text-pink-400 font-medium" : "text-gray-400"}`}>
-                Live
+                Live Trade
               </span>
             </div>
           </div>
