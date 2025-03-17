@@ -112,7 +112,9 @@ export function useForgotPassword() {
         return;
       }
 
-      // Send OTP to user's email instead of reset link
+      console.log('Sending OTP to email:', email);
+
+      // Send OTP to user's email
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
@@ -156,6 +158,8 @@ export function useForgotPassword() {
         setResendLoading(false);
         return;
       }
+
+      console.log('Resending OTP to email:', email);
 
       // Resend OTP to user's email
       const { error } = await supabase.auth.signInWithOtp({
@@ -211,6 +215,8 @@ export function useForgotPassword() {
         setEmail(storedEmail);
       }
       
+      console.log('Verifying OTP for email:', email, 'OTP:', otp);
+      
       // Attempt to verify OTP through Supabase
       const { error, data } = await supabase.auth.verifyOtp({
         email: email,
@@ -261,6 +267,8 @@ export function useForgotPassword() {
         setIsLoading(false);
         return;
       }
+
+      console.log('Updating password');
 
       // Update password
       const { error } = await supabase.auth.updateUser({

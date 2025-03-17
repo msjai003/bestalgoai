@@ -51,11 +51,11 @@ const OtpStep: React.FC<OtpStepProps> = ({
             onChange={(value) => setOtp(value)}
             render={({ slots }) => (
               <div className="flex gap-2">
-                {slots.map((slot, index) => (
-                  <InputOTPGroup key={index} className="bg-gray-800/50 border-gray-700">
+                {slots.map((slot, idx) => (
+                  <InputOTPGroup key={idx} className="bg-gray-800/50 border-gray-700">
                     <InputOTPSlot 
                       {...slot} 
-                      index={index}
+                      index={idx}
                       className="text-white text-center w-10 h-12"
                     />
                   </InputOTPGroup>
