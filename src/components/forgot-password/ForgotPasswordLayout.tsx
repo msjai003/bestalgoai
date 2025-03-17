@@ -32,8 +32,7 @@ const ForgotPasswordLayout: React.FC<ForgotPasswordLayoutProps> = ({ step, error
         <h1 className="text-2xl font-bold mb-4">Reset Password</h1>
         <p className="text-gray-400">
           {step === 1 && "Enter your email to receive password reset instructions."}
-          {step === 2 && "Enter the verification code sent to your email."}
-          {step === 3 && "Create a new password for your account."}
+          {step === 2 && "Enter the verification code and create a new password."}
         </p>
       </section>
 
@@ -41,8 +40,7 @@ const ForgotPasswordLayout: React.FC<ForgotPasswordLayoutProps> = ({ step, error
         <Info className="h-4 w-4 text-blue-400" />
         <AlertDescription className="text-blue-200 ml-2">
           {step === 1 && "We'll send you instructions to reset your password."}
-          {step === 2 && "Check your email for the 6-digit verification code."}
-          {step === 3 && "Choose a strong password with at least 8 characters."}
+          {step === 2 && "Enter the 6-digit code sent to your email and create a new strong password."}
         </AlertDescription>
       </Alert>
 

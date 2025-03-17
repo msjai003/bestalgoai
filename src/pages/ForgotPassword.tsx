@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
-import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
 const ForgotPassword = () => {
   const [step, setStep] = useState<number>(1);
@@ -29,8 +28,7 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Move to the next step without sending an actual OTP
-      // We'll send the resetPassword request on the next step to maintain the API
+      // Move to the OTP step without sending the actual reset request yet
       setStep(2);
       toast.success('Verification code sent to your email');
       
@@ -42,43 +40,20 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    
-    if (otp.length < 6) {
-      setErrorMessage('Please enter the complete verification code');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // Now we actually send the reset password request
-      const { error } = await resetPassword(email);
-      
-      if (error) {
-        setErrorMessage(error.message);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Move to password reset step
-      setStep(3);
-    } catch (error: any) {
-      console.error('OTP verification error:', error);
-      setErrorMessage(error.message || 'Failed to verify code');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
+      // Validate OTP
+      if (otp.length < 6) {
+        setErrorMessage('Please enter the complete verification code');
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate passwords
       if (!newPassword.trim() || !confirmPassword.trim()) {
         setErrorMessage('Please enter both password fields');
         setIsLoading(false);
@@ -97,10 +72,20 @@ const ForgotPassword = () => {
         return;
       }
 
-      const { error } = await updatePassword(newPassword);
+      // Now we send the resetPassword request which we delayed from step 1
+      const { error: resetError } = await resetPassword(email);
+      
+      if (resetError) {
+        setErrorMessage(resetError.message);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Then update the password
+      const { error: updateError } = await updatePassword(newPassword);
 
-      if (error) {
-        setErrorMessage(error.message);
+      if (updateError) {
+        setErrorMessage(updateError.message);
       } else {
         toast.success('Password has been reset successfully');
         // Redirect to login after successful reset
@@ -129,21 +114,14 @@ const ForgotPassword = () => {
         return (
           <OtpStep 
             otp={otp} 
-            setOtp={setOtp} 
-            isLoading={isLoading} 
-            onSubmit={handleVerifyOTP} 
-            onBack={() => setStep(1)} 
-          />
-        );
-      case 3:
-        return (
-          <ResetPasswordStep 
+            setOtp={setOtp}
             newPassword={newPassword}
             setNewPassword={setNewPassword}
             confirmPassword={confirmPassword}
             setConfirmPassword={setConfirmPassword}
-            isLoading={isLoading}
-            onSubmit={handleResetPassword}
+            isLoading={isLoading} 
+            onSubmit={handleResetPassword} 
+            onBack={() => setStep(1)} 
           />
         );
       default:
