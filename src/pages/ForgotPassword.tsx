@@ -33,6 +33,24 @@ const ForgotPassword = () => {
     }
   }, [searchParams, currentStep]);
 
+  const sendOtpToEmail = async (emailAddress: string) => {
+    console.log(`Sending OTP to email: ${emailAddress}`);
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email: emailAddress,
+      options: {
+        shouldCreateUser: false, // Don't create a new user if they don't exist
+      }
+    });
+    
+    if (error) {
+      console.error('Error sending OTP:', error);
+      throw error;
+    }
+    
+    return true;
+  };
+
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -47,20 +65,8 @@ const ForgotPassword = () => {
 
       console.log(`Requesting password reset for email: ${email}`);
       
-      // Send OTP directly for re-authentication instead of a reset link
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: false, // Don't create a new user if they don't exist
-        }
-      });
-      
-      if (error) {
-        console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send verification email');
-        setIsLoading(false);
-        return;
-      }
+      // Send OTP for re-authentication
+      await sendOtpToEmail(email);
       
       // Generate verification ID
       const verificationId = Date.now().toString();
@@ -79,6 +85,30 @@ const ForgotPassword = () => {
       setErrorMessage(error?.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      if (!email) {
+        // Try to recover email from session storage
+        if (verificationId) {
+          const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
+          if (storedEmail) {
+            setEmail(storedEmail);
+            await sendOtpToEmail(storedEmail);
+            toast.success('New verification code sent to your email');
+            return;
+          }
+        }
+        throw new Error('Email address not found. Please go back and enter your email.');
+      }
+      
+      await sendOtpToEmail(email);
+      toast.success('New verification code sent to your email');
+    } catch (error: any) {
+      console.error('Error resending OTP:', error);
+      toast.error(error?.message || 'Failed to resend verification code');
     }
   };
 
@@ -237,6 +267,7 @@ const ForgotPassword = () => {
           isLoading={isLoading}
           onSubmit={handleVerifyOtp}
           onBack={handleBackToEmail}
+          onResendOtp={handleResendOtp}
           newPassword={newPassword}
           setNewPassword={setNewPassword}
           confirmPassword={confirmPassword}
