@@ -45,6 +45,7 @@ const OtpStep: React.FC<OtpStepProps> = ({
                 {slots.map((slot, index) => (
                   <InputOTPSlot
                     key={index}
+                    index={index}
                     {...slot}
                     className="bg-gray-800/50 border-gray-700 text-white"
                   />
