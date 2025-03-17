@@ -34,6 +34,7 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
           onChange={(e) => setNewPassword(e.target.value)}
           placeholder="••••••••"
           className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
+          disabled={isLoading}
         />
       </div>
       
@@ -46,6 +47,7 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="••••••••"
           className="bg-gray-800/50 border-gray-700 text-white h-12"
+          disabled={isLoading}
         />
       </div>
       

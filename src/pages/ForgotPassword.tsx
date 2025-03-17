@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
 // Custom error type that might include status
 interface ApiError extends Error {
@@ -187,16 +188,24 @@ const ForgotPassword = () => {
       if (error) {
         console.error('Password update error:', error);
         setErrorMessage(error.message || 'Failed to update password');
+        setIsLoading(false);
       } else {
         toast.success('Password has been reset successfully');
-        navigate('/auth');
+        // Add a slight delay before redirecting to login
+        setTimeout(() => {
+          navigate('/auth');
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Error setting new password:', error);
       setErrorMessage(error.message || 'Error updating password');
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBack = () => {
+    setResetStage('request');
+    setErrorMessage(null);
   };
 
   return (
@@ -236,42 +245,16 @@ const ForgotPassword = () => {
           </Button>
         </form>
       ) : (
-        // Password reset form (after clicking email link)
-        <form onSubmit={handleSetNewPassword} className="space-y-6">
-          <div>
-            <Label htmlFor="newPassword" className="text-gray-300 mb-2 block">New Password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
-              disabled={isLoading}
-            />
-          </div>
-        
-          <div>
-            <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-gray-800/50 border-gray-700 text-white h-12"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
-          >
-            {isLoading ? 'Resetting Password...' : 'Reset Password'}
-          </Button>
-        </form>
+        // Using the ResetPasswordStep component for the password reset form
+        <ResetPasswordStep
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          isLoading={isLoading}
+          onSubmit={handleSetNewPassword}
+          onBack={handleBack}
+        />
       )}
     </ForgotPasswordLayout>
   );
