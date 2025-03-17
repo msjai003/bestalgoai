@@ -36,18 +36,20 @@ const ForgotPassword = () => {
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
-    // Force OTP directly in email by using a custom endpoint
     try {
-      // First try with direct OTP
+      // Using specific options to force a 6-digit numeric OTP in the email body
       const { error } = await supabase.auth.signInWithOtp({
         email: emailAddress,
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/forgot-password?otp=true`,
+          // Disable magic link redirect by providing a fake redirect URL
+          emailRedirectTo: `${window.location.origin}/forgot-password-disabled-redirect`,
           data: {
             otp_type: 'numeric',
             otp_length: 6,
-            otp_in_email: true,  // Request OTP directly in email
+            otp_in_email: true,
+            force_otp_in_email: true, // Additional flag to insist on OTP in email
+            disable_magic_link: true   // Try to disable magic link behavior
           }
         }
       });

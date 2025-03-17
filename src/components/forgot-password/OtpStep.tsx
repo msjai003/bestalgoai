@@ -66,10 +66,10 @@ const OtpStep: React.FC<OtpStepProps> = ({
       <div className="space-y-2">
         <Label htmlFor="otp" className="text-gray-300 mb-2 block">Verification Code</Label>
         <p className="text-sm text-gray-400 mb-2">
-          Enter the 6-digit code sent to your email. The email should contain a line with "Your verification code is: XXXXXX"
+          Enter the 6-digit code sent to your email. Look for a code labeled as "Your verification code is: XXXXXX"
         </p>
         <p className="text-sm text-gray-400 mb-4 bg-gray-800/20 p-2 rounded border border-gray-700">
-          <strong>Note:</strong> If you cannot find the numeric code, check your spam folder. The email subject should be "Reset Your Password" or similar.
+          <strong>Note:</strong> If you received a magic link instead, please don't click it. Instead, look inside the email for a 6-digit numeric code, or request a new code using the button below.
         </p>
         
         <div className="flex justify-center mb-4">
