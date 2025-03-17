@@ -66,10 +66,10 @@ const OtpStep: React.FC<OtpStepProps> = ({
       <div className="space-y-2">
         <Label htmlFor="otp" className="text-gray-300 mb-2 block">Verification Code</Label>
         <p className="text-sm text-gray-400 mb-2">
-          Enter the 6-digit code sent to your email. Look for a code labeled as "Your verification code is: XXXXXX"
+          Enter the 6-digit code sent to your email. The email contains a numeric verification code.
         </p>
-        <p className="text-sm text-gray-400 mb-4 bg-gray-800/20 p-2 rounded border border-gray-700">
-          <strong>Note:</strong> If you received a magic link instead, please don't click it. Instead, look inside the email for a 6-digit numeric code, or request a new code using the button below.
+        <p className="text-sm text-gray-400 mb-4 bg-yellow-900/20 p-3 rounded border border-yellow-700 text-yellow-300">
+          <strong>Important:</strong> If you received a magic link email, please look carefully in the email body or subject line for a 6-digit numeric code. If you can't find one, please request a new code using the button below.
         </p>
         
         <div className="flex justify-center mb-4">

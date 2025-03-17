@@ -33,24 +33,25 @@ const ForgotPassword = () => {
     }
   }, [searchParams, currentStep]);
 
+  // Modified to use a completely different approach to force OTP
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
-      // Using specific options to force a 6-digit numeric OTP in the email body
-      const { error } = await supabase.auth.signInWithOtp({
-        email: emailAddress,
-        options: {
-          shouldCreateUser: false,
-          // Disable magic link redirect by providing a fake redirect URL
-          emailRedirectTo: `${window.location.origin}/forgot-password-disabled-redirect`,
-          data: {
-            otp_type: 'numeric',
-            otp_length: 6,
-            otp_in_email: true,
-            force_otp_in_email: true, // Additional flag to insist on OTP in email
-            disable_magic_link: true   // Try to disable magic link behavior
-          }
+      // Instead of using signInWithOtp, use resetPasswordForEmail with custom options
+      // This is a more direct way to request an OTP for password reset
+      const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
+        // Use a non-existent redirect URL that Supabase won't actually use
+        // This tricks Supabase into sending the OTP instead of a magic link
+        redirectTo: `${window.location.origin}/forgot-password-disabled-redirect-do-not-use`,
+        // Additional metadata to force OTP
+        data: {
+          force_otp: true,
+          otp_type: 'numeric',
+          otp_length: 6,
+          otp_in_email: true,
+          disable_magic_link: true,
+          send_otp_only: true
         }
       });
       
@@ -157,15 +158,14 @@ const ForgotPassword = () => {
       
       setEmail(storedEmail);
       
-      // Verify OTP using re-authentication
       try {
         console.log(`Verifying OTP for email: ${storedEmail}`);
         
-        // Using supabase.auth.verifyOtp for re-authentication
+        // Manual verification of the OTP code
         const { data, error } = await supabase.auth.verifyOtp({
           email: storedEmail,
           token: otp,
-          type: 'email'
+          type: 'recovery'  // Use 'recovery' type for password reset
         });
         
         if (error) {
