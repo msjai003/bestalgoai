@@ -27,17 +27,41 @@ const ForgotPassword = () => {
   // Check for verification ID, magic link tokens, and other parameters when component mounts
   useEffect(() => {
     const checkForMagicLink = async () => {
+      // Get all URL parameters
       const urlVerificationId = searchParams.get('verification');
       const type = searchParams.get('type');
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
+      const token = searchParams.get('token');
+
+      console.log("Checking for magic link or parameters in URL");
+      console.log("URL parameters:", { type, accessToken, refreshToken, token, urlVerificationId });
       
       // If this is a magic link authentication
-      if (type === 'recovery' || accessToken || refreshToken) {
+      if (type === 'recovery' || accessToken || refreshToken || token) {
         console.log("Magic link authentication detected");
         setVerificationInProgress(true);
         
         try {
+          // Try to exchange the token if present
+          if (token) {
+            console.log("Attempting to use recovery token");
+            try {
+              const { data, error } = await supabase.auth.verifyOtp({
+                token_hash: token,
+                type: 'recovery',
+              });
+              
+              if (error) {
+                console.error("Error verifying token:", error);
+              } else {
+                console.log("Token verification response:", data);
+              }
+            } catch (tokenError) {
+              console.error("Exception during token verification:", tokenError);
+            }
+          }
+          
           // Get the user's session after magic link click
           const { data, error } = await supabase.auth.getSession();
           
@@ -62,7 +86,8 @@ const ForgotPassword = () => {
               setErrorMessage('Could not retrieve your email. Please try again.');
             }
           } else {
-            setErrorMessage('Your password reset link is invalid or has expired.');
+            console.log("No active session found");
+            setErrorMessage('Your password reset link is invalid or has expired. Please try requesting a new reset link.');
           }
         } catch (error) {
           console.error('Error processing magic link:', error);
@@ -94,15 +119,13 @@ const ForgotPassword = () => {
         email: emailAddress,
         options: {
           shouldCreateUser: false,
-          // Disable magic link redirect by providing a fake redirect URL
-          emailRedirectTo: `${window.location.origin}/forgot-password-disabled-redirect-do-not-use`,
+          // Enable actual magic link redirect to ForgotPassword page
+          emailRedirectTo: `${window.location.origin}/forgot-password`,
           data: {
             force_otp: true,
             otp_type: 'numeric',
             otp_length: 6,
-            otp_in_email: true,
-            disable_magic_link: true,
-            send_otp_only: true
+            otp_in_email: true
           }
         }
       });
@@ -145,7 +168,7 @@ const ForgotPassword = () => {
       
       // Move to OTP step
       setCurrentStep('otp');
-      toast.success('A 6-digit verification code has been sent to your email. Check your email for the numeric code.');
+      toast.success('A verification code has been sent to your email. Check your email for the numeric code or use the magic link.');
       console.log("Email sent successfully, moved to OTP step");
       
     } catch (error: any) {
