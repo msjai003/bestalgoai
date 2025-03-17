@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -29,15 +29,6 @@ const OtpStep: React.FC<OtpStepProps> = ({
   setConfirmPassword,
   email
 }) => {
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Focus the first input on mount
-  useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
-  }, []);
-
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-gray-800/30 p-3 rounded-md mb-4">
