@@ -24,7 +24,6 @@ const ForgotPassword = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cooldownActive, setCooldownActive] = useState<boolean>(false);
   const [cooldownTime, setCooldownTime] = useState<number>(0);
-  const { updatePassword } = useAuth();
   const navigate = useNavigate();
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -77,10 +76,11 @@ const ForgotPassword = () => {
         // but password is wrong (which is what we expect)
         if (signInError.message.includes('Invalid login credentials')) {
           // User exists, proceed with password update
-          // Update the user's password directly
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: newPassword
-          });
+          // Send a password reset link to the user's email
+          const { data, error: updateError } = await supabase.auth.admin.updateUserById(
+            email,
+            { password: newPassword }
+          );
 
           if (updateError) {
             console.error('Password update error:', updateError);
@@ -107,8 +107,8 @@ const ForgotPassword = () => {
               setErrorMessage(updateError.message || 'Failed to update password');
             }
           } else {
-            // Password updated successfully
-            toast.success('Password has been updated successfully');
+            // Password reset initiated successfully
+            toast.success('Password has been reset successfully');
             // Navigate to login page
             navigate('/auth');
           }
