@@ -7,6 +7,7 @@ import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLay
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
@@ -22,6 +23,7 @@ const ForgotPassword = () => {
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const { resetPassword, updatePassword } = useAuth();
 
   // Check for token in URL when component mounts (for when user returns after clicking email link)
   useEffect(() => {
@@ -49,19 +51,41 @@ const ForgotPassword = () => {
             setCurrentStep('reset');
           } else {
             // Try to exchange the token for a session
-            const { error: refreshError } = await supabase.auth.refreshSession({
-              refresh_token: token,
-            });
-            
-            if (refreshError) {
-              console.error('Error refreshing session:', refreshError);
-              setErrorMessage('Your password reset link has expired. Please request a new one.');
+            try {
+              const { error: refreshError } = await supabase.auth.refreshSession({
+                refresh_token: token,
+              });
+              
+              if (refreshError) {
+                console.error('Error refreshing session:', refreshError);
+                
+                // Try verifying the token as a recovery token
+                const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                  token_hash: token,
+                  type: 'recovery'
+                });
+                
+                if (verifyError) {
+                  console.error('Error verifying token:', verifyError);
+                  setErrorMessage('Your password reset link has expired. Please request a new one.');
+                  setVerificationInProgress(false);
+                  return;
+                }
+                
+                if (verifyData.session) {
+                  setHasValidToken(true);
+                  setCurrentStep('reset');
+                }
+              } else {
+                setHasValidToken(true);
+                setCurrentStep('reset');
+              }
+            } catch (refreshError) {
+              console.error('Exception during refresh:', refreshError);
+              setErrorMessage('Error verifying your reset link. Please try again.');
               setVerificationInProgress(false);
               return;
             }
-            
-            setHasValidToken(true);
-            setCurrentStep('reset');
           }
         } catch (error) {
           console.error('Error during token verification:', error);
@@ -73,70 +97,14 @@ const ForgotPassword = () => {
       
       checkSession();
     }
-  }, [searchParams]);
-
-  const generateAndSendOTP = async (email: string) => {
-    // Generate a random 6-digit OTP
-    const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
     
-    try {
-      // Store the OTP in the session storage temporarily (In a production app, this would be stored securely on the server)
-      // For demo purposes, we're using sessionStorage which is more secure than localStorage
-      const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiry
-      const verificationId = Date.now().toString();
-      sessionStorage.setItem(`otp_${verificationId}`, JSON.stringify({
-        email,
-        otp: generatedOTP,
-        expiry: expiryTime
-      }));
-      setVerificationId(verificationId);
-      
-      // In a real implementation, you would send an email with the OTP using a server or edge function
-      // For demo, we'll show the OTP in a toast message (NEVER do this in production)
-      console.log("Generated OTP:", generatedOTP);
-      
-      // Send email with Supabase's email service
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/forgot-password?verification=${verificationId}`,
-      });
-      
-      if (error) throw error;
-      
-      // Simulate sending OTP - in a real app, you'd include the OTP in the email template
-      toast.info(`For demo purposes, your OTP is: ${generatedOTP}`, { duration: 10000 });
-      
-      return { success: true };
-    } catch (error: any) {
-      console.error("Error generating/sending OTP:", error);
-      throw new Error(error.message || "Failed to send verification code");
+    // Check for verification ID in URL
+    const urlVerificationId = searchParams.get('verification');
+    if (urlVerificationId && currentStep === 'email') {
+      setVerificationId(urlVerificationId);
+      setCurrentStep('otp');
     }
-  };
-
-  const verifyOTP = (inputOTP: string) => {
-    if (!verificationId) {
-      return { valid: false, message: "Verification session expired" };
-    }
-    
-    const storedData = sessionStorage.getItem(`otp_${verificationId}`);
-    if (!storedData) {
-      return { valid: false, message: "Verification session not found" };
-    }
-    
-    const { otp: storedOTP, expiry, email: storedEmail } = JSON.parse(storedData);
-    
-    // Check if OTP has expired
-    if (Date.now() > expiry) {
-      sessionStorage.removeItem(`otp_${verificationId}`);
-      return { valid: false, message: "Verification code has expired" };
-    }
-    
-    // Verify the OTP
-    if (inputOTP !== storedOTP) {
-      return { valid: false, message: "Invalid verification code" };
-    }
-    
-    return { valid: true, email: storedEmail };
-  };
+  }, [searchParams, currentStep]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,12 +118,26 @@ const ForgotPassword = () => {
         return;
       }
 
-      const { success } = await generateAndSendOTP(email);
-
-      if (success) {
-        setCurrentStep('otp');
-        toast.success('Verification code sent to your email');
+      // Use the resetPassword method from useAuth context
+      const { error } = await resetPassword(email);
+      
+      if (error) {
+        console.error('Password reset request error:', error);
+        setErrorMessage(error.message || 'Failed to send verification email');
+        setIsLoading(false);
+        return;
       }
+      
+      // Generate verification ID
+      const verificationId = Date.now().toString();
+      setVerificationId(verificationId);
+      
+      // Store email in session for verification
+      sessionStorage.setItem(`email_${verificationId}`, email);
+      
+      // Move to OTP step
+      setCurrentStep('otp');
+      toast.success('Password reset link sent to your email. Please check your inbox.');
       
     } catch (error: any) {
       console.error('Password reset request error:', error);
@@ -177,25 +159,49 @@ const ForgotPassword = () => {
         return;
       }
 
-      const { valid, message, email: storedEmail } = verifyOTP(otp);
+      // In a real implementation, verify OTP with Supabase
+      // For demo purposes, we'll directly move to the reset step
+      // and assume the OTP is valid
       
-      if (!valid) {
-        setErrorMessage(message);
+      if (!verificationId) {
+        setErrorMessage('Verification session expired. Please restart the process.');
         setIsLoading(false);
         return;
       }
       
-      // Now, establish a session using magic link or OTP flow
-      // In a real app, this would be handled server-side for security
-      // This is just for demo purposes
-      if (storedEmail) {
-        // We could authenticate here, but for security it should be done server-side
-        // For the demo, we'll just proceed to the reset step
-        setEmail(storedEmail);
+      // Get stored email
+      const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
+      if (!storedEmail) {
+        setErrorMessage('Verification session not found. Please restart the process.');
+        setIsLoading(false);
+        return;
       }
       
-      setCurrentStep('reset');
-      toast.success('Verification successful');
+      setEmail(storedEmail);
+      
+      // Attempt to verify OTP through Supabase
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          email: storedEmail,
+          token: otp,
+          type: 'recovery'
+        });
+        
+        if (error) {
+          console.error('OTP verification error:', error);
+          setErrorMessage('Invalid verification code. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Move to reset step
+        setCurrentStep('reset');
+        toast.success('Verification successful');
+      } catch (verifyError: any) {
+        console.error('Error during OTP verification:', verifyError);
+        setErrorMessage(verifyError?.message || 'Error verifying code');
+        setIsLoading(false);
+      }
       
     } catch (error: any) {
       console.error('OTP verification error:', error);
@@ -229,130 +235,65 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Check if we have a token from the URL - use the normal password update flow
-      const token = searchParams.get('token');
+      // Use the updatePassword method from useAuth context
+      const { error } = await updatePassword(newPassword);
       
-      if (token || hasValidToken) {
-        // For a real token from Supabase email link, we use updateUser
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
+      if (error) {
+        console.error('Password update error:', error);
         
-        if (error) {
-          console.error('Password update error:', error);
-          
-          // Handle the "Auth session missing" error
-          if (error.message.includes('Auth session missing')) {
-            // Try a different approach - use the token from the URL to set a session
-            try {
-              const { data: sessionData, error: sessionError } = await supabase.auth.verifyOtp({
-                email,
-                token: token || accessToken || '',
-                type: 'recovery'
-              });
-              
-              if (sessionError) {
-                console.error('Error verifying token:', sessionError);
-                setErrorMessage('Your password reset link is invalid or has expired. Please restart the process.');
-                setIsLoading(false);
-                return;
-              }
-              
-              // Now we should have a valid session, try updating password again
-              const { error: updateError } = await supabase.auth.updateUser({
-                password: newPassword
-              });
-              
-              if (updateError) {
-                console.error('Password update error after session verification:', updateError);
-                setErrorMessage(updateError.message || 'Failed to update password');
-                setIsLoading(false);
-                return;
-              }
-            } catch (verifyError) {
-              console.error('Error during token verification:', verifyError);
-              setErrorMessage('Authentication failed. Please try using the reset link from your email again.');
+        // Handle the "Auth session missing" error
+        if (error.message.includes('Auth session missing')) {
+          try {
+            // Try to directly update the password using Supabase's recovery flow
+            const { data, error: updateError } = await supabase.auth.updateUser({
+              password: newPassword
+            });
+            
+            if (updateError) {
+              console.error('Password update error after handling missing session:', updateError);
+              setErrorMessage(updateError.message || 'Failed to update password');
               setIsLoading(false);
               return;
             }
-          } else {
-            setErrorMessage(error.message || 'Failed to update password');
+            
+            if (data) {
+              // Password updated successfully
+              toast.success('Password has been reset successfully');
+              
+              // Clean up verification session if it exists
+              if (verificationId) {
+                sessionStorage.removeItem(`email_${verificationId}`);
+              }
+              
+              setTimeout(() => {
+                navigate('/auth');
+              }, 1500);
+              return;
+            }
+          } catch (updateError: any) {
+            console.error('Error during direct password update:', updateError);
+            setErrorMessage('Authentication error. Please try using the reset link from your email again.');
             setIsLoading(false);
             return;
           }
+        } else {
+          setErrorMessage(error.message || 'Failed to update password');
+          setIsLoading(false);
+          return;
         }
       } else {
-        // For OTP-based verification, we need a secure server-side implementation
-        // Since we're in a demo without a server, we'll make a best effort
+        // Password updated successfully
+        toast.success('Password has been reset successfully');
         
-        // Get the stored email from the OTP verification
-        if (!verificationId) {
-          setErrorMessage('Verification session expired. Please restart the process.');
-          setIsLoading(false);
-          return;
+        // Clean up verification session if it exists
+        if (verificationId) {
+          sessionStorage.removeItem(`email_${verificationId}`);
         }
         
-        const storedData = sessionStorage.getItem(`otp_${verificationId}`);
-        if (!storedData) {
-          setErrorMessage('Verification session not found. Please restart the process.');
-          setIsLoading(false);
-          return;
-        }
-        
-        const { email: storedEmail } = JSON.parse(storedData);
-        
-        try {
-          // For demo purposes, we'll try to authenticate with a passwordless flow
-          // In production, this should be handled server-side with proper security
-          
-          // First, initiate a passwordless sign-in
-          const { error: signInError } = await supabase.auth.signInWithOtp({
-            email: storedEmail,
-            options: {
-              shouldCreateUser: false,
-            }
-          });
-          
-          if (signInError) {
-            console.error('Error during passwordless sign-in:', signInError);
-            toast.warning('In a real app, this would be handled securely on the server');
-            toast.success('Password has been reset successfully (demo)');
-            
-            // Clean up the OTP session
-            sessionStorage.removeItem(`otp_${verificationId}`);
-            
-            // In a production app, we'd make a secure API call to reset the password
-            setTimeout(() => {
-              navigate('/auth');
-            }, 2000);
-            
-            return;
-          }
-          
-          // Let the user know what's happening
-          toast.info('We sent you an email with a link to complete your password reset');
-          toast.warning('In a real app, this would be handled securely on the server');
-          
-          // Clean up the OTP session
-          sessionStorage.removeItem(`otp_${verificationId}`);
-          
-          setTimeout(() => {
-            navigate('/auth');
-          }, 4000);
-          
-          return;
-        } catch (otpError) {
-          console.error('Error during OTP-based password reset:', otpError);
-          setErrorMessage('Error during password reset. Please try again or use the email link method.');
-          setIsLoading(false);
-          return;
-        }
+        setTimeout(() => {
+          navigate('/auth');
+        }, 1500);
       }
-      
-      toast.success('Password has been reset successfully');
-      setTimeout(() => {
-        navigate('/auth');
-      }, 1500);
     } catch (error: any) {
       console.error('Password update error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
@@ -364,16 +305,8 @@ const ForgotPassword = () => {
   const handleBackToEmail = () => {
     setCurrentStep('email');
     setOtp('');
+    setErrorMessage(null);
   };
-
-  // Check for verification ID in URL
-  useEffect(() => {
-    const urlVerificationId = searchParams.get('verification');
-    if (urlVerificationId && currentStep === 'email') {
-      setVerificationId(urlVerificationId);
-      setCurrentStep('otp');
-    }
-  }, [searchParams, currentStep]);
 
   return (
     <ForgotPasswordLayout 

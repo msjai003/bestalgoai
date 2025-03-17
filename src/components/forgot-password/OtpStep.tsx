@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface OtpStepProps {
   otp: string;
@@ -51,6 +52,7 @@ const OtpStep: React.FC<OtpStepProps> = ({
         <p className="text-sm text-gray-400 mb-4">
           Enter the 6-digit code sent to your email
         </p>
+        
         <div className="flex justify-center mb-6">
           <div className="flex gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
