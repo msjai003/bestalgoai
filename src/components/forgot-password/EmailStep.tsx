@@ -26,6 +26,7 @@ const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSub
           disabled={isLoading}
           required
           autoComplete="email"
+          aria-required="true"
         />
       </div>
       <Button

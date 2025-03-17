@@ -121,16 +121,19 @@ const ForgotPassword = () => {
     try {
       if (!email.trim()) {
         setErrorMessage('Please enter your email address.');
+        setIsLoading(false);
         return;
       }
 
       console.log(`Requesting password reset for email: ${email}`);
+      
       // Use the resetPassword method from useAuth context
       const { error } = await resetPassword(email);
       
       if (error) {
         console.error('Password reset request error:', error);
         setErrorMessage(error.message || 'Failed to send verification email');
+        setIsLoading(false);
         return;
       }
       
@@ -143,7 +146,8 @@ const ForgotPassword = () => {
       
       // Move to OTP step
       setCurrentStep('otp');
-      toast.success('Password reset link sent to your email. Please check your inbox.');
+      toast.success('Verification code sent to your email with message "your verification otp is here"');
+      console.log("Email sent successfully, moved to OTP step");
       
     } catch (error: any) {
       console.error('Password reset request error:', error);
@@ -161,6 +165,7 @@ const ForgotPassword = () => {
     try {
       if (!otp.trim() || otp.length !== 6) {
         setErrorMessage('Please enter a valid 6-digit verification code');
+        setIsLoading(false);
         return;
       }
 
@@ -168,6 +173,7 @@ const ForgotPassword = () => {
       
       if (!verificationId) {
         setErrorMessage('Verification session expired. Please restart the process.');
+        setIsLoading(false);
         return;
       }
       
@@ -175,6 +181,7 @@ const ForgotPassword = () => {
       const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
       if (!storedEmail) {
         setErrorMessage('Verification session not found. Please restart the process.');
+        setIsLoading(false);
         return;
       }
       
@@ -192,6 +199,7 @@ const ForgotPassword = () => {
         if (error) {
           console.error('OTP verification error:', error);
           setErrorMessage('Invalid verification code. Please try again.');
+          setIsLoading(false);
           return;
         }
         
@@ -202,6 +210,7 @@ const ForgotPassword = () => {
       } catch (verifyError: any) {
         console.error('Error during OTP verification:', verifyError);
         setErrorMessage(verifyError?.message || 'Error verifying code');
+        setIsLoading(false);
       }
       
     } catch (error: any) {
@@ -220,16 +229,19 @@ const ForgotPassword = () => {
     try {
       if (!newPassword.trim() || !confirmPassword.trim()) {
         setErrorMessage('Please enter both password fields');
+        setIsLoading(false);
         return;
       }
 
       if (newPassword !== confirmPassword) {
         setErrorMessage('Passwords do not match');
+        setIsLoading(false);
         return;
       }
 
       if (newPassword.length < 8) {
         setErrorMessage('Password must be at least 8 characters');
+        setIsLoading(false);
         return;
       }
 
@@ -252,6 +264,7 @@ const ForgotPassword = () => {
             if (updateError) {
               console.error('Password update error after handling missing session:', updateError);
               setErrorMessage(updateError.message || 'Failed to update password');
+              setIsLoading(false);
               return;
             }
             
@@ -273,10 +286,12 @@ const ForgotPassword = () => {
           } catch (updateError: any) {
             console.error('Error during direct password update:', updateError);
             setErrorMessage('Authentication error. Please try using the reset link from your email again.');
+            setIsLoading(false);
             return;
           }
         } else {
           setErrorMessage(error.message || 'Failed to update password');
+          setIsLoading(false);
           return;
         }
       } else {
