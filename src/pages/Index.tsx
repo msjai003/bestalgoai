@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import FeedbackList from '@/components/FeedbackList';
+import { StrategyPerformance } from '@/components/StrategyPerformance';
 
 const Index = () => {
   const [signupForm, setSignupForm] = useState({
@@ -65,6 +66,10 @@ const Index = () => {
       <main className="pt-16">
         <Hero />
         <Features />
+        
+        {/* Add Strategy Performance Section */}
+        <StrategyPerformance />
+        
         <CTA />
         
         {/* Signup Section */}
