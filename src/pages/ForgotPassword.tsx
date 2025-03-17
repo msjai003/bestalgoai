@@ -6,6 +6,13 @@ import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLay
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
 
+// Custom error type that might include status
+interface ApiError extends Error {
+  status?: number;
+  statusCode?: number;
+  code?: string;
+}
+
 const ForgotPassword = () => {
   const [step, setStep] = useState<number>(1);
   const [email, setEmail] = useState<string>('');
@@ -34,8 +41,9 @@ const ForgotPassword = () => {
       if (error) {
         console.error('Password reset request error:', error);
         
-        // Handle timeout errors specifically
-        if (error.status === 504 || error.message?.includes('timeout')) {
+        // Handle timeout errors specifically - safely check status property
+        const apiError = error as ApiError;
+        if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
           setErrorMessage('The server took too long to respond. Please try again.');
         } else {
           setErrorMessage(error.message || 'Failed to send reset instructions');
@@ -53,10 +61,10 @@ const ForgotPassword = () => {
       console.error('Password reset request error:', error);
       
       // Check for timeout or network errors
-      if (error.status === 504 || error.message?.includes('timeout')) {
+      if (error && (error.status === 504 || error.message?.includes('timeout'))) {
         setErrorMessage('Network timeout. Please check your connection and try again.');
       } else {
-        setErrorMessage(error.message || 'Failed to send reset instructions');
+        setErrorMessage(error?.message || 'Failed to send reset instructions');
       }
     } finally {
       setIsLoading(false);
@@ -99,8 +107,9 @@ const ForgotPassword = () => {
       const { error: updateError } = await updatePassword(newPassword);
 
       if (updateError) {
-        // Handle timeout errors specifically
-        if (updateError.status === 504 || updateError.message?.includes('timeout')) {
+        // Handle timeout errors specifically - safely check status property
+        const apiError = updateError as ApiError;
+        if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
           setErrorMessage('The server took too long to respond. Please try again.');
         } else {
           setErrorMessage(updateError.message);
@@ -114,10 +123,10 @@ const ForgotPassword = () => {
       console.error('Password reset error:', error);
       
       // Check for timeout or network errors
-      if (error.status === 504 || error.message?.includes('timeout')) {
+      if (error && (error.status === 504 || error.message?.includes('timeout'))) {
         setErrorMessage('Network timeout. Please check your connection and try again.');
       } else {
-        setErrorMessage(error.message || 'Failed to reset password');
+        setErrorMessage(error?.message || 'Failed to reset password');
       }
     } finally {
       setIsLoading(false);
