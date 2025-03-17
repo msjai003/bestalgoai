@@ -35,6 +35,7 @@ import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
 import ForgotPassword from "./pages/ForgotPassword";
 import AuthCallback from "./pages/AuthCallback";
+import PerformanceMetrics from "./pages/PerformanceMetrics";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,11 @@ function AppRoutes() {
       <Route path="/community" element={
         <ProtectedRoute>
           <CommunityLearning />
+        </ProtectedRoute>
+      } />
+      <Route path="/performance-metrics" element={
+        <ProtectedRoute>
+          <PerformanceMetrics />
         </ProtectedRoute>
       } />
       <Route path="/risk-management" element={
