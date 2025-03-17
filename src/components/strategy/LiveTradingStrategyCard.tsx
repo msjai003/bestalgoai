@@ -1,6 +1,5 @@
-
 import React from "react";
-import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
+import { BarChart2, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -77,7 +76,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
         )}
         
-        {/* Add trade type display */}
         {strategy.tradeType && (
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-300 text-sm">Trade Type</span>
@@ -101,15 +99,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </div>
       
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">
-            {strategy.isLive ? "Live" : "Paper"}
+        <div className="flex items-center gap-3">
+          <span className={`text-sm ${!strategy.isLive ? "text-blue-400" : "text-gray-400"}`}>
+            Paper
           </span>
           <Switch
             checked={strategy.isLive}
             onCheckedChange={onToggleLiveMode}
             className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
           />
+          <span className={`text-sm ${strategy.isLive ? "text-pink-400" : "text-gray-400"}`}>
+            Live
+          </span>
         </div>
         <Button
           variant="outline"
