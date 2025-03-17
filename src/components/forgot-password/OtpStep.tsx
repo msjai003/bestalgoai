@@ -44,23 +44,37 @@ const OtpStep: React.FC<OtpStepProps> = ({
           Enter the 6-digit code sent to your email
         </p>
         <div className="flex justify-center mb-6">
-          <InputOTP
-            value={otp}
-            onChange={setOtp}
-            maxLength={6}
-            render={({ slots }) => (
-              <InputOTPGroup>
-                {slots.map((slot, index) => (
-                  <InputOTPSlot
-                    key={index}
-                    index={index}
-                    {...slot}
-                    className="bg-gray-800/50 border-gray-700 text-white"
-                  />
-                ))}
-              </InputOTPGroup>
-            )}
-          />
+          <div className="flex gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Input
+                key={i}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                pattern="[0-9]"
+                className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
+                value={otp[i] || ''}
+                onChange={(e) => {
+                  const newOtp = otp.split('');
+                  newOtp[i] = e.target.value;
+                  setOtp(newOtp.join(''));
+                  
+                  // Auto-focus next input
+                  if (e.target.value && i < 5) {
+                    const nextInput = e.target.parentElement?.nextElementSibling?.querySelector('input');
+                    if (nextInput) nextInput.focus();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  // Handle backspace and move to previous input
+                  if (e.key === 'Backspace' && !otp[i] && i > 0) {
+                    const prevInput = e.currentTarget.parentElement?.previousElementSibling?.querySelector('input');
+                    if (prevInput) prevInput.focus();
+                  }
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
       

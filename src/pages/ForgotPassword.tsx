@@ -50,20 +50,20 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Send password reset email with a link
+      // In a real implementation with Supabase, we would use resetPasswordForEmail
+      // But for demonstration with OTP flow, we simulate sending an OTP
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/forgot-password`,
       });
 
       if (error) {
         console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send reset link');
+        setErrorMessage(error.message || 'Failed to send verification code');
         setIsLoading(false);
         return;
       }
 
-      // In a real OTP implementation, we would send an OTP via email here
-      // For now, we'll simulate it by moving to the OTP step
+      // For OTP demo, move to the OTP verification step
       setCurrentStep('otp');
       toast.success('Verification code sent to your email');
       setIsLoading(false);
@@ -86,8 +86,8 @@ const ForgotPassword = () => {
         return;
       }
 
-      // In a real implementation, we would verify the OTP with a backend service
-      // For demo purposes, we'll accept any 6-digit code
+      // For demo purposes, we simulate OTP verification
+      // In a real implementation, you would verify the OTP with a backend service
       setTimeout(() => {
         setCurrentStep('reset');
         setIsLoading(false);
@@ -124,7 +124,8 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Update password
+      // For demo purposes, we simulate password update
+      // In a real implementation with Supabase token, this would work
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
