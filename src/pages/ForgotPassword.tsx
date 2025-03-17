@@ -36,10 +36,16 @@ const ForgotPassword = () => {
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
+    // Use signInWithOtp with specific options to request a 6-digit OTP
     const { error } = await supabase.auth.signInWithOtp({
       email: emailAddress,
       options: {
         shouldCreateUser: false, // Don't create a new user if they don't exist
+        // Forcing OTP instead of magic link
+        data: {
+          otp_type: 'numeric', // Request a numeric OTP
+          otp_length: 6, // Request a 6-digit OTP
+        }
       }
     });
     
