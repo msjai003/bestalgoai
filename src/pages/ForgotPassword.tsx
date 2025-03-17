@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 // Custom error type that might include status
 interface ApiError extends Error {
@@ -23,7 +24,8 @@ const ForgotPassword = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cooldownActive, setCooldownActive] = useState<boolean>(false);
   const [cooldownTime, setCooldownTime] = useState<number>(0);
-  const { resetPassword } = useAuth();
+  const { updatePassword } = useAuth();
+  const navigate = useNavigate();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,70 +65,66 @@ const ForgotPassword = () => {
         return;
       }
       
-      // First check if the email exists in Supabase
-      const { data: userExists, error: checkError } = await supabase.auth.resetPasswordForEmail(email);
-      
-      if (checkError) {
-        console.error('Password reset request error:', checkError);
-        
-        // Handle rate limit exceeded error
-        if (checkError.message.includes('rate limit') || (checkError as ApiError).code === 'over_email_send_rate_limit') {
-          setCooldownActive(true);
-          // Set a 60-second cooldown (adjust as needed)
-          const cooldownPeriod = 60;
-          setCooldownTime(cooldownPeriod);
-          
-          // Start cooldown timer
-          const timer = setInterval(() => {
-            setCooldownTime(prev => {
-              if (prev <= 1) {
-                clearInterval(timer);
-                setCooldownActive(false);
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          
-          setErrorMessage(`Email rate limit exceeded. Please wait ${cooldownPeriod} seconds before trying again.`);
-          setIsLoading(false);
-          return;
-        }
-        
-        if (checkError.message.includes('user not found')) {
+      // First, sign in with email and password to verify user exists
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'temporary-for-check-only' // We're just checking if the user exists
+      });
+
+      // If user doesn't exist, signInError will occur
+      if (signInError) {
+        // Check if the error is "Invalid login credentials" which means the user exists
+        // but password is wrong (which is what we expect)
+        if (signInError.message.includes('Invalid login credentials')) {
+          // User exists, proceed with password update
+          // Update the user's password directly
+          const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+          });
+
+          if (updateError) {
+            console.error('Password update error:', updateError);
+            
+            // Handle rate limit exceeded error
+            if (updateError.message.includes('rate limit') || (updateError as ApiError).code === 'over_email_send_rate_limit') {
+              setCooldownActive(true);
+              const cooldownPeriod = 60;
+              setCooldownTime(cooldownPeriod);
+              
+              const timer = setInterval(() => {
+                setCooldownTime(prev => {
+                  if (prev <= 1) {
+                    clearInterval(timer);
+                    setCooldownActive(false);
+                    return 0;
+                  }
+                  return prev - 1;
+                });
+              }, 1000);
+              
+              setErrorMessage(`Rate limit exceeded. Please wait ${cooldownPeriod} seconds before trying again.`);
+            } else {
+              setErrorMessage(updateError.message || 'Failed to update password');
+            }
+          } else {
+            // Password updated successfully
+            toast.success('Password has been updated successfully');
+            // Navigate to login page
+            navigate('/auth');
+          }
+        } else if (signInError.message.includes('user not found') || signInError.message.includes('Invalid user credentials')) {
           setErrorMessage('No account found with this email address');
         } else {
-          // Handle timeout errors specifically - safely check status property
-          const apiError = checkError as ApiError;
-          if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
-            setErrorMessage('The server took too long to respond. Please try again.');
-          } else {
-            setErrorMessage(checkError.message || 'Failed to reset password');
-          }
+          setErrorMessage(signInError.message || 'Failed to verify account');
         }
-        setIsLoading(false);
-        return;
+      } else {
+        // If sign in succeeded with our dummy password, something is wrong
+        setErrorMessage('Unexpected authentication response. Please try again.');
       }
-
-      // Since resetPasswordForEmail does not immediately change the password but sends an email,
-      // we need to inform the user that further instructions were sent
-      toast.success('Password reset instructions have been sent to your email');
-      
-      // Reset the form and show a helpful message
-      setNewPassword('');
-      setConfirmPassword('');
-      setErrorMessage('Check your email for password reset instructions');
-      setIsLoading(false);
-      
     } catch (error: any) {
       console.error('Password reset error:', error);
-      
-      // Check for timeout or network errors
-      if (error && ((error as ApiError).status === 504 || error.message?.includes('timeout'))) {
-        setErrorMessage('Network timeout. Please check your connection and try again.');
-      } else {
-        setErrorMessage(error?.message || 'Failed to reset password');
-      }
+      setErrorMessage(error?.message || 'Failed to reset password');
+    } finally {
       setIsLoading(false);
     }
   };
