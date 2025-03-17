@@ -15,7 +15,7 @@ interface OtpStepProps {
   setNewPassword: (password: string) => void;
   confirmPassword: string;
   setConfirmPassword: (password: string) => void;
-  email: string; // Email prop
+  email: string;
 }
 
 const OtpStep: React.FC<OtpStepProps> = ({ 
@@ -28,7 +28,7 @@ const OtpStep: React.FC<OtpStepProps> = ({
   setNewPassword,
   confirmPassword,
   setConfirmPassword,
-  email // Include email prop
+  email
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -64,36 +64,12 @@ const OtpStep: React.FC<OtpStepProps> = ({
         </div>
       </div>
       
-      <div>
-        <Label htmlFor="newPassword" className="text-gray-300 mb-2 block">New Password</Label>
-        <Input
-          id="newPassword"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="••••••••"
-          className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="••••••••"
-          className="bg-gray-800/50 border-gray-700 text-white h-12"
-        />
-      </div>
-      
       <Button
         type="submit"
-        disabled={isLoading || otp.length < 6 || !newPassword || !confirmPassword}
+        disabled={isLoading || otp.length < 6}
         className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
       >
-        {isLoading ? 'Resetting Password...' : 'Reset Password'}
+        {isLoading ? 'Verifying...' : 'Verify Code'}
       </Button>
       
       <div className="text-center mt-4">

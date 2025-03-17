@@ -5,15 +5,17 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
+import OtpStep from '@/components/forgot-password/OtpStep';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
+  const [otp, setOtp] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<'email' | 'reset'>('email');
+  const [currentStep, setCurrentStep] = useState<'email' | 'otp' | 'reset'>('email');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [hasValidToken, setHasValidToken] = useState<boolean>(false);
@@ -60,10 +62,39 @@ const ForgotPassword = () => {
         return;
       }
 
-      toast.success('Password reset link sent to your email');
+      // In a real OTP implementation, we would send an OTP via email here
+      // For now, we'll simulate it by moving to the OTP step
+      setCurrentStep('otp');
+      toast.success('Verification code sent to your email');
       setIsLoading(false);
     } catch (error: any) {
       console.error('Password reset request error:', error);
+      setErrorMessage(error?.message || 'An unexpected error occurred');
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    try {
+      if (!otp.trim() || otp.length !== 6) {
+        setErrorMessage('Please enter a valid 6-digit verification code');
+        setIsLoading(false);
+        return;
+      }
+
+      // In a real implementation, we would verify the OTP with a backend service
+      // For demo purposes, we'll accept any 6-digit code
+      setTimeout(() => {
+        setCurrentStep('reset');
+        setIsLoading(false);
+        toast.success('Verification successful');
+      }, 1500);
+    } catch (error: any) {
+      console.error('OTP verification error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
       setIsLoading(false);
     }
@@ -116,9 +147,14 @@ const ForgotPassword = () => {
     }
   };
 
+  const handleBackToEmail = () => {
+    setCurrentStep('email');
+    setOtp('');
+  };
+
   return (
     <ForgotPasswordLayout 
-      step={currentStep === 'email' ? 1 : 2}
+      step={currentStep === 'email' ? 1 : currentStep === 'otp' ? 2 : 3}
       errorMessage={errorMessage}
       verificationInProgress={verificationInProgress}
     >
@@ -128,6 +164,21 @@ const ForgotPassword = () => {
           setEmail={setEmail} 
           isLoading={isLoading} 
           onSubmit={handleRequestReset} 
+        />
+      )}
+      
+      {currentStep === 'otp' && (
+        <OtpStep
+          otp={otp}
+          setOtp={setOtp}
+          isLoading={isLoading}
+          onSubmit={handleVerifyOtp}
+          onBack={handleBackToEmail}
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          email={email}
         />
       )}
       
