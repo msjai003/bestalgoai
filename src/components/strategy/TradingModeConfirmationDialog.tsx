@@ -32,30 +32,30 @@ export const TradingModeConfirmationDialog = ({
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Confirm Trading Mode Change
+            Select Trading Mode
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            {targetMode === "live" 
-              ? "Are you sure you want to switch to live trading? This will use real funds for trading operations."
-              : "Are you sure you want to switch to paper trading? This will use simulated funds for trading operations."}
+            Choose your preferred trading mode for this strategy
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex gap-2 sm:justify-end">
+        <div className="grid grid-cols-2 gap-4 my-4">
           <Button 
-            variant="secondary" 
-            className="bg-gray-700 hover:bg-gray-600 text-gray-200"
+            variant="outline" 
+            className="bg-gray-700 hover:bg-gray-600 text-gray-200 h-16 flex flex-col"
             onClick={onCancel}
           >
-            Cancel
+            <span className="text-sm font-medium">Paper Trading</span>
+            <span className="text-xs text-gray-400">Uses simulated funds</span>
           </Button>
           <Button 
-            variant={targetMode === "live" ? "destructive" : "default"}
-            className={targetMode === "live" ? "" : "bg-blue-600 hover:bg-blue-700"}
+            variant="destructive"
+            className="h-16 flex flex-col"
             onClick={onConfirm}
           >
-            {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
+            <span className="text-sm font-medium">Live Trading</span>
+            <span className="text-xs">Uses real funds</span>
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

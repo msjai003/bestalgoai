@@ -74,14 +74,7 @@ const StrategySelection = () => {
         </main>
       </TooltipProvider>
       
-      <TradingModeConfirmationDialog 
-        open={confirmDialogOpen}
-        onOpenChange={setConfirmDialogOpen}
-        targetMode={targetMode}
-        onConfirm={handleConfirmLiveMode}
-        onCancel={handleCancelLiveMode}
-      />
-      
+      {/* Modified order of dialogs to match the new flow */}
       <QuantityInputDialog 
         open={quantityDialogOpen}
         onOpenChange={setQuantityDialogOpen}
@@ -94,6 +87,14 @@ const StrategySelection = () => {
         onOpenChange={setBrokerDialogOpen}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
+      />
+      
+      <TradingModeConfirmationDialog 
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        targetMode={targetMode}
+        onConfirm={handleConfirmLiveMode}
+        onCancel={handleCancelLiveMode}
       />
       
       <BottomNav />
