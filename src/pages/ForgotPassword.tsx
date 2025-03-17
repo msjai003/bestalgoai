@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
+import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
 // Custom error type that might include status
 interface ApiError extends Error {
@@ -61,7 +62,7 @@ const ForgotPassword = () => {
       console.error('Password reset request error:', error);
       
       // Check for timeout or network errors
-      if (error && (error.status === 504 || error.message?.includes('timeout'))) {
+      if (error && ((error as ApiError).status === 504 || error.message?.includes('timeout'))) {
         setErrorMessage('Network timeout. Please check your connection and try again.');
       } else {
         setErrorMessage(error?.message || 'Failed to send reset instructions');
@@ -123,7 +124,7 @@ const ForgotPassword = () => {
       console.error('Password reset error:', error);
       
       // Check for timeout or network errors
-      if (error && (error.status === 504 || error.message?.includes('timeout'))) {
+      if (error && ((error as ApiError).status === 504 || error.message?.includes('timeout'))) {
         setErrorMessage('Network timeout. Please check your connection and try again.');
       } else {
         setErrorMessage(error?.message || 'Failed to reset password');
