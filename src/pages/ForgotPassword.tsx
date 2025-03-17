@@ -76,17 +76,14 @@ const ForgotPassword = () => {
         // but password is wrong (which is what we expect)
         if (signInError.message.includes('Invalid login credentials')) {
           // User exists, proceed with password update
-          // Send a password reset link to the user's email
-          const { data, error: updateError } = await supabase.auth.admin.updateUserById(
-            email,
-            { password: newPassword }
-          );
-
-          if (updateError) {
-            console.error('Password update error:', updateError);
+          // First send a password reset request to the user's email
+          const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+          
+          if (resetError) {
+            console.error('Password reset error:', resetError);
             
             // Handle rate limit exceeded error
-            if (updateError.message.includes('rate limit') || (updateError as ApiError).code === 'over_email_send_rate_limit') {
+            if (resetError.message.includes('rate limit') || (resetError as ApiError).code === 'over_email_send_rate_limit') {
               setCooldownActive(true);
               const cooldownPeriod = 60;
               setCooldownTime(cooldownPeriod);
@@ -104,13 +101,47 @@ const ForgotPassword = () => {
               
               setErrorMessage(`Rate limit exceeded. Please wait ${cooldownPeriod} seconds before trying again.`);
             } else {
-              setErrorMessage(updateError.message || 'Failed to update password');
+              setErrorMessage(resetError.message || 'Failed to send password reset email');
             }
           } else {
-            // Password reset initiated successfully
-            toast.success('Password has been reset successfully');
-            // Navigate to login page
-            navigate('/auth');
+            // Now, we'll directly update the user's password using the client-side auth API
+            // This is a workaround that doesn't require the user to check their email
+            try {
+              // Attempt to sign in with the reset token from the URL if present
+              const params = new URLSearchParams(window.location.search);
+              const accessToken = params.get('access_token');
+              
+              if (accessToken) {
+                // If we have a token in the URL, use it to set the session
+                const { data, error } = await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: '',
+                });
+                
+                if (error) {
+                  console.error('Error setting session:', error);
+                  setErrorMessage('Error authenticating. Please try again.');
+                  setIsLoading(false);
+                  return;
+                }
+              }
+              
+              // Now update the password
+              const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+                password: newPassword
+              });
+              
+              if (updateError) {
+                console.error('Final password update error:', updateError);
+                setErrorMessage(updateError.message || 'Failed to update password');
+              } else {
+                toast.success('Password has been reset successfully');
+                navigate('/auth');
+              }
+            } catch (finalError: any) {
+              console.error('Error in password update process:', finalError);
+              setErrorMessage(finalError.message || 'Error updating password');
+            }
           }
         } else if (signInError.message.includes('user not found') || signInError.message.includes('Invalid user credentials')) {
           setErrorMessage('No account found with this email address');
