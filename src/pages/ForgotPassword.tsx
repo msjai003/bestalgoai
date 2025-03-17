@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
-import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
+import { supabase } from '@/integrations/supabase/client';
 
 // Custom error type that might include status
 interface ApiError extends Error {
@@ -22,7 +22,7 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { resetPassword, updatePassword } = useAuth();
+  const { resetPassword } = useAuth();
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +36,10 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Send the actual reset password email
-      const { error } = await resetPassword(email);
+      // Request OTP via Supabase's auth system
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/forgot-password',
+      });
       
       if (error) {
         console.error('Password reset request error:', error);
@@ -72,7 +74,7 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
@@ -104,22 +106,49 @@ const ForgotPassword = () => {
         return;
       }
       
-      // Update the password
-      const { error: updateError } = await updatePassword(newPassword);
+      // Verify OTP and update password using Supabase
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'recovery'
+      });
+
+      if (error) {
+        console.error('OTP verification error:', error);
+        // Handle timeout errors specifically - safely check status property
+        const apiError = error as ApiError;
+        if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
+          setErrorMessage('The server took too long to respond. Please try again.');
+        } else if (error.message.includes('Invalid') || error.message.includes('expired')) {
+          setErrorMessage('Invalid or expired verification code. Please try again.');
+        } else {
+          setErrorMessage(error.message || 'Failed to verify code');
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      // Now update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
       if (updateError) {
-        // Handle timeout errors specifically - safely check status property
+        console.error('Password update error:', updateError);
         const apiError = updateError as ApiError;
         if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
           setErrorMessage('The server took too long to respond. Please try again.');
         } else {
-          setErrorMessage(updateError.message);
+          setErrorMessage(updateError.message || 'Failed to update password');
         }
-      } else {
-        toast.success('Password has been reset successfully');
-        // Redirect to login after successful reset
-        window.location.href = '/auth';
+        setIsLoading(false);
+        return;
       }
+
+      toast.success('Password has been reset successfully');
+      // Redirect to login after successful reset
+      window.location.href = '/auth';
+      
     } catch (error: any) {
       console.error('Password reset error:', error);
       
@@ -155,9 +184,9 @@ const ForgotPassword = () => {
             confirmPassword={confirmPassword}
             setConfirmPassword={setConfirmPassword}
             isLoading={isLoading} 
-            onSubmit={handleResetPassword} 
+            onSubmit={handleVerifyOTP} 
             onBack={() => setStep(1)}
-            email={email} // Pass the email to OtpStep
+            email={email}
           />
         );
       default:
