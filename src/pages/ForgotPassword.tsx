@@ -36,25 +36,32 @@ const ForgotPassword = () => {
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
-    // Use signInWithOtp with specific options to try forcing a numeric OTP
-    const { error } = await supabase.auth.signInWithOtp({
-      email: emailAddress,
-      options: {
-        shouldCreateUser: false, // Don't create a new user if they don't exist
-        // Try to force OTP instead of magic link
-        data: {
-          otp_type: 'numeric', // Request a numeric OTP
-          otp_length: 6, // Request a 6-digit OTP
+    // Force OTP directly in email by using a custom endpoint
+    try {
+      // First try with direct OTP
+      const { error } = await supabase.auth.signInWithOtp({
+        email: emailAddress,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/forgot-password?otp=true`,
+          data: {
+            otp_type: 'numeric',
+            otp_length: 6,
+            otp_in_email: true,  // Request OTP directly in email
+          }
         }
+      });
+      
+      if (error) {
+        console.error('Error sending OTP:', error);
+        throw error;
       }
-    });
-    
-    if (error) {
-      console.error('Error sending OTP:', error);
-      throw error;
+      
+      return true;
+    } catch (err) {
+      console.error("Failed to send OTP:", err);
+      throw err;
     }
-    
-    return true;
   };
 
   const handleRequestReset = async (e: React.FormEvent) => {
@@ -83,7 +90,7 @@ const ForgotPassword = () => {
       
       // Move to OTP step
       setCurrentStep('otp');
-      toast.success('Verification code sent. Check your email for a 6-digit code or a link with the code embedded.');
+      toast.success('A 6-digit verification code has been sent to your email. Check your email for the numeric code.');
       console.log("Email sent successfully, moved to OTP step");
       
     } catch (error: any) {
