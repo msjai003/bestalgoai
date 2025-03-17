@@ -11,15 +11,34 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // The hash contains the access token and other auth-related information
+        // First check for recovery token in URL (for password reset links)
+        const searchParams = new URLSearchParams(window.location.search);
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
+        
+        console.log('Auth callback processing, search params:', { token: !!token, type });
+        
+        // If this is a recovery flow with token in the URL
+        if (token && type === 'recovery') {
+          console.log('Processing password recovery with token');
+          // Redirect to forgot-password page with the token
+          navigate(`/forgot-password?token=${token}&type=${type}`);
+          return;
+        }
+        
+        // Handle hash fragment tokens (normal auth flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+        const hashType = hashParams.get('type');
         
-        console.log('Auth callback processing, hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log('Auth callback processing hash params:', { 
+          accessToken: !!accessToken, 
+          refreshToken: !!refreshToken, 
+          type: hashType 
+        });
         
-        // If we have tokens in the URL, we came from a successful auth flow
+        // If we have tokens in the URL hash, we came from a successful auth flow
         if (accessToken && refreshToken) {
           try {
             // Try to set the session with the tokens from the URL
@@ -37,8 +56,8 @@ const AuthCallback = () => {
             console.log('Auth callback: Session set successfully');
             
             // Check if this is a password reset flow
-            if (type === 'recovery') {
-              console.log('Auth callback: Redirecting to forgot-password');
+            if (hashType === 'recovery') {
+              console.log('Auth callback: Redirecting to forgot-password for hash recovery');
               navigate('/forgot-password?type=recovery');
               return;
             }
@@ -51,8 +70,8 @@ const AuthCallback = () => {
           }
         } else {
           // No tokens found but we're on the callback page
-          const error = new URLSearchParams(window.location.search).get('error');
-          const errorDescription = new URLSearchParams(window.location.search).get('error_description');
+          const error = searchParams.get('error');
+          const errorDescription = searchParams.get('error_description');
           
           if (error) {
             console.error('Auth callback error:', error, errorDescription);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -24,45 +23,67 @@ const ForgotPassword = () => {
   const [magicLinkSessionActive, setMagicLinkSessionActive] = useState<boolean>(false);
   const { resetPassword, updatePassword } = useAuth();
 
-  // Check for verification ID, magic link tokens, and other parameters when component mounts
   useEffect(() => {
     const checkForMagicLink = async () => {
-      // Get all URL parameters
-      const urlVerificationId = searchParams.get('verification');
+      const token = searchParams.get('token');
       const type = searchParams.get('type');
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
-      const token = searchParams.get('token');
+      const urlVerificationId = searchParams.get('verification');
 
       console.log("Checking for magic link or parameters in URL");
-      console.log("URL parameters:", { type, accessToken, refreshToken, token, urlVerificationId });
+      console.log("URL parameters:", { token, type, accessToken, refreshToken, urlVerificationId });
       
-      // If this is a magic link authentication
-      if (type === 'recovery' || accessToken || refreshToken || token) {
+      if (token && type === 'recovery') {
+        console.log("Recovery token detected in URL");
+        setVerificationInProgress(true);
+        
+        try {
+          console.log("Attempting to verify recovery token");
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery',
+          });
+          
+          if (error) {
+            console.error("Error verifying token:", error);
+            setErrorMessage('Your password reset link is invalid or has expired.');
+            setVerificationInProgress(false);
+            return;
+          }
+          
+          console.log("Token verification successful, checking session");
+          const sessionData = await supabase.auth.getSession();
+          
+          if (sessionData.data.session) {
+            console.log("Active session found from recovery token");
+            const userEmail = sessionData.data.session.user.email;
+            if (userEmail) {
+              setEmail(userEmail);
+              setMagicLinkSessionActive(true);
+              setCurrentStep('reset');
+              toast.success('You can now set your new password');
+            } else {
+              setErrorMessage('Could not retrieve your email. Please try again.');
+            }
+          } else {
+            console.error("No session found after token verification");
+            setErrorMessage('Your password reset link is invalid or has expired.');
+          }
+        } catch (error) {
+          console.error('Error processing recovery token:', error);
+          setErrorMessage('An error occurred while processing your password reset link.');
+        } finally {
+          setVerificationInProgress(false);
+        }
+        return;
+      }
+      
+      if (type === 'recovery' || accessToken || refreshToken) {
         console.log("Magic link authentication detected");
         setVerificationInProgress(true);
         
         try {
-          // Try to exchange the token if present
-          if (token) {
-            console.log("Attempting to use recovery token");
-            try {
-              const { data, error } = await supabase.auth.verifyOtp({
-                token_hash: token,
-                type: 'recovery',
-              });
-              
-              if (error) {
-                console.error("Error verifying token:", error);
-              } else {
-                console.log("Token verification response:", data);
-              }
-            } catch (tokenError) {
-              console.error("Exception during token verification:", tokenError);
-            }
-          }
-          
-          // Get the user's session after magic link click
           const { data, error } = await supabase.auth.getSession();
           
           if (error) {
@@ -74,12 +95,10 @@ const ForgotPassword = () => {
           
           if (data.session) {
             console.log("Active session found from magic link");
-            // Extract email from the session
             const userEmail = data.session.user.email;
             if (userEmail) {
               setEmail(userEmail);
               setMagicLinkSessionActive(true);
-              // Skip directly to the password reset step
               setCurrentStep('reset');
               toast.success('You can now set your new password');
             } else {
@@ -98,7 +117,6 @@ const ForgotPassword = () => {
         return;
       }
       
-      // Original verification ID logic
       if (urlVerificationId && currentStep === 'email') {
         console.log("Found verification ID in URL, moving to OTP step");
         setVerificationId(urlVerificationId);
@@ -109,35 +127,22 @@ const ForgotPassword = () => {
     checkForMagicLink();
   }, [searchParams, currentStep]);
 
-  // Modified to address the TypeScript error
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
-      // Use signInWithOtp instead of resetPasswordForEmail to use the data property
-      const { error } = await supabase.auth.signInWithOtp({
-        email: emailAddress,
-        options: {
-          shouldCreateUser: false,
-          // Enable actual magic link redirect to proper auth callback path
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            force_otp: true,
-            otp_type: 'numeric',
-            otp_length: 6,
-            otp_in_email: true
-          }
-        }
+      const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
+        redirectTo: `${window.location.origin}/auth/callback`,
       });
       
       if (error) {
-        console.error('Error sending OTP:', error);
+        console.error('Error sending password reset email:', error);
         throw error;
       }
       
       return true;
     } catch (err) {
-      console.error("Failed to send OTP:", err);
+      console.error("Failed to send password reset email:", err);
       throw err;
     }
   };
@@ -156,17 +161,13 @@ const ForgotPassword = () => {
 
       console.log(`Requesting password reset for email: ${email}`);
       
-      // Send OTP for re-authentication
       await sendOtpToEmail(email);
       
-      // Generate verification ID
       const verificationId = Date.now().toString();
       setVerificationId(verificationId);
       
-      // Store email in session for verification
       sessionStorage.setItem(`email_${verificationId}`, email);
       
-      // Move to OTP step
       setCurrentStep('otp');
       toast.success('A verification code has been sent to your email. Check your email for the numeric code or use the magic link.');
       console.log("Email sent successfully, moved to OTP step");
@@ -182,7 +183,6 @@ const ForgotPassword = () => {
   const handleResendOtp = async () => {
     try {
       if (!email) {
-        // Try to recover email from session storage
         if (verificationId) {
           const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
           if (storedEmail) {
@@ -223,7 +223,6 @@ const ForgotPassword = () => {
         return;
       }
       
-      // Get stored email
       const storedEmail = sessionStorage.getItem(`email_${verificationId}`);
       if (!storedEmail) {
         setErrorMessage('Verification session not found. Please restart the process.');
@@ -236,11 +235,10 @@ const ForgotPassword = () => {
       try {
         console.log(`Verifying OTP for email: ${storedEmail}`);
         
-        // Manual verification of the OTP code
         const { data, error } = await supabase.auth.verifyOtp({
           email: storedEmail,
           token: otp,
-          type: 'email'  // Use 'email' type since we used signInWithOtp
+          type: 'email'
         });
         
         if (error) {
@@ -252,8 +250,6 @@ const ForgotPassword = () => {
         
         console.log("OTP verification response:", data);
         
-        // Move to reset step
-        console.log("OTP verified successfully, moving to reset step");
         setCurrentStep('reset');
         toast.success('Verification successful');
       } catch (verifyError: any) {
@@ -296,7 +292,6 @@ const ForgotPassword = () => {
 
       console.log("Updating password...");
       
-      // Use the session from OTP verification or magic link to update password directly
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -308,11 +303,9 @@ const ForgotPassword = () => {
         return;
       }
         
-      // Password updated successfully
       console.log("Password updated successfully");
       toast.success('Password has been reset successfully');
       
-      // Clean up verification session if it exists
       if (verificationId) {
         sessionStorage.removeItem(`email_${verificationId}`);
       }
