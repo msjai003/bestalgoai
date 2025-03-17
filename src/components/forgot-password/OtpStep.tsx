@@ -55,6 +55,7 @@ const OtpStep: React.FC<OtpStepProps> = ({
                   <InputOTPGroup key={index} className="bg-gray-800/50 border-gray-700">
                     <InputOTPSlot 
                       {...slot} 
+                      index={index}
                       className="text-white text-center w-10 h-12"
                     />
                   </InputOTPGroup>
