@@ -3,8 +3,8 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, Settings } from "lucide-react";
+import { Strategy } from "@/hooks/strategy/types";
+import { HeartIcon, PlayIcon, BookmarkIcon, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyCardProps {
@@ -88,11 +88,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       onClick={handleDeployClick}
                       disabled={!isAuthenticated}
                     >
-                      <Settings size={20} />
+                      <PlayIcon size={20} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Deploy & Configure Strategy</p>
+                    <p>Deploy Strategy</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
