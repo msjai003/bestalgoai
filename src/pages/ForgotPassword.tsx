@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 
-// Custom error type that might include status
 interface ApiError extends Error {
   status?: number;
   statusCode?: number;
@@ -28,7 +27,6 @@ const ForgotPassword = () => {
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Check if we have an access token in the URL (this means the user clicked the reset link in email)
   useEffect(() => {
     const checkForResetToken = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -36,10 +34,8 @@ const ForgotPassword = () => {
       const type = params.get('type');
       
       if (accessToken && type === 'recovery') {
-        // If we have a recovery token, we're in the reset stage
         setVerificationInProgress(true);
         try {
-          // Set the session with the token
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: '',
@@ -51,7 +47,6 @@ const ForgotPassword = () => {
             setResetStage('request');
             setVerificationInProgress(false);
           } else {
-            // Successfully authenticated with the token
             setResetStage('reset');
             toast.success('Email verified successfully! Please set your new password');
             setVerificationInProgress(false);
@@ -63,7 +58,6 @@ const ForgotPassword = () => {
           setVerificationInProgress(false);
         }
       } else {
-        // No token, so we're in the request stage
         setResetStage('request');
         setVerificationInProgress(false);
       }
@@ -78,32 +72,25 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Validate inputs
       if (!email.trim()) {
         setErrorMessage('Please enter your email address.');
         setIsLoading(false);
         return;
       }
       
-      // Check if cooldown is active
       if (cooldownActive) {
         setErrorMessage(`Too many attempts. Please wait before trying again (${cooldownTime} seconds remaining).`);
         setIsLoading(false);
         return;
       }
       
-      // First, sign in with email and password to verify user exists
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password: 'temporary-for-check-only' // We're just checking if the user exists
+        password: 'temporary-for-check-only'
       });
 
-      // If user doesn't exist, signInError will occur
       if (signInError) {
-        // Check if the error is "Invalid login credentials" which means the user exists
-        // but password is wrong (which is what we expect)
         if (signInError.message.includes('Invalid login credentials')) {
-          // User exists, proceed with password reset
           const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/forgot-password`,
           });
@@ -111,7 +98,6 @@ const ForgotPassword = () => {
           if (resetError) {
             console.error('Password reset error:', resetError);
             
-            // Handle rate limit exceeded error
             if (resetError.message.includes('rate limit') || (resetError as ApiError).code === 'over_email_send_rate_limit') {
               setCooldownActive(true);
               const cooldownPeriod = 60;
@@ -133,7 +119,6 @@ const ForgotPassword = () => {
               setErrorMessage(resetError.message || 'Failed to send password reset email');
             }
           } else {
-            // Successfully sent the reset email
             toast.success('Password reset link has been sent to your email');
             setErrorMessage(null);
           }
@@ -143,7 +128,6 @@ const ForgotPassword = () => {
           setErrorMessage(signInError.message || 'Failed to verify account');
         }
       } else {
-        // If sign in succeeded with our dummy password, something is wrong
         setErrorMessage('Unexpected authentication response. Please try again.');
       }
     } catch (error: any) {
@@ -160,7 +144,6 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Validate new password
       if (!newPassword.trim() || !confirmPassword.trim()) {
         setErrorMessage('Please enter both password fields');
         setIsLoading(false);
@@ -179,7 +162,6 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Update the user's password
       const { data, error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -190,7 +172,6 @@ const ForgotPassword = () => {
         setIsLoading(false);
       } else {
         toast.success('Password has been reset successfully');
-        // Add a slight delay before redirecting to login
         setTimeout(() => {
           navigate('/auth');
         }, 1500);
@@ -202,11 +183,6 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleBack = () => {
-    setResetStage('request');
-    setErrorMessage(null);
-  };
-
   return (
     <ForgotPasswordLayout 
       step={resetStage === 'request' ? 1 : 2} 
@@ -214,7 +190,6 @@ const ForgotPassword = () => {
       verificationInProgress={verificationInProgress}
     >
       {resetStage === 'request' ? (
-        // Email request form
         <form onSubmit={handleRequestReset} className="space-y-6">
           <div>
             <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
@@ -244,15 +219,15 @@ const ForgotPassword = () => {
           </Button>
         </form>
       ) : (
-        // Using the ResetPasswordStep component for the password reset form
         <ResetPasswordStep
+          email={email}
+          setEmail={setEmail}
           newPassword={newPassword}
           setNewPassword={setNewPassword}
           confirmPassword={confirmPassword}
           setConfirmPassword={setConfirmPassword}
           isLoading={isLoading}
           onSubmit={handleSetNewPassword}
-          onBack={handleBack}
         />
       )}
     </ForgotPasswordLayout>
