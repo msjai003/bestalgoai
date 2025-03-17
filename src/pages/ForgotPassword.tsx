@@ -54,8 +54,8 @@ const ForgotPassword = () => {
         return;
       }
       
-      // First check if the email exists by trying to reset the password
-      const { error: checkError } = await supabase.auth.resetPasswordForEmail(email);
+      // First check if the email exists in Supabase
+      const { data: userExists, error: checkError } = await supabase.auth.resetPasswordForEmail(email);
       
       if (checkError) {
         console.error('Password reset request error:', checkError);
@@ -74,28 +74,15 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Now update the password for the user
-      // Note: In a real implementation, this would require further verification
-      // But for this simplified flow, we'll just update the password directly
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (updateError) {
-        console.error('Password update error:', updateError);
-        const apiError = updateError as ApiError;
-        if (apiError.status === 504 || apiError.statusCode === 504 || apiError.message?.includes('timeout')) {
-          setErrorMessage('The server took too long to respond. Please try again.');
-        } else {
-          setErrorMessage(updateError.message || 'Failed to update password');
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      toast.success('Password has been reset successfully');
-      // Redirect to login after successful reset
-      window.location.href = '/auth';
+      // Since resetPasswordForEmail does not immediately change the password but sends an email,
+      // we need to inform the user that further instructions were sent
+      toast.success('Password reset instructions have been sent to your email');
+      
+      // Reset the form and show a helpful message
+      setNewPassword('');
+      setConfirmPassword('');
+      setErrorMessage('Check your email for password reset instructions');
+      setIsLoading(false);
       
     } catch (error: any) {
       console.error('Password reset error:', error);
@@ -106,7 +93,6 @@ const ForgotPassword = () => {
       } else {
         setErrorMessage(error?.message || 'Failed to reset password');
       }
-    } finally {
       setIsLoading(false);
     }
   };
