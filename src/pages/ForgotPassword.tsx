@@ -119,8 +119,8 @@ const ForgotPassword = () => {
         email: emailAddress,
         options: {
           shouldCreateUser: false,
-          // Enable actual magic link redirect to ForgotPassword page
-          emailRedirectTo: `${window.location.origin}/forgot-password`,
+          // Enable actual magic link redirect to proper auth callback path
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             force_otp: true,
             otp_type: 'numeric',

@@ -34,6 +34,7 @@ import BrokerIntegration from "./pages/BrokerIntegration";
 import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
 import ForgotPassword from "./pages/ForgotPassword";
+import AuthCallback from "./pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
