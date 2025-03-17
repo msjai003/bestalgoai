@@ -20,6 +20,7 @@ const ForgotPassword = () => {
   const [searchParams] = useSearchParams();
   const [hasValidToken, setHasValidToken] = useState<boolean>(false);
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   // Check for token in URL when component mounts (for when user returns after clicking email link)
   useEffect(() => {
@@ -38,6 +39,69 @@ const ForgotPassword = () => {
     }
   }, [searchParams]);
 
+  const generateAndSendOTP = async (email: string) => {
+    // Generate a random 6-digit OTP
+    const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    try {
+      // Store the OTP in the session storage temporarily (In a production app, this would be stored securely on the server)
+      // For demo purposes, we're using sessionStorage which is more secure than localStorage
+      const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 minutes expiry
+      const verificationId = Date.now().toString();
+      sessionStorage.setItem(`otp_${verificationId}`, JSON.stringify({
+        email,
+        otp: generatedOTP,
+        expiry: expiryTime
+      }));
+      setVerificationId(verificationId);
+      
+      // In a real implementation, you would send an email with the OTP using a server or edge function
+      // For demo, we'll show the OTP in a toast message (NEVER do this in production)
+      console.log("Generated OTP:", generatedOTP);
+      
+      // Send email with Supabase's email service
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/forgot-password?verification=${verificationId}`,
+      });
+      
+      if (error) throw error;
+      
+      // Simulate sending OTP - in a real app, you'd include the OTP in the email template
+      toast.info(`For demo purposes, your OTP is: ${generatedOTP}`, { duration: 10000 });
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error generating/sending OTP:", error);
+      throw new Error(error.message || "Failed to send verification code");
+    }
+  };
+
+  const verifyOTP = (inputOTP: string) => {
+    if (!verificationId) {
+      return { valid: false, message: "Verification session expired" };
+    }
+    
+    const storedData = sessionStorage.getItem(`otp_${verificationId}`);
+    if (!storedData) {
+      return { valid: false, message: "Verification session not found" };
+    }
+    
+    const { otp: storedOTP, expiry, email: storedEmail } = JSON.parse(storedData);
+    
+    // Check if OTP has expired
+    if (Date.now() > expiry) {
+      sessionStorage.removeItem(`otp_${verificationId}`);
+      return { valid: false, message: "Verification code has expired" };
+    }
+    
+    // Verify the OTP
+    if (inputOTP !== storedOTP) {
+      return { valid: false, message: "Invalid verification code" };
+    }
+    
+    return { valid: true, email: storedEmail };
+  };
+
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -50,26 +114,17 @@ const ForgotPassword = () => {
         return;
       }
 
-      // In a real implementation with Supabase, we would use resetPasswordForEmail
-      // But for demonstration with OTP flow, we simulate sending an OTP
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/forgot-password`,
-      });
+      const { success } = await generateAndSendOTP(email);
 
-      if (error) {
-        console.error('Password reset request error:', error);
-        setErrorMessage(error.message || 'Failed to send verification code');
-        setIsLoading(false);
-        return;
+      if (success) {
+        setCurrentStep('otp');
+        toast.success('Verification code sent to your email');
       }
-
-      // For OTP demo, move to the OTP verification step
-      setCurrentStep('otp');
-      toast.success('Verification code sent to your email');
-      setIsLoading(false);
+      
     } catch (error: any) {
       console.error('Password reset request error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -86,16 +141,21 @@ const ForgotPassword = () => {
         return;
       }
 
-      // For demo purposes, we simulate OTP verification
-      // In a real implementation, you would verify the OTP with a backend service
-      setTimeout(() => {
-        setCurrentStep('reset');
+      const { valid, message } = verifyOTP(otp);
+      
+      if (!valid) {
+        setErrorMessage(message);
         setIsLoading(false);
-        toast.success('Verification successful');
-      }, 1500);
+        return;
+      }
+      
+      setCurrentStep('reset');
+      toast.success('Verification successful');
+      
     } catch (error: any) {
       console.error('OTP verification error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -152,6 +212,15 @@ const ForgotPassword = () => {
     setCurrentStep('email');
     setOtp('');
   };
+
+  // Check for verification ID in URL
+  useEffect(() => {
+    const urlVerificationId = searchParams.get('verification');
+    if (urlVerificationId && currentStep === 'email') {
+      setVerificationId(urlVerificationId);
+      setCurrentStep('otp');
+    }
+  }, [searchParams, currentStep]);
 
   return (
     <ForgotPasswordLayout 

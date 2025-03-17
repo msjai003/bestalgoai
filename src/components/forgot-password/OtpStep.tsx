@@ -1,9 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface OtpStepProps {
   otp: string;
@@ -30,6 +29,15 @@ const OtpStep: React.FC<OtpStepProps> = ({
   setConfirmPassword,
   email
 }) => {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Focus the first input on mount
+  useEffect(() => {
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, []);
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-gray-800/30 p-3 rounded-md mb-4">
@@ -54,22 +62,56 @@ const OtpStep: React.FC<OtpStepProps> = ({
                 pattern="[0-9]"
                 className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
                 value={otp[i] || ''}
+                ref={el => inputRefs.current[i] = el}
                 onChange={(e) => {
+                  const value = e.target.value;
+                  
+                  // Only allow numbers
+                  if (value && !/^[0-9]$/.test(value)) {
+                    return;
+                  }
+                  
                   const newOtp = otp.split('');
-                  newOtp[i] = e.target.value;
+                  newOtp[i] = value;
                   setOtp(newOtp.join(''));
                   
                   // Auto-focus next input
-                  if (e.target.value && i < 5) {
-                    const nextInput = e.target.parentElement?.nextElementSibling?.querySelector('input');
-                    if (nextInput) nextInput.focus();
+                  if (value && i < 5 && inputRefs.current[i + 1]) {
+                    inputRefs.current[i + 1]?.focus();
                   }
                 }}
                 onKeyDown={(e) => {
-                  // Handle backspace and move to previous input
+                  // Handle backspace to move to previous input
                   if (e.key === 'Backspace' && !otp[i] && i > 0) {
-                    const prevInput = e.currentTarget.parentElement?.previousElementSibling?.querySelector('input');
-                    if (prevInput) prevInput.focus();
+                    if (inputRefs.current[i - 1]) {
+                      inputRefs.current[i - 1]?.focus();
+                    }
+                  }
+                  
+                  // Handle arrow keys
+                  if (e.key === 'ArrowLeft' && i > 0) {
+                    if (inputRefs.current[i - 1]) {
+                      inputRefs.current[i - 1]?.focus();
+                    }
+                  }
+                  
+                  if (e.key === 'ArrowRight' && i < 5) {
+                    if (inputRefs.current[i + 1]) {
+                      inputRefs.current[i + 1]?.focus();
+                    }
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedData = e.clipboardData.getData('text/plain').trim();
+                  
+                  // Check if pasted content is a valid OTP (6 digits)
+                  if (/^\d{6}$/.test(pastedData)) {
+                    setOtp(pastedData);
+                    // Focus the last input
+                    if (inputRefs.current[5]) {
+                      inputRefs.current[5]?.focus();
+                    }
                   }
                 }}
               />
