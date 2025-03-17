@@ -75,7 +75,7 @@ export const TradingModeConfirmationDialog = ({
               <Switch 
                 checked={isLiveMode} 
                 onCheckedChange={handleModeToggle} 
-                className={`${isLiveMode ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
+                className={`${isLiveMode ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-blue-600'}`}
               />
               <span className={`text-sm ${isLiveMode ? "text-pink-400 font-medium" : "text-gray-400"}`}>
                 Live Trade
