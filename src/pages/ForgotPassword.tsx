@@ -28,7 +28,17 @@ const ForgotPassword = () => {
         return;
       }
 
-      // Move to the OTP step without sending the actual reset request yet
+      // Send the actual reset password email
+      const { error } = await resetPassword(email);
+      
+      if (error) {
+        console.error('Password reset request error:', error);
+        setErrorMessage(error.message || 'Failed to send reset instructions');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Move to the OTP step
       setStep(2);
       toast.success('Verification code sent to your email');
       
@@ -71,17 +81,8 @@ const ForgotPassword = () => {
         setIsLoading(false);
         return;
       }
-
-      // Now we send the resetPassword request which we delayed from step 1
-      const { error: resetError } = await resetPassword(email);
       
-      if (resetError) {
-        setErrorMessage(resetError.message);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Then update the password
+      // Update the password
       const { error: updateError } = await updatePassword(newPassword);
 
       if (updateError) {
