@@ -5,26 +5,41 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface ResetPasswordStepProps {
+  email: string;
+  setEmail: (email: string) => void;
   newPassword: string;
   setNewPassword: (password: string) => void;
   confirmPassword: string;
   setConfirmPassword: (password: string) => void;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
-  onBack: () => void;
 }
 
 const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
+  email,
+  setEmail,
   newPassword,
   setNewPassword,
   confirmPassword,
   setConfirmPassword,
   isLoading,
-  onSubmit,
-  onBack
+  onSubmit
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <div>
+        <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
+          disabled={isLoading}
+        />
+      </div>
+      
       <div>
         <Label htmlFor="newPassword" className="text-gray-300 mb-2 block">New Password</Label>
         <Input
@@ -53,22 +68,11 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
       
       <Button
         type="submit"
-        disabled={isLoading || !newPassword || !confirmPassword}
+        disabled={isLoading || !email || !newPassword || !confirmPassword}
         className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
       >
         {isLoading ? 'Resetting Password...' : 'Reset Password'}
       </Button>
-      
-      <div className="text-center mt-4">
-        <Button
-          type="button"
-          variant="link"
-          onClick={onBack}
-          className="text-[#FF00D4]"
-        >
-          Back
-        </Button>
-      </div>
     </form>
   );
 };
