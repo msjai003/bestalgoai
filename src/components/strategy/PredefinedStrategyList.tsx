@@ -37,13 +37,14 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      {strategies.map((strategy) => (
+      {strategies.map((strategy, index) => (
         <StrategyCard
           key={strategy.id}
           strategy={strategy}
           onToggleWishlist={onToggleWishlist}
           onToggleLiveMode={onToggleLiveMode}
           isAuthenticated={!!user}
+          index={index} // Pass the index to identify the first (free) strategy
         />
       ))}
     </div>
