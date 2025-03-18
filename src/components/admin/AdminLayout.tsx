@@ -8,7 +8,8 @@ import {
   Database, 
   CreditCard, 
   AlertTriangle,
-  Home
+  Home,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,9 +33,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: Users 
     },
     { 
-      name: 'Strategies', 
+      name: 'User Strategies', 
       href: '/admin/strategies', 
       icon: BarChart3 
+    },
+    { 
+      name: 'Predefined Strategies', 
+      href: '/admin/strategies-editor', 
+      icon: BookOpen 
     },
     { 
       name: 'Subscriptions', 

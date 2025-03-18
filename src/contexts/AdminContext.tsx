@@ -8,6 +8,7 @@ interface AdminContextType {
   isAdmin: boolean;
   isLoading: boolean;
   checkAdminStatus: () => Promise<boolean>;
+  fetchPredefinedStrategies: () => Promise<any[]>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -44,6 +45,24 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchPredefinedStrategies = async (): Promise<any[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('predefined_strategies')
+        .select('*');
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching predefined strategies:', error);
+      toast.error('Failed to load predefined strategies');
+      return [];
+    }
+  };
+
   useEffect(() => {
     if (user) {
       checkAdminStatus();
@@ -57,7 +76,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     <AdminContext.Provider value={{ 
       isAdmin, 
       isLoading,
-      checkAdminStatus
+      checkAdminStatus,
+      fetchPredefinedStrategies
     }}>
       {children}
     </AdminContext.Provider>
