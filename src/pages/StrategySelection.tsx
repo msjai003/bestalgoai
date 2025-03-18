@@ -1,11 +1,9 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
 import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
-import { predefinedStrategies } from "@/constants/strategy-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
@@ -13,11 +11,13 @@ import { BrokerSelectionDialog } from "@/components/strategy/BrokerSelectionDial
 import { PredefinedStrategyList } from "@/components/strategy/PredefinedStrategyList";
 import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigation";
 import { useStrategy } from "@/hooks/useStrategy";
+import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
+  const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
   
   const {
     strategies,
@@ -38,7 +38,7 @@ const StrategySelection = () => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker
-  } = useStrategy(predefinedStrategies);
+  } = useStrategy(predefinedStrategies || []);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");

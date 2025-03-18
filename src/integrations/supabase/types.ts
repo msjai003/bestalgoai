@@ -156,6 +156,30 @@ export type Database = {
         }
         Relationships: []
       }
+      predefined_strategies: {
+        Row: {
+          description: string
+          id: number
+          name: string
+          parameters: Json
+          performance: Json
+        }
+        Insert: {
+          description: string
+          id: number
+          name: string
+          parameters: Json
+          performance: Json
+        }
+        Update: {
+          description?: string
+          id?: number
+          name?: string
+          parameters?: Json
+          performance?: Json
+        }
+        Relationships: []
+      }
       strategy_selections: {
         Row: {
           created_at: string | null
@@ -230,7 +254,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
