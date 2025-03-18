@@ -54,6 +54,53 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_edit: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          legs: Json
+          name: string
+          performance: Json | null
+          strategy_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          legs: Json
+          name: string
+          performance?: Json | null
+          strategy_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          legs?: Json
+          name?: string
+          performance?: Json | null
+          strategy_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_edit_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "custom_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_strategies: {
         Row: {
           created_at: string | null
