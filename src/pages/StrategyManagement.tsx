@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,8 +15,6 @@ import { Star, User } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
-import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
-import { useCustomStrategies, CustomStrategy } from "@/hooks/strategy/useCustomStrategies";
 import { Json } from "@/integrations/supabase/types";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
@@ -41,9 +40,6 @@ const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { data: predefinedStrategies = [] } = usePredefinedStrategies();
-  const { data: customStrategies = [] } = useCustomStrategies();
-  
   const [wishlistedStrategies, setWishlistedStrategies] = useState<Strategy[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   
@@ -57,8 +53,8 @@ const StrategyManagement = () => {
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
 
   useEffect(() => {
-    const fetchLocalStrategies = () => {
-      // Get strategies from localStorage
+    const fetchStrategies = async () => {
+      // Get strategies from localStorage first
       const storedStrategies = localStorage.getItem('wishlistedStrategies');
       let localStrategies: Strategy[] = [];
       
@@ -69,48 +65,19 @@ const StrategyManagement = () => {
           console.error("Error parsing wishlisted strategies:", error);
         }
       }
-      
-      return localStrategies;
-    };
 
-    const loadWishlistedStrategies = async () => {
-      const localStrategies = fetchLocalStrategies();
-      
-      // If user is logged in, get wishlisted predefined strategies from Supabase
+      // If user is logged in, fetch strategies from Supabase
       if (user) {
         try {
           const { data, error } = await supabase
-            .from('strategy_selections')
+            .from('custom_strategies')
             .select('*')
             .eq('user_id', user.id);
             
           if (error) throw error;
           
-          // Map predefined strategies from database selections
-          const databaseStrategies: Strategy[] = [];
-          
-          if (data && data.length > 0) {
-            data.forEach(selection => {
-              const foundPredefined = predefinedStrategies.find(s => s.id === selection.strategy_id);
-              
-              if (foundPredefined) {
-                databaseStrategies.push({
-                  id: foundPredefined.id,
-                  name: foundPredefined.name,
-                  description: foundPredefined.description,
-                  isCustom: false,
-                  isLive: selection.trade_type === "live trade",
-                  isWishlisted: true,
-                  performance: foundPredefined.performance,
-                  selectedBroker: selection.selected_broker,
-                  quantity: selection.quantity || 0
-                });
-              }
-            });
-          }
-          
-          // Convert custom strategies to our format
-          const formattedCustomStrategies = customStrategies.map(strategy => ({
+          // Convert Supabase data to match local storage format
+          const supabaseStrategies: Strategy[] = data.map(strategy => ({
             id: strategy.id,
             name: strategy.name,
             description: strategy.description || "",
@@ -118,25 +85,31 @@ const StrategyManagement = () => {
             isLive: false, // Default to paper trading
             isWishlisted: true,
             legs: strategy.legs,
-            createdBy: strategy.created_by || "Unknown",
-            performance: strategy.performance || {
-              winRate: "N/A",
-              avgProfit: "N/A",
-              drawdown: "N/A"
-            }
+            createdBy: strategy.created_by || user.email,
+            performance: typeof strategy.performance === 'object' && strategy.performance !== null
+              ? {
+                  winRate: typeof strategy.performance === 'object' && 'winRate' in strategy.performance 
+                    ? String(strategy.performance.winRate) : "N/A",
+                  avgProfit: typeof strategy.performance === 'object' && 'avgProfit' in strategy.performance 
+                    ? String(strategy.performance.avgProfit) : "N/A",
+                  drawdown: typeof strategy.performance === 'object' && 'drawdown' in strategy.performance 
+                    ? String(strategy.performance.drawdown) : "N/A"
+                }
+              : {
+                  winRate: "N/A",
+                  avgProfit: "N/A",
+                  drawdown: "N/A"
+                }
           }));
           
-          // Combine all sources of strategies, filtering out duplicates
-          const combinedStrategies = [
-            ...databaseStrategies,
-            ...formattedCustomStrategies,
-            ...localStrategies.filter(s => 
-              !databaseStrategies.some(ds => ds.id === s.id) && 
-              !formattedCustomStrategies.some(cs => cs.name === s.name)
-            )
-          ];
+          // Merge strategies from Supabase with local strategies
+          // (avoiding duplicates by name)
+          const supabaseStrategyNames = supabaseStrategies.map(s => s.name.toLowerCase());
+          const filteredLocalStrategies = localStrategies.filter(
+            s => !s.isCustom || !supabaseStrategyNames.includes(s.name.toLowerCase())
+          );
           
-          setWishlistedStrategies(combinedStrategies);
+          setWishlistedStrategies([...filteredLocalStrategies, ...supabaseStrategies]);
         } catch (error) {
           console.error("Error fetching strategies from Supabase:", error);
           setWishlistedStrategies(localStrategies);
@@ -146,8 +119,8 @@ const StrategyManagement = () => {
       }
     };
     
-    loadWishlistedStrategies();
-  }, [user, predefinedStrategies, customStrategies]);
+    fetchStrategies();
+  }, [user]);
 
   const filterStrategies = (strategies: Strategy[]) => {
     if (selectedFilter === "all") {
