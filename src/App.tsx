@@ -5,7 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AdminProvider } from "@/contexts/AdminContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminProtectedRoute from "@/components/AdminProtectedRoute";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
@@ -35,6 +37,10 @@ import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
 import ForgotPassword from "./pages/ForgotPassword";
 import AuthCallback from "./pages/AuthCallback";
+// Admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UsersManagement from "./pages/admin/UsersManagement";
+import StrategiesManagement from "./pages/admin/StrategiesManagement";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +143,23 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
+      {/* Admin routes */}
+      <Route path="/admin" element={
+        <AdminProtectedRoute>
+          <AdminDashboard />
+        </AdminProtectedRoute>
+      } />
+      <Route path="/admin/users" element={
+        <AdminProtectedRoute>
+          <UsersManagement />
+        </AdminProtectedRoute>
+      } />
+      <Route path="/admin/strategies" element={
+        <AdminProtectedRoute>
+          <StrategiesManagement />
+        </AdminProtectedRoute>
+      } />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -150,7 +173,9 @@ function App() {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <AdminProvider>
+              <AppRoutes />
+            </AdminProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

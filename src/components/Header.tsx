@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import AdminLink, { AdminMobileLink } from './admin/AdminLink';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ const Header: React.FC = () => {
               >
                 Dashboard
               </Link>
+              <AdminLink />
               <Button 
                 variant="ghost" 
                 className="text-gray-300 hover:text-white" 
@@ -137,6 +139,7 @@ const Header: React.FC = () => {
                   >
                     Dashboard
                   </Link>
+                  <AdminMobileLink />
                   <Button 
                     variant="ghost" 
                     className="text-gray-300 hover:text-white justify-start p-2" 
