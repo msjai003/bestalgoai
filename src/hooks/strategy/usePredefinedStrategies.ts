@@ -28,7 +28,11 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(strategy => ({
+    ...strategy,
+    performance: strategy.performance as PredefinedStrategy['performance'],
+    parameters: strategy.parameters as PredefinedStrategy['parameters']
+  }));
 };
 
 export const usePredefinedStrategies = () => {
@@ -37,4 +41,3 @@ export const usePredefinedStrategies = () => {
     queryFn: fetchPredefinedStrategies
   });
 };
-

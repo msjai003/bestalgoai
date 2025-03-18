@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -7,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Heart } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { predefinedStrategies } from "@/constants/strategy-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { data: strategies } = usePredefinedStrategies();
   const strategyId = parseInt(id || "0", 10);
-  const strategy = predefinedStrategies.find((s) => s.id === strategyId);
+  const strategy = strategies?.find((s) => s.id === strategyId);
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
