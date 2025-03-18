@@ -177,6 +177,33 @@ export type Database = {
         }
         Relationships: []
       }
+      predefined_strategies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          original_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          original_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          original_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       strategy_selections: {
         Row: {
           created_at: string | null

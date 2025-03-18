@@ -1,13 +1,9 @@
 
 import React from 'react';
+import Settings from '@/pages/Settings'; // Assuming this exists in your project
 
 const SettingsPage: React.FC = () => {
-  return (
-    <div className="bg-gray-900 min-h-screen text-white p-6">
-      <h1 className="text-2xl font-bold mb-4">Settings</h1>
-      <p>User settings placeholder</p>
-    </div>
-  );
+  return <Settings />;
 };
 
 export default SettingsPage;

@@ -1,144 +1,101 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { PredefinedStrategy } from '@/types/predefined-strategy';
 
-type AdminContextType = {
-  fetchPredefinedStrategies: () => Promise<PredefinedStrategy[]>;
-  updatePredefinedStrategy: (
-    id: string, 
-    data: { name?: string; description?: string }
-  ) => Promise<boolean>;
-  deletePredefinedStrategy: (id: string) => Promise<boolean>;
-  createPredefinedStrategy: (strategy: Omit<PredefinedStrategy, 'id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
+interface AdminContextType {
   isAdmin: boolean;
+  isLoading: boolean;
+  error: string | null;
+  checkAdminStatus: () => Promise<void>;
+}
+
+const defaultContext: AdminContextType = {
+  isAdmin: false,
+  isLoading: true,
+  error: null,
+  checkAdminStatus: async () => {}
 };
 
-const AdminContext = createContext<AdminContextType>({
-  fetchPredefinedStrategies: async () => [],
-  updatePredefinedStrategy: async () => false,
-  deletePredefinedStrategy: async () => false,
-  createPredefinedStrategy: async () => false,
-  isAdmin: false,
-});
+const AdminContext = createContext<AdminContextType>(defaultContext);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check if user is admin when component mounts
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        // In a real app, you'd check user claims from auth
-        // For now, we'll just mock it
-        setIsAdmin(true);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, []);
-
-  const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { user } = useAuth();
+  
+  const checkAdminStatus = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      // We're using a type assertion here to work with the existing database structure
-      // This is a temporary solution until we can properly define the database schema
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      // Check if user exists in admin_users table
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // User is admin if they exist in the admin_users table
+      setIsAdmin(data && data.length > 0);
+    } catch (err: any) {
+      console.error('Error checking admin status:', err);
+      setError(err.message || 'Failed to verify admin status');
+      toast.error('Error checking admin permissions');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+  
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsAdmin(false);
+      setIsLoading(false);
+    }
+  }, [user, checkAdminStatus]);
+  
+  // Function to safely access predefined strategies (only for admins)
+  const fetchPredefinedStrategies = async () => {
+    if (!isAdmin) {
+      toast.error('You need admin permissions to access this resource');
+      return { data: [], error: null };
+    }
+    
+    try {
       const { data, error } = await supabase
         .from('predefined_strategies')
-        .select('*') as { data: PredefinedStrategy[] | null, error: any };
-
-      if (error) {
-        throw error;
-      }
-
-      return data || [];
-    } catch (error) {
+        .select('*');
+        
+      if (error) throw error;
+      
+      return { data, error: null };
+    } catch (error: any) {
       console.error('Error fetching predefined strategies:', error);
-      toast.error('Failed to fetch predefined strategies');
-      return [];
+      toast.error('Failed to load predefined strategies');
+      return { data: [], error };
     }
   };
-
-  const updatePredefinedStrategy = async (
-    id: string,
-    data: { name?: string; description?: string }
-  ): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('predefined_strategies')
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Strategy updated successfully');
-      return true;
-    } catch (error) {
-      console.error('Error updating predefined strategy:', error);
-      toast.error('Failed to update strategy');
-      return false;
-    }
-  };
-
-  const deletePredefinedStrategy = async (id: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('predefined_strategies')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Strategy deleted successfully');
-      return true;
-    } catch (error) {
-      console.error('Error deleting predefined strategy:', error);
-      toast.error('Failed to delete strategy');
-      return false;
-    }
-  };
-
-  const createPredefinedStrategy = async (
-    strategy: Omit<PredefinedStrategy, 'id' | 'created_at' | 'updated_at'>
-  ): Promise<boolean> => {
-    try {
-      const { error } = await supabase.from('predefined_strategies').insert({
-        ...strategy,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Strategy created successfully');
-      return true;
-    } catch (error) {
-      console.error('Error creating predefined strategy:', error);
-      toast.error('Failed to create strategy');
-      return false;
-    }
-  };
-
+  
   return (
     <AdminContext.Provider
       value={{
-        fetchPredefinedStrategies,
-        updatePredefinedStrategy,
-        deletePredefinedStrategy,
-        createPredefinedStrategy,
         isAdmin,
+        isLoading,
+        error,
+        checkAdminStatus
       }}
     >
       {children}

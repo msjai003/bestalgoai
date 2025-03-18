@@ -1,13 +1,9 @@
 
 import React from 'react';
+import Subscription from '@/pages/Subscription'; // Assuming this exists
 
 const SubscriptionPage: React.FC = () => {
-  return (
-    <div className="bg-gray-900 min-h-screen text-white p-6">
-      <h1 className="text-2xl font-bold mb-4">Subscription</h1>
-      <p>Subscription management placeholder</p>
-    </div>
-  );
+  return <Subscription />;
 };
 
 export default SubscriptionPage;
