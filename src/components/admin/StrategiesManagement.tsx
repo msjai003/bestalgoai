@@ -46,7 +46,48 @@ const StrategiesManagement = () => {
         throw error;
       }
 
-      setStrategies(data || []);
+      // Map the data from Supabase to match the Strategy interface
+      const mappedStrategies: Strategy[] = (data || []).map(strategy => {
+        // Parse the performance JSON if it's a string, or use default values
+        let performanceObj = {
+          winRate: "N/A",
+          drawdown: "N/A",
+          avgProfit: "N/A"
+        };
+        
+        if (strategy.performance) {
+          try {
+            // If it's a string, try to parse it
+            if (typeof strategy.performance === 'string') {
+              performanceObj = JSON.parse(strategy.performance);
+            } 
+            // If it's already an object, use it directly
+            else if (typeof strategy.performance === 'object') {
+              performanceObj = {
+                winRate: strategy.performance.winRate || "N/A",
+                drawdown: strategy.performance.drawdown || "N/A",
+                avgProfit: strategy.performance.avgProfit || "N/A"
+              };
+            }
+          } catch (e) {
+            console.error("Error parsing performance data:", e);
+          }
+        }
+
+        return {
+          id: strategy.id,
+          name: strategy.name,
+          description: strategy.description || "",
+          strategy_type: strategy.strategy_type,
+          is_active: strategy.is_active || false,
+          created_at: strategy.created_at,
+          updated_at: strategy.updated_at,
+          user_id: strategy.user_id,
+          performance: performanceObj
+        };
+      });
+
+      setStrategies(mappedStrategies);
     } catch (error) {
       console.error('Error fetching strategies:', error);
       toast.error('Failed to load strategies');
