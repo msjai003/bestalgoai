@@ -8,7 +8,7 @@ interface PredefinedStrategyListProps {
   strategies: Strategy[];
   isLoading: boolean;
   onToggleWishlist: (id: number, isWishlisted: boolean) => void;
-  onDeployStrategy: (id: number) => void;
+  onToggleLiveMode: (id: number) => void;
   user: UserData | null;
 }
 
@@ -16,7 +16,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   strategies,
   isLoading,
   onToggleWishlist,
-  onDeployStrategy,
+  onToggleLiveMode,
   user
 }) => {
   if (isLoading) {
@@ -42,7 +42,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
           key={strategy.id}
           strategy={strategy}
           onToggleWishlist={onToggleWishlist}
-          onDeployStrategy={onDeployStrategy}
+          onToggleLiveMode={onToggleLiveMode}
           isAuthenticated={!!user}
         />
       ))}

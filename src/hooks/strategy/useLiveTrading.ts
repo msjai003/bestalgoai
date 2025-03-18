@@ -38,10 +38,12 @@ export const useLiveTrading = () => {
     const strategy = strategies.find(s => s.id === id);
     if (strategy) {
       if (!strategy.isLive) {
+        // If strategy is currently in paper mode and user wants to switch to live mode
         dialogState.setTargetStrategyId(id);
         dialogState.setTargetMode('live');
         dialogState.setShowConfirmationDialog(true);
       } else {
+        // If strategy is currently in live mode and user wants to switch to paper mode
         dialogState.setTargetStrategyId(id);
         dialogState.setTargetMode('paper');
         dialogState.setShowConfirmationDialog(true);
@@ -59,26 +61,25 @@ export const useLiveTrading = () => {
     
     dialogState.setShowConfirmationDialog(false);
     
-    try {
-      if (dialogState.targetMode === 'live') {
-        dialogState.setShowQuantityDialog(true);
-      } else {
+    if (dialogState.targetMode === 'live') {
+      // User is switching from paper to live mode
+      dialogState.setShowQuantityDialog(true);
+    } else {
+      try {
+        // Ensure we await the update to complete
         await updateLiveMode(dialogState.targetStrategyId, false);
         toast({
           title: "Success",
           description: "Strategy switched to paper trading mode",
         });
-      }
-    } catch (error) {
-      console.error("Error in confirmModeChange:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update strategy mode",
-        variant: "destructive"
-      });
-    } finally {
-      if (dialogState.targetMode !== 'live') {
         dialogState.resetDialogState();
+      } catch (error) {
+        console.error("Error in confirmModeChange:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update strategy mode",
+          variant: "destructive"
+        });
       }
     }
   };
@@ -107,6 +108,7 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
+      // Explicitly set trade_type to "live trade" for clarity
       console.log("Updating strategy in database for live trading:", {
         user_id: user.id,
         strategy_id: dialogState.targetStrategyId,
@@ -115,6 +117,7 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
+      // First check if a record exists
       const { data: existingRecord, error: checkError } = await supabase
         .from('strategy_selections')
         .select('id')
@@ -129,7 +132,9 @@ export const useLiveTrading = () => {
       
       let updateResult;
       
+      // If record exists, update it; otherwise, insert a new one
       if (existingRecord) {
+        // Direct database update for live trading
         updateResult = await supabase
           .from('strategy_selections')
           .update({
@@ -144,6 +149,7 @@ export const useLiveTrading = () => {
           
         console.log("Updated existing record for live trading:", updateResult);
       } else {
+        // Insert new record
         updateResult = await supabase
           .from('strategy_selections')
           .insert({
@@ -164,7 +170,7 @@ export const useLiveTrading = () => {
         throw updateResult.error;
       }
       
-      // Update the local state immediately to reflect changes
+      // Update local state after successful database update
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
           return { 
@@ -209,6 +215,7 @@ export const useLiveTrading = () => {
       if (!strategy) return;
       
       if (!isLive) {
+        // For paper trading, directly update the database
         console.log("Updating strategy to paper trading mode in database:", {
           user_id: user.id,
           strategy_id: id,
@@ -217,6 +224,7 @@ export const useLiveTrading = () => {
           selected_broker: ""
         });
         
+        // First check if the record exists
         const { data, error: checkError } = await supabase
           .from('strategy_selections')
           .select('id')
@@ -229,9 +237,11 @@ export const useLiveTrading = () => {
           throw checkError;
         }
         
+        // If the record exists, update it; otherwise, insert it
         let updateResult;
         
         if (data) {
+          console.log("Existing record found, updating to paper trade mode");
           updateResult = await supabase
             .from('strategy_selections')
             .update({
@@ -244,6 +254,8 @@ export const useLiveTrading = () => {
             
           console.log("Update result:", updateResult);
         } else {
+          // If no record exists, create one with paper trading defaults
+          console.log("No existing record found, creating new record with paper trade mode");
           updateResult = await supabase
             .from('strategy_selections')
             .insert({
@@ -270,13 +282,14 @@ export const useLiveTrading = () => {
           variant: "default"
         });
       }
+      // Update for switching back to Live mode is handled in handleBrokerSubmit
       
-      // Immediately update UI to reflect changes
+      // Update the local state to reflect the changes
       const updatedStrategies = strategies.map(s => {
         if (s.id === id) {
           return { 
             ...s, 
-            isLive: isLive,
+            isLive,
             tradeType: isLive ? "live trade" : "paper trade",
             ...(!isLive && { quantity: 0, selectedBroker: "" })
           };
@@ -293,7 +306,7 @@ export const useLiveTrading = () => {
         description: "Failed to update strategy mode",
         variant: "destructive"
       });
-      throw error;
+      throw error; // Re-throw so caller can handle if needed
     }
   };
 

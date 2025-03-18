@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 
 interface TradingModeConfirmationDialogProps {
   open: boolean;
@@ -27,89 +26,34 @@ export const TradingModeConfirmationDialog = ({
   onConfirm,
   onCancel,
 }: TradingModeConfirmationDialogProps) => {
-  const [isLiveMode, setIsLiveMode] = React.useState<boolean>(targetMode === "live");
-
-  React.useEffect(() => {
-    // Update state when targetMode changes
-    setIsLiveMode(targetMode === "live");
-  }, [targetMode]);
-
-  const handleModeToggle = (checked: boolean) => {
-    setIsLiveMode(checked);
-  };
-
-  const handleSubmit = () => {
-    if (isLiveMode) {
-      onConfirm(); // Live trading
-    } else {
-      onCancel(); // Paper trading
-    }
-    onOpenChange(false); // Close dialog after submission
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Select Trading Mode
+            Confirm Trading Mode Change
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            Choose your preferred trading mode for this strategy
+            {targetMode === "live" 
+              ? "Are you sure you want to switch to live trading? This will use real funds for trading operations."
+              : "Are you sure you want to switch to paper trading? This will use simulated funds for trading operations."}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-6 py-4">
-          <div className="flex items-center justify-between bg-gray-700/50 p-4 rounded-lg">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Trading Mode</p>
-              <p className="text-xs text-gray-400">
-                Toggle between paper trading and live trading mode
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-sm ${!isLiveMode ? "text-blue-400 font-medium" : "text-gray-400"}`}>
-                Paper Trade
-              </span>
-              <Switch 
-                checked={isLiveMode} 
-                onCheckedChange={handleModeToggle} 
-                className={`${isLiveMode ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-blue-600'}`}
-              />
-              <span className={`text-sm ${isLiveMode ? "text-pink-400 font-medium" : "text-gray-400"}`}>
-                Live Trade
-              </span>
-            </div>
-          </div>
-          
-          <div className={`p-4 rounded-lg border ${isLiveMode ? 'bg-pink-950/20 border-pink-900/50' : 'bg-blue-950/20 border-blue-900/50'}`}>
-            <p className={`text-sm font-medium ${isLiveMode ? 'text-pink-400' : 'text-blue-400'}`}>
-              {isLiveMode ? 'Live Trading Warning' : 'Paper Trading Info'}
-            </p>
-            <p className="text-xs text-gray-300 mt-1">
-              {isLiveMode 
-                ? 'Live trading uses real funds. All trades will be executed with your actual money.'
-                : 'Paper trading uses simulated funds. No real money will be used.'}
-            </p>
-          </div>
-        </div>
-        
-        <DialogFooter className="flex space-x-2 justify-end">
+        <DialogFooter className="flex gap-2 sm:justify-end">
           <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            variant="secondary" 
+            className="bg-gray-700 hover:bg-gray-600 text-gray-200"
+            onClick={onCancel}
           >
             Cancel
           </Button>
           <Button 
-            onClick={handleSubmit}
-            className={isLiveMode 
-              ? "bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600" 
-              : "bg-blue-600 hover:bg-blue-700"}
+            variant={targetMode === "live" ? "destructive" : "default"}
+            className={targetMode === "live" ? "" : "bg-blue-600 hover:bg-blue-700"}
+            onClick={onConfirm}
           >
-            Confirm {isLiveMode ? 'Live' : 'Paper'} Trading
+            {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
           </Button>
         </DialogFooter>
       </DialogContent>

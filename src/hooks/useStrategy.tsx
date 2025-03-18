@@ -1,5 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./strategy/types";
 import { 
@@ -16,6 +18,7 @@ import { saveStrategyConfiguration } from "./strategy/useStrategyConfiguration";
 export type { Strategy } from "./strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -27,6 +30,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
 
+  // Load strategies from database
   useEffect(() => {
     const loadStrategies = async () => {
       setIsLoading(true);
@@ -97,50 +101,69 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   };
 
-  const handleDeployStrategy = (id: number) => {
-    setSelectedStrategyId(id);
-    setQuantityDialogOpen(true);
+  const updateLiveMode = (id: number, isLive: boolean) => {
+    setStrategies(prev => 
+      prev.map(strategy => {
+        if (strategy.id === id) {
+          return { 
+            ...strategy, 
+            isLive,
+            tradeType: isLive ? "live trade" : "paper" // Set tradeType based on isLive status
+          };
+        }
+        return strategy;
+      })
+    );
+    
+    toast({
+      title: isLive ? "Strategy set to live mode" : "Strategy set to paper mode",
+      description: `Strategy is now in ${isLive ? 'live' : 'paper'} trading mode`,
+    });
   };
 
-  const handleQuantitySubmit = (quantity: number) => {
-    setQuantityDialogOpen(false);
-    setPendingQuantity(quantity);
-    setBrokerDialogOpen(true);
-  };
-
-  const handleCancelQuantity = () => {
-    setQuantityDialogOpen(false);
-    setSelectedStrategyId(null);
-    setTargetMode(null);
-  };
-
-  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
-    setBrokerDialogOpen(false);
-    setConfirmDialogOpen(true);
-  };
-
-  const handleCancelBroker = () => {
-    setBrokerDialogOpen(false);
-    setSelectedStrategyId(null);
-    setTargetMode(null);
-    setPendingQuantity(0);
+  const handleToggleLiveMode = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    const newStatus = !strategy?.isLive;
+    
+    if (newStatus) {
+      setSelectedStrategyId(id);
+      setTargetMode("live");
+      setConfirmDialogOpen(true);
+    } else {
+      updateLiveMode(id, false);
+    }
   };
 
   const handleConfirmLiveMode = () => {
     setConfirmDialogOpen(false);
     if (selectedStrategyId !== null) {
-      finalizeStrategyDeployment('live');
+      updateLiveMode(selectedStrategyId, true);
+      setQuantityDialogOpen(true);
     }
   };
 
   const handleCancelLiveMode = () => {
     setConfirmDialogOpen(false);
+    setSelectedStrategyId(null);
+  };
+
+  const handleQuantitySubmit = (quantity: number) => {
+    setQuantityDialogOpen(false);
+    
     if (selectedStrategyId !== null) {
-      finalizeStrategyDeployment('paper');
+      setPendingQuantity(quantity);
+      setBrokerDialogOpen(true);
     }
   };
 
-  const finalizeStrategyDeployment = async (tradeType: 'live' | 'paper') => {
+  const handleCancelQuantity = () => {
+    setQuantityDialogOpen(false);
+    setSelectedStrategyId(null);
+  };
+
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
+    setBrokerDialogOpen(false);
+    
     if (selectedStrategyId !== null && user) {
       try {
         const strategy = strategies.find(s => s.id === selectedStrategyId);
@@ -149,14 +172,15 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
+        // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
           strategy.name,
           strategy.description,
           pendingQuantity,
-          strategy.selectedBroker,
-          tradeType === 'live' ? "live trade" : "paper trade"
+          brokerName,
+          "live trade" // Set trade_type to "live trade"
         );
         
         setStrategies(prev => 
@@ -165,8 +189,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
               ? { 
                   ...s, 
                   quantity: pendingQuantity, 
-                  selectedBroker: strategy.selectedBroker,
-                  tradeType: tradeType === 'live' ? "live trade" : "paper trade"
+                  selectedBroker: brokerName,
+                  tradeType: "live trade" // Add tradeType to local state
                 } 
               : s
           )
@@ -174,8 +198,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
         toast({
           title: "Strategy Configured",
-          description: `Strategy is now set up for ${tradeType === 'live' ? 'live' : 'paper'} trading`,
+          description: `Strategy is now set up for live trading`,
         });
+        
+        navigate("/live-trading");
       } catch (error) {
         console.error('Error saving strategy configuration:', error);
         toast({
@@ -185,10 +211,15 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         });
       }
     }
-    
+  };
+
+  const handleCancelBroker = () => {
+    setBrokerDialogOpen(false);
     setSelectedStrategyId(null);
-    setTargetMode(null);
     setPendingQuantity(0);
+    if (selectedStrategyId !== null) {
+      updateLiveMode(selectedStrategyId, false);
+    }
   };
 
   return {
@@ -203,7 +234,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     targetMode,
     selectedStrategyId,
     handleToggleWishlist,
-    handleDeployStrategy,
+    handleToggleLiveMode,
     handleConfirmLiveMode,
     handleCancelLiveMode,
     handleQuantitySubmit,

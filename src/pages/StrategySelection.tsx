@@ -31,7 +31,7 @@ const StrategySelection = () => {
     targetMode,
     selectedStrategyId,
     handleToggleWishlist,
-    handleDeployStrategy,
+    handleToggleLiveMode,
     handleConfirmLiveMode,
     handleCancelLiveMode,
     handleQuantitySubmit,
@@ -40,7 +40,7 @@ const StrategySelection = () => {
     handleCancelBroker
   } = useStrategy(predefinedStrategies);
 
-  const handleCustomStrategyDeploy = () => {
+  const handleDeployStrategy = () => {
     navigate("/backtest");
   };
 
@@ -63,18 +63,25 @@ const StrategySelection = () => {
                   strategies={strategies}
                   isLoading={isLoading}
                   onToggleWishlist={handleToggleWishlist}
-                  onDeployStrategy={handleDeployStrategy}
+                  onToggleLiveMode={handleToggleLiveMode}
                   user={user}
                 />
               ) : (
-                <CustomStrategyWizard onSubmit={handleCustomStrategyDeploy} />
+                <CustomStrategyWizard onSubmit={handleDeployStrategy} />
               )}
             </div>
           </section>
         </main>
       </TooltipProvider>
       
-      {/* Modified order of dialogs to match the new flow */}
+      <TradingModeConfirmationDialog 
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        targetMode={targetMode}
+        onConfirm={handleConfirmLiveMode}
+        onCancel={handleCancelLiveMode}
+      />
+      
       <QuantityInputDialog 
         open={quantityDialogOpen}
         onOpenChange={setQuantityDialogOpen}
@@ -87,14 +94,6 @@ const StrategySelection = () => {
         onOpenChange={setBrokerDialogOpen}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
-      />
-      
-      <TradingModeConfirmationDialog 
-        open={confirmDialogOpen}
-        onOpenChange={setConfirmDialogOpen}
-        targetMode={targetMode}
-        onConfirm={handleConfirmLiveMode}
-        onCancel={handleCancelLiveMode}
       />
       
       <BottomNav />
