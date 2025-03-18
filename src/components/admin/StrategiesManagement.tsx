@@ -42,6 +42,44 @@ interface Strategy {
   };
 }
 
+// Helper function to parse performance data safely
+const parsePerformanceData = (performanceData: Json | null): Strategy['performance'] => {
+  const defaultPerformance = {
+    winRate: 'N/A',
+    drawdown: 'N/A',
+    avgProfit: 'N/A'
+  };
+  
+  if (!performanceData) return defaultPerformance;
+  
+  // If it's a string, try to parse it
+  if (typeof performanceData === 'string') {
+    try {
+      const parsed = JSON.parse(performanceData);
+      return {
+        winRate: parsed.winRate || defaultPerformance.winRate,
+        drawdown: parsed.drawdown || defaultPerformance.drawdown,
+        avgProfit: parsed.avgProfit || defaultPerformance.avgProfit
+      };
+    } catch (e) {
+      console.error('Error parsing performance JSON:', e);
+      return defaultPerformance;
+    }
+  }
+  
+  // If it's an object with the expected properties
+  if (typeof performanceData === 'object' && performanceData !== null && !Array.isArray(performanceData)) {
+    const performance = performanceData as Record<string, unknown>;
+    return {
+      winRate: typeof performance.winRate === 'string' ? performance.winRate : defaultPerformance.winRate,
+      drawdown: typeof performance.drawdown === 'string' ? performance.drawdown : defaultPerformance.drawdown,
+      avgProfit: typeof performance.avgProfit === 'string' ? performance.avgProfit : defaultPerformance.avgProfit
+    };
+  }
+  
+  return defaultPerformance;
+};
+
 const StrategiesManagement: React.FC = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,34 +104,12 @@ const StrategiesManagement: React.FC = () => {
               .from('user_profiles')
               .select('full_name')
               .eq('id', strategy.user_id)
-              .single();
+              .maybeSingle();
             
             if (userError) throw userError;
             
-            // Parse performance data
-            let performanceData = {
-              winRate: 'N/A',
-              drawdown: 'N/A',
-              avgProfit: 'N/A'
-            };
-            
-            if (strategy.performance) {
-              // Handle different formats of performance data
-              if (typeof strategy.performance === 'string') {
-                try {
-                  performanceData = JSON.parse(strategy.performance);
-                } catch (e) {
-                  console.error('Error parsing performance JSON:', e);
-                }
-              } else {
-                // It's already an object
-                performanceData = {
-                  winRate: strategy.performance.winRate || 'N/A',
-                  drawdown: strategy.performance.drawdown || 'N/A',
-                  avgProfit: strategy.performance.avgProfit || 'N/A'
-                };
-              }
-            }
+            // Parse performance data using our helper function
+            const performanceData = parsePerformanceData(strategy.performance);
             
             return {
               ...strategy,
