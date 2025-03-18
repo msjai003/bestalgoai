@@ -1,58 +1,103 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { WizardStepIndicator } from '@/components/strategy/wizard/WizardStepIndicator';
 import { WizardContent } from '@/components/strategy/wizard/WizardContent';
 import { WizardControls } from '@/components/strategy/wizard/WizardControls';
-import { useState } from 'react';
-
-// Type for our wizard steps
-type WizardStep = 'details' | 'setup' | 'timing' | 'risk' | 'confirm';
+import { WizardStep, WizardFormData, StrategyLeg } from '@/types/strategy-wizard';
+import { v4 as uuidv4 } from 'uuid';
 
 const StrategyWizard: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('details');
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    // Add more fields as needed
+  const [currentStep, setCurrentStep] = useState<WizardStep>(WizardStep.TRADE_SETUP);
+  const [strategyName, setStrategyName] = useState<string>('');
+  const [isDuplicateName, setIsDuplicateName] = useState<boolean>(false);
+  
+  // Initialize with default leg
+  const defaultLeg: StrategyLeg = {
+    id: uuidv4(),
+    strategyType: "intraday",
+    instrument: "",
+    segment: "options",
+    underlying: "futures",
+    positionType: "buy",
+    expiryType: "weekly",
+    strikeCriteria: "strike",
+    optionType: "call",
+    entryTime: "9:15",
+    exitTime: "15:15",
+    stopLoss: "0",
+    reEntryOnSL: false,
+    reEntryOnSLCount: "0",
+    target: "0",
+    reEntryOnTarget: false,
+    reEntryOnTargetCount: "0",
+    trailingEnabled: false,
+    trailingLockProfit: "0",
+    trailingLockAt: "0"
+  };
+  
+  const [formData, setFormData] = useState<WizardFormData>({
+    legs: [defaultLeg],
+    currentLegIndex: 0
   });
   
+  const currentLeg = formData.legs[formData.currentLegIndex];
+  
+  const updateCurrentLeg = (updates: Partial<StrategyLeg>) => {
+    const updatedLegs = [...formData.legs];
+    updatedLegs[formData.currentLegIndex] = { ...currentLeg, ...updates };
+    setFormData({
+      ...formData,
+      legs: updatedLegs
+    });
+  };
+  
+  const handleSelectLeg = (index: number) => {
+    setFormData({
+      ...formData,
+      currentLegIndex: index
+    });
+  };
+  
+  const handleAddLeg = () => {
+    const newLeg = {
+      ...defaultLeg,
+      id: uuidv4()
+    };
+    
+    setFormData({
+      ...formData,
+      legs: [...formData.legs, newLeg],
+      currentLegIndex: formData.legs.length
+    });
+  };
+  
+  const updateLegByIndex = (index: number, updates: Partial<StrategyLeg>) => {
+    const updatedLegs = [...formData.legs];
+    updatedLegs[index] = { ...updatedLegs[index], ...updates };
+    setFormData({
+      ...formData,
+      legs: updatedLegs
+    });
+  };
+  
   const handleNext = () => {
-    switch (currentStep) {
-      case 'details':
-        setCurrentStep('setup');
-        break;
-      case 'setup':
-        setCurrentStep('timing');
-        break;
-      case 'timing':
-        setCurrentStep('risk');
-        break;
-      case 'risk':
-        setCurrentStep('confirm');
-        break;
-      default:
-        break;
+    if (currentStep < WizardStep.CONFIRMATION) {
+      setCurrentStep(currentStep + 1);
     }
   };
   
   const handlePrevious = () => {
-    switch (currentStep) {
-      case 'setup':
-        setCurrentStep('details');
-        break;
-      case 'timing':
-        setCurrentStep('setup');
-        break;
-      case 'risk':
-        setCurrentStep('timing');
-        break;
-      case 'confirm':
-        setCurrentStep('risk');
-        break;
-      default:
-        break;
+    if (currentStep > WizardStep.TRADE_SETUP) {
+      setCurrentStep(currentStep - 1);
     }
+  };
+  
+  const handleShowStrategyDetails = () => {
+    console.log("Show strategy details", {
+      name: strategyName,
+      legs: formData.legs
+    });
   };
 
   return (
@@ -65,8 +110,16 @@ const StrategyWizard: React.FC = () => {
         <div className="mt-8">
           <WizardContent 
             currentStep={currentStep} 
+            currentLeg={currentLeg}
+            updateCurrentLeg={updateCurrentLeg}
             formData={formData}
-            setFormData={setFormData}
+            handleSelectLeg={handleSelectLeg}
+            handleAddLeg={handleAddLeg}
+            strategyName={strategyName}
+            setStrategyName={setStrategyName}
+            updateLegByIndex={updateLegByIndex}
+            isDuplicateName={isDuplicateName}
+            onShowStrategyDetails={handleShowStrategyDetails}
           />
         </div>
         
@@ -74,7 +127,6 @@ const StrategyWizard: React.FC = () => {
           currentStep={currentStep}
           onNext={handleNext}
           onPrevious={handlePrevious}
-          isLastStep={currentStep === 'confirm'}
         />
       </Card>
     </div>
