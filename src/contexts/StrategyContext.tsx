@@ -4,6 +4,7 @@ import { PredefinedStrategy } from '@/types/predefined-strategy';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdmin } from '@/contexts/AdminContext';
 
 type StrategyContextType = {
   strategies: PredefinedStrategy[];
@@ -27,7 +28,8 @@ export const StrategyProvider = ({ children }: { children: ReactNode }) => {
   const [strategies, setStrategies] = useState<PredefinedStrategy[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const fetchStrategies = async () => {
     setLoading(true);

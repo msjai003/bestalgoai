@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import WizardStepIndicator from '@/components/strategy/wizard/WizardStepIndicator';
-import WizardContent from '@/components/strategy/wizard/WizardContent';
-import WizardControls from '@/components/strategy/wizard/WizardControls';
+import { WizardStepIndicator } from '@/components/strategy/wizard/WizardStepIndicator';
+import { WizardContent } from '@/components/strategy/wizard/WizardContent';
+import { WizardControls } from '@/components/strategy/wizard/WizardControls';
 import { useState } from 'react';
 
 // Type for our wizard steps

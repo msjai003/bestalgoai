@@ -64,7 +64,7 @@ const Header: React.FC = () => {
               >
                 Dashboard
               </Link>
-              <AdminLink />
+              <AdminLink to="/admin">Admin</AdminLink>
               <Button 
                 variant="ghost" 
                 className="text-gray-300 hover:text-white" 

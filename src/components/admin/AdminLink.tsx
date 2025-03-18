@@ -42,4 +42,35 @@ const AdminLink: React.FC<AdminLinkProps> = ({ to, children }) => {
   );
 };
 
+// Add the AdminMobileLink component for mobile view
+export const AdminMobileLink: React.FC = () => {
+  const { isAdmin, isLoading } = useAdmin();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center py-2 text-sm text-gray-400">
+        <Loader className="h-4 w-4 animate-spin mr-2" />
+        <span>Checking admin access...</span>
+      </div>
+    );
+  }
+  
+  if (!isAdmin) {
+    return null;
+  }
+  
+  return (
+    <NavLink
+      to="/admin"
+      className={({ isActive }) =>
+        isActive
+          ? "text-white bg-gray-800/60 block py-2 px-4 rounded-md font-medium"
+          : "text-gray-300 hover:text-white hover:bg-gray-800/40 block py-2 px-4 rounded-md"
+      }
+    >
+      Admin Dashboard
+    </NavLink>
+  );
+};
+
 export default AdminLink;
