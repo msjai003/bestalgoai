@@ -69,7 +69,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
             .from('user_profiles')
             .select('full_name')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           
           if (error) throw error;
           
@@ -238,13 +238,21 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         // Convert StrategyLeg[] to a JSON-compatible format
         const legsAsJson = JSON.parse(JSON.stringify(formData.legs));
         
+        // Create a proper performance object to match our database schema
+        const performance = {
+          winRate: "N/A",
+          avgProfit: "N/A",
+          drawdown: "N/A"
+        };
+        
         const { data, error } = await supabase.from('custom_strategies').insert({
           user_id: user.id,
           name: strategyName,
           description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
           legs: legsAsJson,
           is_active: true,
-          created_by: userName || user.email // Include user's name or default to email
+          created_by: userName || user.email, 
+          performance: performance
         }).select();
         
         if (error) throw error;
