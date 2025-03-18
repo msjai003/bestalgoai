@@ -1,31 +1,46 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface SubscriptionContextType {
-  // Add appropriate types here based on your application needs
-  subscription: string | null;
-  setSubscription: (subscription: string | null) => void;
-}
+type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+type SubscriptionContextType = {
+  currentPlan: SubscriptionPlan;
+  isActive: boolean;
+  expiryDate: Date | null;
+  updatePlan: (plan: SubscriptionPlan) => void;
+};
+
+const defaultContext: SubscriptionContextType = {
+  currentPlan: 'free',
+  isActive: true,
+  expiryDate: null,
+  updatePlan: () => {},
+};
+
+const SubscriptionContext = createContext<SubscriptionContextType>(defaultContext);
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
-  const [subscription, setSubscription] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>('free');
+  const [isActive, setIsActive] = useState(true);
+  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
+
+  const updatePlan = (plan: SubscriptionPlan) => {
+    setCurrentPlan(plan);
+    // Additional logic for plan updates could go here
+  };
 
   return (
-    <SubscriptionContext.Provider value={{ 
-      subscription, 
-      setSubscription
-    }}>
+    <SubscriptionContext.Provider
+      value={{
+        currentPlan,
+        isActive,
+        expiryDate,
+        updatePlan,
+      }}
+    >
       {children}
     </SubscriptionContext.Provider>
   );
 };
 
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  return context;
-};
+export const useSubscription = () => useContext(SubscriptionContext);

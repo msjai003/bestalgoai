@@ -1,311 +1,263 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import AdminLayout from '@/components/admin/AdminLayout';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Search,
-  RefreshCw, 
-  AlertTriangle,
-  Edit,
-  Plus
-} from 'lucide-react';
-import { predefinedStrategies } from '@/constants/strategy-data';
-import { PredefinedStrategy } from '@/types/predefined-strategy';
 
-interface Strategy {
-  id: number;
-  name: string;
-  description: string;
-  performance: {
-    winRate: string;
-    avgProfit: string;
-    drawdown: string;
-  };
-  parameters: Array<{
-    name: string;
-    value: string;
-  }>;
-  dbId?: string;
-}
+import React, { useEffect, useState } from 'react';
+import { useAdmin } from '@/contexts/AdminContext';
+import { PredefinedStrategy } from '@/types/predefined-strategy';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Search } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase/client';
 
 const StrategiesEditor: React.FC = () => {
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [editStrategy, setEditStrategy] = useState<Strategy | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
-  const [editedName, setEditedName] = useState<string>('');
-  const [editedDescription, setEditedDescription] = useState<string>('');
-
-  const fetchStrategies = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await (supabase
-        .from('predefined_strategies') as any)
-        .select('*');
-
-      if (error) throw error;
-
-      const mappedStrategies = predefinedStrategies.map(strategy => {
-        const dbStrategy = data?.find((s: PredefinedStrategy) => s.original_id === strategy.id);
-        return {
-          ...strategy,
-          name: dbStrategy?.name || strategy.name,
-          description: dbStrategy?.description || strategy.description,
-          dbId: dbStrategy?.id
-        };
-      });
-
-      setStrategies(mappedStrategies);
-    } catch (error: any) {
-      console.error('Error fetching strategies:', error);
-      toast.error(`Error loading strategies: ${error.message}`);
-      setStrategies(predefinedStrategies);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { fetchPredefinedStrategies } = useAdmin();
+  const [strategies, setStrategies] = useState<PredefinedStrategy[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [editingStrategy, setEditingStrategy] = useState<PredefinedStrategy | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
 
   useEffect(() => {
-    fetchStrategies();
+    loadStrategies();
   }, []);
 
-  const handleEditClick = (strategy: Strategy) => {
-    setEditStrategy(strategy);
-    setEditedName(strategy.name);
-    setEditedDescription(strategy.description);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editStrategy) return;
-
+  const loadStrategies = async () => {
+    setLoading(true);
     try {
-      if (editStrategy.dbId) {
-        const { error } = await (supabase
-          .from('predefined_strategies') as any)
-          .update({ 
-            name: editedName,
-            description: editedDescription,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editStrategy.dbId);
-
-        if (error) throw error;
-      } else {
-        const { error } = await (supabase
-          .from('predefined_strategies') as any)
-          .insert({ 
-            original_id: editStrategy.id,
-            name: editedName,
-            description: editedDescription
-          });
-
-        if (error) throw error;
-      }
-
-      toast.success('Strategy updated successfully');
-      setIsEditDialogOpen(false);
-      fetchStrategies();
-    } catch (error: any) {
-      console.error('Error updating strategy:', error);
-      toast.error(`Failed to update strategy: ${error.message}`);
+      const data = await fetchPredefinedStrategies();
+      setStrategies(data);
+    } catch (error) {
+      console.error('Error loading strategies:', error);
+      toast.error('Failed to load strategies');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredStrategies = strategies.filter(strategy => 
-    strategy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    strategy.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStrategies = strategies.filter(
+    (strategy) =>
+      strategy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (strategy.description &&
+        strategy.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Predefined Strategies</h1>
-          <div className="flex w-full sm:w-auto items-center gap-2">
-            <div className="relative flex-grow">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="Search strategies..."
-                className="pl-9 bg-gray-800 border-gray-700 w-full"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="border-gray-700"
-              onClick={fetchStrategies}
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="text-sm text-gray-400 mb-4">
-          {filteredStrategies.length} predefined strategies
-        </div>
+  const startEditing = (strategy: PredefinedStrategy) => {
+    setEditingStrategy(strategy);
+    setEditName(strategy.name);
+    setEditDescription(strategy.description || '');
+  };
 
-        <div className="rounded-md border border-gray-700 overflow-hidden">
-          <Table>
-            <TableHeader className="bg-gray-800">
-              <TableRow className="border-gray-700 hover:bg-gray-800">
-                <TableHead>ID</TableHead>
-                <TableHead>Strategy Name</TableHead>
-                <TableHead className="hidden md:table-cell">Description</TableHead>
-                <TableHead className="hidden md:table-cell">Performance</TableHead>
-                <TableHead className="hidden lg:table-cell">Parameters</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="bg-gray-900">
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#FF00D4]" />
-                    <span className="mt-2 block text-gray-400">Loading strategies...</span>
-                  </TableCell>
-                </TableRow>
-              ) : filteredStrategies.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10">
-                    <AlertTriangle className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
-                    <span className="block text-gray-400">
-                      No strategies found
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredStrategies.map((strategy) => (
-                  <TableRow key={strategy.id} className="border-gray-800">
-                    <TableCell>{strategy.id}</TableCell>
-                    <TableCell className="font-medium">
-                      {strategy.name}
-                      {strategy.dbId && (
-                        <Badge variant="outline" className="ml-2 text-xs bg-purple-900/30 text-purple-300 border-purple-800">
-                          Customized
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-xs truncate">
-                      {strategy.description}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="text-xs space-y-1">
-                        <div>Win Rate: {strategy.performance.winRate}</div>
-                        <div>Drawdown: {strategy.performance.drawdown}</div>
-                        <div>Avg Profit: {strategy.performance.avgProfit}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="text-xs space-y-1">
-                        {strategy.parameters.slice(0, 2).map((param, idx) => (
-                          <div key={idx}>
-                            {param.name}: {param.value}
-                          </div>
-                        ))}
-                        {strategy.parameters.length > 2 && (
-                          <div>+{strategy.parameters.length - 2} more</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 border-blue-800 text-blue-300 hover:bg-blue-900/30"
-                        onClick={() => handleEditClick(strategy)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        <span className="hidden sm:inline">Edit</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+  const cancelEditing = () => {
+    setEditingStrategy(null);
+    setEditName('');
+    setEditDescription('');
+  };
+
+  const saveChanges = async () => {
+    if (!editingStrategy) return;
+
+    try {
+      setLoading(true);
+      
+      // Using type assertion to work with the existing database structure
+      const { error } = await supabase
+        .from('predefined_strategies')
+        .update({
+          name: editName,
+          description: editDescription,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingStrategy.id) as { error: any };
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setStrategies(prev =>
+        prev.map(strategy =>
+          strategy.id === editingStrategy.id
+            ? {
+                ...strategy,
+                name: editName,
+                description: editDescription,
+                updated_at: new Date().toISOString()
+              }
+            : strategy
+        )
+      );
+
+      toast.success('Strategy updated successfully');
+      cancelEditing();
+    } catch (error) {
+      console.error('Error updating strategy:', error);
+      toast.error('Failed to update strategy');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createNewStrategy = async () => {
+    try {
+      setLoading(true);
+      const newStrategy = {
+        original_id: Date.now(), // This is just a placeholder, you'd use a proper ID in production
+        name: 'New Strategy',
+        description: 'Description of the new strategy'
+      };
+
+      // Using type assertion to work with the existing database structure
+      const { data, error } = await supabase
+        .from('predefined_strategies')
+        .insert(newStrategy)
+        .select() as { data: PredefinedStrategy[] | null, error: any };
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        setStrategies(prev => [...prev, data[0]]);
+        toast.success('New strategy created');
+      }
+    } catch (error) {
+      console.error('Error creating strategy:', error);
+      toast.error('Failed to create strategy');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteStrategy = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this strategy?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Using type assertion to work with the existing database structure
+      const { error } = await supabase
+        .from('predefined_strategies')
+        .delete()
+        .eq('id', id) as { error: any };
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setStrategies(prev => prev.filter(strategy => strategy.id !== id));
+      toast.success('Strategy deleted successfully');
+    } catch (error) {
+      console.error('Error deleting strategy:', error);
+      toast.error('Failed to delete strategy');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Predefined Strategies Editor</h1>
+        <Button onClick={createNewStrategy} disabled={loading}>
+          Add New Strategy
+        </Button>
       </div>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="bg-gray-900 border border-gray-800 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Strategy</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Customize the name and description of this predefined strategy.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {editStrategy && (
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-300">
-                  Strategy Name
-                </label>
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Input
+          className="pl-10"
+          placeholder="Search strategies..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {editingStrategy ? (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Edit Strategy</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
                 <Input
-                  id="name"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Strategy name"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium text-gray-300">
-                  Description
-                </label>
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
                 <Textarea
-                  id="description"
-                  value={editedDescription}
-                  onChange={(e) => setEditedDescription(e.target.value)}
-                  className="bg-gray-800 border-gray-700 min-h-[100px]"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Strategy description"
+                  rows={5}
                 />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={cancelEditing} disabled={loading}>
+                  Cancel
+                </Button>
+                <Button onClick={saveChanges} disabled={loading}>
+                  Save Changes
+                </Button>
               </div>
             </div>
-          )}
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsEditDialogOpen(false)}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSaveEdit}
-              className="bg-[#FF00D4] hover:bg-[#FF00D4]/80"
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </AdminLayout>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid gap-4">
+        {loading && strategies.length === 0 ? (
+          <p className="text-center py-8">Loading strategies...</p>
+        ) : filteredStrategies.length === 0 ? (
+          <p className="text-center py-8">No strategies found.</p>
+        ) : (
+          filteredStrategies.map((strategy) => (
+            <Card key={strategy.id} className="overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-2">{strategy.name}</h2>
+                    <p className="text-gray-500 mb-4">
+                      {strategy.description || 'No description provided.'}
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Last updated: {new Date(strategy.updated_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => startEditing(strategy)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => deleteStrategy(strategy.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
   );
 };
 

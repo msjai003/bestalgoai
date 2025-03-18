@@ -1,31 +1,54 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface BrokerContextType {
-  // Add appropriate types here based on your application needs
-  connectedBroker: string | null;
-  setConnectedBroker: (broker: string | null) => void;
-}
+type BrokerContextType = {
+  connectedBrokers: string[];
+  isConnecting: boolean;
+  connectBroker: (brokerId: string) => Promise<boolean>;
+  disconnectBroker: (brokerId: string) => void;
+};
 
-const BrokerContext = createContext<BrokerContextType | undefined>(undefined);
+const defaultContext: BrokerContextType = {
+  connectedBrokers: [],
+  isConnecting: false,
+  connectBroker: async () => false,
+  disconnectBroker: () => {},
+};
+
+const BrokerContext = createContext<BrokerContextType>(defaultContext);
 
 export const BrokerProvider = ({ children }: { children: ReactNode }) => {
-  const [connectedBroker, setConnectedBroker] = useState<string | null>(null);
+  const [connectedBrokers, setConnectedBrokers] = useState<string[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const connectBroker = async (brokerId: string): Promise<boolean> => {
+    setIsConnecting(true);
+    
+    // Simulate API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setConnectedBrokers(prev => [...prev, brokerId]);
+    setIsConnecting(false);
+    
+    return true;
+  };
+
+  const disconnectBroker = (brokerId: string) => {
+    setConnectedBrokers(prev => prev.filter(id => id !== brokerId));
+  };
 
   return (
-    <BrokerContext.Provider value={{ 
-      connectedBroker, 
-      setConnectedBroker
-    }}>
+    <BrokerContext.Provider
+      value={{
+        connectedBrokers,
+        isConnecting,
+        connectBroker,
+        disconnectBroker,
+      }}
+    >
       {children}
     </BrokerContext.Provider>
   );
 };
 
-export const useBroker = () => {
-  const context = useContext(BrokerContext);
-  if (context === undefined) {
-    throw new Error('useBroker must be used within a BrokerProvider');
-  }
-  return context;
-};
+export const useBroker = () => useContext(BrokerContext);

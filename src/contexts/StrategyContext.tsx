@@ -1,31 +1,40 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { PredefinedStrategy } from '@/types/predefined-strategy';
 
-interface StrategyContextType {
-  // Add appropriate types here based on your application needs
-  selectedStrategy: any | null;
-  setSelectedStrategy: (strategy: any | null) => void;
-}
+type StrategyContextType = {
+  strategies: PredefinedStrategy[];
+  loading: boolean;
+  error: string | null;
+  setStrategies: (strategies: PredefinedStrategy[]) => void;
+};
 
-const StrategyContext = createContext<StrategyContextType | undefined>(undefined);
+const defaultContext: StrategyContextType = {
+  strategies: [],
+  loading: false,
+  error: null,
+  setStrategies: () => {},
+};
+
+const StrategyContext = createContext<StrategyContextType>(defaultContext);
 
 export const StrategyProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedStrategy, setSelectedStrategy] = useState<any | null>(null);
+  const [strategies, setStrategies] = useState<PredefinedStrategy[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
-    <StrategyContext.Provider value={{ 
-      selectedStrategy, 
-      setSelectedStrategy
-    }}>
+    <StrategyContext.Provider
+      value={{
+        strategies,
+        loading,
+        error,
+        setStrategies,
+      }}
+    >
       {children}
     </StrategyContext.Provider>
   );
 };
 
-export const useStrategy = () => {
-  const context = useContext(StrategyContext);
-  if (context === undefined) {
-    throw new Error('useStrategy must be used within a StrategyProvider');
-  }
-  return context;
-};
+export const useStrategyContext = () => useContext(StrategyContext);
