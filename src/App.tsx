@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,6 +34,7 @@ import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
 import ForgotPassword from "./pages/ForgotPassword";
 import AuthCallback from "./pages/AuthCallback";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -134,6 +134,13 @@ function AppRoutes() {
       <Route path="/broker-credentials" element={
         <ProtectedRoute>
           <BrokerCredentials />
+        </ProtectedRoute>
+      } />
+      
+      {/* Admin route */}
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <Admin />
         </ProtectedRoute>
       } />
       
