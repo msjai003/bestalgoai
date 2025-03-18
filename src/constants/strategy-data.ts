@@ -1,3 +1,4 @@
+
 export const predefinedStrategies = [
   {
     id: 1,
@@ -96,22 +97,3 @@ export const predefinedStrategies = [
     ]
   }
 ];
-
-// Function to merge predefined strategies with customizations from database
-export const getCustomizedStrategies = (dbStrategies: any[]) => {
-  if (!dbStrategies || dbStrategies.length === 0) {
-    return predefinedStrategies;
-  }
-  
-  return predefinedStrategies.map(strategy => {
-    const customized = dbStrategies.find(s => s.original_id === strategy.id);
-    if (customized) {
-      return {
-        ...strategy,
-        name: customized.name,
-        description: customized.description
-      };
-    }
-    return strategy;
-  });
-};
