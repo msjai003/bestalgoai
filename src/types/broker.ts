@@ -15,6 +15,7 @@ export interface BrokerCredentials {
   apiKey: string;
   twoFactorSecret: string;
   twoFactorCode: string;
+  sessionId: string;
 }
 
 export interface BrokerPermissions {

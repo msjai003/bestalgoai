@@ -1,5 +1,5 @@
 
-import { ChevronLeft, User, Lock, Key, Shield } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Broker } from "@/types/broker";
@@ -77,6 +77,20 @@ export const CredentialsForm = ({
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.password}
             onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="sessionId" className="text-gray-300 flex items-center gap-2">
+            <Hash className="w-4 h-4" /> Session ID
+          </Label>
+          <Input
+            id="sessionId"
+            type="text"
+            placeholder="Enter your session ID"
+            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
+            value={credentials.sessionId}
+            onChange={(e) => setCredentials({ ...credentials, sessionId: e.target.value })}
           />
         </div>
 

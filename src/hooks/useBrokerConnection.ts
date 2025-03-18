@@ -15,7 +15,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
     password: "",
     apiKey: "",
     twoFactorSecret: "",
-    twoFactorCode: ""
+    twoFactorCode: "",
+    sessionId: ""
   });
   const [selectedAccount, setSelectedAccount] = useState("");
   const [permissions, setPermissions] = useState<BrokerPermissions>({
@@ -66,6 +67,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           password: credentials.password,
           api_key: credentials.apiKey || null,
           two_factor_secret: credentials.twoFactorSecret || null,
+          session_id: credentials.sessionId || null,
           status: 'connected' // Changed from 'pending' to 'connected'
         });
 
