@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -31,6 +30,7 @@ import {
   Plus
 } from 'lucide-react';
 import { predefinedStrategies } from '@/constants/strategy-data';
+import { PredefinedStrategy } from '@/types/predefined-strategy';
 
 interface Strategy {
   id: number;
@@ -60,16 +60,14 @@ const StrategiesEditor: React.FC = () => {
   const fetchStrategies = async () => {
     setIsLoading(true);
     try {
-      // Fetch strategies from Supabase
-      const { data, error } = await supabase
-        .from('predefined_strategies')
+      const { data, error } = await (supabase
+        .from('predefined_strategies') as any)
         .select('*');
 
       if (error) throw error;
 
-      // Map database data with predefined strategies
       const mappedStrategies = predefinedStrategies.map(strategy => {
-        const dbStrategy = data?.find(s => s.original_id === strategy.id);
+        const dbStrategy = data?.find((s: PredefinedStrategy) => s.original_id === strategy.id);
         return {
           ...strategy,
           name: dbStrategy?.name || strategy.name,
@@ -82,7 +80,6 @@ const StrategiesEditor: React.FC = () => {
     } catch (error: any) {
       console.error('Error fetching strategies:', error);
       toast.error(`Error loading strategies: ${error.message}`);
-      // Fallback to predefined strategies if database fetch fails
       setStrategies(predefinedStrategies);
     } finally {
       setIsLoading(false);
@@ -104,23 +101,20 @@ const StrategiesEditor: React.FC = () => {
     if (!editStrategy) return;
 
     try {
-      // Check if strategy already exists in the database
       if (editStrategy.dbId) {
-        // Update existing record
-        const { error } = await supabase
-          .from('predefined_strategies')
+        const { error } = await (supabase
+          .from('predefined_strategies') as any)
           .update({ 
             name: editedName,
             description: editedDescription,
-            updated_at: new Date()
+            updated_at: new Date().toISOString()
           })
           .eq('id', editStrategy.dbId);
 
         if (error) throw error;
       } else {
-        // Insert new record
-        const { error } = await supabase
-          .from('predefined_strategies')
+        const { error } = await (supabase
+          .from('predefined_strategies') as any)
           .insert({ 
             original_id: editStrategy.id,
             name: editedName,

@@ -3,12 +3,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
+import { PredefinedStrategy } from '@/types/predefined-strategy';
 
 interface AdminContextType {
   isAdmin: boolean;
   isLoading: boolean;
   checkAdminStatus: () => Promise<boolean>;
-  fetchPredefinedStrategies: () => Promise<any[]>;
+  fetchPredefinedStrategies: () => Promise<PredefinedStrategy[]>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -45,10 +46,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchPredefinedStrategies = async (): Promise<any[]> => {
+  const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     try {
-      const { data, error } = await supabase
-        .from('predefined_strategies')
+      // Use type casting to bypass the TypeScript error
+      const { data, error } = await (supabase
+        .from('predefined_strategies') as any)
         .select('*');
 
       if (error) {
