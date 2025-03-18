@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,6 +34,7 @@ import BrokerCredentials from "./pages/BrokerCredentials";
 import Terms from "./pages/Terms";
 import ForgotPassword from "./pages/ForgotPassword";
 import AuthCallback from "./pages/AuthCallback";
+import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +136,7 @@ function AppRoutes() {
           <BrokerCredentials />
         </ProtectedRoute>
       } />
+      <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
