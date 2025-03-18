@@ -56,7 +56,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleUpgradeClick = () => {
     setShowPaymentDialog(false);
-    navigate("/subscription");
+    navigate("/pricing");
   };
 
   return (

@@ -1,13 +1,33 @@
 
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader } from "lucide-react";
+import { Loader, CreditCard, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const plans = [
   {
@@ -42,13 +62,46 @@ interface PlanDetails {
   selected_at: string;
 }
 
+// Payment form schema
+const paymentFormSchema = z.object({
+  cardNumber: z.string()
+    .min(16, "Card number must be at least 16 digits")
+    .max(19, "Card number cannot exceed 19 digits"),
+  expiryDate: z.string()
+    .regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Expiry date must be in MM/YY format"),
+  cvv: z.string()
+    .min(3, "CVV must be at least 3 digits")
+    .max(4, "CVV cannot exceed 4 digits"),
+  nameOnCard: z.string()
+    .min(3, "Name on card is required")
+});
+
+type PaymentFormValues = z.infer<typeof paymentFormSchema>;
+
 const Subscription = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [targetPlan, setTargetPlan] = useState<{name: string, price: string} | null>(null);
+  const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   
+  // Initialize form
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema),
+    defaultValues: {
+      cardNumber: "",
+      expiryDate: "",
+      cvv: "",
+      nameOnCard: ""
+    }
+  });
+
   // Fetch user's plan details when component mounts
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -83,6 +136,22 @@ const Subscription = () => {
     fetchUserPlan();
   }, [user, toast]);
 
+  // Check if we have query params from pricing page
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const planName = params.get('plan');
+    const planPrice = params.get('price');
+    const strategyId = params.get('strategyId');
+    
+    if (planName && planPrice) {
+      setTargetPlan({ name: planName, price: planPrice });
+    }
+    
+    if (strategyId) {
+      setSelectedStrategyId(parseInt(strategyId));
+    }
+  }, [location.search]);
+
   const handlePlanSelect = async (planName: string, planPrice: string) => {
     if (!user) {
       toast({
@@ -94,14 +163,26 @@ const Subscription = () => {
       return;
     }
 
+    setTargetPlan({ name: planName, price: planPrice });
+    setShowPaymentDialog(true);
+  };
+
+  const onPaymentSubmit = async (values: PaymentFormValues) => {
+    if (!user || !targetPlan) return;
+    
+    setProcessingPayment(true);
+    
     try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
-          plan_name: planName,
-          plan_price: planPrice,
+          plan_name: targetPlan.name,
+          plan_price: targetPlan.price,
         });
 
       if (error) {
@@ -112,22 +193,59 @@ const Subscription = () => {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Success",
-          description: `You've selected the ${planName} plan!`,
-          variant: "default",
-        });
+        setPaymentSuccess(true);
         
-        // Refresh the page to show the updated plan
-        window.location.reload();
+        // If this was triggered from a strategy unlock, add strategy to user's selection
+        if (selectedStrategyId) {
+          try {
+            // Fetch strategy details
+            const { data: strategyData, error: strategyError } = await supabase
+              .from('predefined_strategies')
+              .select('name, description')
+              .eq('id', selectedStrategyId)
+              .single();
+              
+            if (!strategyError && strategyData) {
+              // Add strategy to user's selections
+              await supabase
+                .from('strategy_selections')
+                .insert({
+                  user_id: user.id,
+                  strategy_id: selectedStrategyId,
+                  strategy_name: strategyData.name,
+                  strategy_description: strategyData.description,
+                  trade_type: "live trade"
+                });
+            }
+          } catch (error) {
+            console.error('Error activating strategy:', error);
+          }
+        }
+        
+        // Show success message after brief delay
+        setTimeout(() => {
+          toast({
+            title: "Success",
+            description: `Payment successful! You've subscribed to the ${targetPlan.name} plan.`,
+            variant: "default",
+          });
+          
+          setShowPaymentDialog(false);
+          setProcessingPayment(false);
+          setPaymentSuccess(false);
+          
+          // Refresh the page to show the updated plan
+          window.location.reload();
+        }, 2000);
       }
     } catch (error) {
-      console.error('Error in plan selection:', error);
+      console.error('Error in payment processing:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+      setProcessingPayment(false);
     }
   };
 
@@ -270,6 +388,7 @@ const Subscription = () => {
             <Button 
               variant="outline"
               className="w-full border-gray-700 text-gray-400 hover:bg-gray-700/50"
+              onClick={() => setShowPaymentDialog(true)}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add Payment Method
@@ -277,6 +396,136 @@ const Subscription = () => {
           </div>
         </section>
       </main>
+
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="bg-gray-800 border border-gray-700 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {paymentSuccess ? "Payment Successful" : "Add Payment Method"}
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 pt-2">
+              {paymentSuccess 
+                ? "Your payment has been processed successfully." 
+                : targetPlan 
+                  ? `Complete payment to subscribe to the ${targetPlan.name} plan for ${targetPlan.price}/month.` 
+                  : "Enter your card details to add a new payment method."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {paymentSuccess ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="bg-green-900/20 p-6 rounded-full mb-4">
+                <CheckCircle className="h-16 w-16 text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Payment Successful!</h3>
+              <p className="text-gray-400 text-center mb-6">
+                Your subscription is now active.
+                {selectedStrategyId ? " Premium strategy has been unlocked." : ""}
+              </p>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onPaymentSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="cardNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Card Number</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            placeholder="1234 5678 9012 3456" 
+                            className="pl-10 bg-gray-700 border-gray-600" 
+                            {...field} 
+                          />
+                          <CreditCard className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="expiryDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expiry Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="MM/YY" 
+                            className="bg-gray-700 border-gray-600" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="cvv"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CVV</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="123" 
+                            className="bg-gray-700 border-gray-600" 
+                            {...field} 
+                            type="password"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="nameOnCard"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name on Card</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="John Doe" 
+                          className="bg-gray-700 border-gray-600" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 hover:opacity-90"
+                    disabled={processingPayment}
+                  >
+                    {processingPayment ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>Pay {targetPlan?.price || ''}</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
+        </DialogContent>
+      </Dialog>
+      
       <BottomNav />
     </div>
   );

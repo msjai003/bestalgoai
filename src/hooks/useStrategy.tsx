@@ -122,14 +122,52 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const handleToggleLiveMode = (id: number) => {
-    const strategy = strategies.find(s => s.id === id);
+    const strategyIndex = strategies.findIndex(s => s.id === id);
+    const strategy = strategies[strategyIndex];
+    const isFreeStrategy = strategyIndex === 0;  // First strategy is free
+    const isPremiumStrategy = !isFreeStrategy;
     const newStatus = !strategy?.isLive;
     
-    if (newStatus) {
+    // If turning on a premium strategy that isn't already live, check subscription
+    if (newStatus && isPremiumStrategy && !strategy.isLive) {
+      // Check if user has access to premium strategies
+      const checkPremiumAccess = async () => {
+        try {
+          if (!user) return false;
+          
+          const { data, error } = await supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+          return data !== null;
+        } catch (error) {
+          console.error('Error checking premium access:', error);
+          return false;
+        }
+      };
+      
+      checkPremiumAccess().then(hasPremiumAccess => {
+        if (hasPremiumAccess) {
+          // User has subscription, proceed
+          setSelectedStrategyId(id);
+          setTargetMode("live");
+          setConfirmDialogOpen(true);
+        } else {
+          // User doesn't have subscription, redirect to pricing
+          navigate(`/pricing?strategyId=${id}`);
+        }
+      });
+    } else if (newStatus) {
+      // Free strategy or already has access
       setSelectedStrategyId(id);
       setTargetMode("live");
       setConfirmDialogOpen(true);
     } else {
+      // Turning off any strategy
       updateLiveMode(id, false);
     }
   };
