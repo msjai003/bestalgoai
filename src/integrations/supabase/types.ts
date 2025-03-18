@@ -180,6 +180,39 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_config_options: {
+        Row: {
+          category: string
+          created_at: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          sort_order: number | null
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       strategy_selections: {
         Row: {
           created_at: string | null
