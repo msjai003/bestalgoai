@@ -1,39 +1,69 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, ChartBar, Bell, Settings, PieChart, DollarSign } from 'lucide-react';
 
 export const BottomNav = () => {
   const location = useLocation();
-  const { toast } = useToast();
+  const currentPath = location.pathname;
+
+  const isActive = (path: string) => {
+    return currentPath === path;
+  };
 
   return (
-    <nav className="fixed bottom-0 w-full bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
-      <div className="flex justify-around px-6 py-2">
-        <Link to="/dashboard" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-house ${location.pathname === '/dashboard' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Home</span>
+    <div className="fixed bottom-0 left-0 right-0 border-t border-gray-800 bg-gray-900/95 backdrop-blur-lg py-2 z-40">
+      <div className="flex justify-around items-center">
+        <Link
+          to="/dashboard"
+          className={`flex flex-col items-center py-1 px-3 ${
+            isActive('/dashboard') ? 'text-[#FF00D4]' : 'text-gray-400'
+          }`}
+        >
+          <Home className="h-5 w-5" />
+          <span className="text-xs mt-1">Home</span>
         </Link>
-        
-        <Link to="/strategy-management" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-chart-simple ${location.pathname === '/strategy-management' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Wishlist</span>
+
+        <Link
+          to="/performance-metrics"
+          className={`flex flex-col items-center py-1 px-3 ${
+            isActive('/performance-metrics') ? 'text-[#FF00D4]' : 'text-gray-400'
+          }`}
+        >
+          <ChartBar className="h-5 w-5" />
+          <span className="text-xs mt-1">Performance</span>
         </Link>
-        
-        <Link to="/live-trading" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-chart-line ${location.pathname === '/live-trading' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Trading</span>
+
+        <Link
+          to="/sell-your-strategy"
+          className={`flex flex-col items-center py-1 px-3 ${
+            isActive('/sell-your-strategy') ? 'text-[#FF00D4]' : 'text-gray-400'
+          }`}
+        >
+          <DollarSign className="h-5 w-5" />
+          <span className="text-xs mt-1">Sell</span>
         </Link>
-        
-        <Link to="/performance-metrics" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-trophy ${location.pathname === '/performance-metrics' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Performance</span>
+
+        <Link
+          to="/backtest"
+          className={`flex flex-col items-center py-1 px-3 ${
+            isActive('/backtest') ? 'text-[#FF00D4]' : 'text-gray-400'
+          }`}
+        >
+          <PieChart className="h-5 w-5" />
+          <span className="text-xs mt-1">Backtest</span>
         </Link>
-        
-        <Link to="/settings" className="flex flex-col items-center p-2">
-          <i className={`fa-solid fa-gear ${location.pathname === '/settings' ? 'text-[#FF00D4]' : 'text-gray-500'}`}></i>
-          <span className="text-xs text-gray-400 mt-1">Settings</span>
+
+        <Link
+          to="/settings"
+          className={`flex flex-col items-center py-1 px-3 ${
+            isActive('/settings') ? 'text-[#FF00D4]' : 'text-gray-400'
+          }`}
+        >
+          <Settings className="h-5 w-5" />
+          <span className="text-xs mt-1">Settings</span>
         </Link>
       </div>
-    </nav>
+    </div>
   );
 };
