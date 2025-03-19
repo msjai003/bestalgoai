@@ -12,10 +12,12 @@ export const saveStrategyConfiguration = async (
   tradeType: string = "live trade", // Keep default for this function as "live trade"
   paidStatus: string = "free" // Default paid status is "free"
 ): Promise<void> => {
+  console.log("Saving strategy configuration with paid status:", paidStatus);
+  
   // First check if a record already exists
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
-    .select('id, trade_type')
+    .select('id, trade_type, paid_status')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
     .maybeSingle();
@@ -31,6 +33,14 @@ export const saveStrategyConfiguration = async (
       ? "paper trade" 
       : tradeType;
     
+    // Make sure we don't override 'paid' status if it's already set
+    const preservedPaidStatus = data.paid_status === "paid" ? "paid" : paidStatus;
+    
+    console.log("Updating existing strategy with:", {
+      preservedTradeType,
+      preservedPaidStatus
+    });
+    
     const { error } = await supabase
       .from('strategy_selections')
       .update({
@@ -39,13 +49,15 @@ export const saveStrategyConfiguration = async (
         quantity: quantity,
         selected_broker: brokerName,
         trade_type: preservedTradeType,
-        paid_status: paidStatus
+        paid_status: preservedPaidStatus
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
       
     if (error) throw error;
   } else {
+    console.log("Inserting new strategy with paid status:", paidStatus);
+    
     const { error } = await supabase
       .from('strategy_selections')
       .insert({
@@ -61,4 +73,6 @@ export const saveStrategyConfiguration = async (
       
     if (error) throw error;
   }
+  
+  console.log("Strategy configuration saved successfully");
 };

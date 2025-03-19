@@ -90,7 +90,6 @@ const Subscription = () => {
   const [targetPlan, setTargetPlan] = useState<{name: string, price: string} | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   
-  // Initialize form
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
@@ -101,7 +100,6 @@ const Subscription = () => {
     }
   });
 
-  // Fetch user's plan details when component mounts
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (!user) return;
@@ -135,7 +133,6 @@ const Subscription = () => {
     fetchUserPlan();
   }, [user, toast]);
 
-  // Check if we have query params from pricing page
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const planName = params.get('plan');
@@ -172,10 +169,8 @@ const Subscription = () => {
     setProcessingPayment(true);
     
     try {
-      // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -191,84 +186,103 @@ const Subscription = () => {
           description: "Failed to save your plan selection. Please try again.",
           variant: "destructive",
         });
-      } else {
-        setPaymentSuccess(true);
-        
-        // If this was triggered from a strategy unlock, add strategy to user's selection
-        // or update existing selection to paid status
-        if (selectedStrategyId) {
-          try {
-            // Check if strategy already exists in user's selections
-            const { data: existingStrategy, error: checkError } = await supabase
-              .from('strategy_selections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('strategy_id', selectedStrategyId)
-              .maybeSingle();
-              
-            if (checkError) throw checkError;
-            
-            // Fetch strategy details if needed
-            const { data: strategyData, error: strategyError } = await supabase
-              .from('predefined_strategies')
-              .select('name, description')
-              .eq('id', selectedStrategyId)
-              .single();
-              
-            if (strategyError) throw strategyError;
-            
-            if (existingStrategy) {
-              // Update existing strategy selection to mark as paid
-              const { error: updateError } = await supabase
-                .from('strategy_selections')
-                .update({
-                  paid_status: 'paid'
-                })
-                .eq('user_id', user.id)
-                .eq('strategy_id', selectedStrategyId);
-                
-              if (updateError) throw updateError;
-            } else if (strategyData) {
-              // Add strategy to user's selections with paid status
-              const { error: insertError } = await supabase
-                .from('strategy_selections')
-                .insert({
-                  user_id: user.id,
-                  strategy_id: selectedStrategyId,
-                  strategy_name: strategyData.name,
-                  strategy_description: strategyData.description,
-                  trade_type: "live trade",
-                  paid_status: 'paid'
-                });
-                
-              if (insertError) throw insertError;
-            }
-          } catch (error) {
-            console.error('Error updating strategy payment status:', error);
-          }
-        }
-        
-        // Show success message after brief delay
-        setTimeout(() => {
-          toast({
-            title: "Success",
-            description: `Payment successful! You've subscribed to the ${targetPlan.name} plan.`,
-            variant: "default",
-          });
-          
-          setShowPaymentDialog(false);
-          setProcessingPayment(false);
-          setPaymentSuccess(false);
-          
-          // Redirect to strategy selection page if coming from there
-          if (selectedStrategyId) {
-            navigate('/strategy-selection');
-          } else {
-            // Refresh the page to show the updated plan
-            window.location.reload();
-          }
-        }, 2000);
+        setProcessingPayment(false);
+        return;
       }
+      
+      setPaymentSuccess(true);
+      
+      if (selectedStrategyId) {
+        try {
+          console.log(`Updating strategy ${selectedStrategyId} to paid status for user ${user.id}`);
+          
+          const { data: existingStrategy, error: checkError } = await supabase
+            .from('strategy_selections')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('strategy_id', selectedStrategyId)
+            .maybeSingle();
+            
+          if (checkError) {
+            console.error('Error checking existing strategy:', checkError);
+            throw checkError;
+          }
+          
+          const { data: strategyData, error: strategyError } = await supabase
+            .from('predefined_strategies')
+            .select('name, description')
+            .eq('id', selectedStrategyId)
+            .single();
+            
+          if (strategyError) {
+            console.error('Error fetching strategy details:', strategyError);
+            throw strategyError;
+          }
+          
+          if (existingStrategy) {
+            console.log('Updating existing strategy selection to paid status:', existingStrategy);
+            const { error: updateError } = await supabase
+              .from('strategy_selections')
+              .update({
+                paid_status: 'paid'
+              })
+              .eq('user_id', user.id)
+              .eq('strategy_id', selectedStrategyId);
+              
+            if (updateError) {
+              console.error('Error updating strategy paid status:', updateError);
+              throw updateError;
+            }
+            
+            console.log('Strategy marked as paid successfully');
+          } else if (strategyData) {
+            console.log('Adding new strategy selection with paid status:', strategyData);
+            const { error: insertError } = await supabase
+              .from('strategy_selections')
+              .insert({
+                user_id: user.id,
+                strategy_id: selectedStrategyId,
+                strategy_name: strategyData.name,
+                strategy_description: strategyData.description,
+                trade_type: "paper trade",
+                paid_status: 'paid',
+                quantity: 0
+              });
+              
+            if (insertError) {
+              console.error('Error inserting strategy with paid status:', insertError);
+              throw insertError;
+            }
+            
+            console.log('New strategy added with paid status');
+          }
+        } catch (error) {
+          console.error('Error updating strategy payment status:', error);
+          toast({
+            title: "Warning",
+            description: "Payment successful, but there was an issue unlocking the strategy. Please try again or contact support.",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      setTimeout(() => {
+        toast({
+          title: "Success",
+          description: `Payment successful! You've subscribed to the ${targetPlan.name} plan.`,
+          variant: "default",
+        });
+        
+        setShowPaymentDialog(false);
+        setProcessingPayment(false);
+        setPaymentSuccess(false);
+        
+        if (selectedStrategyId) {
+          navigate('/strategy-selection');
+        } else {
+          window.location.reload();
+        }
+      }, 2000);
     } catch (error) {
       console.error('Error in payment processing:', error);
       toast({
@@ -280,16 +294,13 @@ const Subscription = () => {
     }
   };
 
-  // Helper to format the expiration date
   const formatExpirationDate = () => {
     if (!userPlan) return "";
     
     const selectedDate = new Date(userPlan.selected_at);
-    // Add 30 days to the selected date (mock expiration)
     const expirationDate = new Date(selectedDate);
     expirationDate.setDate(expirationDate.getDate() + 30);
     
-    // Format as "MMM DD, YYYY"
     return expirationDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

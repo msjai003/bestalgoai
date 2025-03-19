@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -85,7 +84,7 @@ export const updateStrategyLiveConfig = async (
   // First check if a record already exists for this user and strategy
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
-    .select('id')
+    .select('id, paid_status')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
     .maybeSingle();
@@ -94,6 +93,10 @@ export const updateStrategyLiveConfig = async (
     console.error("Error checking existing strategy:", checkError);
     throw checkError;
   }
+  
+  // Preserve paid status if it's already set to "paid"
+  const finalPaidStatus = data?.paid_status === "paid" ? "paid" : paidStatus;
+  console.log("Final paid status to be set:", finalPaidStatus);
   
   // If record exists, update it. Otherwise, insert a new one
   let updateResult;
@@ -108,7 +111,7 @@ export const updateStrategyLiveConfig = async (
         trade_type: tradeType,
         strategy_name: strategyName,
         strategy_description: strategyDescription,
-        paid_status: paidStatus
+        paid_status: finalPaidStatus
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
@@ -124,7 +127,7 @@ export const updateStrategyLiveConfig = async (
         quantity: quantity || 0,
         selected_broker: brokerName,
         trade_type: tradeType,
-        paid_status: paidStatus
+        paid_status: finalPaidStatus
       });
   }
   
@@ -132,6 +135,8 @@ export const updateStrategyLiveConfig = async (
     console.error("Error updating strategy config:", updateResult.error);
     throw updateResult.error;
   }
+  
+  console.log("Strategy configuration updated successfully");
 };
 
 /**
