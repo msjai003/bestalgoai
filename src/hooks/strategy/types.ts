@@ -12,7 +12,8 @@ export interface Strategy {
   isLive: boolean;
   quantity: number;
   selectedBroker?: string;
-  tradeType?: string; // Add tradeType field to Strategy interface
+  brokerId?: string; // Add broker ID field for reference
+  tradeType?: string;
   pnl?: string;
   successRate?: string;
 }
@@ -21,5 +22,6 @@ export interface StrategySelection {
   strategy_id: number;
   quantity?: number;
   selected_broker?: string;
-  trade_type?: string; // Add trade_type field to StrategySelection interface
+  broker_id?: string; // Add broker_id field
+  trade_type?: string;
 }

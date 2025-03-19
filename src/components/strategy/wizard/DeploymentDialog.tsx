@@ -36,6 +36,7 @@ export const DeploymentDialog = ({
     }
     
     onDeployStrategy(mode);
+    onOpenChange(false); // Ensure dialog closes after deployment selection
   };
 
   return (

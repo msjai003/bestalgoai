@@ -30,26 +30,51 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Map database strategies directly to our format
-        const dbStrategies = data.map(item => ({
-          id: item.strategy_id,
-          name: item.strategy_name,
-          description: item.strategy_description || "",
-          isWishlisted: true,
-          // Only set isLive to true if trade_type is explicitly "live trade"
-          isLive: item.trade_type === "live trade",
-          quantity: item.quantity || 0,
-          selectedBroker: item.selected_broker || "",
-          tradeType: item.trade_type || "paper trade",
-          performance: {
-            winRate: "N/A",
-            avgProfit: "N/A",
-            drawdown: "N/A"
-          }
-        }));
+        // Create a dictionary to track unique strategies
+        const strategiesMap = new Map<number, Strategy[]>();
         
-        strategies = dbStrategies;
-        localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));
+        // Process each strategy selection and organize by strategy_id
+        data.forEach(item => {
+          const strategy: Strategy = {
+            id: item.strategy_id,
+            name: item.strategy_name,
+            description: item.strategy_description || "",
+            isWishlisted: true,
+            isLive: item.trade_type === "live trade",
+            quantity: item.quantity || 0,
+            selectedBroker: item.selected_broker || "",
+            brokerId: item.broker_id || "", // Include broker ID
+            tradeType: item.trade_type || "paper trade",
+            performance: {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          };
+          
+          // Add to our map of strategies
+          if (!strategiesMap.has(item.strategy_id)) {
+            strategiesMap.set(item.strategy_id, []);
+          }
+          
+          strategiesMap.get(item.strategy_id)?.push(strategy);
+        });
+        
+        // Convert the map to an array of strategies
+        // For strategies with multiple brokers, use the first entry but mark it for UI differentiation
+        strategies = Array.from(strategiesMap.entries()).map(([_, strategyList]) => {
+          const primaryStrategy = strategyList[0];
+          if (strategyList.length > 1) {
+            return {
+              ...primaryStrategy,
+              hasMultipleBrokers: true,
+              brokerConfigs: strategyList
+            };
+          }
+          return primaryStrategy;
+        });
+        
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(strategies));
       }
     } catch (error) {
       console.error("Error fetching strategies from database:", error);
@@ -69,75 +94,129 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  tradeType: string = "paper trade" // Updated default to "paper trade"
+  brokerId?: string, // Add broker ID parameter
+  tradeType: string = "paper trade" // Default to paper trade
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
     brokerName,
+    brokerId,
     tradeType
   });
   
-  // First check if a record already exists for this user and strategy
-  const { data, error: checkError } = await supabase
-    .from('strategy_selections')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('strategy_id', strategyId)
-    .maybeSingle();
-    
-  if (checkError) {
-    console.error("Error checking existing strategy:", checkError);
-    throw checkError;
-  }
-  
-  // If record exists, update it. Otherwise, insert a new one
-  let updateResult;
-  
-  if (data) {
-    // Update existing record
-    updateResult = await supabase
+  if (brokerId) {
+    // First check if a record already exists for this user, strategy, and broker combination
+    const { data, error: checkError } = await supabase
       .from('strategy_selections')
-      .update({
-        quantity: quantity || 0,
-        selected_broker: brokerName,
-        trade_type: tradeType,
-        strategy_name: strategyName,
-        strategy_description: strategyDescription
-      })
+      .select('id')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
+      .eq('strategy_id', strategyId)
+      .eq('broker_id', brokerId)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error("Error checking existing strategy:", checkError);
+      throw checkError;
+    }
+    
+    // If record exists, update it. Otherwise, insert a new one
+    let updateResult;
+    
+    if (data) {
+      // Update existing record
+      updateResult = await supabase
+        .from('strategy_selections')
+        .update({
+          quantity: quantity || 0,
+          selected_broker: brokerName,
+          broker_id: brokerId,
+          trade_type: tradeType,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        })
+        .eq('id', data.id);
+    } else {
+      // Insert new record
+      updateResult = await supabase
+        .from('strategy_selections')
+        .insert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription,
+          quantity: quantity || 0,
+          selected_broker: brokerName,
+          broker_id: brokerId,
+          trade_type: tradeType
+        });
+    }
+    
+    if (updateResult.error) {
+      console.error("Error updating strategy config:", updateResult.error);
+      throw updateResult.error;
+    }
   } else {
-    // Insert new record
-    updateResult = await supabase
+    // Fallback to original behavior if no broker_id is provided
+    const { data, error: checkError } = await supabase
       .from('strategy_selections')
-      .insert({
-        user_id: userId,
-        strategy_id: strategyId,
-        strategy_name: strategyName,
-        strategy_description: strategyDescription,
-        quantity: quantity || 0,
-        selected_broker: brokerName,
-        trade_type: tradeType
-      });
-  }
-  
-  if (updateResult.error) {
-    console.error("Error updating strategy config:", updateResult.error);
-    throw updateResult.error;
+      .select('id')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error("Error checking existing strategy:", checkError);
+      throw checkError;
+    }
+    
+    // If record exists, update it. Otherwise, insert a new one
+    let updateResult;
+    
+    if (data) {
+      // Update existing record
+      updateResult = await supabase
+        .from('strategy_selections')
+        .update({
+          quantity: quantity || 0,
+          selected_broker: brokerName,
+          trade_type: tradeType,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        })
+        .eq('id', data.id);
+    } else {
+      // Insert new record
+      updateResult = await supabase
+        .from('strategy_selections')
+        .insert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription,
+          quantity: quantity || 0,
+          selected_broker: brokerName,
+          trade_type: tradeType
+        });
+    }
+    
+    if (updateResult.error) {
+      console.error("Error updating strategy config:", updateResult.error);
+      throw updateResult.error;
+    }
   }
 };
 
 /**
  * Fetches broker details by ID
  */
-export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string } | null> => {
+export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string; id: string } | null> => {
   console.log("Fetching broker details for ID:", brokerId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
-    .select('broker_name')
+    .select('broker_name, id')
     .eq('id', brokerId)
     .single();
     
