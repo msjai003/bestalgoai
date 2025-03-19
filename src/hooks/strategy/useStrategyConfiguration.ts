@@ -33,7 +33,7 @@ export const saveStrategyConfiguration = async (
       ? "paper trade" 
       : tradeType;
     
-    // Make sure we don't override 'paid' status if it's already set
+    // IMPORTANT: Make sure we don't override 'paid' status if it's already set
     const preservedPaidStatus = data.paid_status === "paid" ? "paid" : paidStatus;
     
     console.log("Updating existing strategy with:", {
