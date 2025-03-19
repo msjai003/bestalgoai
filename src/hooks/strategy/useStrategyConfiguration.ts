@@ -23,7 +23,10 @@ export const saveStrategyConfiguration = async (
       .eq('strategy_id', strategyId)
       .maybeSingle();
       
-    if (checkError) throw checkError;
+    if (checkError) {
+      console.error("Error checking existing strategy:", checkError);
+      throw checkError;
+    }
     
     // IMPORTANT: If a record exists, determine the correct paid status to use
     if (data) {
@@ -60,7 +63,25 @@ export const saveStrategyConfiguration = async (
         .eq('strategy_id', strategyId)
         .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating strategy:", error);
+        
+        // Fallback to upsert if update fails
+        const { error: upsertError } = await supabase
+          .from('strategy_selections')
+          .upsert({
+            user_id: userId,
+            strategy_id: strategyId,
+            strategy_name: strategyName,
+            strategy_description: strategyDescription,
+            quantity: quantity || 0,
+            selected_broker: brokerName || "",
+            trade_type: preservedTradeType,
+            paid_status: preservedPaidStatus
+          }, { onConflict: 'user_id,strategy_id' });
+          
+        if (upsertError) throw upsertError;
+      }
       
       console.log("Strategy update result:", updateData);
     } else {
@@ -81,7 +102,25 @@ export const saveStrategyConfiguration = async (
         })
         .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting strategy:", error);
+        
+        // Fallback to upsert if insert fails
+        const { error: upsertError } = await supabase
+          .from('strategy_selections')
+          .upsert({
+            user_id: userId,
+            strategy_id: strategyId,
+            strategy_name: strategyName,
+            strategy_description: strategyDescription,
+            quantity: quantity || 0,
+            selected_broker: brokerName || "",
+            trade_type: tradeType,
+            paid_status: paidStatus
+          }, { onConflict: 'user_id,strategy_id' });
+          
+        if (upsertError) throw upsertError;
+      }
       
       console.log("Strategy insert result:", insertData);
     }
@@ -96,6 +135,20 @@ export const saveStrategyConfiguration = async (
       
     if (verifyError) {
       console.error("Error verifying strategy update:", verifyError);
+      
+      // Try one more verification with maybeSingle
+      const { data: verifyData2, error: verifyError2 } = await supabase
+        .from('strategy_selections')
+        .select('paid_status, trade_type')
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId)
+        .maybeSingle();
+        
+      if (!verifyError2 && verifyData2) {
+        console.log("Verified strategy configuration on second attempt:", verifyData2);
+      } else {
+        console.error("Second verification attempt also failed:", verifyError2);
+      }
     } else {
       console.log("Verified strategy configuration:", verifyData);
     }

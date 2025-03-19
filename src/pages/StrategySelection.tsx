@@ -88,42 +88,88 @@ const StrategySelection = () => {
               
               // If the strategy is still not marked as paid, try to fix it one more time
               if (user) {
-                const { data: strategyData } = await supabase
-                  .from('predefined_strategies')
-                  .select('name, description')
-                  .eq('id', strategyId)
-                  .single();
-                
-                if (strategyData) {
-                  // Try to create or update the strategy with paid status
-                  const { error: updateError } = await supabase
-                    .from('strategy_selections')
-                    .upsert({
-                      user_id: user.id,
-                      strategy_id: strategyId,
-                      strategy_name: strategyData.name,
-                      strategy_description: strategyData.description,
-                      paid_status: 'paid',
-                      trade_type: 'paper trade'
-                    }, { onConflict: 'user_id,strategy_id' });
+                try {
+                  const { data: strategyData } = await supabase
+                    .from('predefined_strategies')
+                    .select('name, description')
+                    .eq('id', strategyId)
+                    .single();
                   
-                  if (!updateError) {
-                    toast({
-                      title: "Strategy Unlocked",
-                      description: `"${strategyData.name}" is now available for live trading.`,
-                      variant: "default",
-                    });
+                  if (strategyData) {
+                    // Try to create or update the strategy with paid status
+                    const { error: updateError } = await supabase
+                      .from('strategy_selections')
+                      .upsert({
+                        user_id: user.id,
+                        strategy_id: strategyId,
+                        strategy_name: strategyData.name,
+                        strategy_description: strategyData.description,
+                        paid_status: 'paid',
+                        trade_type: 'paper trade',
+                        quantity: 0,
+                        selected_broker: ""
+                      }, { onConflict: 'user_id,strategy_id' });
                     
-                    // Force one more refresh
-                    setRefreshTrigger(prev => prev + 1);
-                  } else {
-                    console.error("Error in final attempt to save strategy:", updateError);
-                    toast({
-                      title: "Strategy Activation Issue",
-                      description: "There was an issue unlocking your strategy. Please try again or contact support.",
-                      variant: "destructive",
-                    });
+                    if (!updateError) {
+                      console.log("Recovery successful: Strategy marked as paid");
+                      
+                      toast({
+                        title: "Strategy Unlocked",
+                        description: `"${strategyData.name}" is now available for live trading.`,
+                        variant: "default",
+                      });
+                      
+                      // Force one more refresh
+                      setRefreshTrigger(prev => prev + 1);
+                    } else {
+                      console.error("Error in final attempt to save strategy:", updateError);
+                      
+                      // Try one more time with direct insert
+                      try {
+                        const { error: insertError } = await supabase
+                          .from('strategy_selections')
+                          .insert({
+                            user_id: user.id,
+                            strategy_id: strategyId,
+                            strategy_name: strategyData.name,
+                            strategy_description: strategyData.description,
+                            paid_status: 'paid',
+                            trade_type: 'paper trade',
+                            quantity: 0,
+                            selected_broker: ""
+                          });
+                          
+                        if (!insertError) {
+                          console.log("Recovery successful after insert attempt");
+                          
+                          toast({
+                            title: "Strategy Unlocked",
+                            description: `"${strategyData.name}" is now available for live trading.`,
+                            variant: "default",
+                          });
+                          
+                          // Force one more refresh
+                          setRefreshTrigger(prev => prev + 2);
+                        } else {
+                          console.error("Error in final insert attempt:", insertError);
+                          toast({
+                            title: "Strategy Activation Issue",
+                            description: "There was an issue unlocking your strategy. Please try again or contact support.",
+                            variant: "destructive",
+                          });
+                        }
+                      } catch (insertCatchError) {
+                        console.error("Exception in last-resort insert:", insertCatchError);
+                      }
+                    }
                   }
+                } catch (recoveryError) {
+                  console.error("Error in recovery process:", recoveryError);
+                  toast({
+                    title: "Strategy Activation Issue",
+                    description: "There was an issue unlocking your strategy. Please try again or contact support.",
+                    variant: "destructive",
+                  });
                 }
               }
             }
