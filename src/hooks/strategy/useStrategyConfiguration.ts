@@ -10,7 +10,7 @@ export const saveStrategyConfiguration = async (
   quantity: number,
   brokerName: string,
   brokerId?: string,
-  tradeType: string = "live trade" // Keep default for this function as "live trade"
+  tradeType: string = "paper trade" // Default to paper trade
 ): Promise<void> => {
   // First check if a record already exists for this user, strategy, and broker
   const { data, error: checkError } = await supabase
