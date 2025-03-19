@@ -108,8 +108,8 @@ const StrategySelection = () => {
               return;
             }
             
-            // Strategy is not marked as paid, let's fix it
-            console.log("Strategy not marked as paid, attempting to fix...");
+            // Strategy is not marked as paid, fix it
+            console.log("Strategy not marked as paid, fixing...");
             
             // Use our helper function to save with paid status
             await saveStrategyConfiguration(
@@ -156,7 +156,7 @@ const StrategySelection = () => {
               console.log("All verification attempts failed, making direct update...");
               
               try {
-                // Use a direct insert/update rather than an RPC call
+                // Use a direct insert/update rather than using a function
                 await supabase
                   .from('strategy_selections')
                   .upsert({ 
@@ -180,7 +180,7 @@ const StrategySelection = () => {
               } catch (upsertError) {
                 console.error("Direct upsert failed:", upsertError);
                 
-                // Fall back to a direct notification
+                // Fall back to user notification
                 toast({
                   title: "Strategy Unlocked",
                   description: "Your strategy is now available. Please refresh if you don't see it.",

@@ -197,7 +197,7 @@ const Subscription = () => {
         'paid'
       );
       
-      console.log("Method 2: Direct upsert as backup");
+      console.log("Method 2: Direct upsert as additional guarantee");
       const { error: upsertError } = await supabase
         .from('strategy_selections')
         .upsert({

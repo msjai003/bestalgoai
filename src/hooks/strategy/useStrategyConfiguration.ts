@@ -9,8 +9,8 @@ export const saveStrategyConfiguration = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string,
-  tradeType: string = "live trade", // Keep default for this function as "live trade"
-  paidStatus: string = "free" // Default paid status is "free"
+  tradeType: string = "live trade", // Default for most configurations
+  paidStatus: string = "free" // Default paid status is "free" unless specified
 ): Promise<void> => {
   console.log("Saving strategy configuration with paid status:", paidStatus);
   
@@ -31,13 +31,13 @@ export const saveStrategyConfiguration = async (
       
     if (upsertError) {
       console.error("Initial upsert failed:", upsertError);
-      // Don't throw yet - continue to try other methods
+      // Continue to try other methods
     } else {
       console.log("Strategy configuration saved successfully via upsert");
-      // Even on success, continue with verification to be sure
+      // Continue with verification to be sure
     }
     
-    // Second, check if a record already exists
+    // Check if a record already exists to determine the right approach
     const { data, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id, trade_type, paid_status')
@@ -47,24 +47,20 @@ export const saveStrategyConfiguration = async (
       
     if (checkError) {
       console.error("Error checking existing strategy:", checkError);
-      // Since we already attempted an upsert, don't throw here
+      // Since we already attempted an upsert, continue
     }
     
-    // If a record exists, determine the correct paid status to use
+    // If a record exists, update it while preserving certain values
     if (data) {
-      // If either the existing trade_type is "paper trade" or the requested trade_type is "paper trade",
-      // set to "paper trade". This ensures that once paper trade is selected, it remains set.
+      // Preserve paper trade setting if it was previously set
       const preservedTradeType = data.trade_type === "paper trade" || tradeType === "paper trade" 
         ? "paper trade" 
         : tradeType;
       
-      // For paid status:
-      // 1. If incoming status is 'paid', always use that
-      // 2. If existing status is 'paid', preserve it
-      // 3. Otherwise use the incoming status
+      // Critical: Preserve paid status - never downgrade from paid to free
       const preservedPaidStatus = paidStatus === "paid" 
-        ? "paid" 
-        : (data.paid_status === "paid" ? "paid" : paidStatus);
+        ? "paid" // Always use paid if that's what we're setting
+        : (data.paid_status === "paid" ? "paid" : paidStatus); // Otherwise keep paid if it was already paid
       
       console.log("Updating existing strategy with:", {
         preservedTradeType,
@@ -113,7 +109,7 @@ export const saveStrategyConfiguration = async (
       // If no record exists, create a new one with the provided values
       console.log("Inserting new strategy with paid status:", paidStatus);
       
-      // Try direct insert first
+      // Try direct insert
       const { error } = await supabase
         .from('strategy_selections')
         .insert({
@@ -175,7 +171,7 @@ export const saveStrategyConfiguration = async (
         console.log(`Verification attempt ${attempts} succeeded:`, verifyData);
         verificationSuccess = true;
         
-        // If the paid status is not what we expected, try one more time to fix it
+        // If we're trying to set paid status but it's not set properly, try one more time
         if (paidStatus === 'paid' && verifyData.paid_status !== 'paid') {
           console.log("Paid status not correctly set, forcing update...");
           
@@ -223,7 +219,7 @@ export const saveStrategyConfiguration = async (
   } catch (error) {
     console.error("Error in saveStrategyConfiguration:", error);
     
-    // One final fallback attempt if we have an exception
+    // Emergency fallback attempt if we have an exception
     try {
       console.log("Making emergency fallback insert attempt...");
       
