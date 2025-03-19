@@ -73,6 +73,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 isAuthenticated={isAuthenticated}
                 onToggleWishlist={onToggleWishlist}
                 onLiveModeClick={handleLiveModeClick}
+                onShowPaymentDialog={onShowPaymentDialog}
               />
             </div>
             
