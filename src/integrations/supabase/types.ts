@@ -290,6 +290,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      force_strategy_paid_status: {
+        Args: {
+          p_user_id: string
+          p_strategy_id: number
+          p_strategy_name: string
+          p_strategy_description: string
+        }
+        Returns: undefined
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

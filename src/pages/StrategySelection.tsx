@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -155,22 +156,29 @@ const StrategySelection = () => {
               console.log("All verification attempts failed, making direct update...");
               
               try {
-                await supabase.rpc('force_strategy_paid_status', { 
-                  p_user_id: user.id, 
-                  p_strategy_id: strategyId,
-                  p_strategy_name: strategyData.name,
-                  p_strategy_description: strategyData.description
-                });
+                // Use a direct insert/update rather than an RPC call
+                await supabase
+                  .from('strategy_selections')
+                  .upsert({ 
+                    user_id: user.id, 
+                    strategy_id: strategyId,
+                    strategy_name: strategyData.name,
+                    strategy_description: strategyData.description,
+                    paid_status: 'paid',
+                    trade_type: 'paper trade',
+                    quantity: 0,
+                    selected_broker: ''
+                  }, { onConflict: 'user_id,strategy_id' });
                 
-                console.log("Forced strategy paid status using RPC");
+                console.log("Forced strategy paid status using direct upsert");
                 
                 toast({
                   title: "Strategy Unlocked",
                   description: `"${strategyData.name}" is now available for live trading.`,
                   variant: "default",
                 });
-              } catch (rpcError) {
-                console.error("RPC update failed:", rpcError);
+              } catch (upsertError) {
+                console.error("Direct upsert failed:", upsertError);
                 
                 // Fall back to a direct notification
                 toast({
