@@ -45,8 +45,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     if (strategy.isLive) {
       // If already live, just toggle it off
       onToggleLiveMode(strategy.id);
-    } else if (isFreeStrategy || strategy.paidStatus === 'paid') {
-      // If it's a free strategy or already paid for, enable it
+    } else if (isFreeStrategy) {
+      // If it's the free strategy, enable it
       onToggleLiveMode(strategy.id);
     } else {
       // For non-free strategies, show payment dialog
@@ -55,11 +55,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const handleUpgradeClick = () => {
-    // Close the dialog first
     setShowPaymentDialog(false);
-    
-    // Navigate to subscription page with strategy ID to unlock after payment
-    navigate(`/subscription?strategyId=${strategy.id}`);
+    navigate("/pricing");
   };
 
   return (
@@ -71,7 +68,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <div>
                 <h3 className="text-xl font-semibold text-white mb-1">
                   {strategy.name}
-                  {!isFreeStrategy && strategy.paidStatus !== 'paid' && (
+                  {!isFreeStrategy && (
                     <Badge variant="outline" className="ml-2 bg-yellow-900/30 text-yellow-300 border-yellow-800">
                       Premium
                     </Badge>
@@ -82,19 +79,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     variant="outline" 
                     className="bg-blue-900/30 text-blue-300 border-blue-800"
                   >
-                    Win Rate: {strategy.performance?.winRate || "N/A"}
+                    Win Rate: {strategy.performance.winRate}
                   </Badge>
                   <Badge 
                     variant="outline" 
                     className="bg-green-900/30 text-green-300 border-green-800"
                   >
-                    Avg. Profit: {strategy.performance?.avgProfit || "N/A"}
+                    Avg. Profit: {strategy.performance.avgProfit}
                   </Badge>
                   <Badge 
                     variant="outline" 
                     className="bg-red-900/30 text-red-300 border-red-800"
                   >
-                    Max Drawdown: {strategy.performance?.drawdown || "N/A"}
+                    Max Drawdown: {strategy.performance.drawdown}
                   </Badge>
                 </div>
               </div>
@@ -130,7 +127,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       >
                         {strategy.isLive ? (
                           <StopCircleIcon size={20} />
-                        ) : !isFreeStrategy && strategy.paidStatus !== 'paid' ? (
+                        ) : !isFreeStrategy ? (
                           <LockIcon size={20} />
                         ) : (
                           <PlayIcon size={20} />
@@ -141,7 +138,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       <p>
                         {strategy.isLive 
                           ? "Disable live trading" 
-                          : !isFreeStrategy && strategy.paidStatus !== 'paid'
+                          : !isFreeStrategy 
                             ? "Premium strategy - Upgrade to access" 
                             : "Enable live trading"
                         }
@@ -153,7 +150,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
             
             <p className="text-gray-300 text-sm mb-3">
-              {isFreeStrategy || strategy.paidStatus === 'paid'
+              {isFreeStrategy 
                 ? strategy.description 
                 : strategy.isLive 
                   ? strategy.description
