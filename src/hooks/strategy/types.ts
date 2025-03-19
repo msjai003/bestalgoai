@@ -11,9 +11,8 @@ export interface Strategy {
   isWishlisted: boolean;
   isLive: boolean;
   quantity: number;
-  selectedBrokers?: { brokerId: string; brokerName: string; quantity: number }[];
-  selectedBroker?: string; // Keep for backward compatibility
-  tradeType?: string;
+  selectedBroker?: string;
+  tradeType?: string; // Add tradeType field to Strategy interface
   pnl?: string;
   successRate?: string;
 }
@@ -22,6 +21,5 @@ export interface StrategySelection {
   strategy_id: number;
   quantity?: number;
   selected_broker?: string;
-  trade_type?: string;
-  broker_id?: string; // Add broker_id field for multiple broker support
+  trade_type?: string; // Add trade_type field to StrategySelection interface
 }

@@ -30,52 +30,26 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Group by strategy_id to handle multiple brokers
-        const strategyMap = new Map<number, any>();
-        
-        for (const item of data) {
-          if (!strategyMap.has(item.strategy_id)) {
-            strategyMap.set(item.strategy_id, {
-              id: item.strategy_id,
-              name: item.strategy_name,
-              description: item.strategy_description || "",
-              isWishlisted: true,
-              isLive: item.trade_type === "live trade",
-              quantity: item.quantity || 0,
-              selectedBroker: item.selected_broker || "",
-              tradeType: item.trade_type || "paper trade",
-              selectedBrokers: [{
-                brokerId: item.broker_id || "",
-                brokerName: item.selected_broker || "",
-                quantity: item.quantity || 0
-              }],
-              performance: {
-                winRate: "N/A",
-                avgProfit: "N/A",
-                drawdown: "N/A"
-              }
-            });
-          } else {
-            const strategy = strategyMap.get(item.strategy_id);
-            
-            // Add additional broker
-            if (!strategy.selectedBrokers.some((b: any) => b.brokerName === item.selected_broker)) {
-              strategy.selectedBrokers.push({
-                brokerId: item.broker_id || "",
-                brokerName: item.selected_broker || "",
-                quantity: item.quantity || 0
-              });
-            }
-            
-            // Set as live if any configuration is live
-            if (item.trade_type === "live trade") {
-              strategy.isLive = true;
-            }
+        // Map database strategies directly to our format
+        const dbStrategies = data.map(item => ({
+          id: item.strategy_id,
+          name: item.strategy_name,
+          description: item.strategy_description || "",
+          isWishlisted: true,
+          // Only set isLive to true if trade_type is explicitly "live trade"
+          isLive: item.trade_type === "live trade",
+          quantity: item.quantity || 0,
+          selectedBroker: item.selected_broker || "",
+          tradeType: item.trade_type || "paper trade",
+          performance: {
+            winRate: "N/A",
+            avgProfit: "N/A",
+            drawdown: "N/A"
           }
-        }
+        }));
         
-        strategies = Array.from(strategyMap.values());
-        localStorage.setItem('wishlistedStrategies', JSON.stringify(strategies));
+        strategies = dbStrategies;
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));
       }
     } catch (error) {
       console.error("Error fetching strategies from database:", error);
@@ -95,7 +69,6 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  brokerId?: string,
   tradeType: string = "paper trade" // Updated default to "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
@@ -103,18 +76,15 @@ export const updateStrategyLiveConfig = async (
     strategyId,
     quantity,
     brokerName,
-    brokerId,
     tradeType
   });
   
-  // This function will now add a new entry for each broker selection
-  // First check if a record already exists for this user, strategy, and broker
+  // First check if a record already exists for this user and strategy
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
     .select('id')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
-    .eq('selected_broker', brokerName)
     .maybeSingle();
     
   if (checkError) {
@@ -122,26 +92,24 @@ export const updateStrategyLiveConfig = async (
     throw checkError;
   }
   
-  // If record exists for this broker, update it. Otherwise, insert a new one
+  // If record exists, update it. Otherwise, insert a new one
   let updateResult;
   
   if (data) {
-    // Update existing record for this broker
+    // Update existing record
     updateResult = await supabase
       .from('strategy_selections')
       .update({
         quantity: quantity || 0,
         selected_broker: brokerName,
-        broker_id: brokerId,
         trade_type: tradeType,
         strategy_name: strategyName,
         strategy_description: strategyDescription
       })
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .eq('selected_broker', brokerName);
+      .eq('strategy_id', strategyId);
   } else {
-    // Insert new record for this broker
+    // Insert new record
     updateResult = await supabase
       .from('strategy_selections')
       .insert({
@@ -151,7 +119,6 @@ export const updateStrategyLiveConfig = async (
         strategy_description: strategyDescription,
         quantity: quantity || 0,
         selected_broker: brokerName,
-        broker_id: brokerId,
         trade_type: tradeType
       });
   }

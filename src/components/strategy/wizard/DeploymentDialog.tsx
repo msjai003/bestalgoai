@@ -35,13 +35,7 @@ export const DeploymentDialog = ({
       });
     }
     
-    // Close the dialog before triggering the onDeployStrategy callback to prevent UI hang
-    onOpenChange(false);
-    
-    // Call the deployment function with a small delay to ensure the dialog closes
-    setTimeout(() => {
-      onDeployStrategy(mode);
-    }, 100);
+    onDeployStrategy(mode);
   };
 
   return (

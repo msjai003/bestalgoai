@@ -27,7 +27,6 @@ interface BrokerSelectionDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (brokerId: string, brokerName: string) => void;
   onCancel: () => void;
-  excludeBrokers?: string[]; // Add excludeBrokers prop to exclude already selected brokers
 }
 
 interface BrokerOption {
@@ -40,7 +39,6 @@ export const BrokerSelectionDialog = ({
   onOpenChange,
   onConfirm,
   onCancel,
-  excludeBrokers = [],
 }: BrokerSelectionDialogProps) => {
   const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
@@ -50,7 +48,6 @@ export const BrokerSelectionDialog = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true;
     const fetchBrokers = async () => {
       if (!user || !open) return;
       
@@ -59,75 +56,54 @@ export const BrokerSelectionDialog = ({
         console.log("Fetching brokers for user:", user.id);
         
         // Fetch only the brokers that the user has connected in Supabase
+        // This function now only returns brokers with status='connected'
         const brokerData = await fetchUserBrokers(user.id);
         console.log("Fetched connected brokers:", brokerData);
         
-        if (!isMounted) return;
-        
-        // Filter out already selected brokers
-        const filteredBrokers = brokerData.filter(broker => 
-          !excludeBrokers.includes(broker.id) && !excludeBrokers.includes(broker.broker_name)
-        );
-        
-        setBrokers(filteredBrokers || []);
+        setBrokers(brokerData || []);
         
         // Set default selection if brokers exist
-        if (filteredBrokers && filteredBrokers.length > 0) {
-          setSelectedBroker(filteredBrokers[0].id);
+        if (brokerData && brokerData.length > 0) {
+          setSelectedBroker(brokerData[0].id);
         } else {
           setSelectedBroker("");
         }
       } catch (error) {
         console.error('Error fetching brokers:', error);
-        if (isMounted) {
-          toast({
-            title: "Error",
-            description: "Failed to load your connected brokers",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Error",
+          description: "Failed to load your connected brokers",
+          variant: "destructive"
+        });
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
     
     if (open) {
       fetchBrokers();
     }
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [user, open, toast, excludeBrokers]);
+  }, [user, open, toast]);
 
   const handleConfirm = () => {
     if (selectedBroker) {
       const selectedBrokerObj = brokers.find(broker => broker.id === selectedBroker);
       if (selectedBrokerObj) {
         console.log("Confirming with broker name:", selectedBrokerObj.broker_name);
-        // Close dialog before calling the callback to prevent UI hang
-        onOpenChange(false);
-        // Add a small delay to ensure the dialog closes first
-        setTimeout(() => {
-          onConfirm(selectedBroker, selectedBrokerObj.broker_name);
-        }, 100);
+        // Pass both ID and name to the parent component
+        onConfirm(selectedBroker, selectedBrokerObj.broker_name);
       }
     }
   };
 
   const navigateToBrokerIntegration = () => {
-    onOpenChange(false);
-    setTimeout(() => {
-      onCancel();
-      // Navigate to broker integration page
-      navigate('/broker-integration');
-      toast({
-        title: "Action Required",
-        description: "Please connect a broker first to proceed with live trading",
-      });
-    }, 100);
+    onCancel();
+    // Navigate to broker integration page
+    navigate('/broker-integration');
+    toast({
+      title: "Action Required",
+      description: "Please connect a broker first to proceed with live trading",
+    });
   };
 
   return (
@@ -137,10 +113,7 @@ export const BrokerSelectionDialog = ({
           <DialogHeader className="p-6 pb-3">
             <DialogTitle className="text-xl font-semibold text-center">Select Broker</DialogTitle>
             <button
-              onClick={() => {
-                onOpenChange(false);
-                setTimeout(onCancel, 100);
-              }}
+              onClick={onCancel}
               className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             >
               <X className="h-5 w-5" />
@@ -158,9 +131,7 @@ export const BrokerSelectionDialog = ({
         ) : brokers.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
             <p className="text-gray-300 mb-6">
-              {excludeBrokers.length > 0 
-                ? "You have already selected all available brokers for this strategy."
-                : "You need to connect a broker before starting live trading."}
+              You need to connect a broker before starting live trading.
             </p>
             <Button 
               variant="default"
@@ -170,7 +141,7 @@ export const BrokerSelectionDialog = ({
               )}
               onClick={navigateToBrokerIntegration}
             >
-              Connect a New Broker
+              Connect a Broker
             </Button>
           </div>
         ) : (

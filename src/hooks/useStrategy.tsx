@@ -29,7 +29,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
-  const [processingRequest, setProcessingRequest] = useState<boolean>(false);
 
   // Load strategies from database
   useEffect(() => {
@@ -123,8 +122,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const handleToggleLiveMode = (id: number) => {
-    if (processingRequest) return;
-    
     const strategy = strategies.find(s => s.id === id);
     const newStatus = !strategy?.isLive;
     
@@ -141,10 +138,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setConfirmDialogOpen(false);
     if (selectedStrategyId !== null) {
       updateLiveMode(selectedStrategyId, true);
-      // Add a small delay before opening the quantity dialog
-      setTimeout(() => {
-        setQuantityDialogOpen(true);
-      }, 300);
+      setQuantityDialogOpen(true);
     }
   };
 
@@ -154,11 +148,12 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const handleQuantitySubmit = (quantity: number) => {
-    setPendingQuantity(quantity);
-    // Add a small delay before opening the broker dialog
-    setTimeout(() => {
+    setQuantityDialogOpen(false);
+    
+    if (selectedStrategyId !== null) {
+      setPendingQuantity(quantity);
       setBrokerDialogOpen(true);
-    }, 300);
+    }
   };
 
   const handleCancelQuantity = () => {
@@ -167,9 +162,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
-    if (processingRequest) return;
-    
-    setProcessingRequest(true);
+    setBrokerDialogOpen(false);
     
     if (selectedStrategyId !== null && user) {
       try {
@@ -179,11 +172,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        toast({
-          title: "Saving configuration...",
-          description: "Please wait while we save your strategy configuration",
-        });
-
         // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
@@ -192,52 +180,28 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
-          brokerId,
           "live trade" // Set trade_type to "live trade"
         );
         
         setStrategies(prev => 
-          prev.map(s => {
-            if (s.id === selectedStrategyId) {
-              // Create or update the selectedBrokers array
-              const currentBrokers = s.selectedBrokers || [];
-              const brokerExists = currentBrokers.some(b => b.brokerId === brokerId);
-              
-              let updatedBrokers;
-              if (brokerExists) {
-                updatedBrokers = currentBrokers.map(b => 
-                  b.brokerId === brokerId 
-                    ? { ...b, quantity: pendingQuantity } 
-                    : b
-                );
-              } else {
-                updatedBrokers = [
-                  ...currentBrokers, 
-                  { brokerId, brokerName, quantity: pendingQuantity }
-                ];
-              }
-              
-              return { 
-                ...s, 
-                quantity: pendingQuantity, 
-                selectedBroker: brokerName,
-                selectedBrokers: updatedBrokers,
-                tradeType: "live trade" // Add tradeType to local state
-              };
-            }
-            return s;
-          })
+          prev.map(s => 
+            s.id === selectedStrategyId 
+              ? { 
+                  ...s, 
+                  quantity: pendingQuantity, 
+                  selectedBroker: brokerName,
+                  tradeType: "live trade" // Add tradeType to local state
+                } 
+              : s
+          )
         );
 
         toast({
           title: "Strategy Configured",
-          description: `Strategy is now set up for live trading with ${brokerName}`,
+          description: `Strategy is now set up for live trading`,
         });
         
-        // Navigate after a slight delay
-        setTimeout(() => {
-          navigate("/live-trading");
-        }, 500);
+        navigate("/live-trading");
       } catch (error) {
         console.error('Error saving strategy configuration:', error);
         toast({
@@ -245,11 +209,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           description: "Failed to save strategy configuration",
           variant: "destructive"
         });
-      } finally {
-        setBrokerDialogOpen(false);
-        setSelectedStrategyId(null);
-        setPendingQuantity(0);
-        setProcessingRequest(false);
       }
     }
   };
