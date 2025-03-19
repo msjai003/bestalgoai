@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./strategy/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ export type { Strategy } from "./strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -30,12 +31,32 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Force refresh when URL has refresh parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('refresh')) {
+      setRefreshTrigger(prev => prev + 1);
+      
+      // Clear the URL parameter after using it
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const loadStrategies = async () => {
+      console.log("Loading strategies...");
       setIsLoading(true);
       
       try {
+        // Clear localStorage cache to ensure fresh data
+        if (refreshTrigger > 0) {
+          console.log("Triggered refresh, clearing local storage cache");
+          localStorage.removeItem('wishlistedStrategies');
+        }
+        
         let strategiesWithStatus = predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,
@@ -46,10 +67,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         }));
         
         if (user) {
+          console.log("Fetching user strategy selections for user:", user.id);
           const selections = await fetchUserStrategySelections(user.id);
+          console.log("User strategy selections:", selections);
           strategiesWithStatus = mapStrategiesWithSelections(predefinedStrategies, selections);
         }
         
+        console.log("Final strategies with status:", strategiesWithStatus);
         setStrategies(strategiesWithStatus);
       } catch (error) {
         console.error("Error setting up strategies:", error);
@@ -59,7 +83,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     };
     
     loadStrategies();
-  }, [user, predefinedStrategies]);
+  }, [user, predefinedStrategies, refreshTrigger]);
 
   const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
     setStrategies(prev => 
@@ -134,6 +158,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         try {
           if (!user) return false;
           
+          console.log("Checking premium access for strategy ID:", id);
+          
           // Also check if this specific strategy has been paid for
           const { data: strategyData, error: strategyError } = await supabase
             .from('strategy_selections')
@@ -142,7 +168,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             .eq('strategy_id', id)
             .maybeSingle();
             
+          console.log("Strategy specific payment check:", strategyData);
+            
           if (strategyData && strategyData.paid_status === 'paid') {
+            console.log("Strategy is already paid for");
             return true;
           }
           
@@ -155,6 +184,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             .limit(1)
             .maybeSingle();
             
+          console.log("User plan check:", data);
           return data !== null;
         } catch (error) {
           console.error('Error checking premium access:', error);
@@ -163,12 +193,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       };
       
       checkPremiumAccess().then(hasPremiumAccess => {
+        console.log("Premium access check result:", hasPremiumAccess);
         if (hasPremiumAccess) {
           setSelectedStrategyId(id);
           setTargetMode("live");
           setConfirmDialogOpen(true);
         } else {
-          navigate(`/pricing?strategyId=${id}`);
+          navigate(`/subscription?strategyId=${id}`);
         }
       });
     } else if (newStatus) {
@@ -321,6 +352,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker
+    handleCancelBroker,
+    refreshTrigger,
+    setRefreshTrigger
   };
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,6 @@ interface PlanDetails {
   selected_at: string;
 }
 
-// Payment form schema
 const paymentFormSchema = z.object({
   cardNumber: z.string()
     .min(16, "Card number must be at least 16 digits")
@@ -234,14 +232,15 @@ const Subscription = () => {
                 paid_status: 'paid'
               })
               .eq('user_id', user.id)
-              .eq('strategy_id', selectedStrategyId);
+              .eq('strategy_id', selectedStrategyId)
+              .select();
             
             if (updateResult.error) {
               console.error('Error updating strategy paid status:', updateResult.error);
               throw updateResult.error;
             }
             
-            console.log('Strategy marked as paid successfully');
+            console.log('Strategy marked as paid successfully, result:', updateResult.data);
           } else if (strategyData) {
             console.log('Adding new strategy selection with paid status:', strategyData);
             
@@ -255,14 +254,15 @@ const Subscription = () => {
                 trade_type: "paper trade",
                 paid_status: 'paid',
                 quantity: 0
-              });
+              })
+              .select();
             
             if (updateResult.error) {
               console.error('Error inserting strategy with paid status:', updateResult.error);
               throw updateResult.error;
             }
             
-            console.log('New strategy added with paid status');
+            console.log('New strategy added with paid status, result:', updateResult.data);
           }
           
           // Verify the update was successful
@@ -289,6 +289,9 @@ const Subscription = () => {
         }
       }
       
+      // Clear the strategy selection in localStorage to force a refresh of the strategy list
+      localStorage.removeItem('wishlistedStrategies');
+      
       setTimeout(() => {
         toast({
           title: "Success",
@@ -301,7 +304,8 @@ const Subscription = () => {
         setPaymentSuccess(false);
         
         if (selectedStrategyId) {
-          navigate('/strategy-selection');
+          // Force refresh to pick up the new paid status
+          navigate('/strategy-selection?refresh=' + new Date().getTime());
         } else {
           window.location.reload();
         }

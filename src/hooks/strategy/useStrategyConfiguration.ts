@@ -41,7 +41,7 @@ export const saveStrategyConfiguration = async (
       preservedPaidStatus
     });
     
-    const { error } = await supabase
+    const { error, data: updateData } = await supabase
       .from('strategy_selections')
       .update({
         strategy_name: strategyName,
@@ -52,13 +52,16 @@ export const saveStrategyConfiguration = async (
         paid_status: preservedPaidStatus
       })
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
+      .eq('strategy_id', strategyId)
+      .select();
       
     if (error) throw error;
+    
+    console.log("Strategy update result:", updateData);
   } else {
     console.log("Inserting new strategy with paid status:", paidStatus);
     
-    const { error } = await supabase
+    const { error, data: insertData } = await supabase
       .from('strategy_selections')
       .insert({
         user_id: userId,
@@ -69,9 +72,26 @@ export const saveStrategyConfiguration = async (
         selected_broker: brokerName,
         trade_type: tradeType,
         paid_status: paidStatus
-      });
+      })
+      .select();
       
     if (error) throw error;
+    
+    console.log("Strategy insert result:", insertData);
+  }
+  
+  // Verify the update was successful
+  const { data: verifyData, error: verifyError } = await supabase
+    .from('strategy_selections')
+    .select('paid_status, trade_type')
+    .eq('user_id', userId)
+    .eq('strategy_id', strategyId)
+    .single();
+    
+  if (verifyError) {
+    console.error("Error verifying strategy update:", verifyError);
+  } else {
+    console.log("Verified strategy configuration:", verifyData);
   }
   
   console.log("Strategy configuration saved successfully");

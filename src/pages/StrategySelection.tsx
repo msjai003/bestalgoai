@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
@@ -15,6 +16,7 @@ import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategie
 
 const StrategySelection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
@@ -37,8 +39,23 @@ const StrategySelection = () => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker
+    handleCancelBroker,
+    refreshTrigger,
+    setRefreshTrigger
   } = useStrategy(predefinedStrategies || []);
+
+  // Check URL parameters for refresh trigger
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('refresh')) {
+      // Force a refresh of the strategy data
+      setRefreshTrigger(prev => prev + 1);
+      
+      // Clean up the URL parameter
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [location.search, setRefreshTrigger]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
