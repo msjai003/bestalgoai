@@ -10,8 +10,9 @@ import { StrategyPaymentDialog } from "./StrategyPaymentDialog";
 
 interface StrategyCardProps {
   strategy: Strategy;
-  onToggleWishlist: (id: number, isWishlisted: boolean) => void;
-  onToggleLiveMode: (id: number) => void;
+  onToggleWishlist: () => void;
+  onToggleLiveMode: () => void;
+  onShowPaymentDialog?: () => void;
   isAuthenticated: boolean;
   index: number;
 }
@@ -20,6 +21,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   onToggleWishlist,
   onToggleLiveMode,
+  onShowPaymentDialog,
   isAuthenticated,
   index
 }) => {
@@ -28,22 +30,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPaid = strategy.paidStatus === 'paid';
   const isFreeOrPaid = isFreeStrategy || isPaid;
 
-  const toggleWishlist = () => {
-    onToggleWishlist(strategy.id, !strategy.isWishlisted);
-  };
-
   const handleLiveModeClick = () => {
     if (!isAuthenticated) return;
     
     if (strategy.isLive) {
       // If already live, just toggle it off
-      onToggleLiveMode(strategy.id);
+      onToggleLiveMode();
     } else if (isFreeOrPaid) {
       // If it's the free strategy or a paid strategy, enable it
-      onToggleLiveMode(strategy.id);
+      onToggleLiveMode();
     } else {
       // For non-free strategies that aren't paid, show payment dialog
-      setShowPaymentDialog(true);
+      if (onShowPaymentDialog) {
+        onShowPaymentDialog();
+      } else {
+        setShowPaymentDialog(true);
+      }
     }
   };
 
@@ -69,7 +71,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 isLive={strategy.isLive}
                 isFreeOrPaid={isFreeOrPaid}
                 isAuthenticated={isAuthenticated}
-                onToggleWishlist={toggleWishlist}
+                onToggleWishlist={onToggleWishlist}
                 onLiveModeClick={handleLiveModeClick}
               />
             </div>
@@ -85,11 +87,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </CardContent>
       </Card>
 
-      <StrategyPaymentDialog 
-        open={showPaymentDialog} 
-        onOpenChange={setShowPaymentDialog} 
-        strategy={strategy} 
-      />
+      {showPaymentDialog && (
+        <StrategyPaymentDialog 
+          open={showPaymentDialog} 
+          onOpenChange={setShowPaymentDialog} 
+          strategy={strategy} 
+        />
+      )}
     </>
   );
 };

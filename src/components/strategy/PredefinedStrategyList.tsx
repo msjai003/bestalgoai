@@ -54,7 +54,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   }
 
   if (!strategies.length) {
-    return <NoStrategiesFound />;
+    return <NoStrategiesFound onAddStrategies={() => window.location.href = "/strategy-selection"} />;
   }
 
   return (
@@ -67,21 +67,15 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
           <StrategyCard
             key={strategy.id}
             strategy={strategy}
-            actionButtons={
-              <StrategyActionButtons
-                isWishlisted={strategy.isWishlisted}
-                isLive={strategy.isLive}
-                isFreeOrPaid={isFreeOrPaid}
-                isAuthenticated={!!user}
-                onToggleWishlist={() => onToggleWishlist(strategy.id, !strategy.isWishlisted)}
-                onLiveModeClick={() => onToggleLiveMode(strategy.id)}
-                onShowPaymentDialog={
-                  !isFreeOrPaid && onShowPaymentDialog 
-                    ? () => onShowPaymentDialog(strategy)
-                    : undefined
-                }
-              />
+            onToggleWishlist={() => onToggleWishlist(strategy.id, !strategy.isWishlisted)}
+            onToggleLiveMode={() => onToggleLiveMode(strategy.id)}
+            onShowPaymentDialog={
+              !isFreeOrPaid && onShowPaymentDialog 
+                ? () => onShowPaymentDialog(strategy)
+                : undefined
             }
+            isAuthenticated={!!user}
+            index={strategies.indexOf(strategy)}
           />
         );
       })}
