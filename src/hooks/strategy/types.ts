@@ -16,6 +16,8 @@ export interface Strategy {
   tradeType?: string;
   pnl?: string;
   successRate?: string;
+  hasMultipleBrokers?: boolean; // Flag to indicate multiple broker configurations
+  brokerConfigs?: Strategy[]; // Array of broker-specific configurations for this strategy
 }
 
 export interface StrategySelection {

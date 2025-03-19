@@ -35,8 +35,11 @@ export const DeploymentDialog = ({
       });
     }
     
+    // Pass the selected mode to the parent component
     onDeployStrategy(mode);
-    onOpenChange(false); // Ensure dialog closes after deployment selection
+    
+    // Close the dialog after handling deployment
+    onOpenChange(false);
   };
 
   return (
@@ -69,6 +72,9 @@ export const DeploymentDialog = ({
         </div>
         <div className="mt-4 p-4 bg-gray-700/50 rounded-lg text-gray-300 text-sm">
           <p>{user ? "Your strategy will be saved to your account and can be accessed across devices." : "Sign in to save your strategies permanently and access them across devices."}</p>
+          {user && (
+            <p className="mt-2">You can configure this strategy with multiple brokers for diversified trading.</p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
