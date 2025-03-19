@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, LockIcon, UnlockIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, LockIcon, StopCircleIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
@@ -27,10 +27,10 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   const getLiveModeIcon = () => {
     if (isLive) {
       return <StopCircleIcon size={20} />;
-    } else if (!isFreeOrPaid) {
-      return <LockIcon size={20} />;
     } else {
-      return <PlayIcon size={20} />;
+      // Always show play icon if the strategy is free or paid
+      // Only show lock icon if it's premium and not paid
+      return isFreeOrPaid ? <PlayIcon size={20} /> : <LockIcon size={20} />;
     }
   };
 
