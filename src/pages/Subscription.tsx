@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { saveStrategyConfiguration } from "@/hooks/strategy/useStrategyConfiguration";
 
 const plans = [
   {
@@ -164,6 +164,91 @@ const Subscription = () => {
     setShowPaymentDialog(true);
   };
 
+  const unlockStrategy = async (userId: string, strategyId: number) => {
+    console.log(`Unlocking strategy ID ${strategyId} for user ${userId}`);
+    
+    try {
+      const { data: strategyData, error: strategyError } = await supabase
+        .from('predefined_strategies')
+        .select('name, description')
+        .eq('id', strategyId)
+        .single();
+        
+      if (strategyError) {
+        console.error('Error fetching strategy details:', strategyError);
+        throw new Error(`Failed to get strategy details: ${strategyError.message}`);
+      }
+      
+      if (!strategyData) {
+        throw new Error('Strategy data not found');
+      }
+      
+      console.log("Fetched strategy details:", strategyData);
+      
+      console.log("Method 1: Using saveStrategyConfiguration helper");
+      await saveStrategyConfiguration(
+        userId,
+        strategyId,
+        strategyData.name,
+        strategyData.description,
+        0,
+        "",
+        "paper trade",
+        'paid'
+      );
+      
+      console.log("Method 2: Direct upsert as backup");
+      const { error: upsertError } = await supabase
+        .from('strategy_selections')
+        .upsert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyData.name,
+          strategy_description: strategyData.description,
+          paid_status: 'paid',
+          trade_type: "paper trade",
+          quantity: 0,
+          selected_broker: ""
+        }, { onConflict: 'user_id,strategy_id' });
+        
+      if (upsertError) {
+        console.error('Direct upsert error:', upsertError);
+      } else {
+        console.log("Direct upsert successful");
+      }
+      
+      let verified = false;
+      
+      for (let attempt = 0; attempt < 3; attempt++) {
+        console.log(`Verification attempt ${attempt + 1}`);
+        
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('strategy_selections')
+          .select('paid_status')
+          .eq('user_id', userId)
+          .eq('strategy_id', strategyId)
+          .maybeSingle();
+          
+        if (verifyError) {
+          console.error(`Verification attempt ${attempt + 1} failed:`, verifyError);
+        } else if (verifyData && verifyData.paid_status === 'paid') {
+          console.log(`Strategy verified as paid on attempt ${attempt + 1}`);
+          verified = true;
+          break;
+        }
+        
+        if (!verified && attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      return verified;
+    } catch (error) {
+      console.error("Error in unlockStrategy:", error);
+      return false;
+    }
+  };
+
   const onPaymentSubmit = async (values: PaymentFormValues) => {
     if (!user || !targetPlan) return;
     
@@ -172,7 +257,6 @@ const Subscription = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // 1. First save the plan selection
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -194,191 +278,18 @@ const Subscription = () => {
       
       setPaymentSuccess(true);
       
-      // 2. If a specific strategy was selected, update its paid status
+      let strategyUnlocked = false;
+      
       if (selectedStrategyId) {
-        try {
-          console.log(`Processing strategy unlock for ID ${selectedStrategyId} for user ${user.id}`);
-          
-          // Get strategy details to ensure we have the correct name and description
-          const { data: strategyData, error: strategyError } = await supabase
-            .from('predefined_strategies')
-            .select('name, description')
-            .eq('id', selectedStrategyId)
-            .single();
-            
-          if (strategyError) {
-            console.error('Error fetching strategy details:', strategyError);
-            throw strategyError;
-          }
-          
-          if (!strategyData) {
-            throw new Error('Strategy data not found');
-          }
-          
-          // Important: First attempt - direct upsert to ensure the strategy is added/updated
-          const upsertResult = await supabase
-            .from('strategy_selections')
-            .upsert({
-              user_id: user.id,
-              strategy_id: selectedStrategyId,
-              strategy_name: strategyData.name,
-              strategy_description: strategyData.description,
-              paid_status: 'paid',
-              trade_type: "paper trade",
-              quantity: 0,
-              selected_broker: ""
-            }, { onConflict: 'user_id,strategy_id' });
-            
-          if (upsertResult.error) {
-            console.error('Initial upsert failed:', upsertResult.error);
-            // Continue to next attempt - don't throw here
-          } else {
-            console.log('Initial upsert successful');
-          }
-          
-          // Check if the strategy already exists in user selections
-          const { data: existingStrategy, error: checkError } = await supabase
-            .from('strategy_selections')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('strategy_id', selectedStrategyId)
-            .maybeSingle();
-            
-          if (checkError) {
-            console.error('Error checking existing strategy:', checkError);
-            // Continue to next attempt - don't throw here
-          }
-          
-          let updateResult;
-          
-          if (existingStrategy) {
-            console.log('Updating existing strategy selection to paid status');
-            
-            // Update the paid_status field and other fields to ensure they're up to date
-            updateResult = await supabase
-              .from('strategy_selections')
-              .update({
-                paid_status: 'paid',
-                strategy_name: strategyData.name,
-                strategy_description: strategyData.description,
-                // Don't override trade_type if it's already set to "live trade"
-                trade_type: existingStrategy.trade_type === "live trade" ? "live trade" : "paper trade"
-              })
-              .eq('user_id', user.id)
-              .eq('strategy_id', selectedStrategyId)
-              .select();
-          } else {
-            console.log('Creating new strategy selection with paid status');
-            
-            // Insert a new entry with the full set of fields
-            updateResult = await supabase
-              .from('strategy_selections')
-              .insert({
-                user_id: user.id,
-                strategy_id: selectedStrategyId,
-                strategy_name: strategyData.name,
-                strategy_description: strategyData.description,
-                trade_type: "paper trade", // Default to paper trading for safety
-                paid_status: 'paid',
-                quantity: 0,
-                selected_broker: "" // Default empty string
-              })
-              .select();
-          }
-          
-          if (updateResult?.error) {
-            console.error('Error updating/inserting strategy with paid status:', updateResult.error);
-            // Continue with final verification
-          } else {
-            console.log('Strategy marked as paid successfully:', updateResult?.data);
-          }
-          
-          // Final verification and recovery attempts
-          let verificationSuccessful = false;
-          
-          for (let attempt = 0; attempt < 3; attempt++) {
-            console.log(`Verification attempt ${attempt + 1} for strategy ${selectedStrategyId}`);
-            
-            const { data: verifyData, error: verifyError } = await supabase
-              .from('strategy_selections')
-              .select('paid_status, strategy_name, strategy_id')
-              .eq('user_id', user.id)
-              .eq('strategy_id', selectedStrategyId)
-              .maybeSingle();
-              
-            if (verifyError) {
-              console.error(`Verification attempt ${attempt + 1} failed:`, verifyError);
-              
-              // Try once more on error
-              if (attempt < 2) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                continue;
-              }
-            } else if (verifyData && verifyData.paid_status === 'paid') {
-              console.log('Strategy verified as paid successfully');
-              verificationSuccessful = true;
-              break;
-            } else {
-              console.warn('Strategy paid status not updated correctly or not found. Making another attempt...');
-              
-              // Try direct insert/update again
-              try {
-                await supabase
-                  .from('strategy_selections')
-                  .upsert({
-                    user_id: user.id,
-                    strategy_id: selectedStrategyId,
-                    strategy_name: strategyData.name,
-                    strategy_description: strategyData.description,
-                    paid_status: 'paid',
-                    trade_type: "paper trade",
-                    quantity: 0,
-                    selected_broker: ""
-                  }, { onConflict: 'user_id,strategy_id' });
-                  
-                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay before next verification
-              } catch (updateError) {
-                console.error(`Recovery attempt ${attempt + 1} failed:`, updateError);
-              }
-            }
-          }
-          
-          // Final recovery attempt if all verification checks failed
-          if (!verificationSuccessful) {
-            console.warn('All verification attempts failed. Making final recovery attempt...');
-            
-            // Try one last upsert with a forced delay
-            try {
-              await supabase
-                .from('strategy_selections')
-                .upsert({
-                  user_id: user.id,
-                  strategy_id: selectedStrategyId,
-                  strategy_name: strategyData.name,
-                  strategy_description: strategyData.description,
-                  paid_status: 'paid',
-                  trade_type: "paper trade",
-                  quantity: 0,
-                  selected_broker: ""
-                }, { onConflict: 'user_id,strategy_id' });
-                
-              await new Promise(resolve => setTimeout(resolve, 1000)); // Longer delay for final attempt
-              
-              // Record that we made a recovery attempt but don't throw
-              console.log('Final recovery attempt completed');
-            } catch (finalError) {
-              console.error('Final recovery attempt failed:', finalError);
-            }
-          }
-        } catch (error) {
-          console.error('Error updating strategy payment status:', error);
-          // Don't show a destructive toast here, as it might confuse users when payment was successful
-          // Just log the error and continue with the payment success flow
-          console.warn('Will continue with payment success flow despite strategy update issue');
+        strategyUnlocked = await unlockStrategy(user.id, selectedStrategyId);
+        
+        if (strategyUnlocked) {
+          console.log(`Successfully unlocked strategy ${selectedStrategyId}`);
+        } else {
+          console.warn(`Could not verify strategy ${selectedStrategyId} was unlocked. Will try again on redirect.`);
         }
       }
       
-      // Clear all local storage caches to force refresh of data
       localStorage.removeItem('wishlistedStrategies');
       localStorage.removeItem('strategyCache');
       
@@ -393,7 +304,6 @@ const Subscription = () => {
         setProcessingPayment(false);
         setPaymentSuccess(false);
         
-        // Always include the refresh parameter with a timestamp to ensure cache is bypassed
         const timestamp = new Date().getTime();
         if (selectedStrategyId) {
           navigate(`/strategy-selection?refresh=${timestamp}&strategy=${selectedStrategyId}`);
