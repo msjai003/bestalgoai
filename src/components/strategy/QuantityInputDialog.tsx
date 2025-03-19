@@ -43,8 +43,19 @@ export const QuantityInputDialog = ({
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onConfirm(values.quantity);
-    form.reset({ quantity: 75 });
+    // Close the dialog before triggering the callback to prevent UI hang
+    onOpenChange(false);
+    
+    // Slight delay to ensure dialog closes first
+    setTimeout(() => {
+      onConfirm(values.quantity);
+      form.reset({ quantity: 75 });
+    }, 100);
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
+    setTimeout(onCancel, 100);
   };
 
   return (
@@ -85,7 +96,7 @@ export const QuantityInputDialog = ({
                 type="button"
                 variant="secondary" 
                 className="bg-gray-700 hover:bg-gray-600 text-gray-200"
-                onClick={onCancel}
+                onClick={handleCancel}
               >
                 Cancel
               </Button>
