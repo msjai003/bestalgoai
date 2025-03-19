@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./strategy/types";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   fetchUserStrategySelections,
   mapStrategiesWithSelections
@@ -19,7 +19,6 @@ export type { Strategy } from "./strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -30,46 +29,26 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.has('refresh')) {
-      setRefreshTrigger(prev => prev + 1);
-      
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-  }, [location.search]);
-
+  // Load strategies from database
   useEffect(() => {
     const loadStrategies = async () => {
-      console.log("Loading strategies...");
       setIsLoading(true);
       
       try {
-        if (refreshTrigger > 0) {
-          console.log("Triggered refresh, clearing local storage cache");
-          localStorage.removeItem('wishlistedStrategies');
-        }
-        
         let strategiesWithStatus = predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,
           isLive: false,
           quantity: 0,
-          selectedBroker: "",
-          paidStatus: strategy.id === 1 ? "free" : "premium"
+          selectedBroker: ""
         }));
         
         if (user) {
-          console.log("Fetching user strategy selections for user:", user.id);
           const selections = await fetchUserStrategySelections(user.id);
-          console.log("User strategy selections:", selections);
           strategiesWithStatus = mapStrategiesWithSelections(predefinedStrategies, selections);
         }
         
-        console.log("Final strategies with status:", strategiesWithStatus);
         setStrategies(strategiesWithStatus);
       } catch (error) {
         console.error("Error setting up strategies:", error);
@@ -79,7 +58,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     };
     
     loadStrategies();
-  }, [user, predefinedStrategies, refreshTrigger]);
+  }, [user, predefinedStrategies]);
 
   const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
     setStrategies(prev => 
@@ -129,7 +108,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           return { 
             ...strategy, 
             isLive,
-            tradeType: isLive ? "live trade" : "paper"
+            tradeType: isLive ? "live trade" : "paper" // Set tradeType based on isLive status
           };
         }
         return strategy;
@@ -142,71 +121,17 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     });
   };
 
-  const handleToggleLiveMode = async (id: number) => {
-    const strategyIndex = strategies.findIndex(s => s.id === id);
-    const strategy = strategies[strategyIndex];
-    const isFreeStrategy = strategyIndex === 0;
-    const isPremiumStrategy = !isFreeStrategy;
+  const handleToggleLiveMode = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
     const newStatus = !strategy?.isLive;
     
-    if (newStatus && isPremiumStrategy && !strategy.isLive) {
-      const checkPremiumAccess = async () => {
-        try {
-          if (!user) return false;
-          
-          console.log("Checking premium access for strategy ID:", id);
-          
-          const { data: strategyData, error: strategyError } = await supabase
-            .from('strategy_selections')
-            .select('paid_status')
-            .eq('user_id', user.id)
-            .eq('strategy_id', id)
-            .maybeSingle();
-            
-          console.log("Strategy specific payment check:", strategyData);
-            
-          if (strategyData && strategyData.paid_status === 'paid') {
-            console.log("Strategy is already paid for");
-            return true;
-          }
-          
-          const { data, error } = await supabase
-            .from('plan_details')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('is_paid', true)
-            .order('selected_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-            
-          console.log("User paid plan check:", data);
-          return data !== null && data.is_paid === true;
-        } catch (error) {
-          console.error('Error checking premium access:', error);
-          return false;
-        }
-      };
-      
-      const hasPremiumAccess = await checkPremiumAccess();
-      console.log("Premium access check result:", hasPremiumAccess);
-      
-      if (hasPremiumAccess) {
-        setSelectedStrategyId(id);
-        setTargetMode("live");
-        setConfirmDialogOpen(true);
-      } else {
-        setSelectedStrategyId(id);
-        return false;
-      }
-    } else if (newStatus) {
+    if (newStatus) {
       setSelectedStrategyId(id);
       setTargetMode("live");
       setConfirmDialogOpen(true);
     } else {
       updateLiveMode(id, false);
     }
-    
-    return true;
   };
 
   const handleConfirmLiveMode = () => {
@@ -247,37 +172,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        let paidStatus = "free";
-        
-        const strategyIndex = strategies.findIndex(s => s.id === selectedStrategyId);
-        if (strategyIndex !== 0) {
-          const { data: strategyData } = await supabase
-            .from('strategy_selections')
-            .select('paid_status')
-            .eq('user_id', user.id)
-            .eq('strategy_id', selectedStrategyId)
-            .maybeSingle();
-            
-          if (strategyData && strategyData.paid_status === 'paid') {
-            paidStatus = 'paid';
-          } else {
-            const { data: planData } = await supabase
-              .from('plan_details')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('is_paid', true)
-              .order('selected_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-              
-            if (planData && planData.is_paid === true) {
-              paidStatus = 'paid';
-            } else {
-              paidStatus = 'premium';
-            }
-          }
-        }
-
+        // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -285,8 +180,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
-          "live trade",
-          paidStatus
+          "live trade" // Set trade_type to "live trade"
         );
         
         setStrategies(prev => 
@@ -296,8 +190,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                   ...s, 
                   quantity: pendingQuantity, 
                   selectedBroker: brokerName,
-                  tradeType: "live trade",
-                  paidStatus: paidStatus
+                  tradeType: "live trade" // Add tradeType to local state
                 } 
               : s
           )
@@ -347,8 +240,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker,
-    refreshTrigger,
-    setRefreshTrigger
+    handleCancelBroker
   };
 };

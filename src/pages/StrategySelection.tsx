@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
@@ -13,22 +12,12 @@ import { PredefinedStrategyList } from "@/components/strategy/PredefinedStrategy
 import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigation";
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { saveStrategyConfiguration } from "@/hooks/strategy/useStrategyConfiguration";
-import { StrategyPaymentDialog } from "@/components/strategy/StrategyPaymentDialog";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
-  const [processingStrategy, setProcessingStrategy] = useState(false);
-  const [processedUnlock, setProcessedUnlock] = useState(false);
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedPremiumStrategy, setSelectedPremiumStrategy] = useState<any>(null);
   
   const {
     strategies,
@@ -48,172 +37,11 @@ const StrategySelection = () => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker,
-    refreshTrigger,
-    setRefreshTrigger
+    handleCancelBroker
   } = useStrategy(predefinedStrategies || []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    
-    if (params.has('refresh') && !processedUnlock) {
-      console.log("Refresh trigger detected, forcing strategy data reload");
-      
-      setRefreshTrigger(prev => prev + 1);
-      
-      const unlockedStrategyId = params.get('strategy');
-      if (unlockedStrategyId && user && !processingStrategy) {
-        setProcessingStrategy(true);
-        const strategyId = parseInt(unlockedStrategyId);
-        console.log("Processing unlocked strategy ID:", strategyId);
-        
-        const verifyAndUnlockStrategy = async () => {
-          try {
-            // First check if the user has a paid plan
-            const { data: planData, error: planError } = await supabase
-              .from('plan_details')
-              .select('*')
-              .eq('user_id', user.id)
-              .order('selected_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-              
-            if (planError) {
-              console.error('Error checking plan payment status:', planError);
-              throw planError;
-            }
-            
-            // Only proceed with unlocking if the user has a paid plan
-            if (!planData || !planData.is_paid) {
-              console.log("Cannot unlock strategy - user does not have a paid plan");
-              toast({
-                title: "Subscription Required",
-                description: "You need an active paid subscription to unlock premium strategies.",
-                variant: "destructive",
-              });
-              throw new Error("No paid plan found");
-            }
-            
-            console.log("User has a paid plan, proceeding with strategy unlock");
-            
-            // Get strategy data first
-            const { data: strategyData, error: strategyError } = await supabase
-              .from('predefined_strategies')
-              .select('name, description')
-              .eq('id', strategyId)
-              .single();
-              
-            if (strategyError) {
-              console.error('Error fetching strategy details:', strategyError);
-              throw strategyError;
-            }
-            
-            if (!strategyData) {
-              throw new Error('Strategy data not found');
-            }
-            
-            console.log("Fetched strategy details:", strategyData);
-            
-            // Force direct insert/update with direct call to saveStrategyConfiguration
-            await saveStrategyConfiguration(
-              user.id,
-              strategyId,
-              strategyData.name,
-              strategyData.description,
-              0,  // Default quantity
-              "", // Default empty broker
-              "paper trade", // Default trade type
-              'paid' // Critical: mark as paid
-            );
-            
-            // Verify the strategy is now properly marked as paid
-            const { data: verifyData, error: verifyError } = await supabase
-              .from('strategy_selections')
-              .select('paid_status, strategy_name')
-              .eq('user_id', user.id)
-              .eq('strategy_id', strategyId)
-              .maybeSingle();
-              
-            if (verifyError) {
-              console.error('Verification error:', verifyError);
-              throw verifyError;
-            }
-            
-            console.log("Strategy verification data:", verifyData);
-            
-            if (!verifyData || verifyData.paid_status !== 'paid') {
-              console.log("Strategy still not marked as paid, using database function directly...");
-              
-              // Last resort: direct database function call
-              const { error: rpcError } = await supabase
-                .rpc('force_strategy_paid_status', {
-                  p_user_id: user.id,
-                  p_strategy_id: strategyId,
-                  p_strategy_name: strategyData.name,
-                  p_strategy_description: strategyData.description
-                });
-                
-              if (rpcError) {
-                console.error("Database function error:", rpcError);
-                throw rpcError;
-              }
-              
-              console.log("Database function executed, strategy should now be unlocked");
-            }
-            
-            // Show success toast only once
-            if (!processedUnlock) {
-              toast({
-                title: "Strategy Unlocked",
-                description: `"${strategyData.name}" is now available for live trading.`,
-                variant: "default",
-              });
-              setProcessedUnlock(true);
-            }
-            
-            // Force one more refresh to ensure UI is updated
-            setRefreshTrigger(prev => prev + 1);
-          } catch (err) {
-            console.error("Error in strategy verification/fix process:", err);
-            if (!processedUnlock) {
-              toast({
-                title: "Something went wrong",
-                description: "There was an issue unlocking your strategy. Please contact support.",
-                variant: "destructive",
-              });
-              setProcessedUnlock(true);
-            }
-          } finally {
-            setProcessingStrategy(false);
-          }
-        };
-        
-        verifyAndUnlockStrategy();
-      }
-      
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-  }, [location.search, setRefreshTrigger, user, toast, processingStrategy, processedUnlock]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
-  };
-  
-  const handleShowPaymentDialog = (strategy: any) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login to unlock premium strategies",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-    
-    setSelectedPremiumStrategy(strategy);
-    setPaymentDialogOpen(true);
   };
 
   return (
@@ -236,7 +64,6 @@ const StrategySelection = () => {
                   isLoading={isLoading}
                   onToggleWishlist={handleToggleWishlist}
                   onToggleLiveMode={handleToggleLiveMode}
-                  onShowPaymentDialog={handleShowPaymentDialog}
                   user={user}
                 />
               ) : (
@@ -268,14 +95,6 @@ const StrategySelection = () => {
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
       />
-      
-      {selectedPremiumStrategy && (
-        <StrategyPaymentDialog
-          open={paymentDialogOpen} 
-          onOpenChange={setPaymentDialogOpen}
-          strategy={selectedPremiumStrategy}
-        />
-      )}
       
       <BottomNav />
     </div>

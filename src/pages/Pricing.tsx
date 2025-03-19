@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
@@ -43,18 +43,7 @@ const PricingPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
   const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [strategyId, setStrategyId] = useState<number | null>(null);
-
-  // Get the strategy ID from the URL if available
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const id = params.get('strategyId');
-    if (id) {
-      setStrategyId(parseInt(id));
-    }
-  }, [location]);
 
   const handlePlanSelection = async (planName: string, planPrice: string) => {
     // Check if user is logged in
@@ -74,16 +63,32 @@ const PricingPage = () => {
     setIsLoading(`${planName}-${planPrice}`);
 
     try {
-      // Redirect to subscription page with plan details
-      const params = new URLSearchParams();
-      params.append('plan', planName);
-      params.append('price', planPrice);
-      
-      if (strategyId) {
-        params.append('strategyId', strategyId.toString());
+      // Insert plan selection into the database
+      const { error } = await supabase
+        .from('plan_details')
+        .insert({
+          user_id: user.id,
+          plan_name: planName,
+          plan_price: planPrice,
+        });
+
+      if (error) {
+        console.error('Error saving plan selection:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save your plan selection. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `You've selected the ${planName} plan!`,
+          variant: "default",
+        });
+        
+        // Redirect to subscription page or dashboard
+        navigate('/subscription');
       }
-      
-      navigate(`/subscription?${params.toString()}`);
     } catch (error) {
       console.error('Error in plan selection:', error);
       toast({
@@ -105,9 +110,7 @@ const PricingPage = () => {
             Choose Your Trading Power
           </h1>
           <p className="text-gray-400">
-            {strategyId 
-              ? "Unlock premium trading strategies with our subscription plans" 
-              : "Unlock advanced algo trading strategies with plans designed for every trader"}
+            Unlock advanced algo trading strategies with plans designed for every trader
           </p>
         </section>
 

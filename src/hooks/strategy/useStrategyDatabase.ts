@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -40,7 +41,6 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
           tradeType: item.trade_type || "paper trade",
-          paidStatus: item.paid_status || "free",
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -69,22 +69,20 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  tradeType: string = "paper trade", // Updated default to "paper trade"
-  paidStatus: string = "free" // Add paid status parameter with default "free"
+  tradeType: string = "paper trade" // Updated default to "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
     brokerName,
-    tradeType,
-    paidStatus
+    tradeType
   });
   
   // First check if a record already exists for this user and strategy
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
-    .select('id, paid_status')
+    .select('id')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
     .maybeSingle();
@@ -93,10 +91,6 @@ export const updateStrategyLiveConfig = async (
     console.error("Error checking existing strategy:", checkError);
     throw checkError;
   }
-  
-  // Preserve paid status if it's already set to "paid"
-  const finalPaidStatus = data?.paid_status === "paid" ? "paid" : paidStatus;
-  console.log("Final paid status to be set:", finalPaidStatus);
   
   // If record exists, update it. Otherwise, insert a new one
   let updateResult;
@@ -110,8 +104,7 @@ export const updateStrategyLiveConfig = async (
         selected_broker: brokerName,
         trade_type: tradeType,
         strategy_name: strategyName,
-        strategy_description: strategyDescription,
-        paid_status: finalPaidStatus
+        strategy_description: strategyDescription
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
@@ -126,8 +119,7 @@ export const updateStrategyLiveConfig = async (
         strategy_description: strategyDescription,
         quantity: quantity || 0,
         selected_broker: brokerName,
-        trade_type: tradeType,
-        paid_status: finalPaidStatus
+        trade_type: tradeType
       });
   }
   
@@ -135,8 +127,6 @@ export const updateStrategyLiveConfig = async (
     console.error("Error updating strategy config:", updateResult.error);
     throw updateResult.error;
   }
-  
-  console.log("Strategy configuration updated successfully");
 };
 
 /**

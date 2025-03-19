@@ -1,34 +1,13 @@
+
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader, CreditCard, CheckCircle } from "lucide-react";
+import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { saveStrategyConfiguration } from "@/hooks/strategy/useStrategyConfiguration";
-import { PlanDetails } from "@/types/plan";
 
 const plans = [
   {
@@ -56,44 +35,21 @@ const plans = [
   }
 ];
 
-const paymentFormSchema = z.object({
-  cardNumber: z.string()
-    .min(16, "Card number must be at least 16 digits")
-    .max(19, "Card number cannot exceed 19 digits"),
-  expiryDate: z.string()
-    .regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Expiry date must be in MM/YY format"),
-  cvv: z.string()
-    .min(3, "CVV must be at least 3 digits")
-    .max(4, "CVV cannot exceed 4 digits"),
-  nameOnCard: z.string()
-    .min(3, "Name on card is required")
-});
-
-type PaymentFormValues = z.infer<typeof paymentFormSchema>;
+interface PlanDetails {
+  id: string;
+  plan_name: string;
+  plan_price: string;
+  selected_at: string;
+}
 
 const Subscription = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [targetPlan, setTargetPlan] = useState<{name: string, price: string} | null>(null);
-  const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   
-  const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentFormSchema),
-    defaultValues: {
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
-      nameOnCard: ""
-    }
-  });
-
+  // Fetch user's plan details when component mounts
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (!user) return;
@@ -127,22 +83,6 @@ const Subscription = () => {
     fetchUserPlan();
   }, [user, toast]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const planName = params.get('plan');
-    const planPrice = params.get('price');
-    const strategyId = params.get('strategyId');
-    
-    if (planName && planPrice) {
-      setTargetPlan({ name: planName, price: planPrice });
-    }
-    
-    if (strategyId) {
-      setSelectedStrategyId(parseInt(strategyId));
-      console.log("Strategy ID from URL:", strategyId);
-    }
-  }, [location.search]);
-
   const handlePlanSelect = async (planName: string, planPrice: string) => {
     if (!user) {
       toast({
@@ -154,185 +94,14 @@ const Subscription = () => {
       return;
     }
 
-    setTargetPlan({ name: planName, price: planPrice });
-    setShowPaymentDialog(true);
-  };
-
-  const unlockStrategy = async (userId: string, strategyId: number): Promise<boolean> => {
-    console.log(`Unlocking strategy ID ${strategyId} for user ${userId}`);
-    
     try {
-      // Check if user has a paid plan
-      const { data: planData, error: planError } = await supabase
-        .from('plan_details')
-        .select('is_paid')
-        .eq('user_id', userId)
-        .order('selected_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-        
-      if (planError) {
-        console.error('Error checking plan payment status:', planError);
-        return false;
-      }
-      
-      // Only proceed if the user has a paid plan
-      if (!planData || !planData.is_paid) {
-        console.log("User does not have a paid plan");
-        return false;
-      }
-      
-      console.log("User has a paid plan, proceeding with strategy unlock");
-      
-      const { data: strategyData, error: strategyError } = await supabase
-        .from('predefined_strategies')
-        .select('name, description')
-        .eq('id', strategyId)
-        .single();
-        
-      if (strategyError) {
-        console.error('Error fetching strategy details:', strategyError);
-        throw new Error(`Failed to get strategy details: ${strategyError.message}`);
-      }
-      
-      if (!strategyData) {
-        throw new Error('Strategy data not found');
-      }
-      
-      console.log("Fetched strategy details:", strategyData);
-      
-      let unlockSuccessful = false;
-      
-      try {
-        await saveStrategyConfiguration(
-          userId,
-          strategyId,
-          strategyData.name,
-          strategyData.description,
-          0, // Default quantity
-          "", // Default empty broker
-          "paper trade", // Start with paper trade for safety
-          'paid' // Mark as paid
-        );
-        unlockSuccessful = true;
-      } catch (error) {
-        console.error("Method 1 failed:", error);
-      }
-      
-      if (!unlockSuccessful) {
-        console.log("Method 2: Using direct database function");
-        try {
-          const { error: dbFunctionError } = await supabase
-            .rpc('force_strategy_paid_status', {
-              p_user_id: userId,
-              p_strategy_id: strategyId,
-              p_strategy_name: strategyData.name,
-              p_strategy_description: strategyData.description
-            });
-            
-          if (dbFunctionError) {
-            console.error('Database function error:', dbFunctionError);
-          } else {
-            console.log("Database function succeeded");
-            unlockSuccessful = true;
-          }
-        } catch (error) {
-          console.error("Method 2 failed:", error);
-        }
-      }
-      
-      if (!unlockSuccessful) {
-        console.log("Method 3: Direct upsert as additional guarantee");
-        try {
-          const { error: upsertError } = await supabase
-            .from('strategy_selections')
-            .upsert({
-              user_id: userId,
-              strategy_id: strategyId,
-              strategy_name: strategyData.name,
-              strategy_description: strategyData.description,
-              paid_status: 'paid',
-              trade_type: "paper trade",
-              quantity: 0,
-              selected_broker: ""
-            }, { 
-              onConflict: 'user_id,strategy_id',
-              ignoreDuplicates: false 
-            });
-            
-          if (upsertError) {
-            console.error('Direct upsert error:', upsertError);
-          } else {
-            console.log("Direct upsert successful");
-            unlockSuccessful = true;
-          }
-        } catch (error) {
-          console.error("Method 3 failed:", error);
-        }
-      }
-      
-      let verified = false;
-      
-      for (let attempt = 0; attempt < 3; attempt++) {
-        console.log(`Verification attempt ${attempt + 1}`);
-        
-        const { data: verifyData, error: verifyError } = await supabase
-          .from('strategy_selections')
-          .select('paid_status')
-          .eq('user_id', userId)
-          .eq('strategy_id', strategyId)
-          .maybeSingle();
-          
-        if (verifyError) {
-          console.error(`Verification attempt ${attempt + 1} failed:`, verifyError);
-        } else if (verifyData && verifyData.paid_status === 'paid') {
-          console.log(`Strategy verified as paid on attempt ${attempt + 1}`);
-          verified = true;
-          break;
-        } else {
-          console.log(`Verification data:`, verifyData);
-          
-          if (verifyData) {
-            const { error: updateError } = await supabase
-              .from('strategy_selections')
-              .update({ paid_status: 'paid' })
-              .eq('user_id', userId)
-              .eq('strategy_id', strategyId);
-              
-            if (!updateError) {
-              console.log(`Direct update during verification attempt ${attempt + 1} succeeded`);
-            }
-          }
-        }
-        
-        if (!verified && attempt < 2) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-      
-      return verified || unlockSuccessful;
-    } catch (error) {
-      console.error("Error in unlockStrategy:", error);
-      return false;
-    }
-  };
-
-  const onPaymentSubmit = async (values: PaymentFormValues) => {
-    if (!user || !targetPlan) return;
-    
-    setProcessingPayment(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Save plan details with is_paid flag set to true
+      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
-          plan_name: targetPlan.name,
-          plan_price: targetPlan.price,
-          is_paid: true // Mark the plan as paid
+          plan_name: planName,
+          plan_price: planPrice,
         });
 
       if (error) {
@@ -342,75 +111,36 @@ const Subscription = () => {
           description: "Failed to save your plan selection. Please try again.",
           variant: "destructive",
         });
-        setProcessingPayment(false);
-        return;
-      }
-      
-      setPaymentSuccess(true);
-      
-      let strategyUnlocked = false;
-      
-      if (selectedStrategyId) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          console.log(`Unlock attempt ${attempt + 1}`);
-          strategyUnlocked = await unlockStrategy(user.id, selectedStrategyId);
-          
-          if (strategyUnlocked) {
-            console.log(`Successfully unlocked strategy ${selectedStrategyId} on attempt ${attempt + 1}`);
-            break;
-          }
-          
-          if (!strategyUnlocked && attempt < 2) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-        
-        if (!strategyUnlocked) {
-          console.warn(`Could not verify strategy ${selectedStrategyId} was unlocked. Will try again on redirect.`);
-        }
-      }
-      
-      localStorage.removeItem('wishlistedStrategies');
-      localStorage.removeItem('strategyCache');
-      
-      setTimeout(() => {
+      } else {
         toast({
-          title: "Payment Successful",
-          description: `You've subscribed to the ${targetPlan.name} plan.${
-            selectedStrategyId ? ' Premium strategy has been unlocked.' : ''
-          }`,
+          title: "Success",
+          description: `You've selected the ${planName} plan!`,
           variant: "default",
         });
         
-        setShowPaymentDialog(false);
-        setProcessingPayment(false);
-        setPaymentSuccess(false);
-        
-        const timestamp = new Date().getTime();
-        if (selectedStrategyId) {
-          navigate(`/strategy-selection?refresh=${timestamp}&strategy=${selectedStrategyId}`);
-        } else {
-          navigate(`/strategy-selection?refresh=${timestamp}`);
-        }
-      }, 2000);
+        // Refresh the page to show the updated plan
+        window.location.reload();
+      }
     } catch (error) {
-      console.error('Error in payment processing:', error);
+      console.error('Error in plan selection:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-      setProcessingPayment(false);
     }
   };
 
+  // Helper to format the expiration date
   const formatExpirationDate = () => {
     if (!userPlan) return "";
     
     const selectedDate = new Date(userPlan.selected_at);
+    // Add 30 days to the selected date (mock expiration)
     const expirationDate = new Date(selectedDate);
     expirationDate.setDate(expirationDate.getDate() + 30);
     
+    // Format as "MMM DD, YYYY"
     return expirationDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -448,9 +178,7 @@ const Subscription = () => {
                   <h2 className="text-[#FF00D4] font-bold text-xl">{userPlan.plan_name} Plan</h2>
                   <p className="text-gray-400 text-sm">Valid until {formatExpirationDate()}</p>
                 </div>
-                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">
-                  {userPlan.is_paid ? "Active" : "Pending"}
-                </span>
+                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">Active</span>
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-gray-400">/month</span></p>
@@ -542,7 +270,6 @@ const Subscription = () => {
             <Button 
               variant="outline"
               className="w-full border-gray-700 text-gray-400 hover:bg-gray-700/50"
-              onClick={() => setShowPaymentDialog(true)}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add Payment Method
@@ -550,136 +277,6 @@ const Subscription = () => {
           </div>
         </section>
       </main>
-
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="bg-gray-800 border border-gray-700 text-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
-              {paymentSuccess ? "Payment Successful" : "Add Payment Method"}
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 pt-2">
-              {paymentSuccess 
-                ? "Your payment has been processed successfully." 
-                : targetPlan 
-                  ? `Complete payment to subscribe to the ${targetPlan.name} plan for ${targetPlan.price}/month.` 
-                  : "Enter your card details to add a new payment method."}
-            </DialogDescription>
-          </DialogHeader>
-          
-          {paymentSuccess ? (
-            <div className="flex flex-col items-center justify-center py-6">
-              <div className="bg-green-900/20 p-6 rounded-full mb-4">
-                <CheckCircle className="h-16 w-16 text-green-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Payment Successful!</h3>
-              <p className="text-gray-400 text-center mb-6">
-                Your subscription is now active.
-                {selectedStrategyId ? " Premium strategy has been unlocked." : ""}
-              </p>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onPaymentSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="cardNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Card Number</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            placeholder="1234 5678 9012 3456" 
-                            className="pl-10 bg-gray-700 border-gray-600" 
-                            {...field} 
-                          />
-                          <CreditCard className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="expiryDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Expiry Date</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="MM/YY" 
-                            className="bg-gray-700 border-gray-600" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="cvv"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CVV</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="123" 
-                            className="bg-gray-700 border-gray-600" 
-                            {...field} 
-                            type="password"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="nameOnCard"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name on Card</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="John Doe" 
-                          className="bg-gray-700 border-gray-600" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="pt-4">
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 hover:opacity-90"
-                    disabled={processingPayment}
-                  >
-                    {processingPayment ? (
-                      <>
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>Pay {targetPlan?.price || ''}</>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          )}
-        </DialogContent>
-      </Dialog>
-      
       <BottomNav />
     </div>
   );
