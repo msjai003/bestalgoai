@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -59,24 +60,24 @@ export const useLiveTrading = () => {
     
     dialogState.setShowConfirmationDialog(false);
     
-    if (dialogState.targetMode === 'live') {
-      dialogState.setShowQuantityDialog(true);
-    } else {
-      try {
+    try {
+      if (dialogState.targetMode === 'live') {
+        dialogState.setShowQuantityDialog(true);
+      } else {
         await updateLiveMode(dialogState.targetStrategyId, false);
         toast({
           title: "Success",
           description: "Strategy switched to paper trading mode",
         });
         dialogState.resetDialogState();
-      } catch (error) {
-        console.error("Error in confirmModeChange:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update strategy mode",
-          variant: "destructive"
-        });
       }
+    } catch (error) {
+      console.error("Error in confirmModeChange:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update strategy mode",
+        variant: "destructive"
+      });
     }
   };
 
@@ -184,23 +185,24 @@ export const useLiveTrading = () => {
           selected_broker: ""
         });
         
-        const { data, error: checkError } = await supabase
+        // Instead of using maybeSingle which can still error with multiple rows
+        // Just query all matching records and update them all
+        const { data, error: fetchError } = await supabase
           .from('strategy_selections')
           .select('id')
           .eq('user_id', user.id)
-          .eq('strategy_id', id)
-          .maybeSingle();
+          .eq('strategy_id', id);
           
-        if (checkError) {
-          console.error("Error checking strategy record:", checkError);
-          throw checkError;
+        if (fetchError) {
+          console.error("Error fetching strategy records:", fetchError);
+          throw fetchError;
         }
         
-        let updateResult;
-        
-        if (data) {
-          console.log("Existing record found, updating to paper trade mode");
-          updateResult = await supabase
+        if (data && data.length > 0) {
+          console.log(`Found ${data.length} records to update to paper trade mode`);
+          
+          // Update all matching records
+          const { error: updateError } = await supabase
             .from('strategy_selections')
             .update({
               trade_type: "paper trade",
@@ -210,10 +212,13 @@ export const useLiveTrading = () => {
             .eq('user_id', user.id)
             .eq('strategy_id', id);
             
-          console.log("Update result:", updateResult);
+          if (updateError) {
+            console.error("Error updating strategy to paper mode:", updateError);
+            throw updateError;
+          }
         } else {
           console.log("No existing record found, creating new record with paper trade mode");
-          updateResult = await supabase
+          const { error: insertError } = await supabase
             .from('strategy_selections')
             .insert({
               user_id: user.id,
@@ -225,12 +230,10 @@ export const useLiveTrading = () => {
               selected_broker: ""
             });
             
-          console.log("Insert result:", updateResult);
-        }
-        
-        if (updateResult.error) {
-          console.error("Error updating strategy to paper mode:", updateResult.error);
-          throw updateResult.error;
+          if (insertError) {
+            console.error("Error inserting strategy with paper mode:", insertError);
+            throw insertError;
+          }
         }
         
         toast({
@@ -240,20 +243,9 @@ export const useLiveTrading = () => {
         });
       }
       
-      const updatedStrategies = strategies.map(s => {
-        if (s.id === id) {
-          return { 
-            ...s, 
-            isLive,
-            tradeType: isLive ? "live trade" : "paper trade",
-            ...(!isLive && { quantity: 0, selectedBroker: "" })
-          };
-        }
-        return s;
-      });
-      
-      setStrategies(updatedStrategies);
-      localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
+      // Reload strategies from database to get fresh data
+      const loadedStrategies = await loadUserStrategies(user.id);
+      setStrategies(loadedStrategies);
     } catch (error) {
       console.error("Error updating strategy mode:", error);
       toast({
