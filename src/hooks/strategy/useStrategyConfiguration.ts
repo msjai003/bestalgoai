@@ -39,61 +39,49 @@ export const saveStrategyConfiguration = async (
     
     console.log("Strategy configuration saved successfully via upsert");
     
-    // Verify the update was successful, especially important for paid status
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('strategy_selections')
-      .select('paid_status, trade_type, strategy_id')
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .maybeSingle();
+    // Double verification step for paid strategies
+    if (paidStatus === 'paid') {
+      console.log("Verifying paid strategy status was saved properly");
       
-    if (verifyError) {
-      console.error("Verification failed:", verifyError);
-      throw verifyError;
-    }
-    
-    if (!verifyData) {
-      console.error("Verification returned no data");
-      throw new Error("Strategy configuration not found after saving");
-    }
-    
-    console.log("Verification succeeded:", verifyData);
-    
-    // If we're trying to set paid status but it's not set properly, try a direct update
-    if (paidStatus === 'paid' && verifyData.paid_status !== 'paid') {
-      console.log("Paid status not correctly set, forcing direct update...");
-      
-      const { error: updateError } = await supabase
+      // Verify the update was successful
+      const { data: verifyData, error: verifyError } = await supabase
         .from('strategy_selections')
-        .update({ paid_status: 'paid' })
-        .eq('user_id', userId)
-        .eq('strategy_id', strategyId);
-        
-      if (updateError) {
-        console.error("Forced update failed:", updateError);
-        throw updateError;
-      }
-      
-      console.log("Forced direct update succeeded");
-      
-      // Double-check the update took effect
-      const { data: recheckData, error: recheckError } = await supabase
-        .from('strategy_selections')
-        .select('paid_status')
+        .select('paid_status, trade_type, strategy_id')
         .eq('user_id', userId)
         .eq('strategy_id', strategyId)
-        .single();
+        .maybeSingle();
         
-      if (recheckError || !recheckData || recheckData.paid_status !== 'paid') {
-        console.error("Strategy still not marked as paid after direct update");
-        // Will try database function as last resort below
-      } else {
-        console.log("Strategy successfully marked as paid after recheck");
+      if (verifyError) {
+        console.error("Verification failed:", verifyError);
+        throw verifyError;
       }
-    }
-    
-    // If we're dealing with a paid strategy, use the database function as an additional guarantee
-    if (paidStatus === 'paid') {
+      
+      if (!verifyData) {
+        console.error("Verification returned no data");
+        throw new Error("Strategy configuration not found after saving");
+      }
+      
+      console.log("Verification succeeded:", verifyData);
+      
+      // Force a direct update to ensure 'paid' status if it's not set
+      if (verifyData.paid_status !== 'paid') {
+        console.log("Paid status not correctly set, forcing direct update...");
+        
+        const { error: updateError } = await supabase
+          .from('strategy_selections')
+          .update({ paid_status: 'paid' })
+          .eq('user_id', userId)
+          .eq('strategy_id', strategyId);
+          
+        if (updateError) {
+          console.error("Forced update failed:", updateError);
+          throw updateError;
+        }
+        
+        console.log("Forced direct update succeeded");
+      }
+      
+      // Use the database function as an additional guarantee for critical paid status
       console.log("Using database function to enforce paid status...");
       const { error: rpcError } = await supabase
         .rpc('force_strategy_paid_status', {

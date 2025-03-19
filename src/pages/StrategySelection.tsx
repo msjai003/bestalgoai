@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -64,6 +65,7 @@ const StrategySelection = () => {
         
         const verifyAndFixPaidStatus = async () => {
           try {
+            // Get strategy data first
             const { data: strategyData, error: strategyError } = await supabase
               .from('predefined_strategies')
               .select('name, description')
@@ -81,6 +83,7 @@ const StrategySelection = () => {
             
             console.log("Fetched strategy details:", strategyData);
             
+            // Check current status
             const { data, error } = await supabase
               .from('strategy_selections')
               .select('paid_status, strategy_name')
@@ -90,10 +93,11 @@ const StrategySelection = () => {
               
             console.log("Strategy payment status check:", data);
             
+            // If already properly paid, just show success message
             if (data && data.paid_status === 'paid') {
               toast({
-                title: "Strategy Unlocked",
-                description: `"${data.strategy_name}" is now available for live trading.`,
+                title: "Strategy Already Unlocked",
+                description: `"${data.strategy_name}" is already available for live trading.`,
                 variant: "default",
               });
               setProcessingStrategy(false);
@@ -102,6 +106,7 @@ const StrategySelection = () => {
             
             console.log("Strategy not marked as paid or not found, fixing...");
             
+            // Use the saveStrategyConfiguration function with paid status
             await saveStrategyConfiguration(
               user.id,
               strategyId,
@@ -113,6 +118,7 @@ const StrategySelection = () => {
               'paid'
             );
             
+            // Verify the fix worked
             const { data: verifyData, error: verifyError } = await supabase
               .from('strategy_selections')
               .select('paid_status, strategy_name')
@@ -123,13 +129,14 @@ const StrategySelection = () => {
             if (!verifyError && verifyData && verifyData.paid_status === 'paid') {
               console.log("Fix verification successful");
               toast({
-                title: "Strategy Unlocked",
+                title: "Strategy Unlocked Successfully",
                 description: `"${strategyData.name}" is now available for live trading.`,
                 variant: "default",
               });
             } else {
               console.log("Fix verification failed:", verifyError || "Data not as expected");
               
+              // Last resort: direct database function call
               console.log("Making direct database function call...");
               
               const { error: rpcError } = await supabase
@@ -143,6 +150,7 @@ const StrategySelection = () => {
               if (rpcError) {
                 console.error("RPC function error:", rpcError);
                 
+                // If all else fails, try one more direct upsert
                 const { error: upsertError } = await supabase
                   .from('strategy_selections')
                   .upsert({ 
@@ -172,6 +180,7 @@ const StrategySelection = () => {
               });
             }
             
+            // Force another refresh to ensure UI is updated
             setRefreshTrigger(prev => prev + 2);
           } catch (err) {
             console.error("Error in strategy verification/fix process:", err);
@@ -188,6 +197,7 @@ const StrategySelection = () => {
         verifyAndFixPaidStatus();
       }
       
+      // Clean up URL parameters
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
