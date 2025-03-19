@@ -26,21 +26,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   index
 }) => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  
-  // Determine if the strategy is paid or free based on the paidStatus field
-  const isPaid = strategy.paidStatus === "paid";
-  const isPremium = index !== 0; // First strategy is free, others are premium
+  // Always set isFreeOrPaid to true to show all strategies as unlocked
+  const isFreeOrPaid = true;
 
   // Debug logging to understand strategy state
   useEffect(() => {
     console.log("StrategyCard:", {
       id: strategy.id,
       name: strategy.name,
-      isPremium,
-      isPaid,
+      isFreeOrPaid,
       paidStatus: strategy.paidStatus
     });
-  }, [strategy, isPremium, isPaid]);
+  }, [strategy]);
 
   const handleLiveModeClick = () => {
     if (!isAuthenticated) return;
@@ -69,8 +66,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 <h3 className="text-xl font-semibold text-white mb-1">
                   {strategy.name}
                   <StrategyStatusBadge 
-                    isPremium={isPremium} 
-                    isPaid={isPaid} 
+                    isPremium={index !== 0} 
+                    isPaid={strategy.paidStatus === "paid"} 
                   />
                 </h3>
                 <StrategyPerformanceBadges performance={strategy.performance} />
@@ -79,8 +76,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <StrategyActionButtons 
                 isWishlisted={strategy.isWishlisted}
                 isLive={strategy.isLive}
-                isPremium={isPremium}
-                isPaid={isPaid}
+                isFreeOrPaid={isFreeOrPaid}
                 isAuthenticated={isAuthenticated}
                 onToggleWishlist={onToggleWishlist}
                 onLiveModeClick={handleLiveModeClick}

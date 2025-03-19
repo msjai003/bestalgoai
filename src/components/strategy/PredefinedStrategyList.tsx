@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Strategy } from "@/hooks/strategy/types";
 import { NoStrategiesFound } from "./NoStrategiesFound";
 import { StrategyCard } from "./StrategyCard";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PredefinedStrategyListProps {
   strategies: Strategy[];
@@ -33,35 +32,6 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
       isLive: s.isLive
     })));
   }, [strategies]);
-
-  // Check if the user has a paid plan when the component loads
-  useEffect(() => {
-    const checkUserPaidStrategies = async () => {
-      if (!user) return;
-      
-      try {
-        console.log("Checking user paid strategies");
-        
-        // Check if the user has any paid strategies
-        const { data: paidStrategies, error: strategiesError } = await supabase
-          .from('strategy_selections')
-          .select('strategy_id, paid_status')
-          .eq('user_id', user.id)
-          .eq('paid_status', 'paid');
-          
-        if (strategiesError) {
-          console.error("Error fetching paid strategies:", strategiesError);
-          return;
-        }
-        
-        console.log("User paid strategies:", paidStrategies);
-      } catch (error) {
-        console.error("Error in checkUserPaidStrategies:", error);
-      }
-    };
-    
-    checkUserPaidStrategies();
-  }, [user]);
 
   if (isLoading) {
     return (
@@ -98,7 +68,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   return (
     <div className="space-y-4">
       {strategies.map((strategy, index) => {
-        // Process strategy status
+        // Show the first strategy as free, all others as premium unless paid
         if (index === 0) {
           // First strategy is always free
           strategy.paidStatus = "free";
