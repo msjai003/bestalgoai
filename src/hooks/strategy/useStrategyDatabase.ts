@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Strategy } from "./types";
+import { Strategy, BrokerConfig } from "./types";
 
 /**
  * Loads strategies from database and localStorage
@@ -31,25 +31,16 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       
       if (data && data.length > 0) {
         // Create a dictionary to track unique strategies
-        const strategiesMap = new Map<number, Strategy[]>();
+        const strategiesMap = new Map<number, BrokerConfig[]>();
         
         // Process each strategy selection and organize by strategy_id
         data.forEach(item => {
-          const strategy: Strategy = {
-            id: item.strategy_id,
-            name: item.strategy_name,
-            description: item.strategy_description || "",
-            isWishlisted: true,
-            isLive: item.trade_type === "live trade",
-            quantity: item.quantity || 0,
-            selectedBroker: item.selected_broker || "",
+          const brokerConfig: BrokerConfig = {
             brokerId: item.broker_id || "",
+            brokerName: item.selected_broker || "",
+            quantity: item.quantity || 0,
             tradeType: item.trade_type || "paper trade",
-            performance: {
-              winRate: "N/A",
-              avgProfit: "N/A",
-              drawdown: "N/A"
-            }
+            isLive: item.trade_type === "live trade"
           };
           
           // Add to our map of strategies
@@ -57,21 +48,42 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
             strategiesMap.set(item.strategy_id, []);
           }
           
-          strategiesMap.get(item.strategy_id)?.push(strategy);
+          strategiesMap.get(item.strategy_id)?.push(brokerConfig);
         });
         
         // Convert the map to an array of strategies
-        // For strategies with multiple brokers, use the first entry but mark it for UI differentiation
-        strategies = Array.from(strategiesMap.entries()).map(([_, strategyList]) => {
-          const primaryStrategy = strategyList[0];
-          if (strategyList.length > 1) {
+        strategies = Array.from(strategiesMap.entries()).map(([strategyId, brokerConfigs]) => {
+          // Use the first broker configuration as a base for the strategy
+          const firstConfig = brokerConfigs[0];
+          const strategyData = data.find(item => item.strategy_id === strategyId);
+          
+          const strategy: Strategy = {
+            id: strategyId,
+            name: strategyData?.strategy_name || `Strategy ${strategyId}`,
+            description: strategyData?.strategy_description || "",
+            isWishlisted: true,
+            isLive: firstConfig.isLive,
+            quantity: firstConfig.quantity,
+            selectedBroker: firstConfig.brokerName,
+            brokerId: firstConfig.brokerId,
+            tradeType: firstConfig.tradeType,
+            performance: {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          };
+          
+          // If we have multiple configurations for this strategy, add them
+          if (brokerConfigs.length > 1) {
             return {
-              ...primaryStrategy,
+              ...strategy,
               hasMultipleBrokers: true,
-              brokerConfigs: strategyList
+              brokerConfigs: brokerConfigs
             };
           }
-          return primaryStrategy;
+          
+          return strategy;
         });
         
         localStorage.setItem('wishlistedStrategies', JSON.stringify(strategies));
