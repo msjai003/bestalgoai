@@ -20,11 +20,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  // Check if strategy is premium and paid
+  const isPremium = strategy.paidStatus === 'premium' || strategy.paidStatus === 'paid';
+  const isPaid = strategy.paidStatus === 'paid' || strategy.paidStatus === 'free';
+
   return (
     <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-white font-medium">{strategy.name}</h3>
+          <h3 className="text-white font-medium flex items-center">
+            {strategy.name}
+            {isPremium && (
+              <Badge variant="outline" className={`ml-2 ${isPaid ? 'bg-green-900/30 text-green-300 border-green-800' : 'bg-yellow-900/30 text-yellow-300 border-yellow-800'}`}>
+                {isPaid ? 'Unlocked' : 'Premium'}
+              </Badge>
+            )}
+          </h3>
           {strategy.description && (
             <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
           )}

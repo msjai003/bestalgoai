@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +25,7 @@ const StrategySelection = () => {
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
   const [processingStrategy, setProcessingStrategy] = useState(false);
+  const [processedUnlock, setProcessedUnlock] = useState(false);
   
   const {
     strategies,
@@ -51,7 +53,7 @@ const StrategySelection = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     
-    if (params.has('refresh')) {
+    if (params.has('refresh') && !processedUnlock) {
       console.log("Refresh trigger detected, forcing strategy data reload");
       
       setRefreshTrigger(prev => prev + 1);
@@ -156,21 +158,28 @@ const StrategySelection = () => {
               console.log("Database function executed, strategy should now be unlocked");
             }
             
-            toast({
-              title: "Strategy Unlocked",
-              description: `"${strategyData.name}" is now available for live trading.`,
-              variant: "default",
-            });
+            // Show success toast only once
+            if (!processedUnlock) {
+              toast({
+                title: "Strategy Unlocked",
+                description: `"${strategyData.name}" is now available for live trading.`,
+                variant: "default",
+              });
+              setProcessedUnlock(true);
+            }
             
             // Force one more refresh to ensure UI is updated
             setRefreshTrigger(prev => prev + 1);
           } catch (err) {
             console.error("Error in strategy verification/fix process:", err);
-            toast({
-              title: "Something went wrong",
-              description: "There was an issue unlocking your strategy. Please contact support.",
-              variant: "destructive",
-            });
+            if (!processedUnlock) {
+              toast({
+                title: "Something went wrong",
+                description: "There was an issue unlocking your strategy. Please contact support.",
+                variant: "destructive",
+              });
+              setProcessedUnlock(true);
+            }
           } finally {
             setProcessingStrategy(false);
           }
@@ -183,7 +192,7 @@ const StrategySelection = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, [location.search, setRefreshTrigger, user, toast, processingStrategy]);
+  }, [location.search, setRefreshTrigger, user, toast, processingStrategy, processedUnlock]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
