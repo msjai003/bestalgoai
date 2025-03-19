@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -199,7 +198,20 @@ const Subscription = () => {
         try {
           console.log(`Updating strategy ${selectedStrategyId} to paid status for user ${user.id}`);
           
-          // First, check if we already have this strategy in selections
+          // Get strategy details to ensure we have the correct name and description
+          const { data: strategyData, error: strategyError } = await supabase
+            .from('predefined_strategies')
+            .select('name, description')
+            .eq('id', selectedStrategyId)
+            .single();
+            
+          if (strategyError) {
+            console.error('Error fetching strategy details:', strategyError);
+            throw strategyError;
+          }
+          
+          // Mark the strategy as paid in the strategy_selections table
+          // First check if it already exists
           const { data: existingStrategy, error: checkError } = await supabase
             .from('strategy_selections')
             .select('*')
@@ -212,22 +224,10 @@ const Subscription = () => {
             throw checkError;
           }
           
-          // Get strategy details if we need to create a new record
-          const { data: strategyData, error: strategyError } = await supabase
-            .from('predefined_strategies')
-            .select('name, description')
-            .eq('id', selectedStrategyId)
-            .single();
-            
-          if (strategyError) {
-            console.error('Error fetching strategy details:', strategyError);
-            throw strategyError;
-          }
-          
           let updateResult;
           
           if (existingStrategy) {
-            console.log('Updating existing strategy selection to paid status:', existingStrategy);
+            console.log('Updating existing strategy selection to paid status');
             
             updateResult = await supabase
               .from('strategy_selections')
@@ -237,15 +237,13 @@ const Subscription = () => {
               .eq('user_id', user.id)
               .eq('strategy_id', selectedStrategyId)
               .select();
-            
+              
             if (updateResult.error) {
               console.error('Error updating strategy paid status:', updateResult.error);
               throw updateResult.error;
             }
-            
-            console.log('Strategy marked as paid successfully, result:', updateResult.data);
           } else if (strategyData) {
-            console.log('Adding new strategy selection with paid status:', strategyData);
+            console.log('Creating new strategy selection with paid status');
             
             updateResult = await supabase
               .from('strategy_selections')
@@ -259,16 +257,16 @@ const Subscription = () => {
                 quantity: 0
               })
               .select();
-            
+              
             if (updateResult.error) {
               console.error('Error inserting strategy with paid status:', updateResult.error);
               throw updateResult.error;
             }
-            
-            console.log('New strategy added with paid status, result:', updateResult.data);
           }
           
-          // Verify the update was successful
+          console.log('Strategy marked as paid successfully:', updateResult?.data);
+          
+          // Verify the update was successful with a separate query
           const { data: verifyData, error: verifyError } = await supabase
             .from('strategy_selections')
             .select('paid_status')
@@ -280,26 +278,24 @@ const Subscription = () => {
             console.error('Error verifying strategy update:', verifyError);
           } else {
             console.log('Verified strategy paid status:', verifyData.paid_status);
+            
+            // If verification fails, make one more attempt
             if (verifyData.paid_status !== 'paid') {
-              console.error('Strategy paid status not updated correctly. Retrying...');
+              console.warn('Strategy paid status not updated correctly. Making final attempt...');
               
-              // One final attempt to ensure paid status is set
               const finalUpdate = await supabase
                 .from('strategy_selections')
-                .update({
-                  paid_status: 'paid'
-                })
+                .update({ paid_status: 'paid' })
                 .eq('user_id', user.id)
                 .eq('strategy_id', selectedStrategyId);
                 
               if (finalUpdate.error) {
                 console.error('Error in final update attempt:', finalUpdate.error);
               } else {
-                console.log('Final update completed');
+                console.log('Final update completed successfully');
               }
             }
           }
-          
         } catch (error) {
           console.error('Error updating strategy payment status:', error);
           toast({
@@ -310,8 +306,9 @@ const Subscription = () => {
         }
       }
       
-      // Clear the strategy selection in localStorage to force a refresh
+      // Clear all local storage caches to force refresh of data
       localStorage.removeItem('wishlistedStrategies');
+      localStorage.removeItem('strategyCache');
       
       setTimeout(() => {
         toast({

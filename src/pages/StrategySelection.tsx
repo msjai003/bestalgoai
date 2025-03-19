@@ -14,6 +14,7 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -51,6 +52,8 @@ const StrategySelection = () => {
     const params = new URLSearchParams(location.search);
     
     if (params.has('refresh')) {
+      console.log("Refresh trigger detected, forcing strategy data reload");
+      
       // Force a refresh of the strategy data
       setRefreshTrigger(prev => prev + 1);
       
@@ -58,15 +61,43 @@ const StrategySelection = () => {
       const unlockedStrategyId = params.get('strategy');
       if (unlockedStrategyId) {
         const strategyId = parseInt(unlockedStrategyId);
-        // Find the newly unlocked strategy by ID
-        const unlockedStrategy = strategies.find(s => s.id === strategyId);
+        console.log("Unlocked strategy ID:", strategyId);
         
-        if (unlockedStrategy) {
-          toast({
-            title: "Strategy Unlocked",
-            description: `"${unlockedStrategy.name}" is now available for live trading.`,
-            variant: "default",
-          });
+        // Verify the strategy is actually marked as paid in the database
+        if (user) {
+          const verifyPaidStatus = async () => {
+            try {
+              // Check if this specific strategy has been paid for
+              const { data, error } = await supabase
+                .from('strategy_selections')
+                .select('paid_status, strategy_name')
+                .eq('user_id', user.id)
+                .eq('strategy_id', strategyId)
+                .maybeSingle();
+                
+              console.log("Verified strategy payment status:", data);
+              
+              if (data && data.paid_status === 'paid') {
+                // Show success toast for the unlocked strategy
+                toast({
+                  title: "Strategy Unlocked",
+                  description: `"${data.strategy_name}" is now available for live trading.`,
+                  variant: "default",
+                });
+              } else {
+                console.error("Strategy not marked as paid in database");
+                toast({
+                  title: "Strategy Activation Issue",
+                  description: "There was an issue unlocking your strategy. Please try again or contact support.",
+                  variant: "destructive",
+                });
+              }
+            } catch (err) {
+              console.error("Error verifying strategy payment status:", err);
+            }
+          };
+          
+          verifyPaidStatus();
         }
       }
       
@@ -74,7 +105,7 @@ const StrategySelection = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, [location.search, setRefreshTrigger, strategies, toast]);
+  }, [location.search, setRefreshTrigger, user, toast]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
