@@ -1,74 +1,53 @@
 
 import { useState } from "react";
-
-export interface StrategyDialogState {
-  showConfirmationDialog: boolean;
-  showQuantityDialog: boolean;
-  showBrokerDialog: boolean;
-  targetStrategyId: number | null;
-  targetMode: "live" | "paper" | null;
-  pendingQuantity: number;
-}
+import { fetchUserBrokers } from "./useStrategyDatabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useStrategyDialogs = () => {
-  const [dialogState, setDialogState] = useState<StrategyDialogState>({
-    showConfirmationDialog: false,
-    showQuantityDialog: false,
-    showBrokerDialog: false,
-    targetStrategyId: null,
-    targetMode: null,
-    pendingQuantity: 0
-  });
-
-  const setShowConfirmationDialog = (show: boolean) => {
-    setDialogState(prev => ({ ...prev, showConfirmationDialog: show }));
-  };
-
-  const setShowQuantityDialog = (show: boolean) => {
-    setDialogState(prev => ({ ...prev, showQuantityDialog: show }));
-  };
-
-  const setShowBrokerDialog = (show: boolean) => {
-    setDialogState(prev => ({ ...prev, showBrokerDialog: show }));
-  };
-
-  const setTargetStrategyId = (id: number | null) => {
-    setDialogState(prev => ({ ...prev, targetStrategyId: id }));
-  };
-
-  const setTargetMode = (mode: "live" | "paper" | null) => {
-    setDialogState(prev => ({ ...prev, targetMode: mode }));
-  };
-
-  const setPendingQuantity = (quantity: number) => {
-    setDialogState(prev => ({ ...prev, pendingQuantity: quantity }));
-  };
-
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
+  const [showBrokerDialog, setShowBrokerDialog] = useState(false);
+  const [targetStrategyId, setTargetStrategyId] = useState<number | null>(null);
+  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
+  const [pendingQuantity, setPendingQuantity] = useState<number>(0);
+  const [targetUniqueId, setTargetUniqueId] = useState<string | undefined>(undefined);
+  const [targetRowId, setTargetRowId] = useState<string | undefined>(undefined);
+  const { user } = useAuth();
+  
   const resetDialogState = () => {
-    setDialogState({
-      showConfirmationDialog: false,
-      showQuantityDialog: false,
-      showBrokerDialog: false,
-      targetStrategyId: null,
-      targetMode: null,
-      pendingQuantity: 0
-    });
+    setShowConfirmationDialog(false);
+    setShowQuantityDialog(false);
+    setShowBrokerDialog(false);
+    setTargetStrategyId(null);
+    setTargetMode(null);
+    setPendingQuantity(0);
+    setTargetUniqueId(undefined);
+    setTargetRowId(undefined);
   };
-
-  const openBrokerDialogAfterQuantity = (quantity: number) => {
+  
+  const openBrokerDialogAfterQuantity = async (quantity: number) => {
     setPendingQuantity(quantity);
     setShowQuantityDialog(false);
     setShowBrokerDialog(true);
   };
 
   return {
-    ...dialogState,
+    showConfirmationDialog,
     setShowConfirmationDialog,
+    showQuantityDialog,
     setShowQuantityDialog,
+    showBrokerDialog,
     setShowBrokerDialog,
+    targetStrategyId,
     setTargetStrategyId,
+    targetMode,
     setTargetMode,
+    pendingQuantity,
     setPendingQuantity,
+    targetUniqueId,
+    setTargetUniqueId,
+    targetRowId,
+    setTargetRowId,
     resetDialogState,
     openBrokerDialogAfterQuantity
   };
