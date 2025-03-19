@@ -40,6 +40,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           isLive: item.trade_type === "live trade",
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
+          brokerUsername: item.broker_username || "", // Add broker username
           tradeType: item.trade_type || "paper trade",
           performance: {
             winRate: "N/A",
@@ -69,6 +70,7 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
+  brokerUsername: string | null = null, // Add broker username parameter with default
   tradeType: string = "paper trade" // Updated default to "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
@@ -76,6 +78,7 @@ export const updateStrategyLiveConfig = async (
     strategyId,
     quantity,
     brokerName,
+    brokerUsername, // Log broker username
     tradeType
   });
   
@@ -102,6 +105,7 @@ export const updateStrategyLiveConfig = async (
       .update({
         quantity: quantity || 0,
         selected_broker: brokerName,
+        broker_username: brokerUsername, // Add broker username
         trade_type: tradeType,
         strategy_name: strategyName,
         strategy_description: strategyDescription
@@ -119,6 +123,7 @@ export const updateStrategyLiveConfig = async (
         strategy_description: strategyDescription,
         quantity: quantity || 0,
         selected_broker: brokerName,
+        broker_username: brokerUsername, // Add broker username
         trade_type: tradeType
       });
   }

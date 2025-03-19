@@ -9,6 +9,7 @@ export const saveStrategyConfiguration = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string,
+  brokerUsername: string = "", // Add new parameter for broker username
   tradeType: string = "live trade" // Keep default for this function as "live trade"
 ): Promise<void> => {
   // First check if a record already exists
@@ -37,6 +38,7 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
+        broker_username: brokerUsername, // Add broker username to update
         trade_type: preservedTradeType
       })
       .eq('user_id', userId)
@@ -53,6 +55,7 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
+        broker_username: brokerUsername, // Add broker username to insert
         trade_type: tradeType
       });
       

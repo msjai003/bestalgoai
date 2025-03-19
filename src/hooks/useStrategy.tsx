@@ -14,6 +14,7 @@ import {
   updateLocalStorageWishlist
 } from "./strategy/useStrategyWishlist";
 import { saveStrategyConfiguration } from "./strategy/useStrategyConfiguration";
+import { supabase } from "@/integrations/supabase/client"; // Add this import
 
 export type { Strategy } from "./strategy/types";
 
@@ -172,7 +173,21 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        // Add trade_type parameter
+        // Get broker username from broker credentials table
+        const { data: brokerData, error: brokerError } = await supabase
+          .from('broker_credentials')
+          .select('username')
+          .eq('id', brokerId)
+          .single();
+          
+        if (brokerError) {
+          console.error("Error fetching broker username:", brokerError);
+          throw brokerError;
+        }
+        
+        const brokerUsername = brokerData?.username || "";
+
+        // Add trade_type parameter and broker_username
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -180,6 +195,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
+          brokerUsername, // Pass broker username
           "live trade" // Set trade_type to "live trade"
         );
         
@@ -190,6 +206,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                   ...s, 
                   quantity: pendingQuantity, 
                   selectedBroker: brokerName,
+                  brokerUsername: brokerUsername, // Add brokerUsername to local state
                   tradeType: "live trade" // Add tradeType to local state
                 } 
               : s

@@ -77,7 +77,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
         )}
         
-        {/* Add trade type display */}
+        {/* Add broker username display */}
+        {strategy.brokerUsername && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-300 text-sm">Broker Account</span>
+            <span className="text-white font-medium">{strategy.brokerUsername}</span>
+          </div>
+        )}
+        
+        {/* Trade type display */}
         {strategy.tradeType && (
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-300 text-sm">Trade Type</span>
