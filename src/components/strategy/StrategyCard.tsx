@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, LockIcon, UnlockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   Dialog, 
@@ -34,6 +34,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const isFreeStrategy = index === 0;
+  const isPaid = strategy.paidStatus === 'paid';
 
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
@@ -45,11 +46,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     if (strategy.isLive) {
       // If already live, just toggle it off
       onToggleLiveMode(strategy.id);
-    } else if (isFreeStrategy) {
-      // If it's the free strategy, enable it
+    } else if (isFreeStrategy || isPaid) {
+      // If it's the free strategy or a paid strategy, enable it
       onToggleLiveMode(strategy.id);
     } else {
-      // For non-free strategies, show payment dialog
+      // For non-free strategies that aren't paid, show payment dialog
       setShowPaymentDialog(true);
     }
   };
@@ -58,6 +59,28 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     setShowPaymentDialog(false);
     // Pass strategy ID to subscription page to track which strategy to unlock
     navigate(`/subscription?strategyId=${strategy.id}`);
+  };
+
+  // Determine which icon to show based on strategy status
+  const getLiveModeIcon = () => {
+    if (strategy.isLive) {
+      return <StopCircleIcon size={20} />;
+    } else if (!isFreeStrategy && !isPaid) {
+      return <LockIcon size={20} />;
+    } else {
+      return <PlayIcon size={20} />;
+    }
+  };
+
+  // Determine tooltip text based on strategy status
+  const getLiveModeTooltip = () => {
+    if (strategy.isLive) {
+      return "Disable live trading";
+    } else if (!isFreeStrategy && !isPaid) {
+      return "Premium strategy - Upgrade to access";
+    } else {
+      return "Enable live trading";
+    }
   };
 
   return (
@@ -69,9 +92,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <div>
                 <h3 className="text-xl font-semibold text-white mb-1">
                   {strategy.name}
-                  {!isFreeStrategy && (
+                  {!isFreeStrategy && !isPaid && (
                     <Badge variant="outline" className="ml-2 bg-yellow-900/30 text-yellow-300 border-yellow-800">
                       Premium
+                    </Badge>
+                  )}
+                  {!isFreeStrategy && isPaid && (
+                    <Badge variant="outline" className="ml-2 bg-green-900/30 text-green-300 border-green-800">
+                      Unlocked
                     </Badge>
                   )}
                 </h3>
@@ -122,28 +150,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className={strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400"}
+                        className={strategy.isLive 
+                          ? "text-green-400" 
+                          : (isPaid || isFreeStrategy) 
+                            ? "text-gray-400 hover:text-green-400" 
+                            : "text-gray-400 hover:text-gray-300"}
                         onClick={handleLiveModeClick}
                         disabled={!isAuthenticated}
                       >
-                        {strategy.isLive ? (
-                          <StopCircleIcon size={20} />
-                        ) : !isFreeStrategy ? (
-                          <LockIcon size={20} />
-                        ) : (
-                          <PlayIcon size={20} />
-                        )}
+                        {getLiveModeIcon()}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>
-                        {strategy.isLive 
-                          ? "Disable live trading" 
-                          : !isFreeStrategy 
-                            ? "Premium strategy - Upgrade to access" 
-                            : "Enable live trading"
-                        }
-                      </p>
+                      <p>{getLiveModeTooltip()}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -151,11 +170,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
             
             <p className="text-gray-300 text-sm mb-3">
-              {isFreeStrategy 
+              {isFreeStrategy || isPaid
                 ? strategy.description 
-                : strategy.isLive 
-                  ? strategy.description
-                  : "This premium strategy requires a subscription to access. Upgrade now to unlock powerful trading capabilities."}
+                : "This premium strategy requires a subscription to access. Upgrade now to unlock powerful trading capabilities."}
             </p>
             
             {strategy.isLive && (
