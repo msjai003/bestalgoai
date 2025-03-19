@@ -27,7 +27,6 @@ interface BrokerSelectionDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (brokerId: string, brokerName: string) => void;
   onCancel: () => void;
-  selectedStrategyId?: number;
 }
 
 interface BrokerOption {
@@ -40,7 +39,6 @@ export const BrokerSelectionDialog = ({
   onOpenChange,
   onConfirm,
   onCancel,
-  selectedStrategyId,
 }: BrokerSelectionDialogProps) => {
   const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
@@ -58,6 +56,7 @@ export const BrokerSelectionDialog = ({
         console.log("Fetching brokers for user:", user.id);
         
         // Fetch only the brokers that the user has connected in Supabase
+        // This function now only returns brokers with status='connected'
         const brokerData = await fetchUserBrokers(user.id);
         console.log("Fetched connected brokers:", brokerData);
         
@@ -90,7 +89,7 @@ export const BrokerSelectionDialog = ({
     if (selectedBroker) {
       const selectedBrokerObj = brokers.find(broker => broker.id === selectedBroker);
       if (selectedBrokerObj) {
-        console.log(`Configuring Strategy ID: ${selectedStrategyId} with Broker: ${selectedBrokerObj.broker_name} (ID: ${selectedBroker})`);
+        console.log("Confirming with broker name:", selectedBrokerObj.broker_name);
         // Pass both ID and name to the parent component
         onConfirm(selectedBroker, selectedBrokerObj.broker_name);
       }
@@ -120,9 +119,7 @@ export const BrokerSelectionDialog = ({
               <X className="h-5 w-5" />
             </button>
             <DialogDescription className="text-gray-400 text-sm text-center mt-1">
-              {selectedStrategyId ? 
-                `Configure Strategy #${selectedStrategyId} with a broker` : 
-                "Choose a connected broker to use with this strategy"}
+              Choose a connected broker to use with this strategy
             </DialogDescription>
           </DialogHeader>
         </div>

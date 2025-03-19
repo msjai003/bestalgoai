@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -95,7 +94,6 @@ const StrategySelection = () => {
         onOpenChange={setBrokerDialogOpen}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
-        selectedStrategyId={selectedStrategyId}
       />
       
       <BottomNav />

@@ -12,26 +12,14 @@ export interface Strategy {
   isLive: boolean;
   quantity: number;
   selectedBroker?: string;
-  brokerId?: string; // Change to string to match database schema
-  tradeType?: string;
+  tradeType?: string; // Add tradeType field to Strategy interface
   pnl?: string;
   successRate?: string;
-  hasMultipleBrokers?: boolean; // Flag to indicate multiple broker configurations
-  brokerConfigs?: BrokerConfig[]; // Array of broker-specific configurations for this strategy
-}
-
-export interface BrokerConfig {
-  brokerId: string; // Change to string to match database schema
-  brokerName: string;
-  quantity: number;
-  tradeType: string;
-  isLive: boolean;
 }
 
 export interface StrategySelection {
   strategy_id: number;
   quantity?: number;
   selected_broker?: string;
-  broker_id?: string; // Change to string to match database schema
-  trade_type?: string;
+  trade_type?: string; // Add trade_type field to StrategySelection interface
 }
