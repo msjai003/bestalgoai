@@ -16,6 +16,7 @@ import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategie
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { saveStrategyConfiguration } from "@/hooks/strategy/useStrategyConfiguration";
+import { StrategyPaymentDialog } from "@/components/strategy/StrategyPaymentDialog";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ const StrategySelection = () => {
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
   const [processingStrategy, setProcessingStrategy] = useState(false);
   const [processedUnlock, setProcessedUnlock] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedPremiumStrategy, setSelectedPremiumStrategy] = useState<any>(null);
   
   const {
     strategies,
@@ -197,6 +200,21 @@ const StrategySelection = () => {
   const handleDeployStrategy = () => {
     navigate("/backtest");
   };
+  
+  const handleShowPaymentDialog = (strategy: any) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to unlock premium strategies",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+    
+    setSelectedPremiumStrategy(strategy);
+    setPaymentDialogOpen(true);
+  };
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col">
@@ -218,6 +236,7 @@ const StrategySelection = () => {
                   isLoading={isLoading}
                   onToggleWishlist={handleToggleWishlist}
                   onToggleLiveMode={handleToggleLiveMode}
+                  onShowPaymentDialog={handleShowPaymentDialog}
                   user={user}
                 />
               ) : (
@@ -249,6 +268,14 @@ const StrategySelection = () => {
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
       />
+      
+      {selectedPremiumStrategy && (
+        <StrategyPaymentDialog
+          open={paymentDialogOpen} 
+          onOpenChange={setPaymentDialogOpen}
+          strategy={selectedPremiumStrategy}
+        />
+      )}
       
       <BottomNav />
     </div>

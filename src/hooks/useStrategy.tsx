@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -33,13 +32,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Force refresh when URL has refresh parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.has('refresh')) {
       setRefreshTrigger(prev => prev + 1);
       
-      // Clear the URL parameter after using it
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
@@ -51,7 +48,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       setIsLoading(true);
       
       try {
-        // Clear localStorage cache to ensure fresh data
         if (refreshTrigger > 0) {
           console.log("Triggered refresh, clearing local storage cache");
           localStorage.removeItem('wishlistedStrategies');
@@ -63,7 +59,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           isLive: false,
           quantity: 0,
           selectedBroker: "",
-          paidStatus: strategy.id === 1 ? "free" : "premium" // Default first strategy as free, others as premium
+          paidStatus: strategy.id === 1 ? "free" : "premium"
         }));
         
         if (user) {
@@ -133,7 +129,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           return { 
             ...strategy, 
             isLive,
-            tradeType: isLive ? "live trade" : "paper" // Set tradeType based on isLive status
+            tradeType: isLive ? "live trade" : "paper"
           };
         }
         return strategy;
@@ -149,7 +145,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const handleToggleLiveMode = async (id: number) => {
     const strategyIndex = strategies.findIndex(s => s.id === id);
     const strategy = strategies[strategyIndex];
-    const isFreeStrategy = strategyIndex === 0;  // First strategy is free
+    const isFreeStrategy = strategyIndex === 0;
     const isPremiumStrategy = !isFreeStrategy;
     const newStatus = !strategy?.isLive;
     
@@ -160,7 +156,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           console.log("Checking premium access for strategy ID:", id);
           
-          // Check if this specific strategy has been paid for
           const { data: strategyData, error: strategyError } = await supabase
             .from('strategy_selections')
             .select('paid_status')
@@ -175,7 +170,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             return true;
           }
           
-          // Check if user has a paid premium plan
           const { data, error } = await supabase
             .from('plan_details')
             .select('*')
@@ -201,7 +195,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         setTargetMode("live");
         setConfirmDialogOpen(true);
       } else {
-        navigate(`/subscription?strategyId=${id}`);
+        setSelectedStrategyId(id);
+        return false;
       }
     } else if (newStatus) {
       setSelectedStrategyId(id);
@@ -210,6 +205,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     } else {
       updateLiveMode(id, false);
     }
+    
+    return true;
   };
 
   const handleConfirmLiveMode = () => {
@@ -250,13 +247,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        // Determine the appropriate paid_status to set
-        let paidStatus = "free"; // Default
+        let paidStatus = "free";
         
-        // First strategy (index 0) is always free
         const strategyIndex = strategies.findIndex(s => s.id === selectedStrategyId);
         if (strategyIndex !== 0) {
-          // First check if user has paid for this specific strategy
           const { data: strategyData } = await supabase
             .from('strategy_selections')
             .select('paid_status')
@@ -267,7 +261,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           if (strategyData && strategyData.paid_status === 'paid') {
             paidStatus = 'paid';
           } else {
-            // Check if user has a premium plan with is_paid=true
             const { data: planData } = await supabase
               .from('plan_details')
               .select('*')
@@ -278,9 +271,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
               .maybeSingle();
               
             if (planData && planData.is_paid === true) {
-              paidStatus = 'paid'; // User has a paid plan, so set as paid
+              paidStatus = 'paid';
             } else {
-              paidStatus = 'premium'; // Requires payment but not paid yet
+              paidStatus = 'premium';
             }
           }
         }

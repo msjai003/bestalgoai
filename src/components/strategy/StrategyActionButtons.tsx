@@ -11,6 +11,7 @@ interface StrategyActionButtonsProps {
   isAuthenticated: boolean;
   onToggleWishlist: () => void;
   onLiveModeClick: () => void;
+  onShowPaymentDialog?: () => void;
 }
 
 export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
@@ -19,7 +20,8 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   isFreeOrPaid,
   isAuthenticated,
   onToggleWishlist,
-  onLiveModeClick
+  onLiveModeClick,
+  onShowPaymentDialog
 }) => {
   // Determine which icon to show based on strategy status
   const getLiveModeIcon = () => {
@@ -40,6 +42,15 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
       return "Premium strategy - Upgrade to access";
     } else {
       return "Enable live trading";
+    }
+  };
+
+  // Handle live mode button click
+  const handleLiveModeClick = () => {
+    if (!isFreeOrPaid && onShowPaymentDialog) {
+      onShowPaymentDialog();
+    } else {
+      onLiveModeClick();
     }
   };
 
@@ -75,7 +86,7 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
                 : (isFreeOrPaid) 
                   ? "text-gray-400 hover:text-green-400" 
                   : "text-gray-400 hover:text-gray-300"}
-              onClick={onLiveModeClick}
+              onClick={handleLiveModeClick}
               disabled={!isAuthenticated}
             >
               {getLiveModeIcon()}

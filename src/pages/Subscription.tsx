@@ -375,8 +375,8 @@ const Subscription = () => {
       
       setTimeout(() => {
         toast({
-          title: "Success",
-          description: `Payment successful! You've subscribed to the ${targetPlan.name} plan.${
+          title: "Payment Successful",
+          description: `You've subscribed to the ${targetPlan.name} plan.${
             selectedStrategyId ? ' Premium strategy has been unlocked.' : ''
           }`,
           variant: "default",
