@@ -24,6 +24,7 @@ const LiveTrading = () => {
     showBrokerDialog,
     setShowBrokerDialog,
     targetMode,
+    selectedBrokers,
     handleTradingToggle,
     handleModeChange,
     handleToggleLiveMode,
@@ -100,6 +101,7 @@ const LiveTrading = () => {
         onOpenChange={setShowBrokerDialog}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
+        excludeBrokers={selectedBrokers} // Pass the selected brokers to exclude
       />
     </div>
   );

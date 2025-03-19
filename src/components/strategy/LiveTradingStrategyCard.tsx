@@ -20,6 +20,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  // Display multiple broker information if available
+  const hasBrokers = strategy.selectedBrokers && strategy.selectedBrokers.length > 0;
+  
   return (
     <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
       <div className="flex items-center justify-between mb-3">
@@ -55,26 +58,53 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </div>
       
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-300 text-sm">Quantity</span>
-          <div className="flex items-center gap-2">
-            <span className="text-white font-medium">{strategy.quantity || 0}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-400 hover:text-white p-1 h-auto"
-              onClick={onEditQuantity}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        
-        {strategy.selectedBroker && (
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-300 text-sm">Broker</span>
-            <span className="text-white font-medium">{strategy.selectedBroker}</span>
-          </div>
+        {/* Display either single broker or multiple brokers */}
+        {hasBrokers ? (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-300 text-sm">Connected Brokers</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-400 hover:text-white p-1 h-auto"
+                onClick={onEditQuantity}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
+            {strategy.selectedBrokers.map((broker, index) => (
+              <div key={index} className="bg-gray-800/30 p-2 rounded-md mb-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-white text-sm">{broker.brokerName}</span>
+                  <span className="text-gray-300 text-xs">Qty: {broker.quantity}</span>
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-300 text-sm">Quantity</span>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-medium">{strategy.quantity || 0}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-400 hover:text-white p-1 h-auto"
+                  onClick={onEditQuantity}
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {strategy.selectedBroker && (
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-300 text-sm">Broker</span>
+                <span className="text-white font-medium">{strategy.selectedBroker}</span>
+              </div>
+            )}
+          </>
         )}
         
         {/* Add trade type display */}

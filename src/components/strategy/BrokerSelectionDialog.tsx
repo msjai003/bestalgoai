@@ -27,6 +27,7 @@ interface BrokerSelectionDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (brokerId: string, brokerName: string) => void;
   onCancel: () => void;
+  excludeBrokers?: string[]; // Add excludeBrokers prop to exclude already selected brokers
 }
 
 interface BrokerOption {
@@ -39,6 +40,7 @@ export const BrokerSelectionDialog = ({
   onOpenChange,
   onConfirm,
   onCancel,
+  excludeBrokers = [],
 }: BrokerSelectionDialogProps) => {
   const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
@@ -60,11 +62,16 @@ export const BrokerSelectionDialog = ({
         const brokerData = await fetchUserBrokers(user.id);
         console.log("Fetched connected brokers:", brokerData);
         
-        setBrokers(brokerData || []);
+        // Filter out already selected brokers
+        const filteredBrokers = brokerData.filter(broker => 
+          !excludeBrokers.includes(broker.id) && !excludeBrokers.includes(broker.broker_name)
+        );
+        
+        setBrokers(filteredBrokers || []);
         
         // Set default selection if brokers exist
-        if (brokerData && brokerData.length > 0) {
-          setSelectedBroker(brokerData[0].id);
+        if (filteredBrokers && filteredBrokers.length > 0) {
+          setSelectedBroker(filteredBrokers[0].id);
         } else {
           setSelectedBroker("");
         }
@@ -83,7 +90,7 @@ export const BrokerSelectionDialog = ({
     if (open) {
       fetchBrokers();
     }
-  }, [user, open, toast]);
+  }, [user, open, toast, excludeBrokers]);
 
   const handleConfirm = () => {
     if (selectedBroker) {
@@ -131,7 +138,9 @@ export const BrokerSelectionDialog = ({
         ) : brokers.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
             <p className="text-gray-300 mb-6">
-              You need to connect a broker before starting live trading.
+              {excludeBrokers.length > 0 
+                ? "You have already selected all available brokers for this strategy."
+                : "You need to connect a broker before starting live trading."}
             </p>
             <Button 
               variant="default"
@@ -141,7 +150,7 @@ export const BrokerSelectionDialog = ({
               )}
               onClick={navigateToBrokerIntegration}
             >
-              Connect a Broker
+              Connect a New Broker
             </Button>
           </div>
         ) : (

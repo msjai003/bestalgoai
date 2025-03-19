@@ -23,6 +23,9 @@ export const useLiveTrading = () => {
   const dialogState = useStrategyDialogs();
   const filterState = useStrategyFiltering(strategies);
   
+  // Add state to track already selected brokers
+  const [selectedBrokers, setSelectedBrokers] = useState<string[]>([]);
+  
   useEffect(() => {
     const fetchStrategies = async () => {
       if (user) {
@@ -62,6 +65,16 @@ export const useLiveTrading = () => {
     dialogState.setShowConfirmationDialog(false);
     
     if (dialogState.targetMode === 'live') {
+      // Before opening quantity dialog, prepare the list of already selected brokers
+      const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
+      if (strategy && strategy.selectedBrokers) {
+        const brokerIds = strategy.selectedBrokers.map(b => b.brokerId);
+        const brokerNames = strategy.selectedBrokers.map(b => b.brokerName);
+        setSelectedBrokers([...brokerIds, ...brokerNames]);
+      } else {
+        setSelectedBrokers([]);
+      }
+      
       // User is switching from paper to live mode
       dialogState.setShowQuantityDialog(true);
     } else {
@@ -114,70 +127,56 @@ export const useLiveTrading = () => {
         strategy_id: dialogState.targetStrategyId,
         quantity: dialogState.pendingQuantity,
         broker_name: brokerName,
+        broker_id: brokerId,
         trade_type: "live trade"
       });
       
-      // First check if a record exists
-      const { data: existingRecord, error: checkError } = await supabase
+      // Direct update to add new broker to strategy
+      const { error: updateError } = await supabase
         .from('strategy_selections')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('strategy_id', dialogState.targetStrategyId)
-        .maybeSingle();
+        .insert({
+          user_id: user.id,
+          strategy_id: dialogState.targetStrategyId,
+          strategy_name: strategy.name,
+          strategy_description: strategy.description || "",
+          quantity: dialogState.pendingQuantity,
+          selected_broker: brokerName,
+          broker_id: brokerId,
+          trade_type: "live trade"
+        });
         
-      if (checkError) {
-        console.error("Error checking existing record:", checkError);
-        throw checkError;
-      }
-      
-      let updateResult;
-      
-      // If record exists, update it; otherwise, insert a new one
-      if (existingRecord) {
-        // Direct database update for live trading
-        updateResult = await supabase
-          .from('strategy_selections')
-          .update({
-            strategy_name: strategy.name,
-            strategy_description: strategy.description,
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            trade_type: "live trade"
-          })
-          .eq('user_id', user.id)
-          .eq('strategy_id', dialogState.targetStrategyId);
-          
-        console.log("Updated existing record for live trading:", updateResult);
-      } else {
-        // Insert new record
-        updateResult = await supabase
-          .from('strategy_selections')
-          .insert({
-            user_id: user.id,
-            strategy_id: dialogState.targetStrategyId,
-            strategy_name: strategy.name,
-            strategy_description: strategy.description || "",
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            trade_type: "live trade"
-          });
-          
-        console.log("Inserted new record for live trading:", updateResult);
-      }
-        
-      if (updateResult.error) {
-        console.error("Database update error:", updateResult.error);
-        throw updateResult.error;
+      if (updateError) {
+        console.error("Database update error:", updateError);
+        throw updateError;
       }
       
       // Update local state after successful database update
       const updatedStrategies = strategies.map(s => {
         if (s.id === dialogState.targetStrategyId) {
+          // Create a new selectedBrokers array or update the existing one
+          const selectedBrokers = s.selectedBrokers || [];
+          const newBroker = {
+            brokerId: brokerId,
+            brokerName: brokerName,
+            quantity: dialogState.pendingQuantity
+          };
+          
+          // Check if this broker already exists
+          const brokerExists = selectedBrokers.some(
+            b => b.brokerId === brokerId || b.brokerName === brokerName
+          );
+          
+          const updatedBrokers = brokerExists 
+            ? selectedBrokers.map(b => (b.brokerId === brokerId || b.brokerName === brokerName) 
+                ? newBroker : b)
+            : [...selectedBrokers, newBroker];
+            
           return { 
             ...s, 
             isLive: true, 
             quantity: dialogState.pendingQuantity, 
-            selectedBroker: brokerName,
+            selectedBroker: brokerName, // Keep for backward compatibility
+            selectedBrokers: updatedBrokers,
             tradeType: "live trade"
           };
         }
@@ -191,6 +190,9 @@ export const useLiveTrading = () => {
         title: "Live Trading Enabled",
         description: `Strategy "${strategy.name}" is now trading live with ${brokerName}`,
       });
+      
+      // Reset selected brokers
+      setSelectedBrokers([]);
     } catch (error) {
       console.error("Error saving strategy configuration:", error);
       toast({
@@ -205,6 +207,7 @@ export const useLiveTrading = () => {
   
   const handleCancelBroker = () => {
     dialogState.resetDialogState();
+    setSelectedBrokers([]);
   };
   
   const updateLiveMode = async (id: number, isLive: boolean) => {
@@ -314,6 +317,7 @@ export const useLiveTrading = () => {
     ...filterState,
     strategies: filterState.filteredStrategies,
     ...dialogState,
+    selectedBrokers, // Add selectedBrokers to return object
     handleToggleLiveMode,
     handleOpenQuantityDialog,
     confirmModeChange,

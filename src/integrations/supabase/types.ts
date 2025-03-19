@@ -135,6 +135,7 @@ export type Database = {
       plan_details: {
         Row: {
           id: string
+          is_paid: boolean | null
           plan_name: string
           plan_price: string
           selected_at: string
@@ -142,6 +143,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          is_paid?: boolean | null
           plan_name: string
           plan_price: string
           selected_at?: string
@@ -149,6 +151,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          is_paid?: boolean | null
           plan_name?: string
           plan_price?: string
           selected_at?: string
@@ -217,6 +220,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          paid_status: string
           quantity: number | null
           selected_broker: string | null
           strategy_description: string | null
@@ -228,6 +232,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          paid_status?: string
           quantity?: number | null
           selected_broker?: string | null
           strategy_description?: string | null
@@ -239,6 +244,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          paid_status?: string
           quantity?: number | null
           selected_broker?: string | null
           strategy_description?: string | null
@@ -287,6 +293,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      force_strategy_paid_status: {
+        Args: {
+          p_user_id: string
+          p_strategy_id: number
+          p_strategy_name: string
+          p_strategy_description: string
+        }
+        Returns: undefined
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

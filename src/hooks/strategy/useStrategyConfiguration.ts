@@ -9,19 +9,21 @@ export const saveStrategyConfiguration = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string,
+  brokerId?: string,
   tradeType: string = "live trade" // Keep default for this function as "live trade"
 ): Promise<void> => {
-  // First check if a record already exists
+  // First check if a record already exists for this user, strategy, and broker
   const { data, error: checkError } = await supabase
     .from('strategy_selections')
     .select('id, trade_type')
     .eq('user_id', userId)
     .eq('strategy_id', strategyId)
+    .eq('selected_broker', brokerName)
     .maybeSingle();
     
   if (checkError) throw checkError;
   
-  // If record exists, update it but preserve existing trade_type if it was "paper trade"
+  // If record exists for this broker, update it but preserve existing trade_type if it was "paper trade"
   // or if the incoming trade_type is "paper trade"
   if (data) {
     // If either the existing trade_type is "paper trade" or the requested trade_type is "paper trade",
@@ -37,13 +39,16 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
+        broker_id: brokerId,
         trade_type: preservedTradeType
       })
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
+      .eq('strategy_id', strategyId)
+      .eq('selected_broker', brokerName);
       
     if (error) throw error;
   } else {
+    // Insert a new record for this broker
     const { error } = await supabase
       .from('strategy_selections')
       .insert({
@@ -53,6 +58,7 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
+        broker_id: brokerId,
         trade_type: tradeType
       });
       
