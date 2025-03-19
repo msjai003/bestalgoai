@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -184,6 +185,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         
         const brokerUsername = brokerData?.username || "";
 
+        // Create a new strategy selection record without checking for existing ones
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -195,19 +197,20 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           "live trade"
         );
         
+        // Create a new strategy object with this broker configuration
         const newStrategy = { 
           ...strategy, 
           isLive: true,
           quantity: pendingQuantity, 
           selectedBroker: brokerName,
           brokerUsername: brokerUsername,
-          tradeType: "live trade"
+          tradeType: "live trade",
+          // Create a unique ID that combines strategy ID, broker name and broker username
+          uniqueId: `${selectedStrategyId}-${brokerName}-${brokerUsername}`
         };
         
-        setStrategies(prev => [
-          ...prev.filter(s => !(s.id === selectedStrategyId && s.selectedBroker === brokerName && s.brokerUsername === brokerUsername)),
-          newStrategy
-        ]);
+        // Add the new strategy to the list without removing any existing ones with the same strategy ID
+        setStrategies(prev => [...prev, newStrategy]);
 
         toast({
           title: "Strategy Configured",

@@ -35,6 +35,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           // Create a unique ID by combining strategy_id, broker name and username
           id: item.strategy_id,
           uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
+          rowId: item.id, // Store the actual database row ID
           name: item.strategy_name,
           description: item.strategy_description || "",
           isWishlisted: true,
@@ -44,7 +45,6 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           selectedBroker: item.selected_broker || "",
           brokerUsername: item.broker_username || "",
           tradeType: item.trade_type || "paper trade",
-          rowId: item.id, // Store the actual row ID for operations
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",

@@ -12,7 +12,7 @@ export const saveStrategyConfiguration = async (
   brokerUsername: string = "", 
   tradeType: string = "live trade"
 ): Promise<void> => {
-  // Instead of checking for existing strategy, always create a new row
+  // Always create a new row instead of checking for existing strategy
   // This allows the same strategy to be used with multiple brokers
   const { error } = await supabase
     .from('strategy_selections')
