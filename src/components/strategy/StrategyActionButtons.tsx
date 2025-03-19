@@ -1,12 +1,14 @@
+
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
   isWishlisted: boolean;
   isLive: boolean;
-  isFreeOrPaid: boolean;
+  isPremium: boolean;
+  isPaid: boolean;
   isAuthenticated: boolean;
   onToggleWishlist: () => void;
   onLiveModeClick: () => void;
@@ -18,7 +20,8 @@ interface StrategyActionButtonsProps {
 export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   isWishlisted,
   isLive,
-  isFreeOrPaid,
+  isPremium,
+  isPaid,
   isAuthenticated,
   onToggleWishlist,
   onLiveModeClick,
@@ -30,21 +33,25 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   useEffect(() => {
     console.log("StrategyActionButtons props:", { 
       isLive, 
-      isFreeOrPaid, 
+      isPremium, 
+      isPaid, 
       isAuthenticated,
       paidStatus,
       strategyName
     });
-  }, [isLive, isFreeOrPaid, isAuthenticated, paidStatus, strategyName]);
+  }, [isLive, isPremium, isPaid, isAuthenticated, paidStatus, strategyName]);
 
   // Always show play icon or stop icon based on isLive status
   const getLiveModeIcon = () => {
-    console.log(`getLiveModeIcon for ${strategyName}: isLive=${isLive}, paidStatus=${paidStatus}`);
+    console.log(`getLiveModeIcon for ${strategyName}: isLive=${isLive}, isPremium=${isPremium}, isPaid=${isPaid}`);
     
     if (isLive) {
       return <StopCircleIcon size={20} />;
+    } else if (isPremium && !isPaid) {
+      // Show lock icon for premium unpaid strategies
+      return <LockIcon size={20} />;
     } else {
-      // Always show play icon, never show lock icon
+      // Show play icon for free or paid strategies
       return <PlayIcon size={20} />;
     }
   };
@@ -53,7 +60,7 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   const getLiveModeTooltip = () => {
     if (isLive) {
       return "Disable live trading";
-    } else if (paidStatus === "premium") {
+    } else if (isPremium && !isPaid) {
       return "Unlock with subscription";
     } else {
       return "Enable live trading";
@@ -62,10 +69,10 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
 
   // Handle live mode button click
   const handleLiveModeClick = () => {
-    console.log(`handleLiveModeClick for ${strategyName}: paidStatus=${paidStatus}`);
+    console.log(`handleLiveModeClick for ${strategyName}: isPremium=${isPremium}, isPaid=${isPaid}`);
     
     // If it's a premium strategy that's not paid yet, show payment dialog
-    if (paidStatus === "premium" && onShowPaymentDialog) {
+    if (isPremium && !isPaid && onShowPaymentDialog) {
       console.log("Showing payment dialog for premium strategy");
       onShowPaymentDialog();
     } else {

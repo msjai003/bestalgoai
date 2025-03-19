@@ -12,6 +12,8 @@ export const StrategyStatusBadge: React.FC<StrategyStatusBadgeProps> = ({
   isPremium, 
   isPaid 
 }) => {
+  console.log("StrategyStatusBadge props:", { isPremium, isPaid });
+  
   if (!isPremium) {
     // First strategy is free, show "Free" badge
     return (
