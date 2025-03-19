@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./strategy/types";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   fetchUserStrategySelections,
   mapStrategiesWithSelections
@@ -30,7 +30,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
 
-  // Load strategies from database
   useEffect(() => {
     const loadStrategies = async () => {
       setIsLoading(true);
@@ -128,9 +127,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const isPremiumStrategy = !isFreeStrategy;
     const newStatus = !strategy?.isLive;
     
-    // If turning on a premium strategy that isn't already live, check subscription
     if (newStatus && isPremiumStrategy && !strategy.isLive) {
-      // Check if user has access to premium strategies
       const checkPremiumAccess = async () => {
         try {
           if (!user) return false;
@@ -152,22 +149,18 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       
       checkPremiumAccess().then(hasPremiumAccess => {
         if (hasPremiumAccess) {
-          // User has subscription, proceed
           setSelectedStrategyId(id);
           setTargetMode("live");
           setConfirmDialogOpen(true);
         } else {
-          // User doesn't have subscription, redirect to pricing
           navigate(`/pricing?strategyId=${id}`);
         }
       });
     } else if (newStatus) {
-      // Free strategy or already has access
       setSelectedStrategyId(id);
       setTargetMode("live");
       setConfirmDialogOpen(true);
     } else {
-      // Turning off any strategy
       updateLiveMode(id, false);
     }
   };
@@ -210,7 +203,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -218,7 +210,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
-          "live trade" // Set trade_type to "live trade"
+          "live trade"
         );
         
         setStrategies(prev => 
@@ -228,7 +220,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                   ...s, 
                   quantity: pendingQuantity, 
                   selectedBroker: brokerName,
-                  tradeType: "live trade" // Add tradeType to local state
+                  tradeType: "live trade"
                 } 
               : s
           )
