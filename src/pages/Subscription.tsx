@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -232,14 +233,15 @@ const Subscription = () => {
           if (existingStrategy) {
             console.log('Updating existing strategy selection to paid status');
             
-            // Update only the paid_status field to avoid overwriting other settings
+            // Update the paid_status field and other fields to ensure they're up to date
             updateResult = await supabase
               .from('strategy_selections')
               .update({
                 paid_status: 'paid',
-                // Update name and description in case they've changed
                 strategy_name: strategyData.name,
-                strategy_description: strategyData.description
+                strategy_description: strategyData.description,
+                // Don't override trade_type if it's already set to "live trade"
+                trade_type: existingStrategy.trade_type === "live trade" ? "live trade" : "paper trade"
               })
               .eq('user_id', user.id)
               .eq('strategy_id', selectedStrategyId)
@@ -270,28 +272,44 @@ const Subscription = () => {
           
           console.log('Strategy marked as paid successfully:', updateResult?.data);
           
-          // Perform one final verification check to ensure the strategy was properly updated
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('strategy_selections')
-            .select('paid_status, strategy_name, strategy_id')
-            .eq('user_id', user.id)
-            .eq('strategy_id', selectedStrategyId)
-            .single();
+          // Perform multiple verification checks to ensure the strategy was properly updated
+          for (let attempt = 0; attempt < 3; attempt++) {
+            console.log(`Verification attempt ${attempt + 1} for strategy ${selectedStrategyId}`);
             
-          if (verifyError) {
-            console.error('Error in final verification of strategy update:', verifyError);
-          } else {
-            console.log('Final verification of strategy paid status:', verifyData);
-            
-            // If verification fails, make one more attempt with a direct update
-            if (verifyData.paid_status !== 'paid') {
-              console.warn('Strategy paid status not updated correctly. Making final attempt...');
+            const { data: verifyData, error: verifyError } = await supabase
+              .from('strategy_selections')
+              .select('paid_status, strategy_name, strategy_id')
+              .eq('user_id', user.id)
+              .eq('strategy_id', selectedStrategyId)
+              .single();
               
-              await supabase
-                .from('strategy_selections')
-                .update({ paid_status: 'paid' })
-                .eq('user_id', user.id)
-                .eq('strategy_id', selectedStrategyId);
+            if (verifyError) {
+              console.error(`Verification attempt ${attempt + 1} failed:`, verifyError);
+              
+              if (attempt === 2) {
+                throw verifyError; // On final attempt, throw the error
+              }
+            } else {
+              console.log(`Verification attempt ${attempt + 1} result:`, verifyData);
+              
+              // If verification succeeds, break the loop
+              if (verifyData && verifyData.paid_status === 'paid') {
+                console.log('Strategy verified as paid successfully');
+                break;
+              }
+              
+              // If verification fails, make one more direct update attempt
+              if (attempt < 2) {
+                console.warn('Strategy paid status not updated correctly. Making another attempt...');
+                
+                await supabase
+                  .from('strategy_selections')
+                  .update({ paid_status: 'paid' })
+                  .eq('user_id', user.id)
+                  .eq('strategy_id', selectedStrategyId);
+                  
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay before next verification
+              }
             }
           }
         } catch (error) {
