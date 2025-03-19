@@ -34,6 +34,8 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
 
   // Determine which icon to show based on strategy status
   const getLiveModeIcon = () => {
+    console.log("getLiveModeIcon called with isFreeOrPaid:", isFreeOrPaid, "isLive:", isLive);
+    
     if (isLive) {
       return <StopCircleIcon size={20} />;
     } else if (isFreeOrPaid) {
