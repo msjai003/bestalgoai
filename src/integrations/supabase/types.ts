@@ -218,7 +218,6 @@ export type Database = {
       }
       strategy_selections: {
         Row: {
-          broker_id: string | null
           created_at: string | null
           id: string
           paid_status: string
@@ -231,7 +230,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          broker_id?: string | null
           created_at?: string | null
           id?: string
           paid_status?: string
@@ -244,7 +242,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          broker_id?: string | null
           created_at?: string | null
           id?: string
           paid_status?: string
