@@ -146,7 +146,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     });
   };
 
-  const handleToggleLiveMode = (id: number) => {
+  const handleToggleLiveMode = async (id: number) => {
     const strategyIndex = strategies.findIndex(s => s.id === id);
     const strategy = strategies[strategyIndex];
     const isFreeStrategy = strategyIndex === 0;  // First strategy is free
@@ -160,7 +160,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           console.log("Checking premium access for strategy ID:", id);
           
-          // Also check if this specific strategy has been paid for
+          // Check if this specific strategy has been paid for
           const { data: strategyData, error: strategyError } = await supabase
             .from('strategy_selections')
             .select('paid_status')
@@ -175,33 +175,34 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             return true;
           }
           
-          // Check if user has a premium plan
+          // Check if user has a paid premium plan
           const { data, error } = await supabase
             .from('plan_details')
-            .select('*')
+            .select('is_paid')
             .eq('user_id', user.id)
+            .eq('is_paid', true)
             .order('selected_at', { ascending: false })
             .limit(1)
             .maybeSingle();
             
-          console.log("User plan check:", data);
-          return data !== null;
+          console.log("User paid plan check:", data);
+          return data !== null && data.is_paid === true;
         } catch (error) {
           console.error('Error checking premium access:', error);
           return false;
         }
       };
       
-      checkPremiumAccess().then(hasPremiumAccess => {
-        console.log("Premium access check result:", hasPremiumAccess);
-        if (hasPremiumAccess) {
-          setSelectedStrategyId(id);
-          setTargetMode("live");
-          setConfirmDialogOpen(true);
-        } else {
-          navigate(`/subscription?strategyId=${id}`);
-        }
-      });
+      const hasPremiumAccess = await checkPremiumAccess();
+      console.log("Premium access check result:", hasPremiumAccess);
+      
+      if (hasPremiumAccess) {
+        setSelectedStrategyId(id);
+        setTargetMode("live");
+        setConfirmDialogOpen(true);
+      } else {
+        navigate(`/subscription?strategyId=${id}`);
+      }
     } else if (newStatus) {
       setSelectedStrategyId(id);
       setTargetMode("live");
@@ -255,7 +256,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         // First strategy (index 0) is always free
         const strategyIndex = strategies.findIndex(s => s.id === selectedStrategyId);
         if (strategyIndex !== 0) {
-          // Check if user paid for this specific strategy or has a plan
+          // First check if user has paid for this specific strategy
           const { data: strategyData } = await supabase
             .from('strategy_selections')
             .select('paid_status')
@@ -266,17 +267,18 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           if (strategyData && strategyData.paid_status === 'paid') {
             paidStatus = 'paid';
           } else {
-            // Check if user has a premium plan
+            // Check if user has a premium plan with is_paid=true
             const { data: planData } = await supabase
               .from('plan_details')
-              .select('*')
+              .select('is_paid')
               .eq('user_id', user.id)
+              .eq('is_paid', true)
               .order('selected_at', { ascending: false })
               .limit(1)
               .maybeSingle();
               
-            if (planData) {
-              paidStatus = 'paid'; // User has a plan, so set as paid
+            if (planData && planData.is_paid === true) {
+              paidStatus = 'paid'; // User has a paid plan, so set as paid
             } else {
               paidStatus = 'premium'; // Requires payment but not paid yet
             }

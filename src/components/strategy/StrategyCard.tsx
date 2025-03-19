@@ -56,7 +56,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleUpgradeClick = () => {
     setShowPaymentDialog(false);
-    navigate("/pricing");
+    // Pass strategy ID to subscription page to track which strategy to unlock
+    navigate(`/subscription?strategyId=${strategy.id}`);
   };
 
   return (

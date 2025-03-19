@@ -63,8 +63,35 @@ const StrategySelection = () => {
         const strategyId = parseInt(unlockedStrategyId);
         console.log("Processing unlocked strategy ID:", strategyId);
         
-        const verifyAndFixPaidStatus = async () => {
+        const verifyAndUnlockStrategy = async () => {
           try {
+            // First check if the user has a paid plan
+            const { data: planData, error: planError } = await supabase
+              .from('plan_details')
+              .select('is_paid')
+              .eq('user_id', user.id)
+              .order('selected_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+              
+            if (planError) {
+              console.error('Error checking plan payment status:', planError);
+              throw planError;
+            }
+            
+            // Only proceed with unlocking if the user has a paid plan
+            if (!planData || !planData.is_paid) {
+              console.log("Cannot unlock strategy - user does not have a paid plan");
+              toast({
+                title: "Subscription Required",
+                description: "You need an active paid subscription to unlock premium strategies.",
+                variant: "destructive",
+              });
+              throw new Error("No paid plan found");
+            }
+            
+            console.log("User has a paid plan, proceeding with strategy unlock");
+            
             // Get strategy data first
             const { data: strategyData, error: strategyError } = await supabase
               .from('predefined_strategies')
@@ -150,7 +177,7 @@ const StrategySelection = () => {
           }
         };
         
-        verifyAndFixPaidStatus();
+        verifyAndUnlockStrategy();
       }
       
       // Clean up URL parameters

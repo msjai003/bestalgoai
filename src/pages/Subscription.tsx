@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ interface PlanDetails {
   plan_name: string;
   plan_price: string;
   selected_at: string;
+  is_paid: boolean;
 }
 
 const paymentFormSchema = z.object({
@@ -168,6 +170,28 @@ const Subscription = () => {
     console.log(`Unlocking strategy ID ${strategyId} for user ${userId}`);
     
     try {
+      // Check if user has a paid plan
+      const { data: planData, error: planError } = await supabase
+        .from('plan_details')
+        .select('is_paid')
+        .eq('user_id', userId)
+        .order('selected_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+        
+      if (planError) {
+        console.error('Error checking plan payment status:', planError);
+        return false;
+      }
+      
+      // Only proceed if the user has a paid plan
+      if (!planData || !planData.is_paid) {
+        console.log("User does not have a paid plan");
+        return false;
+      }
+      
+      console.log("User has a paid plan, proceeding with strategy unlock");
+      
       const { data: strategyData, error: strategyError } = await supabase
         .from('predefined_strategies')
         .select('name, description')
@@ -309,12 +333,14 @@ const Subscription = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Save plan details with is_paid flag set to true
       const { error } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
           plan_name: targetPlan.name,
           plan_price: targetPlan.price,
+          is_paid: true // Mark the plan as paid
         });
 
       if (error) {
@@ -430,7 +456,9 @@ const Subscription = () => {
                   <h2 className="text-[#FF00D4] font-bold text-xl">{userPlan.plan_name} Plan</h2>
                   <p className="text-gray-400 text-sm">Valid until {formatExpirationDate()}</p>
                 </div>
-                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">Active</span>
+                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">
+                  {userPlan.is_paid ? "Active" : "Pending"}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-gray-400">/month</span></p>
