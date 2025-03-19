@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -171,6 +172,7 @@ const Subscription = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // 1. First save the plan selection
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -192,6 +194,7 @@ const Subscription = () => {
       
       setPaymentSuccess(true);
       
+      // 2. If a specific strategy was selected, update its paid status
       if (selectedStrategyId) {
         try {
           console.log(`Updating strategy ${selectedStrategyId} to paid status for user ${user.id}`);
@@ -277,6 +280,24 @@ const Subscription = () => {
             console.error('Error verifying strategy update:', verifyError);
           } else {
             console.log('Verified strategy paid status:', verifyData.paid_status);
+            if (verifyData.paid_status !== 'paid') {
+              console.error('Strategy paid status not updated correctly. Retrying...');
+              
+              // One final attempt to ensure paid status is set
+              const finalUpdate = await supabase
+                .from('strategy_selections')
+                .update({
+                  paid_status: 'paid'
+                })
+                .eq('user_id', user.id)
+                .eq('strategy_id', selectedStrategyId);
+                
+              if (finalUpdate.error) {
+                console.error('Error in final update attempt:', finalUpdate.error);
+              } else {
+                console.log('Final update completed');
+              }
+            }
           }
           
         } catch (error) {
@@ -289,7 +310,7 @@ const Subscription = () => {
         }
       }
       
-      // Clear the strategy selection in localStorage to force a refresh of the strategy list
+      // Clear the strategy selection in localStorage to force a refresh
       localStorage.removeItem('wishlistedStrategies');
       
       setTimeout(() => {
@@ -303,11 +324,12 @@ const Subscription = () => {
         setProcessingPayment(false);
         setPaymentSuccess(false);
         
+        // Always include the refresh parameter with a timestamp to ensure cache is bypassed
+        const timestamp = new Date().getTime();
         if (selectedStrategyId) {
-          // Force refresh to pick up the new paid status
-          navigate('/strategy-selection?refresh=' + new Date().getTime());
+          navigate(`/strategy-selection?refresh=${timestamp}&strategy=${selectedStrategyId}`);
         } else {
-          window.location.reload();
+          navigate(`/strategy-selection?refresh=${timestamp}`);
         }
       }, 2000);
     } catch (error) {

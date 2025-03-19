@@ -13,11 +13,13 @@ import { PredefinedStrategyList } from "@/components/strategy/PredefinedStrategy
 import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigation";
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
+import { useToast } from "@/hooks/use-toast";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
   
@@ -44,18 +46,35 @@ const StrategySelection = () => {
     setRefreshTrigger
   } = useStrategy(predefinedStrategies || []);
 
-  // Check URL parameters for refresh trigger
+  // Check URL parameters for refresh trigger and potentially unlocked strategy
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    
     if (params.has('refresh')) {
       // Force a refresh of the strategy data
       setRefreshTrigger(prev => prev + 1);
+      
+      // Check if a specific strategy was just unlocked
+      const unlockedStrategyId = params.get('strategy');
+      if (unlockedStrategyId) {
+        const strategyId = parseInt(unlockedStrategyId);
+        // Find the newly unlocked strategy by ID
+        const unlockedStrategy = strategies.find(s => s.id === strategyId);
+        
+        if (unlockedStrategy) {
+          toast({
+            title: "Strategy Unlocked",
+            description: `"${unlockedStrategy.name}" is now available for live trading.`,
+            variant: "default",
+          });
+        }
+      }
       
       // Clean up the URL parameter
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, [location.search, setRefreshTrigger]);
+  }, [location.search, setRefreshTrigger, strategies, toast]);
 
   const handleDeployStrategy = () => {
     navigate("/backtest");
