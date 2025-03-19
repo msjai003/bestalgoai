@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -68,7 +67,7 @@ const StrategySelection = () => {
             // First check if the user has a paid plan
             const { data: planData, error: planError } = await supabase
               .from('plan_details')
-              .select('is_paid')
+              .select('*')
               .eq('user_id', user.id)
               .order('selected_at', { ascending: false })
               .limit(1)

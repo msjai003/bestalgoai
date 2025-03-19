@@ -135,6 +135,7 @@ export type Database = {
       plan_details: {
         Row: {
           id: string
+          is_paid: boolean | null
           plan_name: string
           plan_price: string
           selected_at: string
@@ -142,6 +143,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          is_paid?: boolean | null
           plan_name: string
           plan_price: string
           selected_at?: string
@@ -149,6 +151,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          is_paid?: boolean | null
           plan_name?: string
           plan_price?: string
           selected_at?: string

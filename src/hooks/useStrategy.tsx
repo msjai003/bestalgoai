@@ -178,7 +178,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Check if user has a paid premium plan
           const { data, error } = await supabase
             .from('plan_details')
-            .select('is_paid')
+            .select('*')
             .eq('user_id', user.id)
             .eq('is_paid', true)
             .order('selected_at', { ascending: false })
@@ -270,7 +270,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             // Check if user has a premium plan with is_paid=true
             const { data: planData } = await supabase
               .from('plan_details')
-              .select('is_paid')
+              .select('*')
               .eq('user_id', user.id)
               .eq('is_paid', true)
               .order('selected_at', { ascending: false })

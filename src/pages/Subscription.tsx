@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { saveStrategyConfiguration } from "@/hooks/strategy/useStrategyConfiguration";
+import { PlanDetails } from "@/types/plan";
 
 const plans = [
   {
@@ -55,14 +55,6 @@ const plans = [
     isPopular: true
   }
 ];
-
-interface PlanDetails {
-  id: string;
-  plan_name: string;
-  plan_price: string;
-  selected_at: string;
-  is_paid: boolean;
-}
 
 const paymentFormSchema = z.object({
   cardNumber: z.string()
