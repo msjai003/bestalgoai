@@ -70,18 +70,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
         </div>
         
+        {/* Display broker information with better separation */}
         {strategy.selectedBroker && (
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-300 text-sm">Broker</span>
-            <span className="text-white font-medium">{strategy.selectedBroker}</span>
-          </div>
-        )}
-        
-        {/* Add broker username display */}
-        {strategy.brokerUsername && (
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-300 text-sm">Broker Account</span>
-            <span className="text-white font-medium">{strategy.brokerUsername}</span>
+          <div className="bg-gray-800/50 p-3 rounded-lg mb-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-300 text-sm">Broker</span>
+              <span className="text-white font-medium">{strategy.selectedBroker}</span>
+            </div>
+            
+            {strategy.brokerUsername && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-sm">Account</span>
+                <Badge variant="outline" className="text-blue-400 border-blue-400">
+                  {strategy.brokerUsername}
+                </Badge>
+              </div>
+            )}
           </div>
         )}
         
