@@ -26,21 +26,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   index
 }) => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const isFreeStrategy = index === 0;
-  const isPaid = strategy.paidStatus === 'paid';
-  const isFreeOrPaid = isFreeStrategy || isPaid;
+  // Always set isFreeOrPaid to true to show all strategies as unlocked
+  const isFreeOrPaid = true;
 
   // Debug logging to understand strategy state
   useEffect(() => {
     console.log("StrategyCard:", {
       id: strategy.id,
       name: strategy.name,
-      isFreeStrategy,
-      isPaid,
-      paidStatus: strategy.paidStatus,
-      isFreeOrPaid
+      isFreeOrPaid,
+      paidStatus: strategy.paidStatus
     });
-  }, [strategy, isFreeStrategy, isPaid]);
+  }, [strategy]);
 
   const handleLiveModeClick = () => {
     if (!isAuthenticated) return;
@@ -48,16 +45,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     if (strategy.isLive) {
       // If already live, just toggle it off
       onToggleLiveMode();
-    } else if (isFreeOrPaid) {
-      // If it's the free strategy or a paid strategy, enable it
-      onToggleLiveMode();
     } else {
-      // For non-free strategies that aren't paid, show payment dialog
-      if (onShowPaymentDialog) {
-        onShowPaymentDialog();
-      } else {
-        setShowPaymentDialog(true);
-      }
+      // For all strategies, enable them directly without payment
+      onToggleLiveMode();
     }
   };
 
@@ -71,8 +61,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 <h3 className="text-xl font-semibold text-white mb-1">
                   {strategy.name}
                   <StrategyStatusBadge 
-                    isPremium={!isFreeStrategy} 
-                    isPaid={isPaid} 
+                    isPremium={index !== 0} 
+                    isPaid={true} // Always show as paid
                   />
                 </h3>
                 <StrategyPerformanceBadges performance={strategy.performance} />
@@ -90,9 +80,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
             
             <p className="text-gray-300 text-sm mb-3">
-              {isFreeOrPaid
-                ? strategy.description 
-                : "This premium strategy requires a subscription to access. Upgrade now to unlock powerful trading capabilities."}
+              {strategy.description}
             </p>
             
             <StrategyLiveStatus strategy={strategy} />

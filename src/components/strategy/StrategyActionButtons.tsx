@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, LockIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
@@ -32,18 +32,15 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
     });
   }, [isLive, isFreeOrPaid, isAuthenticated]);
 
-  // Determine which icon to show based on strategy status
+  // Always show play icon or stop icon based on isLive status
   const getLiveModeIcon = () => {
-    console.log("getLiveModeIcon called with isFreeOrPaid:", isFreeOrPaid, "isLive:", isLive);
+    console.log("getLiveModeIcon called with isLive:", isLive);
     
     if (isLive) {
       return <StopCircleIcon size={20} />;
-    } else if (isFreeOrPaid) {
-      // After payment, always show play icon for paid strategies
-      return <PlayIcon size={20} />;
     } else {
-      // Only show lock icon for premium strategies that aren't paid yet
-      return <LockIcon size={20} />;
+      // Always show play icon, never show lock icon
+      return <PlayIcon size={20} />;
     }
   };
 
@@ -51,8 +48,6 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   const getLiveModeTooltip = () => {
     if (isLive) {
       return "Disable live trading";
-    } else if (!isFreeOrPaid) {
-      return "Premium strategy - Upgrade to access";
     } else {
       return "Enable live trading";
     }
@@ -60,11 +55,7 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
 
   // Handle live mode button click
   const handleLiveModeClick = () => {
-    if (!isFreeOrPaid && onShowPaymentDialog) {
-      onShowPaymentDialog();
-    } else {
-      onLiveModeClick();
-    }
+    onLiveModeClick();
   };
 
   return (
@@ -96,9 +87,7 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
               size="icon"
               className={isLive 
                 ? "text-green-400" 
-                : (isFreeOrPaid) 
-                  ? "text-gray-400 hover:text-green-400" 
-                  : "text-gray-400 hover:text-gray-300"}
+                : "text-gray-400 hover:text-green-400"}
               onClick={handleLiveModeClick}
               disabled={!isAuthenticated}
             >

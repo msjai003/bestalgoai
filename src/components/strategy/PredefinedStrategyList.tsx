@@ -67,12 +67,10 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   return (
     <div className="space-y-4">
       {strategies.map((strategy, index) => {
-        // Check if strategy is free (index 0) or paid (unlocked)
-        const isFreeStrategy = index === 0;
-        const isPaid = strategy.paidStatus === 'paid';
-        const isFreeOrPaid = isFreeStrategy || isPaid;
+        // IMPORTANT: Make all strategies appear as free or paid
+        const isFreeOrPaid = true; // This makes all strategies appear unlocked
         
-        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeStrategy=${isFreeStrategy}, isPaid=${isPaid}, paidStatus=${strategy.paidStatus}, isFreeOrPaid=${isFreeOrPaid}`);
+        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeOrPaid=${isFreeOrPaid}, paidStatus=${strategy.paidStatus}`);
         
         return (
           <StrategyCard
