@@ -37,7 +37,7 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
     if (isLive) {
       return <StopCircleIcon size={20} />;
     } else if (isFreeOrPaid) {
-      // Show play icon for free strategies and paid premium strategies
+      // After payment, always show play icon for paid strategies
       return <PlayIcon size={20} />;
     } else {
       // Only show lock icon for premium strategies that aren't paid yet

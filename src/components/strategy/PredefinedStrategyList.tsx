@@ -73,7 +73,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
         const isPaid = strategy.paidStatus === 'paid';
         const isFreeOrPaid = isFreeStrategy || isPaid;
         
-        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeStrategy=${isFreeStrategy}, isPaid=${isPaid}, paidStatus=${strategy.paidStatus}`);
+        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeStrategy=${isFreeStrategy}, isPaid=${isPaid}, paidStatus=${strategy.paidStatus}, isFreeOrPaid=${isFreeOrPaid}`);
         
         return (
           <StrategyCard
