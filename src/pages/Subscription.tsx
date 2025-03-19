@@ -215,6 +215,27 @@ const Subscription = () => {
             throw new Error('Strategy data not found');
           }
           
+          // Important: First attempt - direct upsert to ensure the strategy is added/updated
+          const upsertResult = await supabase
+            .from('strategy_selections')
+            .upsert({
+              user_id: user.id,
+              strategy_id: selectedStrategyId,
+              strategy_name: strategyData.name,
+              strategy_description: strategyData.description,
+              paid_status: 'paid',
+              trade_type: "paper trade",
+              quantity: 0,
+              selected_broker: ""
+            }, { onConflict: 'user_id,strategy_id' });
+            
+          if (upsertResult.error) {
+            console.error('Initial upsert failed:', upsertResult.error);
+            // Continue to next attempt - don't throw here
+          } else {
+            console.log('Initial upsert successful');
+          }
+          
           // Check if the strategy already exists in user selections
           const { data: existingStrategy, error: checkError } = await supabase
             .from('strategy_selections')
@@ -225,7 +246,7 @@ const Subscription = () => {
             
           if (checkError) {
             console.error('Error checking existing strategy:', checkError);
-            throw checkError;
+            // Continue to next attempt - don't throw here
           }
           
           let updateResult;
@@ -267,12 +288,12 @@ const Subscription = () => {
           
           if (updateResult?.error) {
             console.error('Error updating/inserting strategy with paid status:', updateResult.error);
-            throw updateResult.error;
+            // Continue with final verification
+          } else {
+            console.log('Strategy marked as paid successfully:', updateResult?.data);
           }
           
-          console.log('Strategy marked as paid successfully:', updateResult?.data);
-          
-          // Perform multiple verification checks to ensure the strategy was properly updated
+          // Final verification and recovery attempts
           let verificationSuccessful = false;
           
           for (let attempt = 0; attempt < 3; attempt++) {
@@ -288,9 +309,10 @@ const Subscription = () => {
             if (verifyError) {
               console.error(`Verification attempt ${attempt + 1} failed:`, verifyError);
               
-              if (attempt === 2) {
-                console.error("All verification attempts failed");
-                // Instead of throwing, we'll try one more recovery attempt
+              // Try once more on error
+              if (attempt < 2) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                continue;
               }
             } else if (verifyData && verifyData.paid_status === 'paid') {
               console.log('Strategy verified as paid successfully');

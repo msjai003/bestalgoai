@@ -15,7 +15,29 @@ export const saveStrategyConfiguration = async (
   console.log("Saving strategy configuration with paid status:", paidStatus);
   
   try {
-    // First check if a record already exists
+    // First try direct upsert for maximum reliability
+    const { error: upsertError } = await supabase
+      .from('strategy_selections')
+      .upsert({
+        user_id: userId,
+        strategy_id: strategyId,
+        strategy_name: strategyName,
+        strategy_description: strategyDescription || "",
+        quantity: quantity || 0,
+        selected_broker: brokerName || "",
+        trade_type: tradeType,
+        paid_status: paidStatus
+      }, { onConflict: 'user_id,strategy_id' });
+      
+    if (upsertError) {
+      console.error("Initial upsert failed:", upsertError);
+      // Don't throw yet - continue to try other methods
+    } else {
+      console.log("Strategy configuration saved successfully via upsert");
+      // Even on success, continue with verification to be sure
+    }
+    
+    // Second, check if a record already exists
     const { data, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id, trade_type, paid_status')
@@ -25,7 +47,7 @@ export const saveStrategyConfiguration = async (
       
     if (checkError) {
       console.error("Error checking existing strategy:", checkError);
-      throw checkError;
+      // Since we already attempted an upsert, don't throw here
     }
     
     // If a record exists, determine the correct paid status to use
