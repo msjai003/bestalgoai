@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           isWishlisted: false,
           isLive: false,
           quantity: 0,
-          selectedBroker: ""
+          selectedBroker: "",
+          paidStatus: strategy.id === 1 ? "free" : "premium" // Default first strategy as free, others as premium
         }));
         
         if (user) {
@@ -132,6 +134,19 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         try {
           if (!user) return false;
           
+          // Also check if this specific strategy has been paid for
+          const { data: strategyData, error: strategyError } = await supabase
+            .from('strategy_selections')
+            .select('paid_status')
+            .eq('user_id', user.id)
+            .eq('strategy_id', id)
+            .maybeSingle();
+            
+          if (strategyData && strategyData.paid_status === 'paid') {
+            return true;
+          }
+          
+          // Check if user has a premium plan
           const { data, error } = await supabase
             .from('plan_details')
             .select('*')
@@ -203,6 +218,40 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
+        // Determine the appropriate paid_status to set
+        let paidStatus = "free"; // Default
+        
+        // First strategy (index 0) is always free
+        const strategyIndex = strategies.findIndex(s => s.id === selectedStrategyId);
+        if (strategyIndex !== 0) {
+          // Check if user paid for this specific strategy or has a plan
+          const { data: strategyData } = await supabase
+            .from('strategy_selections')
+            .select('paid_status')
+            .eq('user_id', user.id)
+            .eq('strategy_id', selectedStrategyId)
+            .maybeSingle();
+            
+          if (strategyData && strategyData.paid_status === 'paid') {
+            paidStatus = 'paid';
+          } else {
+            // Check if user has a premium plan
+            const { data: planData } = await supabase
+              .from('plan_details')
+              .select('*')
+              .eq('user_id', user.id)
+              .order('selected_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+              
+            if (planData) {
+              paidStatus = 'paid'; // User has a plan, so set as paid
+            } else {
+              paidStatus = 'premium'; // Requires payment but not paid yet
+            }
+          }
+        }
+
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -210,7 +259,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
-          "live trade"
+          "live trade",
+          paidStatus
         );
         
         setStrategies(prev => 
@@ -220,7 +270,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                   ...s, 
                   quantity: pendingQuantity, 
                   selectedBroker: brokerName,
-                  tradeType: "live trade"
+                  tradeType: "live trade",
+                  paidStatus: paidStatus
                 } 
               : s
           )

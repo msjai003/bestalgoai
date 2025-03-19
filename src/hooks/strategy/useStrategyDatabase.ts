@@ -41,6 +41,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
           tradeType: item.trade_type || "paper trade",
+          paidStatus: item.paid_status || "free",
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -69,14 +70,16 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  tradeType: string = "paper trade" // Updated default to "paper trade"
+  tradeType: string = "paper trade", // Updated default to "paper trade"
+  paidStatus: string = "free" // Add paid status parameter with default "free"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
     brokerName,
-    tradeType
+    tradeType,
+    paidStatus
   });
   
   // First check if a record already exists for this user and strategy
@@ -104,7 +107,8 @@ export const updateStrategyLiveConfig = async (
         selected_broker: brokerName,
         trade_type: tradeType,
         strategy_name: strategyName,
-        strategy_description: strategyDescription
+        strategy_description: strategyDescription,
+        paid_status: paidStatus
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
@@ -119,7 +123,8 @@ export const updateStrategyLiveConfig = async (
         strategy_description: strategyDescription,
         quantity: quantity || 0,
         selected_broker: brokerName,
-        trade_type: tradeType
+        trade_type: tradeType,
+        paid_status: paidStatus
       });
   }
   

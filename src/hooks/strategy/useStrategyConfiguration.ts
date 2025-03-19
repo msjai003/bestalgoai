@@ -9,7 +9,8 @@ export const saveStrategyConfiguration = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string,
-  tradeType: string = "live trade" // Keep default for this function as "live trade"
+  tradeType: string = "live trade", // Keep default for this function as "live trade"
+  paidStatus: string = "free" // Default paid status is "free"
 ): Promise<void> => {
   // First check if a record already exists
   const { data, error: checkError } = await supabase
@@ -37,7 +38,8 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
-        trade_type: preservedTradeType
+        trade_type: preservedTradeType,
+        paid_status: paidStatus
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
@@ -53,7 +55,8 @@ export const saveStrategyConfiguration = async (
         strategy_description: strategyDescription,
         quantity: quantity,
         selected_broker: brokerName,
-        trade_type: tradeType
+        trade_type: tradeType,
+        paid_status: paidStatus
       });
       
     if (error) throw error;

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -196,29 +195,56 @@ const Subscription = () => {
         setPaymentSuccess(true);
         
         // If this was triggered from a strategy unlock, add strategy to user's selection
+        // or update existing selection to paid status
         if (selectedStrategyId) {
           try {
-            // Fetch strategy details
+            // Check if strategy already exists in user's selections
+            const { data: existingStrategy, error: checkError } = await supabase
+              .from('strategy_selections')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('strategy_id', selectedStrategyId)
+              .maybeSingle();
+              
+            if (checkError) throw checkError;
+            
+            // Fetch strategy details if needed
             const { data: strategyData, error: strategyError } = await supabase
               .from('predefined_strategies')
               .select('name, description')
               .eq('id', selectedStrategyId)
               .single();
               
-            if (!strategyError && strategyData) {
-              // Add strategy to user's selections
-              await supabase
+            if (strategyError) throw strategyError;
+            
+            if (existingStrategy) {
+              // Update existing strategy selection to mark as paid
+              const { error: updateError } = await supabase
+                .from('strategy_selections')
+                .update({
+                  paid_status: 'paid'
+                })
+                .eq('user_id', user.id)
+                .eq('strategy_id', selectedStrategyId);
+                
+              if (updateError) throw updateError;
+            } else if (strategyData) {
+              // Add strategy to user's selections with paid status
+              const { error: insertError } = await supabase
                 .from('strategy_selections')
                 .insert({
                   user_id: user.id,
                   strategy_id: selectedStrategyId,
                   strategy_name: strategyData.name,
                   strategy_description: strategyData.description,
-                  trade_type: "live trade"
+                  trade_type: "live trade",
+                  paid_status: 'paid'
                 });
+                
+              if (insertError) throw insertError;
             }
           } catch (error) {
-            console.error('Error activating strategy:', error);
+            console.error('Error updating strategy payment status:', error);
           }
         }
         
@@ -234,8 +260,13 @@ const Subscription = () => {
           setProcessingPayment(false);
           setPaymentSuccess(false);
           
-          // Refresh the page to show the updated plan
-          window.location.reload();
+          // Redirect to strategy selection page if coming from there
+          if (selectedStrategyId) {
+            navigate('/strategy-selection');
+          } else {
+            // Refresh the page to show the updated plan
+            window.location.reload();
+          }
         }, 2000);
       }
     } catch (error) {

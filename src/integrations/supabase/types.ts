@@ -217,6 +217,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          paid_status: string
           quantity: number | null
           selected_broker: string | null
           strategy_description: string | null
@@ -228,6 +229,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          paid_status?: string
           quantity?: number | null
           selected_broker?: string | null
           strategy_description?: string | null
@@ -239,6 +241,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          paid_status?: string
           quantity?: number | null
           selected_broker?: string | null
           strategy_description?: string | null
