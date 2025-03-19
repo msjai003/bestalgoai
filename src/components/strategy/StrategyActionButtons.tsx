@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, CheckIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
@@ -111,7 +111,9 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
               size="icon"
               className={isLive 
                 ? "text-green-400" 
-                : "text-gray-400 hover:text-green-400"}
+                : isPaid 
+                  ? "text-green-400 hover:text-green-500" 
+                  : "text-gray-400 hover:text-green-400"}
               onClick={handleLiveModeClick}
               disabled={!isAuthenticated}
             >
