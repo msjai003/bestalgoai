@@ -28,7 +28,7 @@ export const saveStrategyConfiguration = async (
       throw checkError;
     }
     
-    // IMPORTANT: If a record exists, determine the correct paid status to use
+    // If a record exists, determine the correct paid status to use
     if (data) {
       // If either the existing trade_type is "paper trade" or the requested trade_type is "paper trade",
       // set to "paper trade". This ensures that once paper trade is selected, it remains set.
@@ -49,7 +49,8 @@ export const saveStrategyConfiguration = async (
         preservedPaidStatus
       });
       
-      const { error, data: updateData } = await supabase
+      // Try the update operation
+      const { error } = await supabase
         .from('strategy_selections')
         .update({
           strategy_name: strategyName,
@@ -60,13 +61,12 @@ export const saveStrategyConfiguration = async (
           paid_status: preservedPaidStatus
         })
         .eq('user_id', userId)
-        .eq('strategy_id', strategyId)
-        .select();
+        .eq('strategy_id', strategyId);
         
       if (error) {
         console.error("Error updating strategy:", error);
         
-        // Fallback to upsert if update fails
+        // Fallback to direct upsert if update fails
         const { error: upsertError } = await supabase
           .from('strategy_selections')
           .upsert({
@@ -78,17 +78,21 @@ export const saveStrategyConfiguration = async (
             selected_broker: brokerName || "",
             trade_type: preservedTradeType,
             paid_status: preservedPaidStatus
-          }, { onConflict: 'user_id,strategy_id' });
+          });
           
-        if (upsertError) throw upsertError;
+        if (upsertError) {
+          console.error("Upsert fallback also failed:", upsertError);
+          throw upsertError;
+        } else {
+          console.log("Successfully used upsert fallback");
+        }
       }
-      
-      console.log("Strategy update result:", updateData);
     } else {
       // If no record exists, create a new one with the provided values
       console.log("Inserting new strategy with paid status:", paidStatus);
       
-      const { error, data: insertData } = await supabase
+      // Try direct insert first
+      const { error } = await supabase
         .from('strategy_selections')
         .insert({
           user_id: userId,
@@ -99,8 +103,7 @@ export const saveStrategyConfiguration = async (
           selected_broker: brokerName || "",
           trade_type: tradeType,
           paid_status: paidStatus
-        })
-        .select();
+        });
         
       if (error) {
         console.error("Error inserting strategy:", error);
@@ -117,45 +120,109 @@ export const saveStrategyConfiguration = async (
             selected_broker: brokerName || "",
             trade_type: tradeType,
             paid_status: paidStatus
-          }, { onConflict: 'user_id,strategy_id' });
+          });
           
-        if (upsertError) throw upsertError;
+        if (upsertError) {
+          console.error("Upsert fallback also failed:", upsertError);
+          throw upsertError;
+        } else {
+          console.log("Successfully used upsert fallback");
+        }
       }
-      
-      console.log("Strategy insert result:", insertData);
     }
     
-    // Verify the update was successful
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('strategy_selections')
-      .select('paid_status, trade_type')
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .single();
+    // Verify the update was successful with multiple attempts
+    let verificationSuccess = false;
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    while (!verificationSuccess && attempts < maxAttempts) {
+      attempts++;
+      console.log(`Verification attempt ${attempts}...`);
       
-    if (verifyError) {
-      console.error("Error verifying strategy update:", verifyError);
-      
-      // Try one more verification with maybeSingle
-      const { data: verifyData2, error: verifyError2 } = await supabase
+      const { data: verifyData, error: verifyError } = await supabase
         .from('strategy_selections')
         .select('paid_status, trade_type')
         .eq('user_id', userId)
         .eq('strategy_id', strategyId)
         .maybeSingle();
         
-      if (!verifyError2 && verifyData2) {
-        console.log("Verified strategy configuration on second attempt:", verifyData2);
+      if (verifyError) {
+        console.error(`Verification attempt ${attempts} failed:`, verifyError);
+      } else if (verifyData) {
+        console.log(`Verification attempt ${attempts} succeeded:`, verifyData);
+        verificationSuccess = true;
+        
+        // If the paid status is not what we expected, try one more time to fix it
+        if (paidStatus === 'paid' && verifyData.paid_status !== 'paid') {
+          console.log("Paid status not correctly set, forcing update...");
+          
+          await supabase
+            .from('strategy_selections')
+            .update({ paid_status: 'paid' })
+            .eq('user_id', userId)
+            .eq('strategy_id', strategyId);
+        }
       } else {
-        console.error("Second verification attempt also failed:", verifyError2);
+        console.log(`Verification attempt ${attempts} returned no data`);
       }
-    } else {
-      console.log("Verified strategy configuration:", verifyData);
+      
+      // Small delay between attempts
+      if (!verificationSuccess && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
     }
     
-    console.log("Strategy configuration saved successfully");
+    if (!verificationSuccess) {
+      console.warn("All verification attempts failed, making one last direct insert attempt");
+      
+      // Last resort: Try a completely new insert with minimal data
+      try {
+        await supabase
+          .from('strategy_selections')
+          .insert({
+            user_id: userId,
+            strategy_id: strategyId,
+            strategy_name: strategyName,
+            strategy_description: strategyDescription || "",
+            paid_status: paidStatus,
+            trade_type: tradeType,
+            quantity: 0,
+            selected_broker: ""
+          });
+          
+        console.log("Final direct insert attempt completed");
+      } catch (finalError) {
+        console.error("Final direct insert attempt failed:", finalError);
+      }
+    }
+    
+    console.log("Strategy configuration save process completed");
   } catch (error) {
-    console.error("Error saving strategy configuration:", error);
+    console.error("Error in saveStrategyConfiguration:", error);
+    
+    // One final fallback attempt if we have an exception
+    try {
+      console.log("Making emergency fallback insert attempt...");
+      
+      await supabase
+        .from('strategy_selections')
+        .upsert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription || "",
+          paid_status: paidStatus,
+          trade_type: "paper trade", // Safer default
+          quantity: 0,
+          selected_broker: ""
+        }, { onConflict: 'user_id,strategy_id' });
+        
+      console.log("Emergency fallback completed");
+    } catch (fallbackError) {
+      console.error("Emergency fallback also failed:", fallbackError);
+    }
+    
     throw error;
   }
 };
