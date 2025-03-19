@@ -100,7 +100,7 @@ const StrategySelection = () => {
               return;
             }
             
-            console.log("Strategy not marked as paid, fixing...");
+            console.log("Strategy not marked as paid or not found, fixing...");
             
             await saveStrategyConfiguration(
               user.id,
@@ -130,7 +130,7 @@ const StrategySelection = () => {
             } else {
               console.log("Fix verification failed:", verifyError || "Data not as expected");
               
-              console.log("Making direct update...");
+              console.log("Making direct database function call...");
               
               const { error: rpcError } = await supabase
                 .rpc('force_strategy_paid_status', {
@@ -154,7 +154,10 @@ const StrategySelection = () => {
                     trade_type: 'paper trade',
                     quantity: 0,
                     selected_broker: ''
-                  }, { onConflict: 'user_id,strategy_id' });
+                  }, { 
+                    onConflict: 'user_id,strategy_id',
+                    ignoreDuplicates: false
+                  });
                     
                 if (upsertError) {
                   console.error("Direct upsert failed:", upsertError);
