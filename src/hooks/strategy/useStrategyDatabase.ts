@@ -52,7 +52,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
         });
         
         // Convert the map to an array of strategies
-        strategies = Array.from(strategiesMap.entries()).map(([strategyId, brokerConfigs]) => {
+        const dbStrategies = Array.from(strategiesMap.entries()).map(([strategyId, brokerConfigs]) => {
           // Use the first broker configuration as a base for the strategy
           const firstConfig = brokerConfigs[0];
           const strategyData = data.find(item => item.strategy_id === strategyId);
@@ -85,6 +85,9 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           
           return strategy;
         });
+        
+        // Merge with strategies from localStorage, ensuring no duplicates
+        strategies = [...dbStrategies];
         
         localStorage.setItem('wishlistedStrategies', JSON.stringify(strategies));
       }
