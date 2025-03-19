@@ -48,7 +48,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     if (strategy.isLive) {
       // If already live, just toggle it off
       onToggleLiveMode();
-    } else if (index === 0 || isPaid) {
+    } else if (index === 0 || strategy.paidStatus === "paid") {
       // First strategy (free) or already paid strategies can be enabled directly
       onToggleLiveMode();
     } else {

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,12 +98,12 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   return (
     <div className="space-y-4">
       {strategies.map((strategy, index) => {
-        // Process strategy status based on database values and index
+        // Process strategy status
         if (index === 0) {
           // First strategy is always free
           strategy.paidStatus = "free";
         } else if (strategy.paidStatus !== "paid") {
-          // All other strategies are premium unless already marked as paid
+          // All other strategies are premium unless already paid
           strategy.paidStatus = "premium";
         }
         
