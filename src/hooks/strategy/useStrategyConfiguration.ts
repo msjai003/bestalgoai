@@ -9,7 +9,7 @@ export const saveStrategyConfiguration = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string,
-  brokerId: string, // Changed to string to match database schema
+  brokerId: string, // Already correctly typed as string
   tradeType: string = "live trade" // Keep default for this function as "live trade"
 ): Promise<void> => {
   console.log("Saving strategy configuration:", {
