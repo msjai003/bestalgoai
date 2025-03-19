@@ -24,6 +24,7 @@ const LiveTrading = () => {
     showBrokerDialog,
     setShowBrokerDialog,
     targetMode,
+    targetStrategyId,
     handleTradingToggle,
     handleModeChange,
     handleToggleLiveMode,
@@ -100,6 +101,7 @@ const LiveTrading = () => {
         onOpenChange={setShowBrokerDialog}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
+        selectedStrategyId={targetStrategyId}
       />
     </div>
   );
