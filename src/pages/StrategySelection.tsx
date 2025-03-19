@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,27 +48,22 @@ const StrategySelection = () => {
     setRefreshTrigger
   } = useStrategy(predefinedStrategies || []);
 
-  // Check URL parameters for refresh trigger and potentially unlocked strategy
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     
     if (params.has('refresh')) {
       console.log("Refresh trigger detected, forcing strategy data reload");
       
-      // Force a refresh of the strategy data
       setRefreshTrigger(prev => prev + 1);
       
-      // Check if a specific strategy was just unlocked
       const unlockedStrategyId = params.get('strategy');
       if (unlockedStrategyId && user && !processingStrategy) {
         setProcessingStrategy(true);
         const strategyId = parseInt(unlockedStrategyId);
         console.log("Processing unlocked strategy ID:", strategyId);
         
-        // Verify the strategy is actually marked as paid in the database
         const verifyAndFixPaidStatus = async () => {
           try {
-            // Get strategy details to ensure we have the correct name and description
             const { data: strategyData, error: strategyError } = await supabase
               .from('predefined_strategies')
               .select('name, description')
@@ -87,7 +81,6 @@ const StrategySelection = () => {
             
             console.log("Fetched strategy details:", strategyData);
             
-            // Check if this specific strategy has been paid for
             const { data, error } = await supabase
               .from('strategy_selections')
               .select('paid_status, strategy_name')
@@ -98,7 +91,6 @@ const StrategySelection = () => {
             console.log("Strategy payment status check:", data);
             
             if (data && data.paid_status === 'paid') {
-              // Strategy is already paid, show success toast
               toast({
                 title: "Strategy Unlocked",
                 description: `"${data.strategy_name}" is now available for live trading.`,
@@ -108,56 +100,50 @@ const StrategySelection = () => {
               return;
             }
             
-            // Strategy is not marked as paid, fix it
             console.log("Strategy not marked as paid, fixing...");
             
-            // Use our helper function to save with paid status
             await saveStrategyConfiguration(
               user.id,
               strategyId,
               strategyData.name,
               strategyData.description,
-              0, // Default quantity
-              "", // Default empty broker
-              "paper trade", // Start with paper trade for safety
-              'paid' // Mark as paid
+              0,
+              "",
+              "paper trade",
+              'paid'
             );
             
-            // Verify the fix was successful
-            let fixVerified = false;
-            
-            for (let attempt = 0; attempt < 3; attempt++) {
-              const { data: verifyData, error: verifyError } = await supabase
-                .from('strategy_selections')
-                .select('paid_status, strategy_name')
-                .eq('user_id', user.id)
-                .eq('strategy_id', strategyId)
-                .maybeSingle();
-                
-              if (!verifyError && verifyData && verifyData.paid_status === 'paid') {
-                console.log("Fix verification successful on attempt", attempt + 1);
-                toast({
-                  title: "Strategy Unlocked",
-                  description: `"${strategyData.name}" is now available for live trading.`,
-                  variant: "default",
+            const { data: verifyData, error: verifyError } = await supabase
+              .from('strategy_selections')
+              .select('paid_status, strategy_name')
+              .eq('user_id', user.id)
+              .eq('strategy_id', strategyId)
+              .maybeSingle();
+              
+            if (!verifyError && verifyData && verifyData.paid_status === 'paid') {
+              console.log("Fix verification successful");
+              toast({
+                title: "Strategy Unlocked",
+                description: `"${strategyData.name}" is now available for live trading.`,
+                variant: "default",
+              });
+            } else {
+              console.log("Fix verification failed:", verifyError || "Data not as expected");
+              
+              console.log("Making direct update...");
+              
+              const { error: rpcError } = await supabase
+                .rpc('force_strategy_paid_status', {
+                  p_user_id: user.id,
+                  p_strategy_id: strategyId,
+                  p_strategy_name: strategyData.name,
+                  p_strategy_description: strategyData.description
                 });
-                fixVerified = true;
-                break;
-              }
-              
-              console.log(`Fix verification attempt ${attempt + 1} failed:`, verifyError || "Data not as expected");
-              
-              // Wait before trying again
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-            
-            if (!fixVerified) {
-              // Last resort direct update
-              console.log("All verification attempts failed, making direct update...");
-              
-              try {
-                // Use a direct insert/update rather than using a function
-                await supabase
+                
+              if (rpcError) {
+                console.error("RPC function error:", rpcError);
+                
+                const { error: upsertError } = await supabase
                   .from('strategy_selections')
                   .upsert({ 
                     user_id: user.id, 
@@ -169,27 +155,20 @@ const StrategySelection = () => {
                     quantity: 0,
                     selected_broker: ''
                   }, { onConflict: 'user_id,strategy_id' });
-                
-                console.log("Forced strategy paid status using direct upsert");
-                
-                toast({
-                  title: "Strategy Unlocked",
-                  description: `"${strategyData.name}" is now available for live trading.`,
-                  variant: "default",
-                });
-              } catch (upsertError) {
-                console.error("Direct upsert failed:", upsertError);
-                
-                // Fall back to user notification
-                toast({
-                  title: "Strategy Unlocked",
-                  description: "Your strategy is now available. Please refresh if you don't see it.",
-                  variant: "default",
-                });
+                    
+                if (upsertError) {
+                  console.error("Direct upsert failed:", upsertError);
+                  throw upsertError;
+                }
               }
+              
+              toast({
+                title: "Strategy Unlocked",
+                description: `"${strategyData.name}" is now available for live trading.`,
+                variant: "default",
+              });
             }
             
-            // Force one final refresh
             setRefreshTrigger(prev => prev + 2);
           } catch (err) {
             console.error("Error in strategy verification/fix process:", err);
@@ -206,7 +185,6 @@ const StrategySelection = () => {
         verifyAndFixPaidStatus();
       }
       
-      // Clean up the URL parameter
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }

@@ -164,10 +164,12 @@ const Subscription = () => {
     setShowPaymentDialog(true);
   };
 
-  const unlockStrategy = async (userId: string, strategyId: number) => {
+  // Enhanced function to unlock a strategy with proper error handling and verification
+  const unlockStrategy = async (userId: string, strategyId: number): Promise<boolean> => {
     console.log(`Unlocking strategy ID ${strategyId} for user ${userId}`);
     
     try {
+      // Get strategy details to ensure we have the correct name and description
       const { data: strategyData, error: strategyError } = await supabase
         .from('predefined_strategies')
         .select('name, description')
@@ -185,19 +187,40 @@ const Subscription = () => {
       
       console.log("Fetched strategy details:", strategyData);
       
+      // Try 3 different approaches to ensure the strategy gets unlocked
+      
+      // Method 1: Use the saveStrategyConfiguration helper
       console.log("Method 1: Using saveStrategyConfiguration helper");
       await saveStrategyConfiguration(
         userId,
         strategyId,
         strategyData.name,
         strategyData.description,
-        0,
-        "",
-        "paper trade",
-        'paid'
+        0, // Default quantity
+        "", // Default empty broker
+        "paper trade", // Start with paper trade for safety
+        'paid' // Mark as paid
       );
       
-      console.log("Method 2: Direct upsert as additional guarantee");
+      // Method 2: Direct database function call as a backup
+      console.log("Method 2: Using direct database function");
+      const { error: dbFunctionError } = await supabase
+        .rpc('force_strategy_paid_status', {
+          p_user_id: userId,
+          p_strategy_id: strategyId,
+          p_strategy_name: strategyData.name,
+          p_strategy_description: strategyData.description
+        });
+        
+      if (dbFunctionError) {
+        console.error('Database function error:', dbFunctionError);
+        // Continue with next method even if this fails
+      } else {
+        console.log("Database function succeeded");
+      }
+      
+      // Method 3: Direct upsert as additional guarantee
+      console.log("Method 3: Direct upsert as additional guarantee");
       const { error: upsertError } = await supabase
         .from('strategy_selections')
         .upsert({
@@ -213,10 +236,12 @@ const Subscription = () => {
         
       if (upsertError) {
         console.error('Direct upsert error:', upsertError);
+        // Continue with verification even if this fails
       } else {
         console.log("Direct upsert successful");
       }
       
+      // Verify the strategy was actually unlocked
       let verified = false;
       
       for (let attempt = 0; attempt < 3; attempt++) {
@@ -235,9 +260,12 @@ const Subscription = () => {
           console.log(`Strategy verified as paid on attempt ${attempt + 1}`);
           verified = true;
           break;
+        } else {
+          console.log(`Verification data:`, verifyData);
         }
         
         if (!verified && attempt < 2) {
+          // Wait between attempts
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
@@ -255,8 +283,10 @@ const Subscription = () => {
     setProcessingPayment(true);
     
     try {
+      // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Add plan selection to database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -278,9 +308,11 @@ const Subscription = () => {
       
       setPaymentSuccess(true);
       
+      // If there's a strategy to unlock, do it now
       let strategyUnlocked = false;
       
       if (selectedStrategyId) {
+        console.log(`Attempting to unlock strategy ${selectedStrategyId}`);
         strategyUnlocked = await unlockStrategy(user.id, selectedStrategyId);
         
         if (strategyUnlocked) {
@@ -290,9 +322,11 @@ const Subscription = () => {
         }
       }
       
+      // Clear caches to ensure fresh data loads
       localStorage.removeItem('wishlistedStrategies');
       localStorage.removeItem('strategyCache');
       
+      // Redirect after a short delay to show success message
       setTimeout(() => {
         toast({
           title: "Success",
@@ -304,6 +338,7 @@ const Subscription = () => {
         setProcessingPayment(false);
         setPaymentSuccess(false);
         
+        // Add timestamp to URL to force a refresh of data
         const timestamp = new Date().getTime();
         if (selectedStrategyId) {
           navigate(`/strategy-selection?refresh=${timestamp}&strategy=${selectedStrategyId}`);
