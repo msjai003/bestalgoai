@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Strategy } from "@/hooks/strategy/types";
@@ -23,6 +23,16 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   onShowPaymentDialog,
   user
 }) => {
+  // Debug logging to understand strategies
+  useEffect(() => {
+    console.log("PredefinedStrategyList strategies:", strategies.map(s => ({
+      id: s.id,
+      name: s.name,
+      paidStatus: s.paidStatus,
+      isLive: s.isLive
+    })));
+  }, [strategies]);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -62,6 +72,8 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
         const isFreeStrategy = index === 0;
         const isPaid = strategy.paidStatus === 'paid';
         const isFreeOrPaid = isFreeStrategy || isPaid;
+        
+        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeStrategy=${isFreeStrategy}, isPaid=${isPaid}, paidStatus=${strategy.paidStatus}`);
         
         return (
           <StrategyCard

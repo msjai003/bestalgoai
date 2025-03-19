@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { HeartIcon, PlayIcon, LockIcon, StopCircleIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,6 +23,15 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   onLiveModeClick,
   onShowPaymentDialog
 }) => {
+  // Log the props to debug
+  useEffect(() => {
+    console.log("StrategyActionButtons props:", { 
+      isLive, 
+      isFreeOrPaid, 
+      isAuthenticated 
+    });
+  }, [isLive, isFreeOrPaid, isAuthenticated]);
+
   // Determine which icon to show based on strategy status
   const getLiveModeIcon = () => {
     if (isLive) {

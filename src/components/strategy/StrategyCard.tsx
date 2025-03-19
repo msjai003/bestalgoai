@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Strategy } from "@/hooks/strategy/types";
 import { StrategyStatusBadge } from "./StrategyStatusBadge";
@@ -29,6 +29,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isFreeStrategy = index === 0;
   const isPaid = strategy.paidStatus === 'paid';
   const isFreeOrPaid = isFreeStrategy || isPaid;
+
+  // Debug logging to understand strategy state
+  useEffect(() => {
+    console.log("StrategyCard:", {
+      id: strategy.id,
+      name: strategy.name,
+      isFreeStrategy,
+      isPaid,
+      paidStatus: strategy.paidStatus,
+      isFreeOrPaid
+    });
+  }, [strategy, isFreeStrategy, isPaid]);
 
   const handleLiveModeClick = () => {
     if (!isAuthenticated) return;
