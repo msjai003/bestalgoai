@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +29,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
 
-  // Load strategies from database
   useEffect(() => {
     const loadStrategies = async () => {
       setIsLoading(true);
@@ -172,7 +170,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        // Add trade_type parameter
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -180,6 +177,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
+          brokerId,
           "live trade" // Set trade_type to "live trade"
         );
         
@@ -190,6 +188,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                   ...s, 
                   quantity: pendingQuantity, 
                   selectedBroker: brokerName,
+                  brokerId: brokerId, // Add brokerId to local state
                   tradeType: "live trade" // Add tradeType to local state
                 } 
               : s

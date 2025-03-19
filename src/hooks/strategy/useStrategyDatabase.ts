@@ -36,7 +36,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
         // Process each strategy selection and organize by strategy_id
         data.forEach(item => {
           const brokerConfig: BrokerConfig = {
-            brokerId: item.broker_id || "",
+            brokerId: item.broker_id || "", // Ensure it's a string
             brokerName: item.selected_broker || "",
             quantity: item.quantity || 0,
             tradeType: item.trade_type || "paper trade",

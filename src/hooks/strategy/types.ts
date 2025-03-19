@@ -12,7 +12,7 @@ export interface Strategy {
   isLive: boolean;
   quantity: number;
   selectedBroker?: string;
-  brokerId?: string; // Broker ID field for reference
+  brokerId?: string; // Change to string to match database schema
   tradeType?: string;
   pnl?: string;
   successRate?: string;
@@ -21,7 +21,7 @@ export interface Strategy {
 }
 
 export interface BrokerConfig {
-  brokerId: string;
+  brokerId: string; // Change to string to match database schema
   brokerName: string;
   quantity: number;
   tradeType: string;
@@ -32,6 +32,6 @@ export interface StrategySelection {
   strategy_id: number;
   quantity?: number;
   selected_broker?: string;
-  broker_id?: string;
+  broker_id?: string; // Change to string to match database schema
   trade_type?: string;
 }
