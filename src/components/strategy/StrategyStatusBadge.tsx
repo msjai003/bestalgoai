@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { UnlockIcon, LockIcon } from "lucide-react";
+import { UnlockIcon, LockIcon, CheckCircleIcon } from "lucide-react";
 
 interface StrategyStatusBadgeProps {
   isPremium: boolean;
@@ -23,10 +23,10 @@ export const StrategyStatusBadge: React.FC<StrategyStatusBadgeProps> = ({
   }
   
   if (isPaid) {
-    // Paid premium strategy
+    // Paid premium strategy - show "Unlocked" badge
     return (
       <Badge variant="outline" className="ml-2 bg-green-900/30 text-green-300 border-green-800 flex items-center gap-1">
-        <UnlockIcon size={12} />
+        <CheckCircleIcon size={12} />
         <span>Unlocked</span>
       </Badge>
     );

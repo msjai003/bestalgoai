@@ -1,6 +1,7 @@
+
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
@@ -37,14 +38,17 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
     });
   }, [isLive, isFreeOrPaid, isAuthenticated, paidStatus, strategyName]);
 
-  // Always show play icon or stop icon based on isLive status
+  // Get the live mode icon based on strategy status
   const getLiveModeIcon = () => {
     console.log(`getLiveModeIcon for ${strategyName}: isLive=${isLive}, paidStatus=${paidStatus}`);
     
     if (isLive) {
       return <StopCircleIcon size={20} />;
+    } else if (paidStatus === "premium") {
+      // Show lock icon for premium unpaid strategies
+      return <LockIcon size={20} />;
     } else {
-      // Always show play icon, never show lock icon
+      // Show play icon for free or paid strategies
       return <PlayIcon size={20} />;
     }
   };
@@ -104,7 +108,9 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
               size="icon"
               className={isLive 
                 ? "text-green-400" 
-                : "text-gray-400 hover:text-green-400"}
+                : paidStatus === "premium"
+                  ? "text-yellow-400 hover:text-green-400"
+                  : "text-gray-400 hover:text-green-400"}
               onClick={handleLiveModeClick}
               disabled={!isAuthenticated}
             >

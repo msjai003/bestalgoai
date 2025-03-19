@@ -97,4 +97,4 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
       })}
     </div>
   );
-}
+};
