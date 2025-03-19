@@ -118,7 +118,7 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      console.log("Updating strategy in database for live trading:", {
+      console.log("Creating new strategy selection for live trading:", {
         user_id: user.id,
         strategy_id: dialogState.targetStrategyId,
         quantity: dialogState.pendingQuantity,
@@ -127,73 +127,26 @@ export const useLiveTrading = () => {
         trade_type: "live trade"
       });
       
-      const { data: existingRecord, error: checkError } = await supabase
+      const { error: insertError } = await supabase
         .from('strategy_selections')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('strategy_id', dialogState.targetStrategyId)
-        .maybeSingle();
-        
-      if (checkError) {
-        console.error("Error checking existing record:", checkError);
-        throw checkError;
-      }
-      
-      let updateResult;
-      
-      if (existingRecord) {
-        updateResult = await supabase
-          .from('strategy_selections')
-          .update({
-            strategy_name: strategy.name,
-            strategy_description: strategy.description,
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            broker_username: brokerUsername,
-            trade_type: "live trade"
-          })
-          .eq('user_id', user.id)
-          .eq('strategy_id', dialogState.targetStrategyId);
+        .insert({
+          user_id: user.id,
+          strategy_id: dialogState.targetStrategyId,
+          strategy_name: strategy.name,
+          strategy_description: strategy.description || "",
+          quantity: dialogState.pendingQuantity,
+          selected_broker: brokerName,
+          broker_username: brokerUsername,
+          trade_type: "live trade"
+        });
           
-        console.log("Updated existing record for live trading:", updateResult);
-      } else {
-        updateResult = await supabase
-          .from('strategy_selections')
-          .insert({
-            user_id: user.id,
-            strategy_id: dialogState.targetStrategyId,
-            strategy_name: strategy.name,
-            strategy_description: strategy.description || "",
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            broker_username: brokerUsername,
-            trade_type: "live trade"
-          });
-          
-        console.log("Inserted new record for live trading:", updateResult);
-      }
-        
-      if (updateResult.error) {
-        console.error("Database update error:", updateResult.error);
-        throw updateResult.error;
+      if (insertError) {
+        console.error("Database insert error:", insertError);
+        throw insertError;
       }
       
-      const updatedStrategies = strategies.map(s => {
-        if (s.id === dialogState.targetStrategyId) {
-          return { 
-            ...s, 
-            isLive: true, 
-            quantity: dialogState.pendingQuantity, 
-            selectedBroker: brokerName,
-            brokerUsername: brokerUsername,
-            tradeType: "live trade"
-          };
-        }
-        return s;
-      });
-      
-      setStrategies(updatedStrategies);
-      localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
+      const loadedStrategies = await loadUserStrategies(user.id);
+      setStrategies(loadedStrategies);
       
       toast({
         title: "Live Trading Enabled",

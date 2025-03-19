@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -30,9 +29,12 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Map database strategies directly to our format
+        // Map database strategies - create a unique instance for each row
+        // This allows multiple entries for the same strategy with different brokers
         const dbStrategies = data.map(item => ({
+          // Create a unique ID by combining strategy_id, broker name and username
           id: item.strategy_id,
+          uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
           name: item.strategy_name,
           description: item.strategy_description || "",
           isWishlisted: true,
@@ -40,8 +42,9 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           isLive: item.trade_type === "live trade",
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
-          brokerUsername: item.broker_username || "", // Add broker username
+          brokerUsername: item.broker_username || "",
           tradeType: item.trade_type || "paper trade",
+          rowId: item.id, // Store the actual row ID for operations
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -70,67 +73,35 @@ export const updateStrategyLiveConfig = async (
   strategyDescription: string,
   quantity: number,
   brokerName: string | null,
-  brokerUsername: string | null = null, // Add broker username parameter with default
-  tradeType: string = "paper trade" // Updated default to "paper trade"
+  brokerUsername: string | null = null,
+  tradeType: string = "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
     strategyId,
     quantity,
     brokerName,
-    brokerUsername, // Log broker username
+    brokerUsername,
     tradeType
   });
   
-  // First check if a record already exists for this user and strategy
-  const { data, error: checkError } = await supabase
+  // Always create a new entry - don't update existing ones
+  const { error } = await supabase
     .from('strategy_selections')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('strategy_id', strategyId)
-    .maybeSingle();
-    
-  if (checkError) {
-    console.error("Error checking existing strategy:", checkError);
-    throw checkError;
-  }
+    .insert({
+      user_id: userId,
+      strategy_id: strategyId,
+      strategy_name: strategyName,
+      strategy_description: strategyDescription,
+      quantity: quantity || 0,
+      selected_broker: brokerName,
+      broker_username: brokerUsername,
+      trade_type: tradeType
+    });
   
-  // If record exists, update it. Otherwise, insert a new one
-  let updateResult;
-  
-  if (data) {
-    // Update existing record
-    updateResult = await supabase
-      .from('strategy_selections')
-      .update({
-        quantity: quantity || 0,
-        selected_broker: brokerName,
-        broker_username: brokerUsername, // Add broker username
-        trade_type: tradeType,
-        strategy_name: strategyName,
-        strategy_description: strategyDescription
-      })
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
-  } else {
-    // Insert new record
-    updateResult = await supabase
-      .from('strategy_selections')
-      .insert({
-        user_id: userId,
-        strategy_id: strategyId,
-        strategy_name: strategyName,
-        strategy_description: strategyDescription,
-        quantity: quantity || 0,
-        selected_broker: brokerName,
-        broker_username: brokerUsername, // Add broker username
-        trade_type: tradeType
-      });
-  }
-  
-  if (updateResult.error) {
-    console.error("Error updating strategy config:", updateResult.error);
-    throw updateResult.error;
+  if (error) {
+    console.error("Error updating strategy config:", error);
+    throw error;
   }
 };
 

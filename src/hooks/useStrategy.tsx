@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +13,7 @@ import {
   updateLocalStorageWishlist
 } from "./strategy/useStrategyWishlist";
 import { saveStrategyConfiguration } from "./strategy/useStrategyConfiguration";
-import { supabase } from "@/integrations/supabase/client"; // Add this import
+import { supabase } from "@/integrations/supabase/client";
 
 export type { Strategy } from "./strategy/types";
 
@@ -31,7 +30,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
 
-  // Load strategies from database
   useEffect(() => {
     const loadStrategies = async () => {
       setIsLoading(true);
@@ -109,7 +107,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           return { 
             ...strategy, 
             isLive,
-            tradeType: isLive ? "live trade" : "paper" // Set tradeType based on isLive status
+            tradeType: isLive ? "live trade" : "paper"
           };
         }
         return strategy;
@@ -173,7 +171,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           throw new Error("Strategy not found");
         }
 
-        // Get broker username from broker credentials table
         const { data: brokerData, error: brokerError } = await supabase
           .from('broker_credentials')
           .select('username')
@@ -187,7 +184,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         
         const brokerUsername = brokerData?.username || "";
 
-        // Add trade_type parameter and broker_username
         await saveStrategyConfiguration(
           user.id,
           selectedStrategyId,
@@ -195,27 +191,27 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           strategy.description,
           pendingQuantity,
           brokerName,
-          brokerUsername, // Pass broker username
-          "live trade" // Set trade_type to "live trade"
+          brokerUsername,
+          "live trade"
         );
         
-        setStrategies(prev => 
-          prev.map(s => 
-            s.id === selectedStrategyId 
-              ? { 
-                  ...s, 
-                  quantity: pendingQuantity, 
-                  selectedBroker: brokerName,
-                  brokerUsername: brokerUsername, // Add brokerUsername to local state
-                  tradeType: "live trade" // Add tradeType to local state
-                } 
-              : s
-          )
-        );
+        const newStrategy = { 
+          ...strategy, 
+          isLive: true,
+          quantity: pendingQuantity, 
+          selectedBroker: brokerName,
+          brokerUsername: brokerUsername,
+          tradeType: "live trade"
+        };
+        
+        setStrategies(prev => [
+          ...prev.filter(s => !(s.id === selectedStrategyId && s.selectedBroker === brokerName && s.brokerUsername === brokerUsername)),
+          newStrategy
+        ]);
 
         toast({
           title: "Strategy Configured",
-          description: `Strategy is now set up for live trading`,
+          description: `Strategy is now set up for live trading with ${brokerName}`,
         });
         
         navigate("/live-trading");
