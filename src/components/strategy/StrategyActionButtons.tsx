@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { HeartIcon, PlayIcon, StopCircleIcon } from "lucide-react";
@@ -12,6 +11,8 @@ interface StrategyActionButtonsProps {
   onToggleWishlist: () => void;
   onLiveModeClick: () => void;
   onShowPaymentDialog?: () => void;
+  paidStatus?: string;
+  strategyName?: string;
 }
 
 export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
@@ -21,20 +22,24 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   isAuthenticated,
   onToggleWishlist,
   onLiveModeClick,
-  onShowPaymentDialog
+  onShowPaymentDialog,
+  paidStatus,
+  strategyName
 }) => {
   // Log the props to debug
   useEffect(() => {
     console.log("StrategyActionButtons props:", { 
       isLive, 
       isFreeOrPaid, 
-      isAuthenticated 
+      isAuthenticated,
+      paidStatus,
+      strategyName
     });
-  }, [isLive, isFreeOrPaid, isAuthenticated]);
+  }, [isLive, isFreeOrPaid, isAuthenticated, paidStatus, strategyName]);
 
   // Always show play icon or stop icon based on isLive status
   const getLiveModeIcon = () => {
-    console.log("getLiveModeIcon called with isLive:", isLive);
+    console.log(`getLiveModeIcon for ${strategyName}: isLive=${isLive}, paidStatus=${paidStatus}`);
     
     if (isLive) {
       return <StopCircleIcon size={20} />;
@@ -48,6 +53,8 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
   const getLiveModeTooltip = () => {
     if (isLive) {
       return "Disable live trading";
+    } else if (paidStatus === "premium") {
+      return "Unlock with subscription";
     } else {
       return "Enable live trading";
     }
@@ -55,7 +62,17 @@ export const StrategyActionButtons: React.FC<StrategyActionButtonsProps> = ({
 
   // Handle live mode button click
   const handleLiveModeClick = () => {
-    onLiveModeClick();
+    console.log(`handleLiveModeClick for ${strategyName}: paidStatus=${paidStatus}`);
+    
+    // If it's a premium strategy that's not paid yet, show payment dialog
+    if (paidStatus === "premium" && onShowPaymentDialog) {
+      console.log("Showing payment dialog for premium strategy");
+      onShowPaymentDialog();
+    } else {
+      // Otherwise, proceed with enabling/disabling live mode
+      console.log("Proceeding with live mode toggle");
+      onLiveModeClick();
+    }
   };
 
   return (

@@ -45,9 +45,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     if (strategy.isLive) {
       // If already live, just toggle it off
       onToggleLiveMode();
-    } else {
-      // For all strategies, enable them directly without payment
+    } else if (index === 0 || strategy.paidStatus === "paid") {
+      // First strategy (free) or already paid strategies can be enabled directly
       onToggleLiveMode();
+    } else {
+      // Premium strategies need payment first
+      if (onShowPaymentDialog) {
+        onShowPaymentDialog();
+      }
     }
   };
 
@@ -62,7 +67,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   {strategy.name}
                   <StrategyStatusBadge 
                     isPremium={index !== 0} 
-                    isPaid={true} // Always show as paid
+                    isPaid={strategy.paidStatus === "paid"} 
                   />
                 </h3>
                 <StrategyPerformanceBadges performance={strategy.performance} />
@@ -76,6 +81,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 onToggleWishlist={onToggleWishlist}
                 onLiveModeClick={handleLiveModeClick}
                 onShowPaymentDialog={onShowPaymentDialog}
+                paidStatus={strategy.paidStatus}
+                strategyName={strategy.name}
               />
             </div>
             

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,10 +68,16 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   return (
     <div className="space-y-4">
       {strategies.map((strategy, index) => {
-        // IMPORTANT: Make all strategies appear as free or paid
-        const isFreeOrPaid = true; // This makes all strategies appear unlocked
+        // Show the first strategy as free, all others as premium unless paid
+        if (index === 0) {
+          // First strategy is always free
+          strategy.paidStatus = "free";
+        } else if (strategy.paidStatus !== "paid") {
+          // All other strategies are premium unless already paid
+          strategy.paidStatus = "premium";
+        }
         
-        console.log(`Strategy ${strategy.id} ${strategy.name}: isFreeOrPaid=${isFreeOrPaid}, paidStatus=${strategy.paidStatus}`);
+        console.log(`Strategy ${strategy.id} ${strategy.name}: paidStatus=${strategy.paidStatus}`);
         
         return (
           <StrategyCard
@@ -79,7 +86,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
             onToggleWishlist={() => onToggleWishlist(strategy.id, !strategy.isWishlisted)}
             onToggleLiveMode={() => onToggleLiveMode(strategy.id)}
             onShowPaymentDialog={
-              !isFreeOrPaid && onShowPaymentDialog 
+              strategy.paidStatus === "premium" && onShowPaymentDialog 
                 ? () => onShowPaymentDialog(strategy)
                 : undefined
             }
@@ -90,4 +97,4 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
       })}
     </div>
   );
-};
+}
