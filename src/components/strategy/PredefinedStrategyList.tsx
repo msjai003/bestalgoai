@@ -5,8 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Strategy } from "@/hooks/strategy/types";
 import { NoStrategiesFound } from "./NoStrategiesFound";
 import { StrategyCard } from "./StrategyCard";
-import { StrategyStatusBadge } from "./StrategyStatusBadge";
-import { StrategyActionButtons } from "./StrategyActionButtons";
 
 interface PredefinedStrategyListProps {
   strategies: Strategy[];
@@ -59,9 +57,11 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
 
   return (
     <div className="space-y-4">
-      {strategies.map((strategy) => {
-        // Check if strategy is free or paid (unlocked)
-        const isFreeOrPaid = strategy.paidStatus === 'free' || strategy.paidStatus === 'paid';
+      {strategies.map((strategy, index) => {
+        // Check if strategy is free (index 0) or paid (unlocked)
+        const isFreeStrategy = index === 0;
+        const isPaid = strategy.paidStatus === 'paid';
+        const isFreeOrPaid = isFreeStrategy || isPaid;
         
         return (
           <StrategyCard
@@ -75,7 +75,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
                 : undefined
             }
             isAuthenticated={!!user}
-            index={strategies.indexOf(strategy)}
+            index={index}
           />
         );
       })}

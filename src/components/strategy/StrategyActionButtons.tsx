@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { HeartIcon, PlayIcon, LockIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, LockIcon, UnlockIcon, StopCircleIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StrategyActionButtonsProps {
