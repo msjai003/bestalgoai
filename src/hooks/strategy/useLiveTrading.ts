@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -131,31 +132,64 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      console.log("Creating new strategy selection for live trading:", {
-        user_id: user.id,
-        strategy_id: dialogState.targetStrategyId,
-        quantity: dialogState.pendingQuantity,
-        broker_name: brokerName,
-        broker_username: brokerUsername,
-        trade_type: "live trade"
-      });
-      
-      const { error: insertError } = await supabase
+      // First check if there's an existing record for this strategy + broker combination
+      const { data: existingRecords, error: searchError } = await supabase
         .from('strategy_selections')
-        .insert({
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('strategy_id', dialogState.targetStrategyId)
+        .eq('selected_broker', brokerName)
+        .eq('broker_username', brokerUsername);
+        
+      if (searchError) {
+        console.error("Error searching for existing strategy records:", searchError);
+        throw searchError;
+      }
+      
+      if (existingRecords && existingRecords.length > 0) {
+        // Update existing record instead of creating a new one
+        console.log("Found existing record, updating to live trading mode:", existingRecords[0].id);
+        
+        const { error: updateError } = await supabase
+          .from('strategy_selections')
+          .update({
+            quantity: dialogState.pendingQuantity,
+            trade_type: "live trade"
+          })
+          .eq('id', existingRecords[0].id);
+          
+        if (updateError) {
+          console.error("Error updating existing strategy to live mode:", updateError);
+          throw updateError;
+        }
+      } else {
+        // Create a new record only if one doesn't exist yet
+        console.log("Creating new strategy selection for live trading:", {
           user_id: user.id,
           strategy_id: dialogState.targetStrategyId,
-          strategy_name: strategy.name,
-          strategy_description: strategy.description || "",
           quantity: dialogState.pendingQuantity,
-          selected_broker: brokerName,
+          broker_name: brokerName,
           broker_username: brokerUsername,
           trade_type: "live trade"
         });
-          
-      if (insertError) {
-        console.error("Database insert error:", insertError);
-        throw insertError;
+        
+        const { error: insertError } = await supabase
+          .from('strategy_selections')
+          .insert({
+            user_id: user.id,
+            strategy_id: dialogState.targetStrategyId,
+            strategy_name: strategy.name,
+            strategy_description: strategy.description || "",
+            quantity: dialogState.pendingQuantity,
+            selected_broker: brokerName,
+            broker_username: brokerUsername,
+            trade_type: "live trade"
+          });
+            
+        if (insertError) {
+          console.error("Database insert error:", insertError);
+          throw insertError;
+        }
       }
       
       const loadedStrategies = await loadUserStrategies(user.id);
