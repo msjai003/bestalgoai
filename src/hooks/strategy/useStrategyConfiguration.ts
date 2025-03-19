@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Helper function to save strategy configuration to database
@@ -24,8 +25,7 @@ export const saveStrategyConfiguration = async (
       
     if (checkError) throw checkError;
     
-    // If record exists, update it but preserve existing trade_type if it was "paper trade"
-    // or if the incoming trade_type is "paper trade"
+    // IMPORTANT: If a record exists, determine the correct paid status to use
     if (data) {
       // If either the existing trade_type is "paper trade" or the requested trade_type is "paper trade",
       // set to "paper trade". This ensures that once paper trade is selected, it remains set.
@@ -33,9 +33,13 @@ export const saveStrategyConfiguration = async (
         ? "paper trade" 
         : tradeType;
       
-      // IMPORTANT: If the incoming paid status is explicitly set to 'paid', always use that
-      // Otherwise, keep the existing paid status if it's 'paid'
-      const preservedPaidStatus = paidStatus === "paid" ? "paid" : (data.paid_status === "paid" ? "paid" : paidStatus);
+      // For paid status:
+      // 1. If incoming status is 'paid', always use that
+      // 2. If existing status is 'paid', preserve it
+      // 3. Otherwise use the incoming status
+      const preservedPaidStatus = paidStatus === "paid" 
+        ? "paid" 
+        : (data.paid_status === "paid" ? "paid" : paidStatus);
       
       console.log("Updating existing strategy with:", {
         preservedTradeType,
@@ -60,6 +64,7 @@ export const saveStrategyConfiguration = async (
       
       console.log("Strategy update result:", updateData);
     } else {
+      // If no record exists, create a new one with the provided values
       console.log("Inserting new strategy with paid status:", paidStatus);
       
       const { error, data: insertData } = await supabase

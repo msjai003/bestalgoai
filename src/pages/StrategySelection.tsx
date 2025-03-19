@@ -59,46 +59,80 @@ const StrategySelection = () => {
       
       // Check if a specific strategy was just unlocked
       const unlockedStrategyId = params.get('strategy');
-      if (unlockedStrategyId) {
+      if (unlockedStrategyId && user) {
         const strategyId = parseInt(unlockedStrategyId);
-        console.log("Unlocked strategy ID:", strategyId);
+        console.log("Checking unlocked strategy ID:", strategyId);
         
         // Verify the strategy is actually marked as paid in the database
-        if (user) {
-          const verifyPaidStatus = async () => {
-            try {
-              // Check if this specific strategy has been paid for
-              const { data, error } = await supabase
-                .from('strategy_selections')
-                .select('paid_status, strategy_name')
-                .eq('user_id', user.id)
-                .eq('strategy_id', strategyId)
-                .maybeSingle();
-                
-              console.log("Verified strategy payment status:", data);
+        const verifyPaidStatus = async () => {
+          try {
+            // Check if this specific strategy has been paid for
+            const { data, error } = await supabase
+              .from('strategy_selections')
+              .select('paid_status, strategy_name')
+              .eq('user_id', user.id)
+              .eq('strategy_id', strategyId)
+              .maybeSingle();
               
-              if (data && data.paid_status === 'paid') {
-                // Show success toast for the unlocked strategy
-                toast({
-                  title: "Strategy Unlocked",
-                  description: `"${data.strategy_name}" is now available for live trading.`,
-                  variant: "default",
-                });
-              } else {
-                console.error("Strategy not marked as paid in database");
-                toast({
-                  title: "Strategy Activation Issue",
-                  description: "There was an issue unlocking your strategy. Please try again or contact support.",
-                  variant: "destructive",
-                });
+            console.log("Verified strategy payment status:", data);
+            
+            if (data && data.paid_status === 'paid') {
+              // Show success toast for the unlocked strategy
+              toast({
+                title: "Strategy Unlocked",
+                description: `"${data.strategy_name}" is now available for live trading.`,
+                variant: "default",
+              });
+            } else {
+              console.error("Strategy not found or not marked as paid in database");
+              
+              // If the strategy is still not marked as paid, try to fix it one more time
+              if (user) {
+                const { data: strategyData } = await supabase
+                  .from('predefined_strategies')
+                  .select('name, description')
+                  .eq('id', strategyId)
+                  .single();
+                
+                if (strategyData) {
+                  // Try to create or update the strategy with paid status
+                  const { error: updateError } = await supabase
+                    .from('strategy_selections')
+                    .upsert({
+                      user_id: user.id,
+                      strategy_id: strategyId,
+                      strategy_name: strategyData.name,
+                      strategy_description: strategyData.description,
+                      paid_status: 'paid',
+                      trade_type: 'paper trade'
+                    }, { onConflict: 'user_id,strategy_id' });
+                  
+                  if (!updateError) {
+                    toast({
+                      title: "Strategy Unlocked",
+                      description: `"${strategyData.name}" is now available for live trading.`,
+                      variant: "default",
+                    });
+                    
+                    // Force one more refresh
+                    setRefreshTrigger(prev => prev + 1);
+                  } else {
+                    console.error("Error in final attempt to save strategy:", updateError);
+                    toast({
+                      title: "Strategy Activation Issue",
+                      description: "There was an issue unlocking your strategy. Please try again or contact support.",
+                      variant: "destructive",
+                    });
+                  }
+                }
               }
-            } catch (err) {
-              console.error("Error verifying strategy payment status:", err);
             }
-          };
-          
-          verifyPaidStatus();
-        }
+          } catch (err) {
+            console.error("Error verifying strategy payment status:", err);
+          }
+        };
+        
+        verifyPaidStatus();
       }
       
       // Clean up the URL parameter

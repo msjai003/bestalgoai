@@ -210,8 +210,11 @@ const Subscription = () => {
             throw strategyError;
           }
           
-          // Mark the strategy as paid in the strategy_selections table
-          // First check if it already exists
+          if (!strategyData) {
+            throw new Error('Strategy data not found');
+          }
+          
+          // Check if the strategy already exists in user selections
           const { data: existingStrategy, error: checkError } = await supabase
             .from('strategy_selections')
             .select('*')
@@ -229,22 +232,22 @@ const Subscription = () => {
           if (existingStrategy) {
             console.log('Updating existing strategy selection to paid status');
             
+            // Update only the paid_status field to avoid overwriting other settings
             updateResult = await supabase
               .from('strategy_selections')
               .update({
-                paid_status: 'paid'
+                paid_status: 'paid',
+                // Update name and description in case they've changed
+                strategy_name: strategyData.name,
+                strategy_description: strategyData.description
               })
               .eq('user_id', user.id)
               .eq('strategy_id', selectedStrategyId)
               .select();
-              
-            if (updateResult.error) {
-              console.error('Error updating strategy paid status:', updateResult.error);
-              throw updateResult.error;
-            }
-          } else if (strategyData) {
+          } else {
             console.log('Creating new strategy selection with paid status');
             
+            // Insert a new entry with the full set of fields
             updateResult = await supabase
               .from('strategy_selections')
               .insert({
@@ -252,48 +255,43 @@ const Subscription = () => {
                 strategy_id: selectedStrategyId,
                 strategy_name: strategyData.name,
                 strategy_description: strategyData.description,
-                trade_type: "paper trade",
+                trade_type: "paper trade", // Default to paper trading for safety
                 paid_status: 'paid',
-                quantity: 0
+                quantity: 0,
+                selected_broker: "" // Default empty string
               })
               .select();
-              
-            if (updateResult.error) {
-              console.error('Error inserting strategy with paid status:', updateResult.error);
-              throw updateResult.error;
-            }
+          }
+          
+          if (updateResult?.error) {
+            console.error('Error updating/inserting strategy with paid status:', updateResult.error);
+            throw updateResult.error;
           }
           
           console.log('Strategy marked as paid successfully:', updateResult?.data);
           
-          // Verify the update was successful with a separate query
+          // Perform one final verification check to ensure the strategy was properly updated
           const { data: verifyData, error: verifyError } = await supabase
             .from('strategy_selections')
-            .select('paid_status')
+            .select('paid_status, strategy_name, strategy_id')
             .eq('user_id', user.id)
             .eq('strategy_id', selectedStrategyId)
             .single();
             
           if (verifyError) {
-            console.error('Error verifying strategy update:', verifyError);
+            console.error('Error in final verification of strategy update:', verifyError);
           } else {
-            console.log('Verified strategy paid status:', verifyData.paid_status);
+            console.log('Final verification of strategy paid status:', verifyData);
             
-            // If verification fails, make one more attempt
+            // If verification fails, make one more attempt with a direct update
             if (verifyData.paid_status !== 'paid') {
               console.warn('Strategy paid status not updated correctly. Making final attempt...');
               
-              const finalUpdate = await supabase
+              await supabase
                 .from('strategy_selections')
                 .update({ paid_status: 'paid' })
                 .eq('user_id', user.id)
                 .eq('strategy_id', selectedStrategyId);
-                
-              if (finalUpdate.error) {
-                console.error('Error in final update attempt:', finalUpdate.error);
-              } else {
-                console.log('Final update completed successfully');
-              }
             }
           }
         } catch (error) {
