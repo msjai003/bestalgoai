@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -35,25 +34,25 @@ export const useLiveTrading = () => {
     fetchStrategies();
   }, [user]);
 
-  const handleToggleLiveMode = (id: number) => {
-    const strategy = strategies.find(s => s.id === id);
+  const handleToggleLiveMode = (id: number, uniqueId?: string, rowId?: string) => {
+    const strategy = strategies.find(s => s.id === id && 
+      (s.uniqueId === uniqueId || (uniqueId === undefined && rowId === undefined)));
+    
     if (strategy) {
+      dialogState.setTargetStrategyId(id);
+      if (uniqueId) {
+        dialogState.setTargetUniqueId(uniqueId);
+      }
+      if (rowId) {
+        dialogState.setTargetRowId(rowId);
+      }
+      
       if (!strategy.isLive) {
-        dialogState.setTargetStrategyId(id);
         dialogState.setTargetMode('live');
         dialogState.setShowConfirmationDialog(true);
       } else {
-        dialogState.setTargetStrategyId(id);
         dialogState.setTargetMode('paper');
         dialogState.setShowConfirmationDialog(true);
-        
-        // Store the uniqueId or rowId of the specific strategy instance to update
-        if (strategy.uniqueId) {
-          dialogState.setTargetUniqueId(strategy.uniqueId);
-        }
-        if (strategy.rowId) {
-          dialogState.setTargetRowId(strategy.rowId);
-        }
       }
     }
   };
@@ -72,7 +71,6 @@ export const useLiveTrading = () => {
       if (dialogState.targetMode === 'live') {
         dialogState.setShowQuantityDialog(true);
       } else {
-        // Only update specific strategy instance when switching to paper trading
         await updateLiveMode(
           dialogState.targetStrategyId, 
           false, 
@@ -196,24 +194,19 @@ export const useLiveTrading = () => {
       if (!strategy) return;
       
       if (!isLive) {
-        // If switching to paper trading mode
-        console.log("Updating strategy to paper trading mode:", {
+        console.log("Updating specific strategy to paper trading mode:", {
           uniqueId,
           rowId,
           strategy_id: id
         });
         
         if (rowId) {
-          // Update only the specific row if we have a row ID
           console.log("Updating specific row with ID:", rowId);
           
           const { error: updateError } = await supabase
             .from('strategy_selections')
             .update({
-              trade_type: "paper trade",
-              quantity: 0,
-              selected_broker: "",
-              broker_username: ""
+              trade_type: "paper trade"
             })
             .eq('id', rowId);
             
@@ -222,7 +215,6 @@ export const useLiveTrading = () => {
             throw updateError;
           }
         } else if (uniqueId) {
-          // If we have a uniqueId (strategy_id-broker-username), use it to find the record
           const [strategyId, brokerName, brokerUsername] = uniqueId.split('-');
           
           console.log("Looking for record with:", {
@@ -246,7 +238,6 @@ export const useLiveTrading = () => {
           if (matchingRows && matchingRows.length > 0) {
             console.log(`Found ${matchingRows.length} matching rows by broker name`);
             
-            // Try to narrow down by broker username if it exists
             let targetRowId = matchingRows[0].id;
             
             if (brokerUsername && matchingRows.length > 1) {
@@ -270,10 +261,7 @@ export const useLiveTrading = () => {
             const { error: updateError } = await supabase
               .from('strategy_selections')
               .update({
-                trade_type: "paper trade",
-                quantity: 0,
-                selected_broker: "",
-                broker_username: ""
+                trade_type: "paper trade"
               })
               .eq('id', targetRowId);
               
@@ -285,15 +273,15 @@ export const useLiveTrading = () => {
             console.log("No matching records found for uniqueId:", uniqueId);
           }
         } else {
-          // Fallback to updating by user_id and strategy_id if no uniqueId or rowId
-          // This is the case that would update all instances, so we avoid it when possible
-          console.log("WARNING: Unable to identify specific strategy instance. Updating based on user_id and strategy_id only.");
+          console.log("No specific instance identifier provided. Finding first instance of strategy:", id);
           
           const { data, error: fetchError } = await supabase
             .from('strategy_selections')
             .select('id')
             .eq('user_id', user.id)
-            .eq('strategy_id', id);
+            .eq('strategy_id', id)
+            .eq('trade_type', 'live trade')
+            .limit(1);
             
           if (fetchError) {
             console.error("Error fetching strategy records:", fetchError);
@@ -301,54 +289,33 @@ export const useLiveTrading = () => {
           }
           
           if (data && data.length > 0) {
-            // Just update the first one we find to avoid changing all brokers
-            const firstRecordId = data[0].id;
+            const recordId = data[0].id;
             
-            console.log(`Updating first record out of ${data.length} matches. ID:`, firstRecordId);
+            console.log("Found record to update, ID:", recordId);
             
             const { error: updateError } = await supabase
               .from('strategy_selections')
               .update({
-                trade_type: "paper trade",
-                quantity: 0,
-                selected_broker: "",
-                broker_username: ""
+                trade_type: "paper trade"
               })
-              .eq('id', firstRecordId);
+              .eq('id', recordId);
               
             if (updateError) {
               console.error("Error updating strategy to paper mode:", updateError);
               throw updateError;
             }
           } else {
-            console.log("No existing record found, creating new record with paper trade mode");
-            const { error: insertError } = await supabase
-              .from('strategy_selections')
-              .insert({
-                user_id: user.id,
-                strategy_id: id,
-                strategy_name: strategy.name,
-                strategy_description: strategy.description || "",
-                trade_type: "paper trade",
-                quantity: 0,
-                selected_broker: ""
-              });
-              
-            if (insertError) {
-              console.error("Error inserting strategy with paper mode:", insertError);
-              throw insertError;
-            }
+            console.log("No existing record found for strategy:", id);
           }
         }
         
         toast({
-          title: "Paper Trading Activated Successfully",
-          description: `Strategy "${strategy.name}" is now in paper trading mode with simulated funds`,
+          title: "Paper Trading Activated",
+          description: `Strategy is now in paper trading mode`,
           variant: "default"
         });
       }
       
-      // Reload strategies from database to get fresh data
       const loadedStrategies = await loadUserStrategies(user.id);
       setStrategies(loadedStrategies);
     } catch (error) {

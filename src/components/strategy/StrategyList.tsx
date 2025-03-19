@@ -5,7 +5,7 @@ import { StrategyCard } from "@/components/strategy/LiveTradingStrategyCard";
 
 interface StrategyListProps {
   strategies: Strategy[];
-  onToggleLiveMode: (id: number) => void;
+  onToggleLiveMode: (id: number, uniqueId?: string, rowId?: string) => void;
   onEditQuantity: (id: number) => void;
   onViewDetails: (id: number) => void;
 }
@@ -22,7 +22,7 @@ export const StrategyList: React.FC<StrategyListProps> = ({
         <StrategyCard 
           key={strategy.uniqueId || `strategy-${strategy.id}-${strategy.selectedBroker || 'default'}-${strategy.brokerUsername || 'none'}`}
           strategy={strategy}
-          onToggleLiveMode={() => onToggleLiveMode(strategy.id)}
+          onToggleLiveMode={() => onToggleLiveMode(strategy.id, strategy.uniqueId, strategy.rowId)}
           onEditQuantity={() => onEditQuantity(strategy.id)}
           onViewDetails={() => onViewDetails(strategy.id)}
         />
