@@ -2,10 +2,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const Hero = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   const handleSignIn = () => {
     navigate('/auth');
@@ -20,7 +22,7 @@ export const Hero = () => {
       <div className="absolute inset-0 bg-pink-500/5"></div>
       <div className="relative">
         {!user && (
-          <div className="flex justify-end space-x-2 mb-6">
+          <div className={`flex ${isMobile ? 'justify-center' : 'justify-start'} space-x-3 mb-8`}>
             <Button
               variant="ghost"
               className="text-gray-300 hover:text-white border border-gray-700"
