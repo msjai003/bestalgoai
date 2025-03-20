@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +23,24 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 2;
   const [isLoading, setIsLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   
   // State for password visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Get user email when component mounts
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    
+    getUserEmail();
+  }, []);
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +55,18 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
       toast.error("Password must be at least 8 characters");
       return;
     }
+
+    if (!userEmail) {
+      toast.error("User email not found. Please try signing in again.");
+      return;
+    }
     
     try {
       setIsLoading(true);
       
       // First authenticate the user with current password to verify identity
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: '', // The email will be derived from the current session
+        email: userEmail,
         password: currentPassword
       });
       
@@ -280,7 +298,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
             onClick={goToNextPage} 
             disabled={currentPage === totalPages}
             variant="ghost" 
-            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''} z-10`}
+            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''}`}
           >
             Next <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
