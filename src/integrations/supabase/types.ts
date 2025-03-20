@@ -54,33 +54,6 @@ export type Database = {
         }
         Relationships: []
       }
-      broker_images: {
-        Row: {
-          broker_id: number
-          broker_name: string
-          created_at: string
-          id: number
-          image_url: string
-          updated_at: string
-        }
-        Insert: {
-          broker_id: number
-          broker_name: string
-          created_at?: string
-          id?: number
-          image_url: string
-          updated_at?: string
-        }
-        Update: {
-          broker_id?: number
-          broker_name?: string
-          created_at?: string
-          id?: number
-          image_url?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       custom_strategies: {
         Row: {
           created_at: string | null
@@ -355,12 +328,6 @@ export type Database = {
           p_strategy_description: string
         }
         Returns: undefined
-      }
-      get_broker_image: {
-        Args: {
-          p_broker_id: number
-        }
-        Returns: string
       }
       is_admin: {
         Args: Record<PropertyKey, never>

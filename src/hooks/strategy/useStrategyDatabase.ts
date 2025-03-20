@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -32,32 +31,26 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (data && data.length > 0) {
         // Map database strategies - create a unique instance for each row
         // This allows multiple entries for the same strategy with different brokers
-        const dbStrategies = data.map(item => {
-          // Extract brokerId from the broker credentials if it exists
-          const brokerId = item.broker_id || null;
-          
-          return {
-            // Create a unique ID by combining strategy_id, broker name and username
-            id: item.strategy_id,
-            uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
-            rowId: item.id, // Store the actual database row ID
-            name: item.strategy_name,
-            description: item.strategy_description || "",
-            isWishlisted: true,
-            // Only set isLive to true if trade_type is explicitly "live trade"
-            isLive: item.trade_type === "live trade",
-            quantity: item.quantity || 0,
-            selectedBroker: item.selected_broker || "",
-            brokerUsername: item.broker_username || "",
-            tradeType: item.trade_type || "paper trade",
-            brokerId: brokerId, // Include broker ID for logo fetching
-            performance: {
-              winRate: "N/A",
-              avgProfit: "N/A",
-              drawdown: "N/A"
-            }
-          };
-        });
+        const dbStrategies = data.map(item => ({
+          // Create a unique ID by combining strategy_id, broker name and username
+          id: item.strategy_id,
+          uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
+          rowId: item.id, // Store the actual database row ID
+          name: item.strategy_name,
+          description: item.strategy_description || "",
+          isWishlisted: true,
+          // Only set isLive to true if trade_type is explicitly "live trade"
+          isLive: item.trade_type === "live trade",
+          quantity: item.quantity || 0,
+          selectedBroker: item.selected_broker || "",
+          brokerUsername: item.broker_username || "",
+          tradeType: item.trade_type || "paper trade",
+          performance: {
+            winRate: "N/A",
+            avgProfit: "N/A",
+            drawdown: "N/A"
+          }
+        }));
         
         strategies = dbStrategies;
         localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));
@@ -81,8 +74,7 @@ export const updateStrategyLiveConfig = async (
   quantity: number,
   brokerName: string | null,
   brokerUsername: string | null = null,
-  tradeType: string = "paper trade",
-  brokerId: number | null = null
+  tradeType: string = "paper trade"
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
@@ -90,8 +82,7 @@ export const updateStrategyLiveConfig = async (
     quantity,
     brokerName,
     brokerUsername,
-    tradeType,
-    brokerId
+    tradeType
   });
   
   // Always create a new entry - don't update existing ones
@@ -105,8 +96,7 @@ export const updateStrategyLiveConfig = async (
       quantity: quantity || 0,
       selected_broker: brokerName,
       broker_username: brokerUsername,
-      trade_type: tradeType,
-      broker_id: brokerId
+      trade_type: tradeType
     });
   
   if (error) {
@@ -118,12 +108,12 @@ export const updateStrategyLiveConfig = async (
 /**
  * Fetches broker details by ID
  */
-export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string, broker_id?: number } | null> => {
+export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string } | null> => {
   console.log("Fetching broker details for ID:", brokerId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
-    .select('broker_name, broker_id')
+    .select('broker_name')
     .eq('id', brokerId)
     .single();
     
@@ -139,12 +129,12 @@ export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: 
 /**
  * Fetches all available brokers for a user
  */
-export const fetchUserBrokers = async (userId: string): Promise<Array<{id: string, broker_name: string, broker_id?: number}>> => {
+export const fetchUserBrokers = async (userId: string): Promise<Array<{id: string, broker_name: string}>> => {
   console.log("Fetching connected brokers for user:", userId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
-    .select('id, broker_name, broker_id')
+    .select('id, broker_name')
     .eq('user_id', userId)
     .eq('status', 'connected');
     

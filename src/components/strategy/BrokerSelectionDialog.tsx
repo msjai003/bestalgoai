@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
-import { getBrokerLogo } from "@/utils/brokerImageUtils";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -33,8 +32,6 @@ interface BrokerSelectionDialogProps {
 interface BrokerOption {
   id: string;
   broker_name: string;
-  broker_id?: number;
-  logo_url?: string;
 }
 
 export const BrokerSelectionDialog = ({
@@ -45,7 +42,6 @@ export const BrokerSelectionDialog = ({
 }: BrokerSelectionDialogProps) => {
   const [selectedBroker, setSelectedBroker] = useState<string>("");
   const [brokers, setBrokers] = useState<BrokerOption[]>([]);
-  const [brokerLogos, setBrokerLogos] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -65,18 +61,6 @@ export const BrokerSelectionDialog = ({
         console.log("Fetched connected brokers:", brokerData);
         
         setBrokers(brokerData || []);
-        
-        // Fetch logos for each broker
-        const logoMap: Record<string, string> = {};
-        for (const broker of brokerData || []) {
-          if (broker.broker_id) {
-            const logoUrl = await getBrokerLogo(broker.broker_id);
-            if (logoUrl) {
-              logoMap[broker.id] = logoUrl;
-            }
-          }
-        }
-        setBrokerLogos(logoMap);
         
         // Set default selection if brokers exist
         if (brokerData && brokerData.length > 0) {
@@ -165,40 +149,12 @@ export const BrokerSelectionDialog = ({
             <div className="mb-6">
               <Select value={selectedBroker} onValueChange={setSelectedBroker}>
                 <SelectTrigger className="bg-gray-700 border-gray-600 text-white w-full">
-                  <SelectValue placeholder="Select a broker">
-                    {selectedBroker && (
-                      <div className="flex items-center">
-                        {brokerLogos[selectedBroker] && (
-                          <img 
-                            src={brokerLogos[selectedBroker]} 
-                            alt="Broker logo" 
-                            className="w-5 h-5 mr-2 rounded bg-white p-0.5 object-contain"
-                          />
-                        )}
-                        <span>
-                          {brokers.find(b => b.id === selectedBroker)?.broker_name}
-                        </span>
-                      </div>
-                    )}
-                  </SelectValue>
+                  <SelectValue placeholder="Select a broker" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-700 border-gray-600 text-white">
                   {brokers.map((broker) => (
-                    <SelectItem 
-                      key={broker.id} 
-                      value={broker.id} 
-                      className="focus:bg-gray-600 text-white hover:bg-gray-600"
-                    >
-                      <div className="flex items-center">
-                        {brokerLogos[broker.id] && (
-                          <img 
-                            src={brokerLogos[broker.id]} 
-                            alt={broker.broker_name} 
-                            className="w-5 h-5 mr-2 rounded bg-white p-0.5 object-contain"
-                          />
-                        )}
-                        <span>{broker.broker_name}</span>
-                      </div>
+                    <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600 text-white hover:bg-gray-600">
+                      {broker.broker_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

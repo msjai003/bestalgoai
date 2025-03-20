@@ -1,19 +1,15 @@
 
-import { useEffect, useState } from "react";
+import { Check, Plug, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Broker } from "@/types/broker";
-import { Check, X } from "lucide-react";
-import { getBrokerLogo } from "@/utils/brokerImageUtils";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Broker, BrokerPermissions } from "@/types/broker";
 
 interface SuccessDialogProps {
   open: boolean;
-  setOpen: (value: boolean) => void;
+  setOpen: (open: boolean) => void;
   selectedBroker: Broker | null;
   selectedAccount: string;
-  permissions: {
-    readOnly: boolean;
-    trading: boolean;
-  };
+  permissions: BrokerPermissions;
   onComplete: () => void;
 }
 
@@ -23,81 +19,62 @@ export const SuccessDialog = ({
   selectedBroker,
   selectedAccount,
   permissions,
-  onComplete
+  onComplete,
 }: SuccessDialogProps) => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  
-  useEffect(() => {
-    if (selectedBroker) {
-      const fetchLogo = async () => {
-        const url = await getBrokerLogo(selectedBroker.id);
-        setLogoUrl(url);
-      };
-      
-      fetchLogo();
-    }
-  }, [selectedBroker]);
-
-  if (!open || !selectedBroker) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 relative">
-        <button
-          onClick={() => setOpen(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        >
-          <X className="w-5 h-5" />
-        </button>
-        
-        <div className="flex flex-col items-center text-center">
-          <div className="bg-emerald-500/20 p-3 rounded-full mb-4">
-            <Check className="w-8 h-8 text-emerald-500" />
-          </div>
-          
-          <div className="mb-4 flex items-center">
-            {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt={selectedBroker.name} 
-                className="w-8 h-8 mr-2 rounded bg-white p-1 object-contain"
-              />
-            ) : (
-              <img 
-                src={selectedBroker.logo} 
-                alt={selectedBroker.name} 
-                className="w-8 h-8 mr-2 rounded"
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="bg-gray-800 border-gray-700 text-gray-100">
+        <DialogHeader>
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <Check className="w-5 h-5 text-green-500" />
+            Broker Connected Successfully
+          </DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Your broker has been successfully connected. You can now use it for live trading strategies.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="bg-gray-900 rounded-lg p-4 mt-2">
+          <div className="flex items-center mb-3">
+            {selectedBroker && (
+              <img
+                src={selectedBroker.logo}
+                className="w-8 h-8 rounded-md mr-3"
+                alt={selectedBroker.name}
               />
             )}
-            <h2 className="text-xl font-bold">{selectedBroker.name} Connected!</h2>
-          </div>
-          
-          <p className="text-gray-300 mb-6">
-            Your {selectedBroker.name} account has been successfully connected to WealthTrade.
-          </p>
-          
-          <div className="bg-gray-700/50 rounded-lg p-4 w-full mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-300">Account Type</span>
-              <span className="text-white font-medium">{selectedAccount}</span>
+            <div>
+              <h4 className="font-medium">{selectedBroker?.name}</h4>
+              <p className="text-sm text-gray-400">{selectedAccount}</p>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Permissions</span>
-              <span className="text-white font-medium">
-                {permissions.trading ? "Trading" : "Read Only"}
+            <div className="ml-auto flex items-center">
+              <span className="bg-green-900/50 text-green-500 text-xs px-2 py-1 rounded">
+                Connected
               </span>
             </div>
           </div>
-          
-          <Button 
-            variant="default" 
+
+          <div className="text-sm text-gray-400">
+            <p className="flex items-center gap-1">
+              <Plug className="w-3 h-3" /> Connected at {new Date().toLocaleTimeString()}
+            </p>
+            <p className="flex items-center gap-1 mt-1">
+              <Shield className="w-3 h-3" /> {permissions.trading
+                ? "Trading access enabled"
+                : "Read-only access enabled"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-3">
+          <Button
+            className="bg-gradient-to-r from-purple-600 to-pink-500"
             onClick={onComplete}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-500 h-12 rounded-xl"
           >
             Continue to Dashboard
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
