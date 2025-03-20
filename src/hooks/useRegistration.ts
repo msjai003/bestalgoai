@@ -57,6 +57,8 @@ export const useRegistration = () => {
     setState(prev => ({ ...prev, isLoading: true }));
     
     try {
+      console.log("Starting registration process...");
+      
       // Test connection first
       const connectionTest = await testRegistrationConnection();
       if (!connectionTest.success) {
@@ -68,6 +70,8 @@ export const useRegistration = () => {
         toast.error("Connection error. Please try again later.");
         return;
       }
+      
+      console.log("Connection test passed, proceeding with registration");
       
       // Attempt registration
       const result = await registerUser(state.formData);
@@ -96,6 +100,7 @@ export const useRegistration = () => {
       }
       
       // Success path
+      console.log("Registration successful, displaying success messages");
       toast.success("Registration successful!");
       toast.info("Thank you for signing up with InfoCap Company. A confirmation email has been sent to your inbox.");
       navigate('/auth');

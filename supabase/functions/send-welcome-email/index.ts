@@ -22,9 +22,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Edge function triggered: Attempting to send welcome email");
     const { email, name, welcomeMessage } = await req.json();
+    console.log(`Request payload received - Email: ${email}, Name: ${name}`);
 
     if (!email || !name) {
+      console.error("Missing required fields in request");
       return new Response(
         JSON.stringify({
           error: "Missing required fields: email and name are required"
@@ -38,8 +41,10 @@ serve(async (req) => {
 
     // Send actual email using SMTP
     const message = welcomeMessage || "Thank you for signing up with InfoCap Company!";
+    console.log(`Preparing to send welcome message: "${message}"`);
     const result = await sendSmtpEmail(email, name, message);
 
+    console.log("Email sending complete, returning success response");
     return new Response(
       JSON.stringify({ success: true, message: "Email sent successfully", result }),
       {
@@ -66,12 +71,14 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
     const client = new SmtpClient();
     
     // Connect to SMTP server
+    console.log("Connecting to SMTP server...");
     await client.connectTLS({
       hostname: SMTP_HOST,
       port: SMTP_PORT,
       username: SMTP_USERNAME,
       password: SMTP_PASSWORD,
     });
+    console.log("Successfully connected to SMTP server");
     
     // HTML email content
     const htmlContent = `
@@ -105,6 +112,7 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
     `;
     
     // Send the email
+    console.log("Sending email...");
     const result = await client.send({
       from: SENDER_EMAIL,
       to: toEmail,
@@ -114,6 +122,7 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
     });
     
     // Close the connection
+    console.log("Closing SMTP connection...");
     await client.close();
     
     console.log("Email sent successfully via SMTP:", result);

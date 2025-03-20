@@ -67,6 +67,7 @@ export const registerUser = async (formData: RegistrationData) => {
 
     // Send welcome email from send_message table
     try {
+      console.log("Registration successful, sending welcome email to:", formData.email);
       await sendWelcomeEmail(formData.email, formData.fullName);
     } catch (emailError) {
       // Don't fail registration if email sending fails
@@ -83,6 +84,7 @@ export const registerUser = async (formData: RegistrationData) => {
 // Function to send welcome email
 const sendWelcomeEmail = async (email: string, name: string) => {
   try {
+    console.log(`Fetching welcome message for ${email} from database...`);
     // Fetch welcome message from the database
     const { data: welcomeMessageData, error: messageError } = await supabase
       .from('send_message')
@@ -107,7 +109,7 @@ const sendWelcomeEmail = async (email: string, name: string) => {
     return await callSendEmailFunction(email, name, welcomeMessage);
   } catch (error) {
     console.error("Error sending welcome email:", error);
-    return { success: false, error };
+    throw error;
   }
 };
 
@@ -115,6 +117,13 @@ const sendWelcomeEmail = async (email: string, name: string) => {
 const callSendEmailFunction = async (email: string, name: string, welcomeMessage: string) => {
   try {
     console.log(`Calling edge function to send email to ${email}`);
+    
+    // Make the edge function call explicitly, with detailed logging
+    console.log("Payload for edge function:", JSON.stringify({
+      email,
+      name,
+      welcomeMessage
+    }));
     
     const { data, error } = await supabase.functions.invoke('send-welcome-email', {
       body: JSON.stringify({
