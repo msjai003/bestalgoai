@@ -6,6 +6,17 @@ import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
+import { Loader, ChevronRight, TrendingUp, Lock, Play } from "lucide-react";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
