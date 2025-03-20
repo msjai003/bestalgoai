@@ -15,11 +15,19 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signIn, signOut } = useAuth();
   
   const handleLogout = () => {
     // Navigate to the logout page instead of calling signOut directly
     navigate('/logout');
+  };
+
+  const handleSignIn = () => {
+    navigate('/auth');
+  };
+
+  const handleSignUp = () => {
+    navigate('/registration');
   };
   
   return (
@@ -74,18 +82,19 @@ const Header: React.FC = () => {
             </>
           ) : (
             <>
-              <Link
-                to="/auth"
-                className="text-gray-300 hover:text-white transition-colors"
+              <Button
+                variant="ghost"
+                className="text-gray-300 hover:text-white"
+                onClick={handleSignIn}
               >
                 Sign In
-              </Link>
-              <Link
-                to="/registration"
+              </Button>
+              <Button
                 className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white px-4 py-2 rounded-lg"
+                onClick={handleSignUp}
               >
                 Sign Up
-              </Link>
+              </Button>
             </>
           )}
         </nav>
@@ -148,18 +157,19 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/auth"
-                    className="text-gray-300 hover:text-white transition-colors block py-2"
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white justify-start p-2"
+                    onClick={handleSignIn}
                   >
                     Sign In
-                  </Link>
-                  <Link
-                    to="/registration"
+                  </Button>
+                  <Button
                     className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white px-4 py-2 rounded-lg block w-full text-center mt-2"
+                    onClick={handleSignUp}
                   >
                     Sign Up
-                  </Link>
+                  </Button>
                 </>
               )}
             </div>
