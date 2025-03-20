@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
 
