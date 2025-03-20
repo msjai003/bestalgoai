@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -100,7 +99,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // If a specific strategy was selected, mark it as paid
+      // If a specific strategy was selected, mark ONLY it as paid
       if (selectedStrategyId) {
         // First check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
@@ -131,36 +130,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
       }
       
-      // Mark all premium strategies (IDs 2-5) as paid
-      for (let i = 2; i <= 5; i++) {
-        // Skip the selected strategy as it's already been handled
-        if (i === selectedStrategyId) continue;
-        
-        const { data: existingStrategy, error: queryError } = await supabase
-          .from('strategy_selections')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('strategy_id', i)
-          .maybeSingle();
-          
-        if (queryError) {
-          throw queryError;
-        }
-        
-        if (existingStrategy) {
-          await supabase
-            .from('strategy_selections')
-            .update({ paid_status: 'paid' })
-            .eq('id', existingStrategy.id);
-        } else {
-          await supabase.rpc('force_strategy_paid_status', {
-            p_user_id: user.id,
-            p_strategy_id: i,
-            p_strategy_name: `Strategy ${i}`,
-            p_strategy_description: "Premium strategy unlocked with subscription"
-          });
-        }
-      }
+      // Remove the previous code that marked all premium strategies as paid
+      // Only the selected strategy is now marked as paid
       
       // Remove the selected strategy ID from session storage
       sessionStorage.removeItem('selectedStrategyId');
@@ -168,7 +139,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       toast({
         title: "Payment successful",
         description: selectedStrategyName
-          ? `You've unlocked ${selectedStrategyName} and all premium strategies!`
+          ? `You've unlocked ${selectedStrategyName}!`
           : `Your ${planName} plan is now active!`,
         variant: "default"
       });

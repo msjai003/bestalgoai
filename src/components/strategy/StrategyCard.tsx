@@ -3,8 +3,8 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, StopCircleIcon } from "lucide-react";
+import { Strategy } from "@/hooks/strategy/types";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -108,20 +108,20 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400"}
+                      className={canAccess ? (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400") : "text-yellow-500"}
                       onClick={toggleLiveMode}
                       disabled={!isAuthenticated}
                     >
-                      {strategy.isLive ? (
-                        <StopCircleIcon size={20} />
+                      {canAccess ? (
+                        strategy.isLive ? <StopCircleIcon size={20} /> : <PlayIcon size={20} />
                       ) : (
-                        <PlayIcon size={20} />
+                        <LockIcon size={20} />
                       )}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     {!canAccess ? (
-                      <p>Unlock with premium subscription</p>
+                      <p>Unlock this premium strategy</p>
                     ) : strategy.isLive ? (
                       <p>Disable live trading</p>
                     ) : (

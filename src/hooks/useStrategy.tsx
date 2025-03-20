@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +32,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [hasPremium, setHasPremium] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if user has premium subscription
     const checkPremium = async () => {
       if (!user) return false;
       
@@ -77,7 +75,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         if (user) {
           const selections = await fetchUserStrategySelections(user.id);
           
-          // Check which strategies are marked as paid in the database
           const { data: paidStrategies, error } = await supabase
             .from('strategy_selections')
             .select('strategy_id, paid_status')
@@ -88,12 +85,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             console.error("Error fetching paid strategies:", error);
           }
           
-          // Create a set of paid strategy IDs for quick lookup
           const paidStrategyIds = new Set(
             paidStrategies?.map(item => item.strategy_id) || []
           );
           
-          // Mark paid strategies
           strategiesWithStatus = strategiesWithStatus.map(strategy => ({
             ...strategy,
             isPaid: paidStrategyIds.has(strategy.id)
@@ -155,7 +150,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const updateLiveMode = (id: number, isLive: boolean) => {
-    // Check if this is a premium strategy
     const strategy = strategies.find(s => s.id === id);
     const isPremium = id > 1; // All strategies except the first are premium
     
@@ -192,9 +186,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const newStatus = !strategy?.isLive;
     const isPremium = id > 1; // All strategies except the first are premium
     
-    // Check if this is a premium strategy, user doesn't have premium, and strategy is not already paid for
     if (isPremium && !hasPremium && !strategy?.isPaid) {
-      // Check if the strategy is already paid for in the database
       const checkPaidStatus = async () => {
         if (!user) {
           navigate('/pricing');
@@ -213,7 +205,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           if (error) throw error;
           
           if (data) {
-            // Strategy is paid for, update local state and proceed with live mode
             setStrategies(prev => 
               prev.map(s => s.id === id ? { ...s, isPaid: true } : s)
             );
@@ -226,20 +217,17 @@ export const useStrategy = (predefinedStrategies: any[]) => {
               updateLiveMode(id, false);
             }
           } else {
-            // Strategy is not paid for, redirect to pricing
             toast({
               title: "Premium Required",
               description: "Please upgrade to access premium strategies",
             });
             
-            // Store the strategy ID and return path in sessionStorage before redirecting
             sessionStorage.setItem('selectedStrategyId', id.toString());
             sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
             navigate('/pricing');
           }
         } catch (error) {
           console.error("Error checking strategy paid status:", error);
-          // Default to redirecting to pricing on error
           sessionStorage.setItem('selectedStrategyId', id.toString());
           sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
           navigate('/pricing');
@@ -250,7 +238,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       return;
     }
     
-    // Regular flow for non-premium or premium with access
     if (newStatus) {
       setSelectedStrategyId(id);
       setTargetMode("live");
