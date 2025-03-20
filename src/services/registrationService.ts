@@ -94,19 +94,29 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       console.error("Error fetching welcome message:", messageError);
       // Fall back to default message if database fetch fails
       const defaultMessage = "Thank you for signing up with InfoCap Company";
-      console.log(`Sending default welcome email to ${email} with name ${name}: ${defaultMessage}`);
-      return { success: true, message: defaultMessage };
+      console.log(`Using default welcome message for ${email}`);
+      
+      // Call the edge function with the default message
+      return await callSendEmailFunction(email, name, defaultMessage);
     }
     
     const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
+    console.log(`Found welcome message from database: ${welcomeMessage}`);
     
-    // In a real implementation, this would call an email service API
-    console.log(`Sending welcome email to ${email} with name ${name}: ${welcomeMessage}`);
+    // Call Supabase edge function to send the email
+    return await callSendEmailFunction(email, name, welcomeMessage);
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    return { success: false, error };
+  }
+};
+
+// Function to call the Supabase edge function
+const callSendEmailFunction = async (email: string, name: string, welcomeMessage: string) => {
+  try {
+    console.log(`Calling edge function to send email to ${email}`);
     
-    // Here we would actually send the email using an email service
-    // For example, using Supabase edge function to send email:
-    /*
-    const response = await supabase.functions.invoke('send-welcome-email', {
+    const { data, error } = await supabase.functions.invoke('send-welcome-email', {
       body: JSON.stringify({
         email,
         name,
@@ -114,16 +124,16 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       })
     });
     
-    if (response.error) {
-      throw new Error('Failed to send welcome email: ' + response.error.message);
+    if (error) {
+      console.error("Edge function error:", error);
+      throw new Error('Failed to send welcome email: ' + error.message);
     }
-    */
     
-    // For now, we're just simulating the email being sent
+    console.log("Edge function response:", data);
     return { success: true, message: welcomeMessage };
-  } catch (error) {
-    console.error("Error sending welcome email:", error);
-    return { success: false, error };
+  } catch (callError) {
+    console.error("Error calling send-welcome-email function:", callError);
+    throw callError;
   }
 };
 
