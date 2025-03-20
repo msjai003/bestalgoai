@@ -32,27 +32,32 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
       if (data && data.length > 0) {
         // Map database strategies - create a unique instance for each row
         // This allows multiple entries for the same strategy with different brokers
-        const dbStrategies = data.map(item => ({
-          // Create a unique ID by combining strategy_id, broker name and username
-          id: item.strategy_id,
-          uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
-          rowId: item.id, // Store the actual database row ID
-          name: item.strategy_name,
-          description: item.strategy_description || "",
-          isWishlisted: true,
-          // Only set isLive to true if trade_type is explicitly "live trade"
-          isLive: item.trade_type === "live trade",
-          quantity: item.quantity || 0,
-          selectedBroker: item.selected_broker || "",
-          brokerUsername: item.broker_username || "",
-          tradeType: item.trade_type || "paper trade",
-          brokerId: item.broker_id, // Include broker ID for logo fetching
-          performance: {
-            winRate: "N/A",
-            avgProfit: "N/A",
-            drawdown: "N/A"
-          }
-        }));
+        const dbStrategies = data.map(item => {
+          // Extract brokerId from the broker credentials if it exists
+          const brokerId = item.broker_id || null;
+          
+          return {
+            // Create a unique ID by combining strategy_id, broker name and username
+            id: item.strategy_id,
+            uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
+            rowId: item.id, // Store the actual database row ID
+            name: item.strategy_name,
+            description: item.strategy_description || "",
+            isWishlisted: true,
+            // Only set isLive to true if trade_type is explicitly "live trade"
+            isLive: item.trade_type === "live trade",
+            quantity: item.quantity || 0,
+            selectedBroker: item.selected_broker || "",
+            brokerUsername: item.broker_username || "",
+            tradeType: item.trade_type || "paper trade",
+            brokerId: brokerId, // Include broker ID for logo fetching
+            performance: {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          };
+        });
         
         strategies = dbStrategies;
         localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));

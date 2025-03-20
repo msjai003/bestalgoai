@@ -18,6 +18,7 @@ export interface Strategy {
   tradeType?: string;
   pnl?: string;
   successRate?: string;
+  brokerId?: number; // Add brokerId property for broker logo fetching
 }
 
 export interface StrategySelection {

@@ -24,7 +24,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const [brokerLogo, setBrokerLogo] = useState<string | null>(null);
   
   useEffect(() => {
-    // If strategy has a selected broker, try to get its logo
+    // If strategy has a selected broker and brokerId, try to get its logo
     if (strategy.selectedBroker && strategy.brokerId) {
       const fetchLogo = async () => {
         try {
