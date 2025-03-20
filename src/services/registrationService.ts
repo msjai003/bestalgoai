@@ -68,8 +68,35 @@ export const registerUser = async (formData: RegistrationData) => {
     // Send welcome email after successful registration
     try {
       console.log("Registration successful, sending welcome email to:", formData.email);
-      const emailResult = await sendWelcomeEmail(formData.email, formData.fullName);
-      console.log("Email sending result:", emailResult);
+      // Fetch welcome message from database first
+      const { data: welcomeMessageData, error: messageError } = await supabase
+        .from('send_message')
+        .select('message_content')
+        .eq('message_type', 'welcome')
+        .maybeSingle();
+      
+      if (messageError) {
+        console.error("Error fetching welcome message:", messageError);
+        // Don't return error here, still try to send email with default message
+      }
+      
+      const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
+      console.log(`Using welcome message: "${welcomeMessage}"`);
+      
+      // Call the edge function to send welcome email
+      const emailResult = await supabase.functions.invoke('send-welcome-email', {
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.fullName,
+          welcomeMessage: welcomeMessage
+        })
+      });
+      
+      if (emailResult.error) {
+        console.error("Failed to send welcome email:", emailResult.error);
+      } else {
+        console.log("Email sending result:", emailResult.data);
+      }
     } catch (emailError) {
       // Log the error but don't fail registration if email sending fails
       console.error("Failed to send welcome email:", emailError);
@@ -79,38 +106,6 @@ export const registerUser = async (formData: RegistrationData) => {
   } catch (error) {
     console.error("Exception during registration:", error);
     return { success: false, error };
-  }
-};
-
-// Function to send welcome email
-const sendWelcomeEmail = async (email: string, name: string) => {
-  try {
-    console.log(`Fetching welcome message for ${email} from database...`);
-    // Fetch welcome message from the database
-    const { data: welcomeMessageData, error: messageError } = await supabase
-      .from('send_message')
-      .select('message_content')
-      .eq('message_type', 'welcome')
-      .maybeSingle();
-    
-    if (messageError) {
-      console.error("Error fetching welcome message:", messageError);
-      // Fall back to default message if database fetch fails
-      const defaultMessage = "Thank you for signing up with InfoCap Company";
-      console.log(`Using default welcome message for ${email}: ${defaultMessage}`);
-      
-      // Call the edge function with the default message
-      return await callSendEmailFunction(email, name, defaultMessage);
-    }
-    
-    const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
-    console.log(`Found welcome message from database: "${welcomeMessage}"`);
-    
-    // Call Supabase edge function to send the email
-    return await callSendEmailFunction(email, name, welcomeMessage);
-  } catch (error) {
-    console.error("Error in sendWelcomeEmail function:", error);
-    throw error;
   }
 };
 

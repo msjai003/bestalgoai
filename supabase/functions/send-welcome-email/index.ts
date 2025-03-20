@@ -8,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// SMTP configuration
+// SMTP configuration - using the provided credentials
 const SMTP_HOST = "smtp.gmail.com";
 const SMTP_PORT = 465;
 const SMTP_USERNAME = "learnings1.infocap@gmail.com";
