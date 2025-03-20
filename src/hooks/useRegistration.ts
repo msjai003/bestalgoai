@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegistrationData, RegistrationState } from '@/types/registration';
 import { getBrowserInfo } from '@/utils/browserUtils';
+import { registerUser, testRegistrationConnection } from '@/services/registrationService';
 
 // Initial registration data
 const initialFormData: RegistrationData = {
@@ -22,7 +23,7 @@ export const useRegistration = () => {
   const [state, setState] = useState<RegistrationState>({
     step: 1,
     isLoading: false,
-    connectionError: "Registration functionality has been disabled",
+    connectionError: null,
     browserIssue: null,
     showFirefoxHelp: false,
     isOffline: !navigator.onLine,
@@ -39,15 +40,77 @@ export const useRegistration = () => {
   };
 
   const handleNext = () => {
-    toast.error("Registration functionality has been disabled");
+    if (state.step < 3) {
+      setState(prev => ({ ...prev, step: prev.step + 1 }));
+    }
   };
 
   const handleBack = () => {
-    navigate('/');
+    if (state.step > 1) {
+      setState(prev => ({ ...prev, step: prev.step - 1 }));
+    } else {
+      navigate('/');
+    }
   };
 
   const handleCompleteRegistration = async () => {
-    toast.error("Registration functionality has been disabled");
+    setState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      // Test connection first
+      const connectionTest = await testRegistrationConnection();
+      if (!connectionTest.success) {
+        setState(prev => ({ 
+          ...prev, 
+          isLoading: false,
+          connectionError: connectionTest.message || "Cannot connect to server" 
+        }));
+        toast.error("Connection error. Please try again later.");
+        return;
+      }
+      
+      // Attempt registration
+      const result = await registerUser(state.formData);
+      
+      if (!result.success) {
+        // Check for email already exists error
+        if (result.code === "EMAIL_ALREADY_EXISTS") {
+          toast.error("This email address you entered is already registered");
+          setState(prev => ({ 
+            ...prev, 
+            isLoading: false,
+            connectionError: "This email address you entered is already registered"
+          }));
+          return;
+        }
+        
+        // Handle other errors
+        const errorMessage = result.error?.message || "Registration failed. Please try again.";
+        toast.error(errorMessage);
+        setState(prev => ({ 
+          ...prev, 
+          isLoading: false,
+          connectionError: errorMessage 
+        }));
+        return;
+      }
+      
+      // Success path
+      toast.success("Registration successful!");
+      navigate('/auth');
+      
+    } catch (error: any) {
+      console.error("Registration process error:", error);
+      
+      const errorMessage = error.message || "An unexpected error occurred";
+      toast.error(errorMessage);
+      
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false,
+        connectionError: errorMessage 
+      }));
+    }
   };
 
   return {

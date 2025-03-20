@@ -72,7 +72,13 @@ const Registration = () => {
       
       if (error) {
         console.error('Registration error details:', error);
-        setErrorMessage(error.message || 'Error creating account');
+        if (error.message?.toLowerCase().includes("already registered") || 
+            error.message?.toLowerCase().includes("already in use") ||
+            error.message?.toLowerCase().includes("already exists")) {
+          setErrorMessage('This email address you entered is already registered');
+        } else {
+          setErrorMessage(error.message || 'Error creating account');
+        }
       } else if (data?.user) {
         navigate('/dashboard');
       } else {

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,6 +87,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
+      // First check if email already exists in user_profiles
+      try {
+        const { data: existingProfiles, error: profileCheckError } = await supabase
+          .from('user_profiles')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle();
+          
+        if (profileCheckError) {
+          console.error('Error checking for existing profile:', profileCheckError);
+        } else if (existingProfiles) {
+          toast.error('This email address you entered is already registered');
+          return { error: new Error('This email address you entered is already registered') };
+        }
+      } catch (checkError) {
+        console.error('Exception during profile check:', checkError);
+        // Continue with signup attempt even if check fails
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -102,6 +120,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Error during signup:', error);
+        
+        // Detect if the error is about email already in use
+        if (error.message?.includes("already registered") || 
+            error.message?.includes("already exists") ||
+            error.message?.includes("already in use")) {
+          toast.error('This email address you entered is already registered');
+          return { error: new Error('This email address you entered is already registered') };
+        }
+        
         toast.error(error.message);
         return { error };
       }
