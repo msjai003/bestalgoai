@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Shield, ChevronLeft, ChevronRight, Lock, Bell } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight, Lock, Bell, Eye, EyeOff } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SecuritySettingsDialogProps {
   open: boolean;
@@ -21,10 +22,17 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 2;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // State for password visibility toggles
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically validate and update password via API
+    
+    // Validate passwords
     if (newPassword !== confirmPassword) {
       toast.error("New passwords don't match");
       return;
@@ -35,10 +43,45 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
       return;
     }
     
-    toast.success("Password updated successfully");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    try {
+      setIsLoading(true);
+      
+      // First authenticate the user with current password to verify identity
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: '', // The email will be derived from the current session
+        password: currentPassword
+      });
+      
+      if (signInError) {
+        console.error("Error verifying current password:", signInError);
+        toast.error("Current password is incorrect");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Update the password in Supabase auth
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (updateError) {
+        console.error("Error updating password:", updateError);
+        toast.error(updateError.message || "Failed to update password");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Success
+      toast.success("Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Exception during password update:", error);
+      toast.error("An error occurred while updating password");
+      setIsLoading(false);
+    }
   };
 
   const handleTwoFactorToggle = () => {
@@ -88,15 +131,26 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     <Label htmlFor="current-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       Current Password
                     </Label>
-                    <div className="pl-4">
+                    <div className="pl-4 relative">
                       <Input
                         id="current-password"
-                        type="password"
+                        type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Enter current password"
-                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 pr-8"
                       />
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
                   </div>
                   
@@ -104,15 +158,26 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     <Label htmlFor="new-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       New Password
                     </Label>
-                    <div className="pl-4">
+                    <div className="pl-4 relative">
                       <Input
                         id="new-password"
-                        type="password"
+                        type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Enter new password"
-                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 pr-8"
                       />
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
                   </div>
                   
@@ -120,23 +185,35 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     <Label htmlFor="confirm-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
                       Confirm New Password
                     </Label>
-                    <div className="pl-4">
+                    <div className="pl-4 relative">
                       <Input
                         id="confirm-password"
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0"
+                        className="w-full bg-transparent border-none focus:outline-none text-sm sm:text-base text-white h-8 sm:h-10 px-0 pr-8"
                       />
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
                   </div>
                   
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
+                    disabled={isLoading}
                   >
-                    Update Password
+                    {isLoading ? "Updating..." : "Update Password"}
                   </Button>
                 </form>
               </div>
@@ -175,17 +252,6 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     Cancel
                   </Button>
                 </DialogClose>
-              </div>
-              
-              <div className="mt-5 sm:mt-6 flex flex-col items-center gap-3 sm:gap-4">
-                <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
-                  <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
-                  Advanced Security Options
-                </button>
-                <button className="text-pink-500 flex items-center gap-2 text-sm sm:text-base">
-                  <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
-                  Security Notifications
-                </button>
               </div>
             </div>
           )}
