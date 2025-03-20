@@ -20,7 +20,7 @@ export const Hero = () => {
   return (
     <section className="relative px-4 py-12 bg-gradient-to-b from-gray-900 to-gray-800">
       <div className="absolute inset-0 bg-pink-500/5"></div>
-      <div className="relative">
+      <div className="container mx-auto max-w-5xl px-4 relative">
         {!user && (
           <div className={`flex ${isMobile ? 'justify-center' : 'justify-start'} space-x-3 mb-8`}>
             <Button
@@ -44,7 +44,7 @@ export const Hero = () => {
           Start Trading Now
         </button>
       </div>
-      <div className="mt-8">
+      <div className="container mx-auto max-w-5xl mt-8 px-4">
         <img 
           className="w-full h-48 object-cover rounded-xl shadow-lg" 
           src="https://storage.googleapis.com/uxpilot-auth.appspot.com/493f062fc3-bc315fc272ae97137e07.png" 
