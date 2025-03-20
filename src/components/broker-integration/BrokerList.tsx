@@ -2,8 +2,9 @@
 import { Search, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getBrokerLogo } from "@/utils/brokerImageUtils";
 
 interface BrokerListProps {
   brokers: Broker[];
@@ -13,34 +14,36 @@ interface BrokerListProps {
 export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [brokerImages, setBrokerImages] = useState<Record<number, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Fetch broker images from Supabase
     const fetchBrokerImages = async () => {
       try {
-        const { data, error } = await supabase
-          .from('broker_images')
-          .select('broker_id, image_url');
-          
-        if (error) {
-          console.error('Error fetching broker images:', error);
-          return;
-        }
-        
+        setIsLoading(true);
         // Create a mapping of broker_id to image_url
         const imageMap: Record<number, string> = {};
-        data?.forEach(item => {
-          imageMap[item.broker_id] = item.image_url;
+        
+        // Fetch images for each broker in parallel
+        const promises = brokers.map(async (broker) => {
+          const logoUrl = await getBrokerLogo(broker.id);
+          if (logoUrl) {
+            imageMap[broker.id] = logoUrl;
+          }
         });
         
+        await Promise.all(promises);
         setBrokerImages(imageMap);
       } catch (error) {
         console.error('Exception fetching broker images:', error);
+        toast.error('Failed to load broker images');
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchBrokerImages();
-  }, []);
+  }, [brokers]);
 
   const filteredBrokers = brokers.filter((broker) =>
     broker.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,7 +69,11 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
       </div>
 
       <div className="mt-4 space-y-3">
-        {filteredBrokers.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-4">
+            <div className="animate-pulse h-10 w-10 rounded-full bg-gray-700"></div>
+          </div>
+        ) : filteredBrokers.length > 0 ? (
           filteredBrokers.map((broker) => (
             <div
               key={broker.id}
@@ -75,7 +82,7 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
             >
               <img
                 src={getBrokerImage(broker)}
-                className="w-10 h-10 rounded-lg"
+                className="w-10 h-10 rounded-lg object-contain bg-white p-1"
                 alt={broker.name}
                 onError={(e) => {
                   // Fallback to default logo if image fails to load

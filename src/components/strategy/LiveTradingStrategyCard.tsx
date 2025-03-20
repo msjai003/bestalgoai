@@ -1,10 +1,12 @@
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Strategy } from "@/hooks/strategy/types";
+import { getBrokerLogo } from "@/utils/brokerImageUtils";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -19,6 +21,26 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  const [brokerLogo, setBrokerLogo] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // If strategy has a selected broker, try to get its logo
+    if (strategy.selectedBroker && strategy.brokerId) {
+      const fetchLogo = async () => {
+        try {
+          const logoUrl = await getBrokerLogo(strategy.brokerId);
+          if (logoUrl) {
+            setBrokerLogo(logoUrl);
+          }
+        } catch (error) {
+          console.error('Error fetching broker logo:', error);
+        }
+      };
+      
+      fetchLogo();
+    }
+  }, [strategy.selectedBroker, strategy.brokerId]);
+
   return (
     <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
       <div className="flex items-center justify-between mb-3">
@@ -73,7 +95,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           <div className="bg-gray-800/50 p-3 rounded-lg mb-2">
             <div className="flex items-center justify-between mb-1">
               <span className="text-gray-300 text-sm">Broker</span>
-              <span className="text-white font-medium">{strategy.selectedBroker}</span>
+              <div className="flex items-center">
+                {brokerLogo && (
+                  <img 
+                    src={brokerLogo} 
+                    alt={strategy.selectedBroker}
+                    className="w-5 h-5 mr-1.5 rounded bg-white p-0.5 object-contain"
+                  />
+                )}
+                <span className="text-white font-medium">{strategy.selectedBroker}</span>
+              </div>
             </div>
             
             {strategy.brokerUsername && (

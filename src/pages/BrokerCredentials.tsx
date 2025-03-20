@@ -89,6 +89,8 @@ const BrokerCredentials = () => {
       <BrokerHeader 
         onBack={handleBack} 
         title="Connect Your Broker" 
+        brokerId={selectedBroker.id}
+        brokerName={selectedBroker.name}
       />
 
       <main className="pt-20 px-4 pb-24">

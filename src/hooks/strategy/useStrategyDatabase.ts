@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -45,6 +46,7 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           selectedBroker: item.selected_broker || "",
           brokerUsername: item.broker_username || "",
           tradeType: item.trade_type || "paper trade",
+          brokerId: item.broker_id, // Include broker ID for logo fetching
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -74,7 +76,8 @@ export const updateStrategyLiveConfig = async (
   quantity: number,
   brokerName: string | null,
   brokerUsername: string | null = null,
-  tradeType: string = "paper trade"
+  tradeType: string = "paper trade",
+  brokerId: number | null = null
 ): Promise<void> => {
   console.log("Updating strategy config:", {
     userId,
@@ -82,7 +85,8 @@ export const updateStrategyLiveConfig = async (
     quantity,
     brokerName,
     brokerUsername,
-    tradeType
+    tradeType,
+    brokerId
   });
   
   // Always create a new entry - don't update existing ones
@@ -96,7 +100,8 @@ export const updateStrategyLiveConfig = async (
       quantity: quantity || 0,
       selected_broker: brokerName,
       broker_username: brokerUsername,
-      trade_type: tradeType
+      trade_type: tradeType,
+      broker_id: brokerId
     });
   
   if (error) {
@@ -108,12 +113,12 @@ export const updateStrategyLiveConfig = async (
 /**
  * Fetches broker details by ID
  */
-export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string } | null> => {
+export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: string, broker_id?: number } | null> => {
   console.log("Fetching broker details for ID:", brokerId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
-    .select('broker_name')
+    .select('broker_name, broker_id')
     .eq('id', brokerId)
     .single();
     
@@ -129,12 +134,12 @@ export const fetchBrokerById = async (brokerId: string): Promise<{ broker_name: 
 /**
  * Fetches all available brokers for a user
  */
-export const fetchUserBrokers = async (userId: string): Promise<Array<{id: string, broker_name: string}>> => {
+export const fetchUserBrokers = async (userId: string): Promise<Array<{id: string, broker_name: string, broker_id?: number}>> => {
   console.log("Fetching connected brokers for user:", userId);
   
   const { data, error } = await supabase
     .from('broker_credentials')
-    .select('id, broker_name')
+    .select('id, broker_name, broker_id')
     .eq('user_id', userId)
     .eq('status', 'connected');
     
