@@ -1,4 +1,3 @@
-
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
@@ -18,6 +17,8 @@ export interface Strategy {
   tradeType?: string;
   pnl?: string;
   successRate?: string;
+  isPremium?: boolean; // Whether this is a premium strategy
+  isPaid?: boolean; // Whether the user has paid for this strategy
 }
 
 export interface StrategySelection {
