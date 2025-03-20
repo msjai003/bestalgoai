@@ -130,9 +130,12 @@ const Dashboard = () => {
             </Link>
           </div>
           
-          <div className="mt-3">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <Link to="/broker-integration" className="block">
               <QuickActionButton icon="fa-building-columns" label="Brokers" />
+            </Link>
+            <Link to="/risk-management" className="block">
+              <QuickActionButton icon="fa-shield" label="Risk Management" />
             </Link>
           </div>
         </section>
