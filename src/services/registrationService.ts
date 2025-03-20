@@ -98,7 +98,7 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       return { success: true, message: defaultMessage };
     }
     
-    const welcomeMessage = welcomeMessageData.message_content;
+    const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
     
     // In a real implementation, this would call an email service API
     // For now, we'll just log the email that would be sent
