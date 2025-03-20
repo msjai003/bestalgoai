@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
@@ -77,13 +76,11 @@ export const checkAuthStatus = async () => {
   return null;
 };
 
-// Function to directly login a user
 export const loginUser = async (email: string, password: string) => {
   console.log("Login functionality has been removed");
   throw new Error("Login functionality has been removed");
 };
 
-// Function to save user preferences or other data
 export const saveUserData = async (userId: string, data: any) => {
   console.log("Save user data functionality has been removed");
   throw new Error("Save user data functionality has been removed");

@@ -14,6 +14,19 @@ export const supabase = {
   },
   from: (tableName) => ({
     select: (query = '*') => ({
+      eq: (column, value) => ({
+        maybeSingle: () => ({ data: null, error: null }),
+        order: (column, { ascending } = { ascending: false }) => ({
+          limit: (limit) => ({
+            data: [],
+            error: null
+          }),
+          data: [],
+          error: null
+        }),
+        data: [],
+        error: null
+      }),
       order: (column, { ascending } = { ascending: false }) => ({
         limit: (limit) => ({
           data: [],
