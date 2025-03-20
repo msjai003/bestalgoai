@@ -24,6 +24,7 @@ const StrategyDetails = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
@@ -32,7 +33,7 @@ const StrategyDetails = () => {
       try {
         const { data, error } = await supabase
           .from('strategy_selections')
-          .select('id')
+          .select('id, paid_status')
           .eq('user_id', user.id)
           .eq('strategy_id', strategy.id)
           .single();
@@ -43,6 +44,10 @@ const StrategyDetails = () => {
         }
         
         setIsWishlisted(!!data);
+        
+        if (data && data.paid_status === 'paid') {
+          setIsPaidStrategy(true);
+        }
       } catch (error) {
         console.error('Error checking wishlist status:', error);
       }
@@ -74,13 +79,13 @@ const StrategyDetails = () => {
 
   // Check if user can access this premium strategy
   useEffect(() => {
-    if (isPremium && !hasPremium && user) {
+    if (isPremium && !hasPremium && !isPaidStrategy && user) {
       toast({
         title: "Premium Strategy",
         description: "Please upgrade to access this premium strategy",
       });
     }
-  }, [isPremium, hasPremium, user, toast]);
+  }, [isPremium, hasPremium, isPaidStrategy, user, toast]);
 
   const handleToggleWishlist = async () => {
     if (!user) {
@@ -148,6 +153,8 @@ const StrategyDetails = () => {
   };
 
   const handleUpgrade = () => {
+    // Store the strategy ID in sessionStorage before redirecting
+    sessionStorage.setItem('selectedStrategyId', strategyId.toString());
     navigate('/pricing');
   };
 
@@ -171,7 +178,7 @@ const StrategyDetails = () => {
     );
   }
 
-  const canAccess = !isPremium || hasPremium;
+  const canAccess = !isPremium || hasPremium || isPaidStrategy;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -189,7 +196,7 @@ const StrategyDetails = () => {
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold mb-4">{strategy.name}</h1>
               <div className="flex space-x-2">
-                {isPremium && !hasPremium && (
+                {isPremium && !canAccess && (
                   <Button 
                     variant="outline"
                     className="text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/10"
@@ -257,13 +264,13 @@ const StrategyDetails = () => {
                 <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70" />
                 <h3 className="text-xl font-semibold mb-2">Premium Strategy</h3>
                 <p className="text-gray-400 mb-6">
-                  This is a premium strategy. Upgrade to our Pro or Elite plan to access all details and deploy this strategy.
+                  <span className="font-medium text-[#FF00D4]">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
                 </p>
                 <Button 
                   className="bg-gradient-to-r from-[#FF00D4] to-purple-600"
                   onClick={handleUpgrade}
                 >
-                  Upgrade to Premium
+                  Unlock {strategy.name}
                 </Button>
               </div>
             )}

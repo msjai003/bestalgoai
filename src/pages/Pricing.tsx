@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -10,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
 import PaymentDialog from '@/components/subscription/PaymentDialog';
+import { usePredefinedStrategies } from '@/hooks/strategy/usePredefinedStrategies';
 
 const plans = [
   {
@@ -48,6 +48,32 @@ const PricingPage = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{name: string, price: string} | null>(null);
   const [hasPremium, setHasPremium] = useState(false);
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
+  const { data: predefinedStrategies } = usePredefinedStrategies();
+  const [selectedStrategyName, setSelectedStrategyName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if there's a selected strategy ID in sessionStorage
+    const strategyId = sessionStorage.getItem('selectedStrategyId');
+    if (strategyId) {
+      setSelectedStrategyId(strategyId);
+      
+      // Clear the sessionStorage to avoid persistence
+      sessionStorage.removeItem('selectedStrategyId');
+    }
+  }, []);
+
+  useEffect(() => {
+    // If we have strategy ID and predefined strategies data, get the strategy name
+    if (selectedStrategyId && predefinedStrategies) {
+      const strategy = predefinedStrategies.find(
+        s => s.id === parseInt(selectedStrategyId, 10)
+      );
+      if (strategy) {
+        setSelectedStrategyName(strategy.name);
+      }
+    }
+  }, [selectedStrategyId, predefinedStrategies]);
 
   useEffect(() => {
     // Check if user already has premium
@@ -106,7 +132,23 @@ const PricingPage = () => {
 
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
-    // Redirect to subscription page to show active plan
+    
+    // Show specific success message if a strategy was selected
+    if (selectedStrategyName) {
+      toast({
+        title: "Strategy Unlocked!",
+        description: `You now have access to ${selectedStrategyName} and all premium strategies.`,
+        variant: "default",
+      });
+      
+      // Redirect to the specific strategy details if we have the ID
+      if (selectedStrategyId) {
+        navigate(`/strategy-details/${selectedStrategyId}`);
+        return;
+      }
+    }
+    
+    // Otherwise, redirect to subscription page to show active plan
     navigate('/subscription');
   };
 
@@ -114,6 +156,17 @@ const PricingPage = () => {
     <div className="min-h-screen bg-gray-900 text-white pb-16">
       <Header />
       <main className="pt-24 px-4">
+        {selectedStrategyName && (
+          <section className="mb-8">
+            <div className="bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 rounded-xl p-4 border border-[#FF00D4]/30">
+              <h2 className="text-lg font-medium mb-2">Unlock Premium Strategy</h2>
+              <p className="text-gray-300">
+                Subscribe to unlock <span className="text-[#FF00D4] font-semibold">{selectedStrategyName}</span> and all other premium strategies.
+              </p>
+            </div>
+          </section>
+        )}
+
         <section className="mb-12">
           <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-[#FF00D4] to-purple-600 bg-clip-text text-transparent">
             Choose Your Trading Power
@@ -162,7 +215,7 @@ const PricingPage = () => {
                     <Loader className="h-4 w-4 animate-spin mr-2" />
                     Processing...
                   </>
-                ) : hasPremium ? "Already Subscribed" : "Get Started"}
+                ) : hasPremium ? "Already Subscribed" : selectedStrategyName ? `Unlock ${selectedStrategyName}` : "Get Started"}
               </Button>
             </div>
           ))}
@@ -176,6 +229,8 @@ const PricingPage = () => {
           planName={selectedPlan.name}
           planPrice={selectedPlan.price}
           onSuccess={handlePaymentSuccess}
+          selectedStrategyId={selectedStrategyId ? parseInt(selectedStrategyId, 10) : undefined}
+          selectedStrategyName={selectedStrategyName}
         />
       )}
       

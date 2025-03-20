@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -33,6 +33,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const toggleLiveMode = () => {
     if (!canAccess) {
+      // Store the strategy ID in sessionStorage before redirecting
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       navigate('/pricing');
       return;
     }
@@ -44,6 +46,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const redirectToPricing = () => {
+    // Store the strategy ID in sessionStorage before redirecting
+    sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
     navigate('/pricing');
   };
 

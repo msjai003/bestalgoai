@@ -15,6 +15,8 @@ interface PaymentDialogProps {
   planName: string;
   planPrice: string;
   onSuccess: () => void;
+  selectedStrategyId?: number;
+  selectedStrategyName?: string | null;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -22,7 +24,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   onOpenChange,
   planName,
   planPrice,
-  onSuccess
+  onSuccess,
+  selectedStrategyId,
+  selectedStrategyName
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,7 +34,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Payment Details</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Enter your card details to subscribe to the {planName} plan.
+            {selectedStrategyName ? 
+              `Complete payment to unlock ${selectedStrategyName} and all premium strategies.` :
+              `Enter your card details to subscribe to the ${planName} plan.`
+            }
           </DialogDescription>
         </DialogHeader>
         
@@ -39,6 +46,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           planPrice={planPrice}
           onSuccess={onSuccess}
           onCancel={() => onOpenChange(false)}
+          selectedStrategyId={selectedStrategyId}
+          selectedStrategyName={selectedStrategyName}
         />
         
         <div className="text-xs text-gray-400 mt-4">

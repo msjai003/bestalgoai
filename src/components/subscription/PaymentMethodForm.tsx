@@ -13,13 +13,17 @@ interface PaymentMethodFormProps {
   planPrice: string;
   onSuccess: () => void;
   onCancel: () => void;
+  selectedStrategyId?: number;
+  selectedStrategyName?: string | null;
 }
 
 const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
   planName,
   planPrice,
   onSuccess,
-  onCancel
+  onCancel,
+  selectedStrategyId,
+  selectedStrategyName
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -105,19 +109,35 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // 3. Mark strategies as paid for this user (only premium strategies)
+      // 3. Mark strategies as paid for this user
+      // If a specific strategy was selected, ensure it's marked as paid
+      if (selectedStrategyId) {
+        await supabase.rpc('force_strategy_paid_status', {
+          p_user_id: user.id,
+          p_strategy_id: selectedStrategyId,
+          p_strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+          p_strategy_description: "Premium strategy unlocked with subscription"
+        });
+      }
+      
+      // Also mark all other premium strategies (2-5) as paid
       for (let i = 2; i <= 5; i++) {
+        // Skip if this is the already processed selected strategy
+        if (i === selectedStrategyId) continue;
+        
         await supabase.rpc('force_strategy_paid_status', {
           p_user_id: user.id,
           p_strategy_id: i,
           p_strategy_name: `Strategy ${i}`,
-          p_strategy_description: "Premium strategy description"
+          p_strategy_description: "Premium strategy unlocked with subscription"
         });
       }
       
       toast({
         title: "Payment successful",
-        description: `Your ${planName} plan is now active!`,
+        description: selectedStrategyName
+          ? `You've unlocked ${selectedStrategyName} and all premium strategies!`
+          : `Your ${planName} plan is now active!`,
         variant: "default"
       });
       
@@ -191,7 +211,10 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
           className="w-full bg-[#FF00D4] hover:bg-[#FF00D4]/90"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Processing..." : `Pay ${planPrice}`}
+          {isSubmitting ? "Processing..." : selectedStrategyName 
+            ? `Unlock ${selectedStrategyName} for ${planPrice}`
+            : `Pay ${planPrice}`
+          }
         </Button>
         
         <Button 
