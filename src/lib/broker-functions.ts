@@ -18,7 +18,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     throw error;
   }
   
-  return data;
+  return data as unknown as BrokerFunction[];
 };
 
 /**
@@ -73,7 +73,7 @@ export const isBrokerFunctionPremium = async (
 export const getBrokerFunctionConfig = async (
   brokerId: number, 
   functionSlug: string
-): Promise<Record<string, any> | null> => {
+): Promise<any | null> => {
   const { data, error } = await supabase
     .from('brokers_functions')
     .select('configuration')

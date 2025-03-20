@@ -29,7 +29,8 @@ export const useBrokerFunctions = (brokerId?: number) => {
         
         if (error) throw error;
         
-        setFunctions(data || []);
+        // Cast the data to match our BrokerFunction type
+        setFunctions(data as unknown as BrokerFunction[]);
       } catch (err: any) {
         console.error("Error fetching broker functions:", err);
         setError(err.message);

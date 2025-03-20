@@ -37,7 +37,7 @@ export interface BrokerFunction {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  configuration: Record<string, any>;
+  configuration: any; // Changed from Record<string, any> to any to be compatible with Json type
   created_at: string;
   updated_at: string;
 }

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { BrokerFunction } from "@/hooks/strategy/types";
-import { CheckCircle, XCircle, LockClosed, Info } from "lucide-react";
+import { CheckCircle, XCircle, Lock, Info } from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,
@@ -121,7 +121,7 @@ const FunctionCard = ({ func }: { func: BrokerFunction }) => {
               <div className="h-6 w-6 flex items-center justify-center">
                 {func.function_enabled ? 
                   (func.is_premium ? 
-                    <LockClosed className="h-5 w-5 text-amber-400" /> : 
+                    <Lock className="h-5 w-5 text-amber-400" /> : 
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : 
                   <XCircle className="h-5 w-5 text-gray-500" />
