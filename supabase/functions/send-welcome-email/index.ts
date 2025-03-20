@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,9 +8,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Mailgun configuration
-const MAILGUN_API_KEY = "c41d83a8a354196b5aecc0d371bc52ce-3d4b3a2a-b5d6f8c8";
-const MAILGUN_DOMAIN = "sandbox.mailgun.org"; // You should replace this with your actual domain
+// SMTP configuration
+const SMTP_HOST = "smtp.gmail.com";
+const SMTP_PORT = 465;
+const SMTP_USERNAME = "learnings1.infocap@gmail.com";
+const SMTP_PASSWORD = "jcpv fako lllb dfre";
+const SENDER_EMAIL = "learnings1.infocap@gmail.com";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -32,9 +36,9 @@ serve(async (req) => {
       );
     }
 
-    // Send actual email using Mailgun
+    // Send actual email using SMTP
     const message = welcomeMessage || "Thank you for signing up with InfoCap Company!";
-    const result = await sendMailgunEmail(email, name, message);
+    const result = await sendSmtpEmail(email, name, message);
 
     return new Response(
       JSON.stringify({ success: true, message: "Email sent successfully", result }),
@@ -55,13 +59,21 @@ serve(async (req) => {
   }
 });
 
-async function sendMailgunEmail(toEmail: string, recipientName: string, welcomeMessage: string) {
+async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMessage: string) {
   try {
-    const formData = new FormData();
-    formData.append("from", "InfoCap Team <welcome@infocap.com>");
-    formData.append("to", toEmail);
-    formData.append("subject", "Welcome to InfoCap Company!");
+    console.log(`Preparing to send email to ${toEmail}...`);
     
+    const client = new SmtpClient();
+    
+    // Connect to SMTP server
+    await client.connectTLS({
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      username: SMTP_USERNAME,
+      password: SMTP_PASSWORD,
+    });
+    
+    // HTML email content
     const htmlContent = `
       <html>
         <head>
@@ -92,32 +104,22 @@ async function sendMailgunEmail(toEmail: string, recipientName: string, welcomeM
       </html>
     `;
     
-    formData.append("html", htmlContent);
+    // Send the email
+    const result = await client.send({
+      from: SENDER_EMAIL,
+      to: toEmail,
+      subject: "Welcome to InfoCap Company!",
+      content: "Welcome to InfoCap Company!",
+      html: htmlContent,
+    });
     
-    console.log(`Sending email to ${toEmail}...`);
+    // Close the connection
+    await client.close();
     
-    // Make the API request to Mailgun
-    const response = await fetch(
-      `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
-        },
-        body: formData,
-      }
-    );
-    
-    const responseData = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(`Mailgun API error: ${JSON.stringify(responseData)}`);
-    }
-    
-    console.log("Email sent successfully via Mailgun:", responseData);
-    return responseData;
+    console.log("Email sent successfully via SMTP:", result);
+    return { success: true, messageId: result };
   } catch (error) {
-    console.error("Failed to send email via Mailgun:", error);
+    console.error("Failed to send email via SMTP:", error);
     throw error;
   }
 }
