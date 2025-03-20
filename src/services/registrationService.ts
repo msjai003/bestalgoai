@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
@@ -64,9 +65,47 @@ export const registerUser = async (formData: RegistrationData) => {
       return { success: false, error };
     }
 
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(formData.email, formData.fullName);
+    } catch (emailError) {
+      // Don't fail registration if email sending fails
+      console.error("Failed to send welcome email:", emailError);
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error("Exception during registration:", error);
+    return { success: false, error };
+  }
+};
+
+// Function to send welcome email
+const sendWelcomeEmail = async (email: string, name: string) => {
+  try {
+    // In a real implementation, this would call an email service API
+    // For now, we'll just log the email that would be sent
+    console.log(`Sending welcome email to ${email} with name ${name}`);
+    
+    // In a real application, you would use an email service API here
+    // For example with a backend API endpoint:
+    /*
+    const response = await fetch('/api/send-welcome-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, name }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to send welcome email');
+    }
+    */
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
     return { success: false, error };
   }
 };

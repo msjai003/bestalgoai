@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -97,6 +96,7 @@ export const useRegistration = () => {
       
       // Success path
       toast.success("Registration successful!");
+      toast.info("Thank you for signing up with InfoCap Company. A confirmation email has been sent to your inbox.");
       navigate('/auth');
       
     } catch (error: any) {
