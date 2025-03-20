@@ -65,7 +65,7 @@ export const registerUser = async (formData: RegistrationData) => {
       return { success: false, error };
     }
 
-    // Send welcome email
+    // Send welcome email from send_message table
     try {
       await sendWelcomeEmail(formData.email, formData.fullName);
     } catch (emailError) {
@@ -101,29 +101,25 @@ const sendWelcomeEmail = async (email: string, name: string) => {
     const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
     
     // In a real implementation, this would call an email service API
-    // For now, we'll just log the email that would be sent
     console.log(`Sending welcome email to ${email} with name ${name}: ${welcomeMessage}`);
     
-    // In a real application, you would use an email service API here
-    // For example with a backend API endpoint:
+    // Here we would actually send the email using an email service
+    // For example, using Supabase edge function to send email:
     /*
-    const response = await fetch('/api/send-welcome-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        email, 
+    const response = await supabase.functions.invoke('send-welcome-email', {
+      body: JSON.stringify({
+        email,
         name,
-        message: welcomeMessage 
-      }),
+        welcomeMessage
+      })
     });
     
-    if (!response.ok) {
-      throw new Error('Failed to send welcome email');
+    if (response.error) {
+      throw new Error('Failed to send welcome email: ' + response.error.message);
     }
     */
     
+    // For now, we're just simulating the email being sent
     return { success: true, message: welcomeMessage };
   } catch (error) {
     console.error("Error sending welcome email:", error);
