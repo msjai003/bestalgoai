@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
+import PaymentDialog from '@/components/subscription/PaymentDialog';
 
 const plans = [
   {
@@ -44,8 +45,36 @@ const PricingPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<{name: string, price: string} | null>(null);
+  const [hasPremium, setHasPremium] = useState(false);
 
-  const handlePlanSelection = async (planName: string, planPrice: string) => {
+  useEffect(() => {
+    // Check if user already has premium
+    const checkPremiumStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremiumStatus();
+  }, [user]);
+
+  const handlePlanSelection = (planName: string, planPrice: string) => {
     // Check if user is logged in
     if (!user) {
       toast({
@@ -58,47 +87,27 @@ const PricingPage = () => {
       navigate('/auth');
       return;
     }
-
-    // Set loading state for the specific button
-    setIsLoading(`${planName}-${planPrice}`);
-
-    try {
-      // Insert plan selection into the database
-      const { error } = await supabase
-        .from('plan_details')
-        .insert({
-          user_id: user.id,
-          plan_name: planName,
-          plan_price: planPrice,
-        });
-
-      if (error) {
-        console.error('Error saving plan selection:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save your plan selection. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: `You've selected the ${planName} plan!`,
-          variant: "default",
-        });
-        
-        // Redirect to subscription page or dashboard
-        navigate('/subscription');
-      }
-    } catch (error) {
-      console.error('Error in plan selection:', error);
+    
+    // If user already has premium, show a different message
+    if (hasPremium) {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
+        title: "Already subscribed",
+        description: "You already have an active premium subscription.",
+        variant: "default",
       });
-    } finally {
-      setIsLoading(null);
+      navigate('/subscription');
+      return;
     }
+
+    // Open payment dialog
+    setSelectedPlan({ name: planName, price: planPrice });
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setPaymentDialogOpen(false);
+    // Redirect to subscription page to show active plan
+    navigate('/subscription');
   };
 
   return (
@@ -146,19 +155,30 @@ const PricingPage = () => {
               <Button 
                 className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
                 onClick={() => handlePlanSelection(plan.name, plan.price)}
-                disabled={isLoading === `${plan.name}-${plan.price}`}
+                disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
               >
                 {isLoading === `${plan.name}-${plan.price}` ? (
                   <>
                     <Loader className="h-4 w-4 animate-spin mr-2" />
                     Processing...
                   </>
-                ) : "Get Started"}
+                ) : hasPremium ? "Already Subscribed" : "Get Started"}
               </Button>
             </div>
           ))}
         </section>
       </main>
+      
+      {selectedPlan && (
+        <PaymentDialog 
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          planName={selectedPlan.name}
+          planPrice={selectedPlan.price}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
+      
       <Footer />
       <BottomNav />
     </div>

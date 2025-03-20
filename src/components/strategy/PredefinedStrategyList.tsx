@@ -21,6 +21,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   onToggleLiveMode,
   user
 }) => {
+  const navigate = useNavigate();
   const [hasPremium, setHasPremium] = React.useState<boolean>(false);
   
   React.useEffect(() => {

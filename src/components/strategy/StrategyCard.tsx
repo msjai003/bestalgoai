@@ -39,6 +39,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     onToggleLiveMode(strategy.id);
   };
 
+  const handleViewDetails = () => {
+    navigate(`/strategy-details/${strategy.id}`);
+  };
+
   const redirectToPricing = () => {
     navigate('/pricing');
   };
@@ -48,7 +52,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       <CardContent className="p-0">
         <div className="p-4">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="cursor-pointer" onClick={handleViewDetails}>
               <h3 className="text-xl font-semibold text-white mb-1">
                 {strategy.name}
               </h3>

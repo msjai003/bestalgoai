@@ -1,15 +1,12 @@
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
-import { Link } from "react-router-dom";
-import { useToast } from '@/hooks/use-toast';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronRight, TrendingUp, Loader, Lock, Play } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import Header from "@/components/Header";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data since database connection is removed
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
   { date: '2/5', value: 1250000 },
@@ -18,7 +15,6 @@ const mockPerformanceData = [
   { date: '5/5', value: 1245678 },
 ];
 
-// Modified strategies to indicate which ones are premium
 const mockStrategies = [
   { 
     id: '1', 
@@ -46,7 +42,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   
-  // Check if user is logged in, if not redirect to auth page
   useEffect(() => {
     if (!user) {
       toast({
@@ -56,7 +51,6 @@ const Dashboard = () => {
       });
       navigate('/auth');
     } else {
-      // Check if user has premium subscription
       const checkPremium = async () => {
         try {
           const { data, error } = await supabase
@@ -88,7 +82,6 @@ const Dashboard = () => {
     }
   };
 
-  // If still checking authentication, show loading
   if (user === null) {
     return (
       <div className="bg-gray-900 min-h-screen flex items-center justify-center">
