@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -101,11 +100,15 @@ const StrategyDetails = () => {
     try {
       if (!isWishlisted) {
         const { error } = await supabase.from('strategy_selections')
-          .insert({
+          .upsert({
             user_id: user.id,
             strategy_id: strategy.id,
             strategy_name: strategy.name,
-            strategy_description: strategy.description
+            strategy_description: strategy.description,
+            paid_status: isPaidStrategy ? 'paid' : 'free'
+          }, {
+            onConflict: 'user_id,strategy_id',
+            ignoreDuplicates: false
           });
           
         if (error) {
@@ -124,19 +127,37 @@ const StrategyDetails = () => {
           description: "Strategy has been added to your wishlist",
         });
       } else {
-        const { error } = await supabase.from('strategy_selections')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id);
-          
-        if (error) {
-          console.error('Error removing from wishlist:', error);
-          toast({
-            title: "Error",
-            description: "Failed to remove strategy from wishlist",
-            variant: "destructive"
-          });
-          return;
+        if (isPaidStrategy) {
+          const { error } = await supabase.from('strategy_selections')
+            .update({
+            })
+            .eq('user_id', user.id)
+            .eq('strategy_id', strategy.id);
+            
+          if (error) {
+            console.error('Error updating wishlist status:', error);
+            toast({
+              title: "Error",
+              description: "Failed to remove strategy from wishlist",
+              variant: "destructive"
+            });
+            return;
+          }
+        } else {
+          const { error } = await supabase.from('strategy_selections')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('strategy_id', strategy.id);
+            
+          if (error) {
+            console.error('Error removing from wishlist:', error);
+            toast({
+              title: "Error",
+              description: "Failed to remove strategy from wishlist",
+              variant: "destructive"
+            });
+            return;
+          }
         }
         
         setIsWishlisted(false);
@@ -153,7 +174,6 @@ const StrategyDetails = () => {
   };
 
   const handleUpgrade = () => {
-    // Store the strategy ID in sessionStorage before redirecting
     sessionStorage.setItem('selectedStrategyId', strategyId.toString());
     navigate('/pricing');
   };

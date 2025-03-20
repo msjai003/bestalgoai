@@ -109,28 +109,70 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // 3. Mark strategies as paid for this user
+      // 3. Mark strategies as paid for this user without affecting wishlist status
       // If a specific strategy was selected, ensure it's marked as paid
       if (selectedStrategyId) {
-        await supabase.rpc('force_strategy_paid_status', {
-          p_user_id: user.id,
-          p_strategy_id: selectedStrategyId,
-          p_strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-          p_strategy_description: "Premium strategy unlocked with subscription"
-        });
+        // First check if the strategy already exists in the user's selections
+        const { data: existingStrategy, error: queryError } = await supabase
+          .from('strategy_selections')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('strategy_id', selectedStrategyId)
+          .maybeSingle();
+          
+        if (queryError) {
+          throw queryError;
+        }
+        
+        if (existingStrategy) {
+          // Update existing strategy to paid status without changing isWishlisted
+          await supabase
+            .from('strategy_selections')
+            .update({ paid_status: 'paid' })
+            .eq('id', existingStrategy.id);
+        } else {
+          // Insert new strategy with paid status but not wishlisted
+          await supabase.rpc('force_strategy_paid_status', {
+            p_user_id: user.id,
+            p_strategy_id: selectedStrategyId,
+            p_strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+            p_strategy_description: "Premium strategy unlocked with subscription"
+          });
+        }
       }
       
-      // Also mark all other premium strategies (2-5) as paid
+      // Also mark all other premium strategies (2-5) as paid without affecting wishlist status
       for (let i = 2; i <= 5; i++) {
         // Skip if this is the already processed selected strategy
         if (i === selectedStrategyId) continue;
         
-        await supabase.rpc('force_strategy_paid_status', {
-          p_user_id: user.id,
-          p_strategy_id: i,
-          p_strategy_name: `Strategy ${i}`,
-          p_strategy_description: "Premium strategy unlocked with subscription"
-        });
+        // Check if strategy already exists for this user
+        const { data: existingStrategy, error: queryError } = await supabase
+          .from('strategy_selections')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('strategy_id', i)
+          .maybeSingle();
+          
+        if (queryError) {
+          throw queryError;
+        }
+        
+        if (existingStrategy) {
+          // Update existing strategy to paid status without changing wishlist state
+          await supabase
+            .from('strategy_selections')
+            .update({ paid_status: 'paid' })
+            .eq('id', existingStrategy.id);
+        } else {
+          // Insert new strategy with paid status but not wishlisted
+          await supabase.rpc('force_strategy_paid_status', {
+            p_user_id: user.id,
+            p_strategy_id: i,
+            p_strategy_name: `Strategy ${i}`,
+            p_strategy_description: "Premium strategy unlocked with subscription"
+          });
+        }
       }
       
       toast({
