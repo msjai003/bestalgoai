@@ -88,7 +88,7 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       .from('send_message')
       .select('message_content')
       .eq('message_type', 'welcome')
-      .single();
+      .maybeSingle();
     
     if (messageError) {
       console.error("Error fetching welcome message:", messageError);
