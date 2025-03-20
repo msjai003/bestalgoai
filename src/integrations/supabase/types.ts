@@ -54,6 +54,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers_functions: {
+        Row: {
+          broker_id: number
+          broker_name: string
+          configuration: Json | null
+          created_at: string | null
+          function_description: string | null
+          function_enabled: boolean | null
+          function_name: string
+          function_slug: string
+          id: string
+          is_premium: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          broker_name: string
+          configuration?: Json | null
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean | null
+          function_name: string
+          function_slug: string
+          id?: string
+          is_premium?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          broker_name?: string
+          configuration?: Json | null
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean | null
+          function_name?: string
+          function_slug?: string
+          id?: string
+          is_premium?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           created_at: string | null
@@ -328,6 +370,12 @@ export type Database = {
           p_strategy_description: string
         }
         Returns: undefined
+      }
+      get_broker_image: {
+        Args: {
+          p_broker_id: number
+        }
+        Returns: string
       }
       is_admin: {
         Args: Record<PropertyKey, never>

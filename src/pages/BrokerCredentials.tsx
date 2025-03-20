@@ -6,6 +6,7 @@ import { AccountSettings } from "@/components/broker-integration/AccountSettings
 import { SuccessDialog } from "@/components/broker-integration/SuccessDialog";
 import { BrokerHeader } from "@/components/broker-integration/BrokerHeader";
 import { ConnectionStepActions } from "@/components/broker-integration/ConnectionStepActions";
+import { BrokerFunctions } from "@/components/broker-integration/BrokerFunctions";
 import { useBrokerConnection } from "@/hooks/useBrokerConnection";
 import { brokers, accountTypes } from "@/components/broker-integration/BrokerData";
 
@@ -49,13 +50,24 @@ const BrokerCredentials = () => {
     switch (connectionStep) {
       case "credentials":
         return (
-          <CredentialsForm
-            selectedBroker={selectedBroker}
-            credentials={credentials}
-            setCredentials={setCredentials}
-            showApiFields={showApiFields}
-            onBack={handleBack}
-          />
+          <div>
+            <CredentialsForm
+              selectedBroker={selectedBroker}
+              credentials={credentials}
+              setCredentials={setCredentials}
+              showApiFields={showApiFields}
+              onBack={handleBack}
+            />
+            
+            {selectedBroker && (
+              <div className="mt-8">
+                <BrokerFunctions 
+                  brokerId={selectedBroker.id} 
+                  brokerName={selectedBroker.name} 
+                />
+              </div>
+            )}
+          </div>
         );
       case "settings":
         return (

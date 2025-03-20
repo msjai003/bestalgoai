@@ -27,3 +27,17 @@ export interface StrategySelection {
   broker_username?: string;
   trade_type?: string;
 }
+
+export interface BrokerFunction {
+  id: string;
+  broker_id: number;
+  broker_name: string;
+  function_name: string;
+  function_description: string | null;
+  function_slug: string;
+  function_enabled: boolean;
+  is_premium: boolean;
+  configuration: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
