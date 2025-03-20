@@ -18,13 +18,31 @@ const SENDER_EMAIL = "learnings1.infocap@gmail.com";
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log("Edge function triggered: Attempting to send welcome email");
-    const { email, name, welcomeMessage } = await req.json();
-    console.log(`Request payload received - Email: ${email}, Name: ${name}`);
+    
+    // Parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log("Request body parsed successfully:", JSON.stringify(requestBody));
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+    
+    const { email, name, welcomeMessage } = requestBody;
+    console.log(`Request payload received - Email: ${email}, Name: ${name}, Message: ${welcomeMessage}`);
 
     if (!email || !name) {
       console.error("Missing required fields in request");
@@ -42,16 +60,28 @@ serve(async (req) => {
     // Send actual email using SMTP
     const message = welcomeMessage || "Thank you for signing up with InfoCap Company!";
     console.log(`Preparing to send welcome message: "${message}"`);
-    const result = await sendSmtpEmail(email, name, message);
-
-    console.log("Email sending complete, returning success response");
-    return new Response(
-      JSON.stringify({ success: true, message: "Email sent successfully", result }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
+    
+    try {
+      const result = await sendSmtpEmail(email, name, message);
+      console.log("Email sending complete, returning success response");
+      
+      return new Response(
+        JSON.stringify({ success: true, message: "Email sent successfully", result }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    } catch (smtpError) {
+      console.error("SMTP sending failed:", smtpError);
+      return new Response(
+        JSON.stringify({ error: "Failed to send email via SMTP", details: smtpError.message }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
   } catch (error) {
     console.error("Error in send-welcome-email function:", error);
     return new Response(
@@ -72,13 +102,18 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
     
     // Connect to SMTP server
     console.log("Connecting to SMTP server...");
-    await client.connectTLS({
-      hostname: SMTP_HOST,
-      port: SMTP_PORT,
-      username: SMTP_USERNAME,
-      password: SMTP_PASSWORD,
-    });
-    console.log("Successfully connected to SMTP server");
+    try {
+      await client.connectTLS({
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        username: SMTP_USERNAME,
+        password: SMTP_PASSWORD,
+      });
+      console.log("Successfully connected to SMTP server");
+    } catch (connectError) {
+      console.error("SMTP connection error:", connectError);
+      throw new Error(`SMTP connection failed: ${connectError.message}`);
+    }
     
     // HTML email content
     const htmlContent = `
@@ -113,19 +148,30 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
     
     // Send the email
     console.log("Sending email...");
-    const result = await client.send({
-      from: SENDER_EMAIL,
-      to: toEmail,
-      subject: "Welcome to InfoCap Company!",
-      content: "Welcome to InfoCap Company!",
-      html: htmlContent,
-    });
+    let result;
+    try {
+      result = await client.send({
+        from: SENDER_EMAIL,
+        to: toEmail,
+        subject: "Welcome to InfoCap Company!",
+        content: "Welcome to InfoCap Company!",
+        html: htmlContent,
+      });
+      console.log("Email sent successfully via SMTP:", result);
+    } catch (sendError) {
+      console.error("SMTP send error:", sendError);
+      throw new Error(`Failed to send email: ${sendError.message}`);
+    } finally {
+      // Always close the connection, even if sending fails
+      try {
+        console.log("Closing SMTP connection...");
+        await client.close();
+        console.log("SMTP connection closed");
+      } catch (closeError) {
+        console.error("Error closing SMTP connection:", closeError);
+      }
+    }
     
-    // Close the connection
-    console.log("Closing SMTP connection...");
-    await client.close();
-    
-    console.log("Email sent successfully via SMTP:", result);
     return { success: true, messageId: result };
   } catch (error) {
     console.error("Failed to send email via SMTP:", error);

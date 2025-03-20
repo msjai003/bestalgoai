@@ -101,9 +101,12 @@ export const useRegistration = () => {
       
       // Success path
       console.log("Registration successful, displaying success messages");
-      toast.success("Registration successful!");
-      toast.info("Thank you for signing up with InfoCap Company. A confirmation email has been sent to your inbox.");
-      navigate('/auth');
+      toast.success("Account created successfully! Please check your email inbox.");
+      
+      // Redirect after a short delay to allow the user to see the success message
+      setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
       
     } catch (error: any) {
       console.error("Registration process error:", error);

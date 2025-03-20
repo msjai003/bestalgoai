@@ -65,12 +65,13 @@ export const registerUser = async (formData: RegistrationData) => {
       return { success: false, error };
     }
 
-    // Send welcome email from send_message table
+    // Send welcome email after successful registration
     try {
       console.log("Registration successful, sending welcome email to:", formData.email);
-      await sendWelcomeEmail(formData.email, formData.fullName);
+      const emailResult = await sendWelcomeEmail(formData.email, formData.fullName);
+      console.log("Email sending result:", emailResult);
     } catch (emailError) {
-      // Don't fail registration if email sending fails
+      // Log the error but don't fail registration if email sending fails
       console.error("Failed to send welcome email:", emailError);
     }
 
@@ -96,19 +97,19 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       console.error("Error fetching welcome message:", messageError);
       // Fall back to default message if database fetch fails
       const defaultMessage = "Thank you for signing up with InfoCap Company";
-      console.log(`Using default welcome message for ${email}`);
+      console.log(`Using default welcome message for ${email}: ${defaultMessage}`);
       
       // Call the edge function with the default message
       return await callSendEmailFunction(email, name, defaultMessage);
     }
     
     const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
-    console.log(`Found welcome message from database: ${welcomeMessage}`);
+    console.log(`Found welcome message from database: "${welcomeMessage}"`);
     
     // Call Supabase edge function to send the email
     return await callSendEmailFunction(email, name, welcomeMessage);
   } catch (error) {
-    console.error("Error sending welcome email:", error);
+    console.error("Error in sendWelcomeEmail function:", error);
     throw error;
   }
 };
@@ -118,28 +119,27 @@ const callSendEmailFunction = async (email: string, name: string, welcomeMessage
   try {
     console.log(`Calling edge function to send email to ${email}`);
     
-    // Make the edge function call explicitly, with detailed logging
-    console.log("Payload for edge function:", JSON.stringify({
+    // Prepare payload with all required data
+    const payload = {
       email,
       name,
       welcomeMessage
-    }));
+    };
     
+    console.log("Edge function payload:", JSON.stringify(payload));
+    
+    // Call the edge function
     const { data, error } = await supabase.functions.invoke('send-welcome-email', {
-      body: JSON.stringify({
-        email,
-        name,
-        welcomeMessage
-      })
+      body: JSON.stringify(payload)
     });
     
     if (error) {
       console.error("Edge function error:", error);
-      throw new Error('Failed to send welcome email: ' + error.message);
+      throw new Error(`Failed to send welcome email: ${error.message}`);
     }
     
     console.log("Edge function response:", data);
-    return { success: true, message: welcomeMessage };
+    return { success: true, data };
   } catch (callError) {
     console.error("Error calling send-welcome-email function:", callError);
     throw callError;
