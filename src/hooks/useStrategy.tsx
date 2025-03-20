@@ -168,15 +168,59 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const newStatus = !strategy?.isLive;
     const isPremium = id > 1; // All strategies except the first are premium
     
+    // Check if this is a premium strategy and user doesn't have premium access
     if (isPremium && !hasPremium) {
-      toast({
-        title: "Premium Required",
-        description: "Please upgrade to access premium strategies",
-      });
-      navigate('/pricing');
+      // Check if the strategy is already paid for in the database
+      const checkPaidStatus = async () => {
+        if (!user) {
+          navigate('/pricing');
+          return;
+        }
+        
+        try {
+          const { data, error } = await supabase
+            .from('strategy_selections')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('strategy_id', id)
+            .eq('paid_status', 'paid')
+            .maybeSingle();
+            
+          if (error) throw error;
+          
+          if (data) {
+            // Strategy is paid for, proceed with live mode
+            if (newStatus) {
+              setSelectedStrategyId(id);
+              setTargetMode("live");
+              setConfirmDialogOpen(true);
+            } else {
+              updateLiveMode(id, false);
+            }
+          } else {
+            // Strategy is not paid for, redirect to pricing
+            toast({
+              title: "Premium Required",
+              description: "Please upgrade to access premium strategies",
+            });
+            
+            // Store the strategy ID in sessionStorage before redirecting
+            sessionStorage.setItem('selectedStrategyId', id.toString());
+            navigate('/pricing');
+          }
+        } catch (error) {
+          console.error("Error checking strategy paid status:", error);
+          // Default to redirecting to pricing on error
+          sessionStorage.setItem('selectedStrategyId', id.toString());
+          navigate('/pricing');
+        }
+      };
+      
+      checkPaidStatus();
       return;
     }
     
+    // Regular flow for non-premium or premium with access
     if (newStatus) {
       setSelectedStrategyId(id);
       setTargetMode("live");

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,13 +29,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Form state
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
   const [cardName, setCardName] = useState("");
   
-  // Format card number with spaces
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     const matches = v.match(/\d{4,16}/g);
@@ -54,7 +51,6 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     }
   };
   
-  // Format card expiry with slash
   const formatExpiry = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     
@@ -89,13 +85,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would call a payment processor API
-      // For this demo, we'll simulate a successful payment
-      
-      // 1. Save the payment method (in a real app, this would be a token from the payment processor)
       const lastFour = cardNumber.replace(/\s/g, "").slice(-4);
       
-      // 2. Update the plan_details
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
@@ -109,10 +100,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // 3. Mark strategies as paid for this user without affecting wishlist status
-      // If a specific strategy was selected, ensure it's marked as paid
       if (selectedStrategyId) {
-        // First check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
           .select('*')
@@ -125,13 +113,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
         
         if (existingStrategy) {
-          // Update existing strategy to paid status without changing isWishlisted
           await supabase
             .from('strategy_selections')
             .update({ paid_status: 'paid' })
             .eq('id', existingStrategy.id);
         } else {
-          // Insert new strategy with paid status but not wishlisted
           await supabase.rpc('force_strategy_paid_status', {
             p_user_id: user.id,
             p_strategy_id: selectedStrategyId,
@@ -141,12 +127,9 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
       }
       
-      // Also mark all other premium strategies (2-5) as paid without affecting wishlist status
       for (let i = 2; i <= 5; i++) {
-        // Skip if this is the already processed selected strategy
         if (i === selectedStrategyId) continue;
         
-        // Check if strategy already exists for this user
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
           .select('*')
@@ -159,13 +142,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
         
         if (existingStrategy) {
-          // Update existing strategy to paid status without changing wishlist state
           await supabase
             .from('strategy_selections')
             .update({ paid_status: 'paid' })
             .eq('id', existingStrategy.id);
         } else {
-          // Insert new strategy with paid status but not wishlisted
           await supabase.rpc('force_strategy_paid_status', {
             p_user_id: user.id,
             p_strategy_id: i,
@@ -174,6 +155,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
           });
         }
       }
+      
+      sessionStorage.removeItem('selectedStrategyId');
       
       toast({
         title: "Payment successful",
