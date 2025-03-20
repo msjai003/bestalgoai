@@ -46,11 +46,19 @@ serve(async (req) => {
         };
         
         // Check if record exists
-        const { data: existingData } = await supabase
+        const { data: existingData, error: checkError } = await supabase
           .from('broker_images')
           .select('id')
           .eq('broker_id', brokerId)
           .limit(1);
+          
+        if (checkError) {
+          console.error('Error checking existing broker data:', checkError);
+          return new Response(
+            JSON.stringify({ error: checkError.message }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          );
+        }
           
         if (existingData && existingData.length > 0) {
           // Update existing record
