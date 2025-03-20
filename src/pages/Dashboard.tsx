@@ -1,12 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Link } from "react-router-dom";
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronRight, TrendingUp, Loader } from 'lucide-react';
+import { ChevronRight, TrendingUp, Loader, Lock, Play } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Mock data since database connection is removed
@@ -18,21 +18,25 @@ const mockPerformanceData = [
   { date: '5/5', value: 1245678 },
 ];
 
+// Modified strategies to indicate which ones are premium
 const mockStrategies = [
   { 
     id: '1', 
     name: 'Moving Average Crossover', 
-    description: 'A trend-following strategy based on the crossover of two moving averages'
+    description: 'A trend-following strategy based on the crossover of two moving averages',
+    isPremium: false
   },
   { 
     id: '2', 
     name: 'RSI Reversal', 
-    description: 'Identifies potential market reversals using the Relative Strength Index'
+    description: 'Identifies potential market reversals using the Relative Strength Index',
+    isPremium: true
   },
   { 
     id: '3', 
     name: 'Bollinger Band Squeeze', 
-    description: 'Capitalizes on breakouts when volatility increases after a period of contraction'
+    description: 'Capitalizes on breakouts when volatility increases after a period of contraction',
+    isPremium: true
   }
 ];
 
@@ -40,6 +44,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
   
   // Check if user is logged in, if not redirect to auth page
   useEffect(() => {
@@ -50,8 +55,38 @@ const Dashboard = () => {
         variant: "destructive",
       });
       navigate('/auth');
+    } else {
+      // Check if user has premium subscription
+      const checkPremium = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+            setHasPremium(true);
+          }
+        } catch (error) {
+          console.error('Error checking premium status:', error);
+        }
+      };
+      checkPremium();
     }
   }, [user, navigate, toast]);
+
+  const handlePremiumClick = () => {
+    if (!hasPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Please upgrade to access premium strategies",
+      });
+      navigate('/pricing');
+    }
+  };
 
   // If still checking authentication, show loading
   if (user === null) {
@@ -161,13 +196,40 @@ const Dashboard = () => {
                     <span>+12.4%</span>
                   </div>
                 </div>
-                <p className="text-gray-400 text-sm mb-3">{strategy.description}</p>
-                <Link 
-                  to={`/strategy-details/${strategy.id}`}
-                  className="text-[#FF00D4] text-sm hover:underline"
-                >
-                  View details
-                </Link>
+                
+                {(!strategy.isPremium || hasPremium) ? (
+                  <>
+                    <p className="text-gray-400 text-sm mb-3">{strategy.description}</p>
+                    <Link 
+                      to={`/strategy-details/${strategy.id}`}
+                      className="text-[#FF00D4] text-sm hover:underline"
+                    >
+                      View details
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-400 text-sm mb-3">This premium strategy requires a subscription.</p>
+                    <div className="flex justify-between items-center">
+                      <div 
+                        onClick={handlePremiumClick}
+                        className="text-[#FF00D4] text-sm cursor-pointer hover:underline flex items-center"
+                      >
+                        <Lock className="h-4 w-4 mr-1" />
+                        Unlock with premium
+                      </div>
+                      {hasPremium && (
+                        <Link 
+                          to={`/strategy-details/${strategy.id}`}
+                          className="text-green-400 text-sm hover:underline flex items-center"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Access strategy
+                        </Link>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

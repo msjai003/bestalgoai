@@ -3,6 +3,8 @@ import React from "react";
 import { StrategyCard } from "./StrategyCard";
 import { UserData } from "@/types/user";
 import { Strategy } from "@/hooks/strategy/types";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PredefinedStrategyListProps {
   strategies: Strategy[];
@@ -19,6 +21,33 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   onToggleLiveMode,
   user
 }) => {
+  const [hasPremium, setHasPremium] = React.useState<boolean>(false);
+  
+  React.useEffect(() => {
+    // Check if user has premium subscription
+    const checkPremium = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremium();
+  }, [user]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-48">
@@ -44,6 +73,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
           onToggleWishlist={onToggleWishlist}
           onToggleLiveMode={onToggleLiveMode}
           isAuthenticated={!!user}
+          hasPremium={hasPremium}
         />
       ))}
     </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,34 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check if user has premium subscription
+    const checkPremium = async () => {
+      if (!user) return false;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+          return true;
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+      return false;
+    };
+    
+    checkPremium();
+  }, [user]);
 
   useEffect(() => {
     const loadStrategies = async () => {
@@ -40,7 +69,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           isWishlisted: false,
           isLive: false,
           quantity: 0,
-          selectedBroker: ""
+          selectedBroker: "",
+          isPremium: strategy.id > 1 // Mark all strategies except the first as premium
         }));
         
         if (user) {
@@ -101,6 +131,19 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   };
 
   const updateLiveMode = (id: number, isLive: boolean) => {
+    // Check if this is a premium strategy
+    const strategy = strategies.find(s => s.id === id);
+    const isPremium = id > 1; // All strategies except the first are premium
+    
+    if (isPremium && !hasPremium) {
+      toast({
+        title: "Premium Required",
+        description: "Please upgrade to access premium strategies",
+      });
+      navigate('/pricing');
+      return;
+    }
+    
     setStrategies(prev => 
       prev.map(strategy => {
         if (strategy.id === id) {
@@ -123,6 +166,16 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const handleToggleLiveMode = (id: number) => {
     const strategy = strategies.find(s => s.id === id);
     const newStatus = !strategy?.isLive;
+    const isPremium = id > 1; // All strategies except the first are premium
+    
+    if (isPremium && !hasPremium) {
+      toast({
+        title: "Premium Required",
+        description: "Please upgrade to access premium strategies",
+      });
+      navigate('/pricing');
+      return;
+    }
     
     if (newStatus) {
       setSelectedStrategyId(id);
@@ -253,6 +306,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker
+    handleCancelBroker,
+    hasPremium
   };
 };

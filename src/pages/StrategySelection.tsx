@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,7 +38,8 @@ const StrategySelection = () => {
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
-    handleCancelBroker
+    handleCancelBroker,
+    hasPremium
   } = useStrategy(predefinedStrategies || []);
 
   const handleDeployStrategy = () => {

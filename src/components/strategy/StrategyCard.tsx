@@ -4,28 +4,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/useStrategy";
-import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, BookmarkIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate } from "react-router-dom";
 
 interface StrategyCardProps {
   strategy: Strategy;
   onToggleWishlist: (id: number, isWishlisted: boolean) => void;
   onToggleLiveMode: (id: number) => void;
   isAuthenticated: boolean;
+  hasPremium?: boolean;
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   onToggleWishlist,
   onToggleLiveMode,
-  isAuthenticated
+  isAuthenticated,
+  hasPremium = false
 }) => {
+  const navigate = useNavigate();
+  const isPremium = strategy.id > 1; // First strategy is free, others are premium
+  const canAccess = !isPremium || hasPremium;
+
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
   const toggleLiveMode = () => {
+    if (!canAccess) {
+      navigate('/pricing');
+      return;
+    }
     onToggleLiveMode(strategy.id);
+  };
+
+  const redirectToPricing = () => {
+    navigate('/pricing');
   };
 
   return (
@@ -84,11 +99,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400"}
-                      onClick={toggleLiveMode}
+                      className={canAccess ? (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400") : "text-gray-400 hover:text-yellow-400"}
+                      onClick={canAccess ? toggleLiveMode : redirectToPricing}
                       disabled={!isAuthenticated}
                     >
-                      {strategy.isLive ? (
+                      {!canAccess ? (
+                        <LockIcon size={20} />
+                      ) : strategy.isLive ? (
                         <StopCircleIcon size={20} />
                       ) : (
                         <PlayIcon size={20} />
@@ -96,18 +113,30 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{strategy.isLive ? "Disable live trading" : "Enable live trading"}</p>
+                    {!canAccess ? (
+                      <p>Unlock with premium subscription</p>
+                    ) : strategy.isLive ? (
+                      <p>Disable live trading</p>
+                    ) : (
+                      <p>Enable live trading</p>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
           </div>
           
-          <p className="text-gray-300 text-sm mb-3">
-            {strategy.description}
-          </p>
+          {canAccess ? (
+            <p className="text-gray-300 text-sm mb-3">
+              {strategy.description}
+            </p>
+          ) : (
+            <p className="text-gray-300 text-sm mb-3">
+              This premium strategy requires a subscription. <span onClick={redirectToPricing} className="text-[#FF00D4] cursor-pointer">Upgrade now</span>
+            </p>
+          )}
           
-          {strategy.isLive && (
+          {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="bg-gray-700/50 p-2 rounded">
                 <p className="text-xs text-gray-400">Quantity</p>
