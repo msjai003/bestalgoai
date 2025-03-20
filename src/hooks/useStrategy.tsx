@@ -70,12 +70,36 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           isLive: false,
           quantity: 0,
           selectedBroker: "",
-          isPremium: strategy.id > 1 // Mark all strategies except the first as premium
+          isPremium: strategy.id > 1, // Mark all strategies except the first as premium
+          isPaid: false // Initialize all strategies as not paid
         }));
         
         if (user) {
           const selections = await fetchUserStrategySelections(user.id);
-          strategiesWithStatus = mapStrategiesWithSelections(predefinedStrategies, selections);
+          
+          // Check which strategies are marked as paid in the database
+          const { data: paidStrategies, error } = await supabase
+            .from('strategy_selections')
+            .select('strategy_id, paid_status')
+            .eq('user_id', user.id)
+            .eq('paid_status', 'paid');
+            
+          if (error) {
+            console.error("Error fetching paid strategies:", error);
+          }
+          
+          // Create a set of paid strategy IDs for quick lookup
+          const paidStrategyIds = new Set(
+            paidStrategies?.map(item => item.strategy_id) || []
+          );
+          
+          // Mark paid strategies
+          strategiesWithStatus = strategiesWithStatus.map(strategy => ({
+            ...strategy,
+            isPaid: paidStrategyIds.has(strategy.id)
+          }));
+          
+          strategiesWithStatus = mapStrategiesWithSelections(strategiesWithStatus, selections);
         }
         
         setStrategies(strategiesWithStatus);
@@ -135,7 +159,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const strategy = strategies.find(s => s.id === id);
     const isPremium = id > 1; // All strategies except the first are premium
     
-    if (isPremium && !hasPremium) {
+    if (isPremium && !hasPremium && !strategy?.isPaid) {
       toast({
         title: "Premium Required",
         description: "Please upgrade to access premium strategies",
@@ -168,8 +192,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const newStatus = !strategy?.isLive;
     const isPremium = id > 1; // All strategies except the first are premium
     
-    // Check if this is a premium strategy and user doesn't have premium access
-    if (isPremium && !hasPremium) {
+    // Check if this is a premium strategy, user doesn't have premium, and strategy is not already paid for
+    if (isPremium && !hasPremium && !strategy?.isPaid) {
       // Check if the strategy is already paid for in the database
       const checkPaidStatus = async () => {
         if (!user) {
@@ -189,7 +213,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           if (error) throw error;
           
           if (data) {
-            // Strategy is paid for, proceed with live mode
+            // Strategy is paid for, update local state and proceed with live mode
+            setStrategies(prev => 
+              prev.map(s => s.id === id ? { ...s, isPaid: true } : s)
+            );
+            
             if (newStatus) {
               setSelectedStrategyId(id);
               setTargetMode("live");

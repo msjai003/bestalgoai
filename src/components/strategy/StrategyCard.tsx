@@ -25,7 +25,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
-  const canAccess = !isPremium || hasPremium;
+  const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
