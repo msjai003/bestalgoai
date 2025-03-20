@@ -1,7 +1,9 @@
 
 import { Search, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface BrokerListProps {
   brokers: Broker[];
@@ -10,10 +12,44 @@ interface BrokerListProps {
 
 export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [brokerImages, setBrokerImages] = useState<Record<number, string>>({});
+  
+  useEffect(() => {
+    // Fetch broker images from Supabase
+    const fetchBrokerImages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('broker_images')
+          .select('broker_id, image_url');
+          
+        if (error) {
+          console.error('Error fetching broker images:', error);
+          return;
+        }
+        
+        // Create a mapping of broker_id to image_url
+        const imageMap: Record<number, string> = {};
+        data?.forEach(item => {
+          imageMap[item.broker_id] = item.image_url;
+        });
+        
+        setBrokerImages(imageMap);
+      } catch (error) {
+        console.error('Exception fetching broker images:', error);
+      }
+    };
+    
+    fetchBrokerImages();
+  }, []);
 
   const filteredBrokers = brokers.filter((broker) =>
     broker.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Get the broker image from Supabase or fall back to the default one
+  const getBrokerImage = (broker: Broker) => {
+    return brokerImages[broker.id] || broker.logo;
+  };
 
   return (
     <section className="mb-6">
@@ -38,9 +74,13 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
               onClick={() => onSelectBroker(broker.id)}
             >
               <img
-                src={broker.logo}
+                src={getBrokerImage(broker)}
                 className="w-10 h-10 rounded-lg"
                 alt={broker.name}
+                onError={(e) => {
+                  // Fallback to default logo if image fails to load
+                  (e.target as HTMLImageElement).src = broker.logo;
+                }}
               />
               <div className="ml-3">
                 <h3 className="font-semibold">{broker.name}</h3>
