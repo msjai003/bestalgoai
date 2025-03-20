@@ -83,9 +83,26 @@ export const registerUser = async (formData: RegistrationData) => {
 // Function to send welcome email
 const sendWelcomeEmail = async (email: string, name: string) => {
   try {
+    // Fetch welcome message from the database
+    const { data: welcomeMessageData, error: messageError } = await supabase
+      .from('send_message')
+      .select('message_content')
+      .eq('message_type', 'welcome')
+      .single();
+    
+    if (messageError) {
+      console.error("Error fetching welcome message:", messageError);
+      // Fall back to default message if database fetch fails
+      const defaultMessage = "Thank you for signing up with InfoCap Company";
+      console.log(`Sending default welcome email to ${email} with name ${name}: ${defaultMessage}`);
+      return { success: true, message: defaultMessage };
+    }
+    
+    const welcomeMessage = welcomeMessageData.message_content;
+    
     // In a real implementation, this would call an email service API
     // For now, we'll just log the email that would be sent
-    console.log(`Sending welcome email to ${email} with name ${name}`);
+    console.log(`Sending welcome email to ${email} with name ${name}: ${welcomeMessage}`);
     
     // In a real application, you would use an email service API here
     // For example with a backend API endpoint:
@@ -95,7 +112,11 @@ const sendWelcomeEmail = async (email: string, name: string) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, name }),
+      body: JSON.stringify({ 
+        email, 
+        name,
+        message: welcomeMessage 
+      }),
     });
     
     if (!response.ok) {
@@ -103,7 +124,7 @@ const sendWelcomeEmail = async (email: string, name: string) => {
     }
     */
     
-    return { success: true };
+    return { success: true, message: welcomeMessage };
   } catch (error) {
     console.error("Error sending welcome email:", error);
     return { success: false, error };

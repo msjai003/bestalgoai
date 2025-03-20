@@ -183,6 +183,30 @@ export type Database = {
         }
         Relationships: []
       }
+      send_message: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_content: string
+          message_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_content: string
+          message_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_content?: string
+          message_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       strategy_config_options: {
         Row: {
           category: string
