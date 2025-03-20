@@ -32,12 +32,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const toggleLiveMode = () => {
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+    
     if (!canAccess) {
-      // Store the strategy ID in sessionStorage before redirecting
+      // Store the strategy ID and return path in sessionStorage before redirecting
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
       return;
     }
+    
     onToggleLiveMode(strategy.id);
   };
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -85,8 +86,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      const lastFour = cardNumber.replace(/\s/g, "").slice(-4);
-      
+      // Save the plan details
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
@@ -100,7 +100,9 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
+      // If a specific strategy was selected, mark it as paid
       if (selectedStrategyId) {
+        // First check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
           .select('*')
@@ -112,12 +114,14 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
           throw queryError;
         }
         
+        // If the strategy exists, update its paid status
         if (existingStrategy) {
           await supabase
             .from('strategy_selections')
             .update({ paid_status: 'paid' })
             .eq('id', existingStrategy.id);
         } else {
+          // If the strategy doesn't exist, create a new entry with paid status
           await supabase.rpc('force_strategy_paid_status', {
             p_user_id: user.id,
             p_strategy_id: selectedStrategyId,
@@ -127,7 +131,9 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
       }
       
+      // Mark all premium strategies (IDs 2-5) as paid
       for (let i = 2; i <= 5; i++) {
+        // Skip the selected strategy as it's already been handled
         if (i === selectedStrategyId) continue;
         
         const { data: existingStrategy, error: queryError } = await supabase
@@ -156,6 +162,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
       }
       
+      // Remove the selected strategy ID from session storage
       sessionStorage.removeItem('selectedStrategyId');
       
       toast({
@@ -167,6 +174,13 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       });
       
       onSuccess();
+      
+      // Redirect to live-trading page if we came from there
+      const redirectPath = sessionStorage.getItem('redirectAfterPayment');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectAfterPayment');
+        navigate(redirectPath);
+      }
     } catch (error) {
       console.error("Payment error:", error);
       toast({

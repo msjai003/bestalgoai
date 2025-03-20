@@ -204,14 +204,16 @@ export const useStrategy = (predefinedStrategies: any[]) => {
               description: "Please upgrade to access premium strategies",
             });
             
-            // Store the strategy ID in sessionStorage before redirecting
+            // Store the strategy ID and return path in sessionStorage before redirecting
             sessionStorage.setItem('selectedStrategyId', id.toString());
+            sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
             navigate('/pricing');
           }
         } catch (error) {
           console.error("Error checking strategy paid status:", error);
           // Default to redirecting to pricing on error
           sessionStorage.setItem('selectedStrategyId', id.toString());
+          sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
           navigate('/pricing');
         }
       };
