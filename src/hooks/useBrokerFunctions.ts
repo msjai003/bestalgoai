@@ -17,7 +17,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
       try {
         let query = supabase
           .from('brokers_functions')
-          .select('*')
+          .select('*') // This will now include the broker_image column
           .order('function_name');
         
         // If a broker ID is provided, filter by it

@@ -56,14 +56,19 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
   const enabledFunctions = functions.filter(func => func.function_enabled);
   const premiumFunctions = functions.filter(func => func.is_premium && func.function_enabled);
   
+  // Get broker image from the first function if available
+  const brokerImage = functions.length > 0 && functions[0].broker_image 
+    ? functions[0].broker_image 
+    : broker.logo;
+  
   return (
     <div
       className="flex items-center p-4 bg-gray-800/30 rounded-xl border border-gray-700 cursor-pointer hover:border-pink-500 transition-colors"
       onClick={() => onSelect(broker.id)}
     >
       <img
-        src={broker.logo}
-        className="w-10 h-10 rounded-lg"
+        src={brokerImage}
+        className="w-10 h-10 rounded-lg object-cover"
         alt={broker.name}
       />
       <div className="ml-3 flex-1">

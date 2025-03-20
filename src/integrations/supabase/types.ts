@@ -57,6 +57,7 @@ export type Database = {
       brokers_functions: {
         Row: {
           broker_id: number
+          broker_image: string | null
           broker_name: string
           configuration: Json | null
           created_at: string | null
@@ -70,6 +71,7 @@ export type Database = {
         }
         Insert: {
           broker_id: number
+          broker_image?: string | null
           broker_name: string
           configuration?: Json | null
           created_at?: string | null
@@ -83,6 +85,7 @@ export type Database = {
         }
         Update: {
           broker_id?: number
+          broker_image?: string | null
           broker_name?: string
           configuration?: Json | null
           created_at?: string | null

@@ -8,7 +8,7 @@ import { BrokerFunction } from '@/hooks/strategy/types';
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   const { data, error } = await supabase
     .from('brokers_functions')
-    .select('*')
+    .select('*') // This will now include the broker_image column
     .eq('broker_id', brokerId)
     .eq('function_enabled', true)
     .order('function_name');
@@ -88,4 +88,24 @@ export const getBrokerFunctionConfig = async (
   }
   
   return data.configuration;
+};
+
+/**
+ * Gets broker image for a broker function
+ */
+export const getBrokerImage = async (
+  brokerId: number
+): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('brokers_functions')
+    .select('broker_image')
+    .eq('broker_id', brokerId)
+    .maybeSingle();
+    
+  if (error || !data || !data.broker_image) {
+    console.error('Error fetching broker image:', error);
+    return null;
+  }
+  
+  return data.broker_image;
 };

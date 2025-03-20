@@ -96,23 +96,33 @@ const FunctionCard = ({ func }: { func: BrokerFunction }) => {
   return (
     <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-white">{func.function_name}</h3>
-            {func.is_premium && (
-              <Badge variant="outline" className="bg-amber-900/30 text-amber-400 border-amber-800 text-xs">
-                Premium
-              </Badge>
-            )}
-            {!func.function_enabled && (
-              <Badge variant="outline" className="bg-gray-800 text-gray-400 border-gray-700 text-xs">
-                Disabled
-              </Badge>
+        <div className="flex items-start gap-3">
+          {/* Display broker image if available */}
+          {func.broker_image && (
+            <img 
+              src={func.broker_image} 
+              alt={func.broker_name}
+              className="w-8 h-8 rounded-md object-cover"
+            />
+          )}
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-white">{func.function_name}</h3>
+              {func.is_premium && (
+                <Badge variant="outline" className="bg-amber-900/30 text-amber-400 border-amber-800 text-xs">
+                  Premium
+                </Badge>
+              )}
+              {!func.function_enabled && (
+                <Badge variant="outline" className="bg-gray-800 text-gray-400 border-gray-700 text-xs">
+                  Disabled
+                </Badge>
+              )}
+            </div>
+            {func.function_description && (
+              <p className="text-sm text-gray-400 mt-1">{func.function_description}</p>
             )}
           </div>
-          {func.function_description && (
-            <p className="text-sm text-gray-400 mt-1">{func.function_description}</p>
-          )}
         </div>
         
         <TooltipProvider>
