@@ -117,7 +117,7 @@ const Dashboard = () => {
         </section>
 
         <section id="quick-actions" className="px-4 mt-6">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-5 gap-3">
             <Link to="/strategy-selection" className="block">
               <QuickActionButton icon="fa-chart-line" label="Strategies" />
             </Link>
@@ -127,6 +127,9 @@ const Dashboard = () => {
             </Link>
             <Link to="/community" className="block">
               <QuickActionButton icon="fa-users" label="Community" />
+            </Link>
+            <Link to="/broker-integration" className="block">
+              <QuickActionButton icon="fa-building-columns" label="Brokers" />
             </Link>
           </div>
         </section>
