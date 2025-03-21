@@ -56,11 +56,12 @@ const PricingAdmin = () => {
         
         // Handle different possible formats of the features field
         if (Array.isArray(plan.features)) {
-          features = plan.features;
+          // Convert each item in the array to string
+          features = plan.features.map(item => String(item));
         } else if (typeof plan.features === 'string') {
           try {
             const parsed = JSON.parse(plan.features);
-            features = Array.isArray(parsed) ? parsed : [String(plan.features)];
+            features = Array.isArray(parsed) ? parsed.map(item => String(item)) : [String(plan.features)];
           } catch {
             features = [String(plan.features)];
           }

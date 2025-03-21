@@ -83,9 +83,9 @@ const PricingPage = () => {
           // Find Pro plan to get its features
           const proPlan = dbPlans.find(p => p.plan_name === 'Pro');
           if (proPlan) {
-            // Ensure we're not adding duplicate features
-            const proFeatures = proPlan.features || [];
-            const premiumFeatures = plan.features || [];
+            // Ensure we're not adding duplicate features by converting all to strings first
+            const proFeatures = proPlan.features.map(f => String(f)) || [];
+            const premiumFeatures = plan.features.map(f => String(f)) || [];
             
             // Combine features without duplicates
             const combinedFeatures = [...new Set([
@@ -112,7 +112,7 @@ const PricingPage = () => {
           price: plan.plan_price,
           period: plan.plan_period,
           popular: plan.is_popular,
-          features: plan.features as string[]
+          features: plan.features.map(f => String(f))
         };
       })
     : fallbackPlans;
