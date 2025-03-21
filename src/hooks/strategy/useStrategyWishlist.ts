@@ -66,9 +66,7 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
       // If this is a paid strategy, don't delete it - just update the wishlist status
       const { error } = await supabase
         .from('strategy_selections')
-        .update({ 
-          is_wishlisted: false // Set wishlist status to false but keep the record
-        })
+        .update({ is_wishlisted: false }) // Set wishlist status to false but keep the record
         .eq('id', paidStrategy.id);
         
       if (error) throw error;

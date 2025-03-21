@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -38,7 +39,8 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
           rowId: item.id, // Store the actual database row ID
           name: item.strategy_name,
           description: item.strategy_description || "",
-          isWishlisted: true,
+          // Use the is_wishlisted flag from the database
+          isWishlisted: item.is_wishlisted || false,
           // Only set isLive to true if trade_type is explicitly "live trade"
           isLive: item.trade_type === "live trade",
           quantity: item.quantity || 0,
@@ -53,7 +55,10 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
         }));
         
         strategies = dbStrategies;
-        localStorage.setItem('wishlistedStrategies', JSON.stringify(dbStrategies));
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(
+          // Only store wishlisted strategies in localStorage
+          dbStrategies.filter(s => s.isWishlisted)
+        ));
       }
     } catch (error) {
       console.error("Error fetching strategies from database:", error);
@@ -96,7 +101,8 @@ export const updateStrategyLiveConfig = async (
       quantity: quantity || 0,
       selected_broker: brokerName,
       broker_username: brokerUsername,
-      trade_type: tradeType
+      trade_type: tradeType,
+      is_wishlisted: false // Default to not wishlisted for new configurations
     });
   
   if (error) {

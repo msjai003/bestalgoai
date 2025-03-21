@@ -335,6 +335,7 @@ export type Database = {
           broker_username: string | null
           created_at: string | null
           id: string
+          is_wishlisted: boolean | null
           paid_status: string
           quantity: number | null
           selected_broker: string | null
@@ -348,6 +349,7 @@ export type Database = {
           broker_username?: string | null
           created_at?: string | null
           id?: string
+          is_wishlisted?: boolean | null
           paid_status?: string
           quantity?: number | null
           selected_broker?: string | null
@@ -361,6 +363,7 @@ export type Database = {
           broker_username?: string | null
           created_at?: string | null
           id?: string
+          is_wishlisted?: boolean | null
           paid_status?: string
           quantity?: number | null
           selected_broker?: string | null

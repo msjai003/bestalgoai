@@ -113,12 +113,39 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
           // Mark all strategies as paid without affecting wishlist status
           if (strategies && strategies.length > 0) {
             for (const strategy of strategies) {
-              await supabase.rpc('force_strategy_paid_status', {
-                p_user_id: user.id,
-                p_strategy_id: strategy.id,
-                p_strategy_name: strategy.name,
-                p_strategy_description: strategy.description || "Premium strategy unlocked with subscription"
-              });
+              // Check if strategy already exists for this user
+              const { data: existingStrategy, error: checkError } = await supabase
+                .from('strategy_selections')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('strategy_id', strategy.id)
+                .maybeSingle();
+                
+              if (checkError) throw checkError;
+              
+              if (existingStrategy) {
+                // Update existing strategy to paid status without changing wishlist status
+                await supabase
+                  .from('strategy_selections')
+                  .update({ 
+                    paid_status: 'paid',
+                    strategy_name: strategy.name,
+                    strategy_description: strategy.description || "Premium strategy"
+                  })
+                  .eq('id', existingStrategy.id);
+              } else {
+                // Insert new strategy entry with paid status but not wishlisted
+                await supabase
+                  .from('strategy_selections')
+                  .insert({
+                    user_id: user.id,
+                    strategy_id: strategy.id,
+                    strategy_name: strategy.name,
+                    strategy_description: strategy.description || "Premium strategy unlocked with subscription",
+                    paid_status: 'paid',
+                    is_wishlisted: false // Explicitly not wishlisted by default
+                  });
+              }
             }
           }
         } catch (error) {
@@ -145,20 +172,28 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
           throw queryError;
         }
         
-        // If the strategy exists, update its paid status
+        // If the strategy exists, update its paid status without changing wishlist status
         if (existingStrategy) {
           await supabase
             .from('strategy_selections')
-            .update({ paid_status: 'paid' })
+            .update({ 
+              paid_status: 'paid',
+              strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+              strategy_description: "Premium strategy unlocked with subscription"
+            })
             .eq('id', existingStrategy.id);
         } else {
           // If the strategy doesn't exist, create a new entry with paid status
-          await supabase.rpc('force_strategy_paid_status', {
-            p_user_id: user.id,
-            p_strategy_id: selectedStrategyId,
-            p_strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-            p_strategy_description: "Premium strategy unlocked with subscription"
-          });
+          await supabase
+            .from('strategy_selections')
+            .insert({
+              user_id: user.id,
+              strategy_id: selectedStrategyId,
+              strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+              strategy_description: "Premium strategy unlocked with subscription",
+              paid_status: 'paid',
+              is_wishlisted: false // Explicitly not wishlisted by default
+            });
         }
       }
       
