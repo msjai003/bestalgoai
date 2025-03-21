@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -24,6 +24,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   hasPremium = false
 }) => {
   const navigate = useNavigate();
+  const [showDetails, setShowDetails] = useState(false);
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
@@ -52,6 +53,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     navigate(`/strategy-details/${strategy.id}`);
   };
 
+  const toggleShowDetails = () => {
+    setShowDetails(!showDetails);
+  };
+
   return (
     <Card className="bg-gray-800 border-gray-700 overflow-hidden">
       <CardContent className="p-0">
@@ -61,26 +66,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <h3 className="text-xl font-semibold text-white mb-1">
                 {strategy.name}
               </h3>
-              <div className="flex gap-2 mb-2">
-                <Badge 
-                  variant="outline" 
-                  className="bg-blue-900/30 text-blue-300 border-blue-800"
-                >
-                  Win Rate: {strategy.performance.winRate}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-900/30 text-green-300 border-green-800"
-                >
-                  Avg. Profit: {strategy.performance.avgProfit}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-red-900/30 text-red-300 border-red-800"
-                >
-                  Max Drawdown: {strategy.performance.drawdown}
-                </Badge>
-              </div>
             </div>
             <div className="flex gap-2">
               <TooltipProvider>
@@ -143,6 +128,52 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           )}
           
+          {showDetails && canAccess && (
+            <div className="mt-3 mb-3">
+              <div className="flex gap-2 mb-2">
+                <Badge 
+                  variant="outline" 
+                  className="bg-blue-900/30 text-blue-300 border-blue-800"
+                >
+                  Win Rate: {strategy.performance.winRate}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-green-900/30 text-green-300 border-green-800"
+                >
+                  Avg. Profit: {strategy.performance.avgProfit}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-red-900/30 text-red-300 border-red-800"
+                >
+                  Max Drawdown: {strategy.performance.drawdown}
+                </Badge>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-between items-center mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleShowDetails}
+              className="text-gray-300 text-xs border-gray-700 hover:bg-gray-700 flex items-center gap-1"
+            >
+              {showDetails ? "Hide Details" : "View Details"}
+              {showDetails ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewDetails}
+              className="text-green-400 text-xs bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300"
+            >
+              Full Details
+            </Button>
+          </div>
+          
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="bg-gray-700/50 p-2 rounded">
@@ -163,4 +194,3 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </Card>
   );
 };
-
