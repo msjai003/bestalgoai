@@ -32,10 +32,10 @@ export const DeleteConfirmationDialog = ({
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Confirm Strategy Deletion
+            Confirm Wishlist Removal
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            Are you sure you want to remove <span className="font-semibold text-pink-400">{strategyName}</span> from your wishlist? This action cannot be undone.
+            Are you sure you want to remove <span className="font-semibold text-pink-400">{strategyName}</span> from your wishlist? You can add it back later if you change your mind.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">
@@ -50,7 +50,7 @@ export const DeleteConfirmationDialog = ({
             variant="destructive"
             onClick={onConfirm}
           >
-            Yes, Delete Strategy
+            Yes, Remove From Wishlist
           </Button>
         </DialogFooter>
       </DialogContent>

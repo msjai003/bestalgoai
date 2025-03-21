@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
   const toggleWishlist = () => {
+    // Only allow toggle if authenticated
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
+import { loadWishlistItems } from "./useStrategyWishlist";
 
 /**
  * Loads strategies from database and localStorage
@@ -22,31 +23,41 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
   if (userId) {
     try {
       // Fetch strategy selections
-      const { data, error } = await supabase
+      const { data: selections, error: selectionsError } = await supabase
         .from('strategy_selections')
         .select('*')
         .eq('user_id', userId);
         
-      if (error) throw error;
+      if (selectionsError) throw selectionsError;
       
-      if (data && data.length > 0) {
+      // Fetch wishlisted items from the new wishlist_maintain table
+      const wishlistItems = await loadWishlistItems(userId);
+      
+      // Create a map of strategy IDs to wishlist status
+      const wishlistMap = new Map<number, boolean>();
+      wishlistItems.forEach(item => {
+        wishlistMap.set(item.id, true);
+      });
+      
+      if (selections && selections.length > 0) {
         // Map database strategies - create a unique instance for each row
         // This allows multiple entries for the same strategy with different brokers
-        const dbStrategies = data.map(item => ({
+        const dbStrategies = selections.map(item => ({
           // Create a unique ID by combining strategy_id, broker name and username
           id: item.strategy_id,
           uniqueId: `${item.strategy_id}-${item.selected_broker}-${item.broker_username}`,
           rowId: item.id, // Store the actual database row ID
           name: item.strategy_name,
           description: item.strategy_description || "",
-          // Use the is_wishlisted flag from the database
-          isWishlisted: item.is_wishlisted || false,
+          // Use both wishlist tables for status - either is in the dedicated wishlist or has is_wishlisted=true
+          isWishlisted: wishlistMap.has(item.strategy_id) || !!item.is_wishlisted,
           // Only set isLive to true if trade_type is explicitly "live trade"
           isLive: item.trade_type === "live trade",
           quantity: item.quantity || 0,
           selectedBroker: item.selected_broker || "",
           brokerUsername: item.broker_username || "",
           tradeType: item.trade_type || "paper trade",
+          isPaid: item.paid_status === 'paid',
           performance: {
             winRate: "N/A",
             avgProfit: "N/A",
@@ -55,10 +66,55 @@ export const loadUserStrategies = async (userId: string | undefined): Promise<St
         }));
         
         strategies = dbStrategies;
+        
+        // Add any wishlist items that aren't in strategy_selections
+        for (const item of wishlistItems) {
+          if (!strategies.some(s => s.id === item.id)) {
+            strategies.push({
+              id: item.id,
+              uniqueId: `wishlist-${item.id}`,
+              name: item.name,
+              description: item.description || "",
+              isWishlisted: true,
+              isLive: false,
+              quantity: 0,
+              selectedBroker: "",
+              brokerUsername: "",
+              tradeType: "paper trade",
+              performance: {
+                winRate: "N/A",
+                avgProfit: "N/A",
+                drawdown: "N/A"
+              }
+            });
+          }
+        }
+        
         localStorage.setItem('wishlistedStrategies', JSON.stringify(
           // Only store wishlisted strategies in localStorage
-          dbStrategies.filter(s => s.isWishlisted)
+          strategies.filter(s => s.isWishlisted)
         ));
+      } else if (wishlistItems.length > 0) {
+        // If there are no selections but there are wishlist items
+        strategies = wishlistItems.map(item => ({
+          id: item.id,
+          uniqueId: `wishlist-${item.id}`,
+          name: item.name,
+          description: item.description || "",
+          isWishlisted: true,
+          isLive: false,
+          quantity: 0,
+          selectedBroker: "",
+          brokerUsername: "",
+          tradeType: "paper trade",
+          performance: {
+            winRate: "N/A",
+            avgProfit: "N/A",
+            drawdown: "N/A"
+          }
+        }));
+        
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(strategies));
       }
     } catch (error) {
       console.error("Error fetching strategies from database:", error);

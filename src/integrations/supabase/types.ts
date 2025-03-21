@@ -408,6 +408,36 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlist_maintain: {
+        Row: {
+          created_at: string
+          id: string
+          strategy_description: string | null
+          strategy_id: number
+          strategy_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          strategy_description?: string | null
+          strategy_id: number
+          strategy_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          strategy_description?: string | null
+          strategy_id?: number
+          strategy_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

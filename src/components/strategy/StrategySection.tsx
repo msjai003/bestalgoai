@@ -89,7 +89,7 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => (
-            <div key={strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg">
+            <div key={strategy.uniqueId || strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-white">{strategy.name}</h3>
@@ -106,7 +106,7 @@ export const StrategySection = ({
                         variant="ghost" 
                         className="text-pink-500 hover:text-pink-400"
                         onClick={() => onDeleteStrategy(strategy.id)}
-                        aria-label="Remove strategy"
+                        aria-label="Remove from wishlist"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -168,4 +168,3 @@ export const StrategySection = ({
     </div>
   );
 };
-
