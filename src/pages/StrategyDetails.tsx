@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -233,7 +232,7 @@ const StrategyDetails = () => {
                 </div>
 
                 <div className="flex justify-end items-center">
-                  <Button className="bg-[#FF00D4] hover:bg-[#FF00D4]/90">Deploy Strategy</Button>
+                  <Button>Deploy Strategy</Button>
                 </div>
               </>
             ) : (
