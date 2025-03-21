@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +26,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
+  const [showDetails, setShowDetails] = useState(false);
 
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
@@ -52,35 +53,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     navigate(`/strategy-details/${strategy.id}`);
   };
 
+  const toggleDetails = () => {
+    setShowDetails(!showDetails);
+  };
+
   return (
     <Card className="bg-gray-800 border-gray-700 overflow-hidden">
       <CardContent className="p-0">
         <div className="p-4">
           <div className="flex justify-between items-start">
-            <div className="cursor-pointer" onClick={handleViewDetails}>
+            <div>
               <h3 className="text-xl font-semibold text-white mb-1">
                 {strategy.name}
               </h3>
-              <div className="flex gap-2 mb-2">
-                <Badge 
-                  variant="outline" 
-                  className="bg-blue-900/30 text-blue-300 border-blue-800"
-                >
-                  Win Rate: {strategy.performance.winRate}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-900/30 text-green-300 border-green-800"
-                >
-                  Avg. Profit: {strategy.performance.avgProfit}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-red-900/30 text-red-300 border-red-800"
-                >
-                  Max Drawdown: {strategy.performance.drawdown}
-                </Badge>
-              </div>
             </div>
             <div className="flex gap-2">
               <TooltipProvider>
@@ -142,6 +127,43 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               This premium strategy requires a subscription. <span onClick={toggleLiveMode} className="text-[#FF00D4] cursor-pointer">Upgrade now</span>
             </p>
           )}
+
+          <div className="mt-3">
+            <Button 
+              variant="outline" 
+              className="w-full justify-between border-gray-600 bg-gray-700/50 hover:bg-gray-700"
+              onClick={toggleDetails}
+            >
+              View Details
+              {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </Button>
+          </div>
+          
+          {showDetails && (
+            <div className="mt-3 bg-gray-700/20 p-3 rounded-md border border-gray-700">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center p-2 bg-blue-900/30 rounded-md border border-blue-800">
+                  <span className="text-xs text-blue-300 mb-1">Win Rate</span>
+                  <span className="text-blue-300 font-medium">{strategy.performance.winRate}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-green-900/30 rounded-md border border-green-800">
+                  <span className="text-xs text-green-300 mb-1">Avg. Profit</span>
+                  <span className="text-green-300 font-medium">{strategy.performance.avgProfit}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-red-900/30 rounded-md border border-red-800">
+                  <span className="text-xs text-red-300 mb-1">Max Drawdown</span>
+                  <span className="text-red-300 font-medium">{strategy.performance.drawdown}</span>
+                </div>
+              </div>
+              
+              <Button 
+                className="w-full mt-3"
+                onClick={handleViewDetails}
+              >
+                View Full Strategy
+              </Button>
+            </div>
+          )}
           
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -163,4 +185,3 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </Card>
   );
 };
-
