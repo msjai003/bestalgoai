@@ -27,14 +27,15 @@ const RegistrationStepTwo: React.FC<RegistrationStepTwoProps> = ({ formData, han
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-sm text-gray-300">Password</Label>
+        <Label className="text-sm text-gray-300">Password <span className="text-red-400">*</span></Label>
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
             placeholder="Create a secure password"
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none pr-10"
+            className="w-full bg-gray-800/50 border-gray-700 rounded-lg p-3 text-white h-12 pr-10"
+            required
           />
           <button 
             type="button"
@@ -47,14 +48,15 @@ const RegistrationStepTwo: React.FC<RegistrationStepTwoProps> = ({ formData, han
         </div>
       </div>
       <div className="space-y-2">
-        <Label className="text-sm text-gray-300">Confirm Password</Label>
+        <Label className="text-sm text-gray-300">Confirm Password <span className="text-red-400">*</span></Label>
         <div className="relative">
           <Input
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm your password"
             value={formData.confirmPassword}
             onChange={(e) => handleChange('confirmPassword', e.target.value)}
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none pr-10"
+            className="w-full bg-gray-800/50 border-gray-700 rounded-lg p-3 text-white h-12 pr-10"
+            required
           />
           <button 
             type="button"

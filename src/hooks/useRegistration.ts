@@ -13,7 +13,7 @@ const initialFormData: RegistrationData = {
   mobile: '',
   password: '',
   confirmPassword: '',
-  tradingExperience: '',
+  tradingExperience: 'beginner',
   preferredMarkets: [],
   isResearchAnalyst: false,
   certificationNumber: '',
