@@ -61,6 +61,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <h3 className="text-xl font-semibold text-white mb-1">
                 {strategy.name}
               </h3>
+              {isPremium && !canAccess && (
+                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30">
+                  Premium
+                </Badge>
+              )}
             </div>
             <div className="flex gap-2">
               <TooltipProvider>
