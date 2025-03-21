@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -70,7 +69,27 @@ export const useLiveTrading = () => {
     
     try {
       if (dialogState.targetMode === 'live') {
-        dialogState.setShowQuantityDialog(true);
+        // First check if this strategy already exists in the database
+        if (user) {
+          const { data: existingEntries, error: queryError } = await supabase
+            .from('strategy_selections')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('strategy_id', dialogState.targetStrategyId);
+            
+          if (queryError) throw queryError;
+          
+          // If the strategy already exists, we'll update it later in handleBrokerSubmit
+          // Otherwise, we'll need to create a new entry
+          if (!existingEntries || existingEntries.length === 0) {
+            dialogState.setShowQuantityDialog(true);
+          } else {
+            // Strategy exists, just open the quantity dialog to get new values
+            dialogState.setShowQuantityDialog(true);
+          }
+        } else {
+          dialogState.setShowQuantityDialog(true);
+        }
       } else {
         await updateLiveMode(
           dialogState.targetStrategyId, 
@@ -132,14 +151,12 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      // First check if there's an existing record for this strategy + broker combination
+      // First check if there's an existing record for this strategy
       const { data: existingRecords, error: searchError } = await supabase
         .from('strategy_selections')
         .select('id')
         .eq('user_id', user.id)
-        .eq('strategy_id', dialogState.targetStrategyId)
-        .eq('selected_broker', brokerName)
-        .eq('broker_username', brokerUsername);
+        .eq('strategy_id', dialogState.targetStrategyId);
         
       if (searchError) {
         console.error("Error searching for existing strategy records:", searchError);
@@ -154,6 +171,8 @@ export const useLiveTrading = () => {
           .from('strategy_selections')
           .update({
             quantity: dialogState.pendingQuantity,
+            selected_broker: brokerName,
+            broker_username: brokerUsername,
             trade_type: "live trade"
           })
           .eq('id', existingRecords[0].id);
