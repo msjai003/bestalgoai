@@ -71,7 +71,7 @@ const Index = () => {
         <section className="py-12 px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold mb-6 text-center">Sign Up for Updates</h2>
-            <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50 shadow-lg">
+            <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700">
               <form onSubmit={handleSignupSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
@@ -82,7 +82,7 @@ const Index = () => {
                     name="name"
                     value={signupForm.name}
                     onChange={handleSignupChange}
-                    className="bg-gray-700/50 border-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50"
+                    className="bg-gray-700/50 border-gray-600"
                     placeholder="Enter your name"
                   />
                 </div>
@@ -97,7 +97,7 @@ const Index = () => {
                     type="tel"
                     value={signupForm.mobileNumber}
                     onChange={handleSignupChange}
-                    className="bg-gray-700/50 border-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50"
+                    className="bg-gray-700/50 border-gray-600"
                     placeholder="Enter your mobile number"
                   />
                 </div>
@@ -112,7 +112,7 @@ const Index = () => {
                     type="email"
                     value={signupForm.email}
                     onChange={handleSignupChange}
-                    className="bg-gray-700/50 border-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50"
+                    className="bg-gray-700/50 border-gray-600"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -126,14 +126,14 @@ const Index = () => {
                     name="message"
                     value={signupForm.message}
                     onChange={handleSignupChange}
-                    className="bg-gray-700/50 border-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 min-h-[100px]"
+                    className="bg-gray-700/50 border-gray-600 min-h-[100px]"
                     placeholder="Tell us why you're interested in our platform"
                   />
                 </div>
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Submitting...' : 'Sign Up Now'}

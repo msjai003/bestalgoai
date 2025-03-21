@@ -13,11 +13,11 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
 }) => {
   return (
     <section className="space-y-4">
-      <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 shadow-lg">
+      <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
         <div className="space-y-3">
           {!isActive ? (
             <Button 
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-6 rounded-lg font-medium shadow-lg"
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-6 rounded-lg font-medium shadow-lg hover:opacity-90 transition-opacity"
               onClick={onToggleTrading}
             >
               Start Trading All
