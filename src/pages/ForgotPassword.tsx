@@ -233,7 +233,7 @@ const ForgotPassword = () => {
       sessionStorage.setItem(`email_${verificationId}`, email);
       
       setCurrentStep('otp');
-      toast.success('A verification code has been sent to your email. Check your email for the numeric code or use the magic link.');
+      toast.success('A reset link has been sent to your email. Check your email for the link or use the numeric code.');
       console.log("Email sent successfully, moved to OTP step");
       
     } catch (error: any) {

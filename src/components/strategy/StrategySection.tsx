@@ -93,7 +93,10 @@ export const StrategySection = ({
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-white">{strategy.name}</h3>
-                  {/* Description removed as per requirement */}
+                  {/* Show description only if it's not a premium strategy OR if it's a premium strategy that has been paid for */}
+                  {(!isPremiumStrategy(strategy.id) || isPaidStrategy(strategy)) && strategy.description && (
+                    <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Tooltip>
@@ -165,3 +168,4 @@ export const StrategySection = ({
     </div>
   );
 };
+

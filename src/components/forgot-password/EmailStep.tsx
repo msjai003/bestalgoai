@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface EmailStepProps {
   email: string;
@@ -12,8 +14,26 @@ interface EmailStepProps {
 }
 
 const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSubmit }) => {
+  const [emailSent, setEmailSent] = useState(false);
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    onSubmit(e);
+    if (email) {
+      setEmailSent(true);
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {emailSent && (
+        <Alert className="bg-green-900/30 border-green-800 mb-4">
+          <CheckCircle className="h-4 w-4 text-green-400" />
+          <AlertDescription className="text-green-200 ml-2">
+            Reset link sent to your mail ID ✅
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div>
         <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
         <Input
@@ -34,10 +54,11 @@ const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSub
         disabled={isLoading || !email}
         className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
       >
-        {isLoading ? 'Sending...' : 'Send Verification Code'}
+        {isLoading ? 'Sending...' : emailSent ? 'Resend Reset Link' : 'Send Reset Link'}
       </Button>
     </form>
   );
 };
 
 export default EmailStep;
+
