@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -172,20 +171,10 @@ const Dashboard = () => {
           
           <div className="mt-3 grid grid-cols-2 gap-3">
             <Link to="/broker-integration" className="block">
-              <div className="flex items-center justify-center bg-gray-800/30 rounded-xl p-3 h-full">
-                <div className="flex flex-col items-center">
-                  <Building className="text-[#FF00D4] h-5 w-5 mb-2" />
-                  <span className="text-gray-300 text-xs">Brokers</span>
-                </div>
-              </div>
+              <QuickActionButton icon="fa-building" label="Brokers" />
             </Link>
             <Link to="/risk-management" className="block">
-              <div className="flex items-center justify-center bg-gray-800/30 rounded-xl p-3 h-full">
-                <div className="flex flex-col items-center">
-                  <Shield className="text-[#FF00D4] h-5 w-5 mb-2" />
-                  <span className="text-gray-300 text-xs">Risk Management</span>
-                </div>
-              </div>
+              <QuickActionButton icon="fa-shield" label="Risk Management" />
             </Link>
           </div>
         </section>
@@ -252,7 +241,6 @@ const Dashboard = () => {
   );
 };
 
-// This component is now using a mix of FontAwesome icons and Lucide React icons
 const QuickActionButton = ({ icon, label }: { icon: string; label: string }) => (
   <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3">
     <i className={`fa-solid ${icon} text-[#FF00D4] text-xl mb-2`}></i>
