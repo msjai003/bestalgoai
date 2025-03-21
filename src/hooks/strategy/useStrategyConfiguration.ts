@@ -25,7 +25,7 @@ export const saveStrategyConfiguration = async (
       selected_broker: brokerName,
       broker_username: brokerUsername,
       trade_type: tradeType,
-      is_wishlisted: false // Default to not wishlisted for new configurations
+      is_wishlisted: false // Explicitly set to not wishlisted for new configurations
     });
     
   if (error) throw error;
