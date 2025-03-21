@@ -97,7 +97,8 @@
 }
 
 .img-hover-shine::before {
-  @apply content-[''] absolute top-0 left-[-100%] z-[2] w-1/2 h-full bg-white/20 transform skew(-25deg);
+  @apply content-[''] absolute top-0 left-[-100%] z-[2] w-1/2 h-full bg-white/20;
+  transform: skew(-25deg);
   transition: 0.75s;
 }
 
