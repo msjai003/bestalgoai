@@ -141,7 +141,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           {showDetails && (
             <div className="mt-3 bg-gray-700/20 p-3 rounded-md border border-gray-700">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 mb-3">
                 <div className="flex flex-col items-center p-2 bg-blue-900/30 rounded-md border border-blue-800">
                   <span className="text-xs text-blue-300 mb-1">Win Rate</span>
                   <span className="text-blue-300 font-medium">{strategy.performance.winRate}</span>
@@ -157,7 +157,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               </div>
               
               <Button 
-                className="w-full mt-3"
+                className="w-full bg-[#FF00D4] hover:bg-[#FF00D4]/90"
                 onClick={handleViewDetails}
               >
                 View Full Strategy
