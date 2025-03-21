@@ -442,10 +442,6 @@ const ForgotPassword = () => {
           onSubmit={handleVerifyOtp}
           onBack={handleBackToEmail}
           onResendOtp={handleResendOtp}
-          newPassword={newPassword}
-          setNewPassword={setNewPassword}
-          confirmPassword={confirmPassword}
-          setConfirmPassword={setConfirmPassword}
           email={email}
           resetLinkSent={resetLinkSent}
         />
