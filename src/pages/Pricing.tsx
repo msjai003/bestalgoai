@@ -37,6 +37,20 @@ const plans = [
       'Advanced Risk Management',
       'Priority Support'
     ]
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    description: 'For professional traders',
+    price: '₹4999',
+    period: 'per month',
+    features: [
+      'All Pro Features',
+      'Unlimited Strategies',
+      'Advanced Analytics',
+      'Dedicated Account Manager',
+      'API Access'
+    ]
   }
 ];
 
@@ -53,18 +67,14 @@ const PricingPage = () => {
   const [selectedStrategyName, setSelectedStrategyName] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if there's a selected strategy ID in sessionStorage
     const strategyId = sessionStorage.getItem('selectedStrategyId');
     if (strategyId) {
       setSelectedStrategyId(strategyId);
-      
-      // Clear the sessionStorage to avoid persistence
       sessionStorage.removeItem('selectedStrategyId');
     }
   }, []);
 
   useEffect(() => {
-    // If we have strategy ID and predefined strategies data, get the strategy name
     if (selectedStrategyId && predefinedStrategies) {
       const strategy = predefinedStrategies.find(
         s => s.id === parseInt(selectedStrategyId, 10)
@@ -76,7 +86,6 @@ const PricingPage = () => {
   }, [selectedStrategyId, predefinedStrategies]);
 
   useEffect(() => {
-    // Check if user already has premium
     const checkPremiumStatus = async () => {
       if (!user) return;
       
@@ -101,20 +110,17 @@ const PricingPage = () => {
   }, [user]);
 
   const handlePlanSelection = (planName: string, planPrice: string) => {
-    // Check if user is logged in
     if (!user) {
       toast({
         title: "Login Required",
         description: "Please login to select a plan",
         variant: "destructive",
       });
-      // Save the plan info in sessionStorage to potentially use after login
       sessionStorage.setItem('selectedPlan', JSON.stringify({ name: planName, price: planPrice }));
       navigate('/auth');
       return;
     }
     
-    // If user already has premium, show a different message
     if (hasPremium) {
       toast({
         title: "Already subscribed",
@@ -125,7 +131,6 @@ const PricingPage = () => {
       return;
     }
 
-    // Open payment dialog
     setSelectedPlan({ name: planName, price: planPrice });
     setPaymentDialogOpen(true);
   };
@@ -133,7 +138,6 @@ const PricingPage = () => {
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
     
-    // Show specific success message if a strategy was selected
     if (selectedStrategyName) {
       toast({
         title: "Strategy Unlocked!",
@@ -141,14 +145,12 @@ const PricingPage = () => {
         variant: "default",
       });
       
-      // Redirect to the specific strategy details if we have the ID
       if (selectedStrategyId) {
         navigate(`/strategy-details/${selectedStrategyId}`);
         return;
       }
     }
     
-    // Otherwise, redirect to subscription page to show active plan
     navigate('/subscription');
   };
 

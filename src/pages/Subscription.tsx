@@ -22,16 +22,30 @@ const plans = [
     isPopular: false
   },
   {
-    name: "Elite",
+    name: "Pro",
+    price: "₹2,499",
+    period: "/mo",
+    features: [
+      "20 Trading Strategies",
+      "Advanced Analytics",
+      "Priority Support",
+      "Custom Strategy Builder"
+    ],
+    isPopular: true
+  },
+  {
+    name: "Premium",
     price: "₹4,999",
     period: "/mo",
     features: [
       "Unlimited Strategies",
       "Advanced Analytics",
       "24/7 Priority Support",
-      "Custom Indicators"
+      "Custom Indicators",
+      "API Access",
+      "Dedicated Account Manager"
     ],
-    isPopular: true
+    isPopular: false
   }
 ];
 
