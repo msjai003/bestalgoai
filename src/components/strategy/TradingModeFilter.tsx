@@ -15,7 +15,7 @@ export const TradingModeFilter = ({
   onModeChange,
 }: TradingModeFilterProps) => {
   return (
-    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-gray-800/30 rounded-lg border border-gray-700/50">
+    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-gray-800/50 rounded-md border border-gray-700/30 shadow-sm">
       <Button
         variant="outline"
         size="sm"
