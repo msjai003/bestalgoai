@@ -1,6 +1,8 @@
 
 import { Link } from "react-router-dom";
-import { Twitter, Linkedin, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Twitter, Linkedin, Instagram, Mail, MapPin, Phone, ExternalLink } from "lucide-react";
+
+const EXTERNAL_BLOG_URL = 'https://infocapinfo.blogspot.com/';
 
 export const Footer = () => {
   return (
@@ -40,7 +42,15 @@ export const Footer = () => {
                 <Link to="/strategy-selection" className="text-gray-400 hover:text-[#FF00D4] text-sm">Strategies</Link>
               </li>
               <li>
-                <Link to="/blog" className="text-gray-400 hover:text-[#FF00D4] text-sm">Blog</Link>
+                <a 
+                  href={EXTERNAL_BLOG_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#FF00D4] text-sm flex items-center"
+                >
+                  Blog
+                  <ExternalLink className="ml-1 w-3 h-3" />
+                </a>
               </li>
             </ul>
           </div>

@@ -10,12 +10,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+
+const EXTERNAL_BLOG_URL = 'https://infocapinfo.blogspot.com/';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signIn, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   
   const handleLogout = () => {
     // Navigate to the logout page instead of calling signOut directly
@@ -28,6 +30,12 @@ const Header: React.FC = () => {
 
   const handleSignUp = () => {
     navigate('/registration');
+  };
+  
+  // External blog link handler
+  const handleBlogClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.open(EXTERNAL_BLOG_URL, '_blank', 'noopener,noreferrer');
   };
   
   return (
@@ -57,6 +65,14 @@ const Header: React.FC = () => {
           >
             Pricing
           </Link>
+          <a
+            href={EXTERNAL_BLOG_URL}
+            onClick={handleBlogClick}
+            className="text-gray-300 hover:text-white transition-colors flex items-center"
+          >
+            Blog
+            <ExternalLink className="ml-1 w-3 h-3" />
+          </a>
           <Link
             to="/contact"
             className="text-gray-300 hover:text-white transition-colors"
@@ -131,6 +147,14 @@ const Header: React.FC = () => {
               >
                 Pricing
               </Link>
+              <a
+                href={EXTERNAL_BLOG_URL}
+                onClick={handleBlogClick}
+                className="text-gray-300 hover:text-white transition-colors flex items-center py-2"
+              >
+                Blog
+                <ExternalLink className="ml-1 w-3 h-3" />
+              </a>
               <Link
                 to="/contact"
                 className="text-gray-300 hover:text-white transition-colors block py-2"
