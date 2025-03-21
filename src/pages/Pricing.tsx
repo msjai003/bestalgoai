@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -52,7 +51,11 @@ const fallbackPlans = [
       'Unlimited Strategies',
       'Advanced Analytics',
       'Dedicated Account Manager',
-      'API Access'
+      'API Access',
+      '20 Pre-built Strategies',
+      'Custom Strategy Builder',
+      'Advanced Risk Management',
+      'Priority Support'
     ]
   }
 ];
@@ -74,15 +77,44 @@ const PricingPage = () => {
   
   // Use plans from database if available, otherwise use fallback plans
   const plans = dbPlans.length > 0 
-    ? dbPlans.map(plan => ({
-        id: plan.plan_id,
-        name: plan.plan_name,
-        description: plan.plan_description,
-        price: plan.plan_price,
-        period: plan.plan_period,
-        popular: plan.is_popular,
-        features: plan.features as string[]
-      }))
+    ? dbPlans.map(plan => {
+        // Make sure Premium plan includes Pro plan features if it's in the database
+        if (plan.plan_name === 'Premium') {
+          // Find Pro plan to get its features
+          const proPlan = dbPlans.find(p => p.plan_name === 'Pro');
+          if (proPlan) {
+            // Ensure we're not adding duplicate features
+            const proFeatures = proPlan.features || [];
+            const premiumFeatures = plan.features || [];
+            
+            // Combine features without duplicates
+            const combinedFeatures = [...new Set([
+              ...premiumFeatures, 
+              ...proFeatures.filter(f => !premiumFeatures.includes(f))
+            ])];
+            
+            return {
+              id: plan.plan_id,
+              name: plan.plan_name,
+              description: plan.plan_description,
+              price: plan.plan_price,
+              period: plan.plan_period,
+              popular: plan.is_popular,
+              features: combinedFeatures
+            };
+          }
+        }
+        
+        return {
+          id: plan.plan_id,
+          name: plan.plan_name,
+          description: plan.plan_description,
+          price: plan.plan_price,
+          period: plan.plan_period,
+          popular: plan.is_popular,
+          features: plan.features as string[]
+        };
+      })
     : fallbackPlans;
 
   useEffect(() => {

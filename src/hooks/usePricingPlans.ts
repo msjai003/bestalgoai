@@ -35,12 +35,30 @@ export const usePricingPlans = () => {
         }
 
         // Transform the data to ensure features is always a string array
-        const transformedData = data?.map(plan => ({
-          ...plan,
-          features: Array.isArray(plan.features) ? plan.features : []
-        })) as PricingPlan[];
+        const transformedData = data?.map(plan => {
+          let features: string[] = [];
+          
+          // Handle different possible formats of the features field
+          if (Array.isArray(plan.features)) {
+            features = plan.features;
+          } else if (typeof plan.features === 'string') {
+            try {
+              const parsed = JSON.parse(plan.features);
+              features = Array.isArray(parsed) ? parsed : [String(plan.features)];
+            } catch {
+              features = [String(plan.features)];
+            }
+          } else if (plan.features) {
+            features = [String(plan.features)];
+          }
+          
+          return {
+            ...plan,
+            features
+          } as PricingPlan;
+        }) || [];
 
-        setPlans(transformedData || []);
+        setPlans(transformedData);
       } catch (err) {
         console.error('Error fetching pricing plans:', err);
         setError('Failed to load pricing plans');
