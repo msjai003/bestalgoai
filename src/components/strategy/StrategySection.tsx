@@ -36,6 +36,18 @@ export const StrategySection = ({
     return Number(strategyId) > 1;
   };
 
+  // Helper to check if a premium strategy has been paid for
+  const isPaidStrategy = (strategy: any) => {
+    return strategy.isPaid === true;
+  };
+
+  const handlePremiumClick = (strategyId: number | string) => {
+    // Store the strategy ID in sessionStorage before redirecting
+    sessionStorage.setItem('selectedStrategyId', strategyId.toString());
+    sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
+    navigate('/pricing');
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -81,7 +93,7 @@ export const StrategySection = ({
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-white">{strategy.name}</h3>
-                  <p className="text-sm text-gray-400">{strategy.description}</p>
+                  {/* Description removed as per requirement */}
                 </div>
                 <div className="flex gap-2">
                   <Tooltip>
@@ -106,11 +118,11 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className={isPremiumStrategy(strategy.id) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")}
-                        onClick={() => onToggleLiveMode(strategy.id)}
-                        aria-label={isPremiumStrategy(strategy.id) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
+                        className={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")}
+                        onClick={() => isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? handlePremiumClick(strategy.id) : onToggleLiveMode(strategy.id)}
+                        aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
-                        {isPremiumStrategy(strategy.id) ? (
+                        {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
                           <Lock className="h-4 w-4" />
                         ) : (
                           <Play className="h-4 w-4" />
@@ -118,7 +130,7 @@ export const StrategySection = ({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      {isPremiumStrategy(strategy.id) ? (
+                      {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
                         <p>Unlock this premium strategy</p>
                       ) : strategy.isLive ? (
                         <p>Switch to paper trading</p>
@@ -141,8 +153,8 @@ export const StrategySection = ({
                     )}
                   </div>
                   
-                  <div className={`${isPremiumStrategy(strategy.id) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400')} px-2 py-1 rounded-md text-xs font-medium`}>
-                    {isPremiumStrategy(strategy.id) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
+                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400')} px-2 py-1 rounded-md text-xs font-medium`}>
+                    {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
                   </div>
                 </div>
               </div>

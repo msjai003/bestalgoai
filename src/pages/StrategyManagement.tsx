@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +14,6 @@ import { Star, User } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
-import { Json } from "@/integrations/supabase/types";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -26,6 +24,7 @@ interface Strategy {
   isCustom: boolean;
   isLive: boolean;
   isWishlisted: boolean;
+  isPaid?: boolean;
   legs?: any;
   createdBy?: string;
   category?: StrategyCategory;
@@ -42,6 +41,7 @@ const StrategyManagement = () => {
   const { user } = useAuth();
   const [wishlistedStrategies, setWishlistedStrategies] = useState<Strategy[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
+  const [hasPremium, setHasPremium] = useState(false);
   
   // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -51,6 +51,63 @@ const StrategyManagement = () => {
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
+
+  // Check if user has premium subscription
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremiumStatus();
+  }, [user]);
+
+  // Check if any specific strategies have been paid for
+  useEffect(() => {
+    const checkPaidStrategies = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('strategy_selections')
+          .select('strategy_id, paid_status')
+          .eq('user_id', user.id)
+          .eq('paid_status', 'paid');
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const paidStrategyIds = new Set(data.map(item => Number(item.strategy_id)));
+          
+          setWishlistedStrategies(prev => prev.map(strategy => ({
+            ...strategy,
+            isPaid: paidStrategyIds.has(Number(strategy.id))
+          })));
+        }
+      } catch (error) {
+        console.error("Error fetching paid strategies:", error);
+      }
+    };
+    
+    if (wishlistedStrategies.length > 0) {
+      checkPaidStrategies();
+    }
+  }, [wishlistedStrategies.length, user]);
 
   useEffect(() => {
     const fetchStrategies = async () => {
@@ -196,6 +253,16 @@ const StrategyManagement = () => {
   const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
+    
+    // For premium strategies that haven't been paid for
+    const isPremium = Number(id) > 1;
+    if (isPremium && !hasPremium && !strategy.isPaid) {
+      // Redirect to pricing page with strategy context
+      sessionStorage.setItem('selectedStrategyId', id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
+      navigate('/pricing');
+      return;
+    }
     
     setCurrentStrategyId(id);
     setTargetMode(strategy.isLive ? "paper" : "live");
