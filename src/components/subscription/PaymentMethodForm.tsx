@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -99,8 +100,39 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // If a specific strategy was selected, mark ONLY it as paid
-      if (selectedStrategyId) {
+      // For Premium plan, unlock all strategies
+      if (planName === 'Premium') {
+        try {
+          // Fetch all predefined strategies
+          const { data: strategies, error: strategiesError } = await supabase
+            .from('predefined_strategies')
+            .select('id, name, description');
+            
+          if (strategiesError) throw strategiesError;
+          
+          // Mark all strategies as paid
+          if (strategies && strategies.length > 0) {
+            for (const strategy of strategies) {
+              await supabase.rpc('force_strategy_paid_status', {
+                p_user_id: user.id,
+                p_strategy_id: strategy.id,
+                p_strategy_name: strategy.name,
+                p_strategy_description: strategy.description || "Premium strategy unlocked with subscription"
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error marking strategies as paid:", error);
+          // Continue with payment - not blocking
+        }
+      } 
+      // For Pro, mark only select strategies as paid (if needed)
+      else if (planName === 'Pro') {
+        // You could implement specific logic for Pro plan here
+        // E.g., mark only specific strategy IDs as paid
+      }
+      // If a specific strategy was selected, mark it as paid
+      else if (selectedStrategyId) {
         // First check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
@@ -130,17 +162,16 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         }
       }
       
-      // Remove the previous code that marked all premium strategies as paid
-      // Only the selected strategy is now marked as paid
-      
       // Remove the selected strategy ID from session storage
       sessionStorage.removeItem('selectedStrategyId');
       
       toast({
         title: "Payment successful",
-        description: selectedStrategyName
-          ? `You've unlocked ${selectedStrategyName}!`
-          : `Your ${planName} plan is now active!`,
+        description: planName === 'Premium' 
+          ? "You've unlocked all premium strategies!" 
+          : (selectedStrategyName
+              ? `You've unlocked ${selectedStrategyName}!`
+              : `Your ${planName} plan is now active!`),
         variant: "default"
       });
       
