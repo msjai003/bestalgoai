@@ -73,3 +73,34 @@
 .animate-pulse-slow {
   animation: pulse-slow 4s infinite ease-in-out;
 }
+
+/* Button Animations */
+.btn-hover-effect {
+  @apply relative overflow-hidden transition-all duration-300;
+}
+
+.btn-hover-effect::after {
+  @apply content-[''] absolute top-0 h-full w-0 left-0 bg-white/10 transition-all duration-300 ease-out;
+}
+
+.btn-hover-effect:hover::after {
+  @apply w-full;
+}
+
+/* Image Animation */
+.img-hover-grow {
+  @apply transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg;
+}
+
+.img-hover-shine {
+  @apply relative overflow-hidden;
+}
+
+.img-hover-shine::before {
+  @apply content-[''] absolute top-0 left-[-100%] z-[2] w-1/2 h-full bg-white/20 transform skew(-25deg);
+  transition: 0.75s;
+}
+
+.img-hover-shine:hover::before {
+  @apply left-[125%];
+}

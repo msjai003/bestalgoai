@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,11 +49,11 @@ const FeedbackForm: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700">
+    <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700 transition-all duration-300 hover:shadow-pink-500/10 hover:border-gray-600">
       <h2 className="text-xl font-semibold mb-4">Sign Up for Updates</h2>
       
       {errorMessage && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg flex items-start">
+        <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg flex items-start animate-pulse">
           <AlertCircle className="text-red-400 mr-2 h-5 w-5 mt-0.5 flex-shrink-0" />
           <p className="text-red-200 text-sm">{errorMessage}</p>
         </div>
@@ -66,7 +67,7 @@ const FeedbackForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none transition-all duration-300 focus:shadow-md focus:shadow-pink-500/20"
           />
         </div>
         
@@ -78,7 +79,7 @@ const FeedbackForm: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter your 10 digit mobile number"
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none transition-all duration-300 focus:shadow-md focus:shadow-pink-500/20"
           />
         </div>
         
@@ -90,7 +91,7 @@ const FeedbackForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none transition-all duration-300 focus:shadow-md focus:shadow-pink-500/20"
           />
         </div>
         
@@ -101,17 +102,17 @@ const FeedbackForm: React.FC = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share your thoughts with us..."
-            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none transition-all duration-300 focus:shadow-md focus:shadow-pink-500/20"
             rows={5}
           />
         </div>
         
         <Button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl"
+          className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl group"
         >
-          <Send className="w-5 h-5" />
-          <span>Sign Up</span>
+          <Send className="w-5 h-5 group-hover:animate-micro-bounce" />
+          <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white after:scale-x-0 after:origin-right after:transition-transform group-hover:after:scale-x-100 group-hover:after:origin-left">Sign Up</span>
         </Button>
       </form>
     </div>

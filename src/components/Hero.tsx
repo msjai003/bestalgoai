@@ -35,13 +35,13 @@ export const Hero = () => {
           <div className="flex space-x-3">
             <Button
               variant="ghost"
-              className="text-gray-300 hover:text-white border border-gray-700"
+              className="text-gray-300 hover:text-white border border-gray-700 hover:animate-micro-scale"
               onClick={handleSignIn}
             >
               Sign In
             </Button>
             <Button
-              className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white"
+              className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white hover:animate-micro-scale"
               onClick={handleSignUp}
             >
               Sign Up
@@ -54,7 +54,7 @@ export const Hero = () => {
         <h1 className="text-3xl font-bold mb-3">AI-Powered Algo Trading for Everyone</h1>
         <p className="text-gray-300 mb-6">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
         <Button 
-          className="w-full py-6 bg-gradient-to-r from-pink-500/80 to-purple-500/80 rounded-xl text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
+          className="w-full py-6 bg-gradient-to-r from-pink-500/80 to-purple-500/80 rounded-xl text-white font-semibold shadow-lg hover:opacity-90 transition-opacity hover:animate-micro-glow"
           onClick={handleStartTrading}
         >
           Start Trading Now
@@ -62,7 +62,7 @@ export const Hero = () => {
       </div>
       <div className="mt-8">
         <img 
-          className="w-full h-48 object-cover rounded-xl shadow-lg" 
+          className="w-full h-48 object-cover rounded-xl shadow-lg transform transition-all duration-700 hover:scale-[1.02] hover:shadow-pink-500/20 animate-image-float"
           src="https://storage.googleapis.com/uxpilot-auth.appspot.com/493f062fc3-bc315fc272ae97137e07.png" 
           alt="3D illustration of trading dashboard with charts and graphs, dark theme with purple accents, modern UI"
         />
