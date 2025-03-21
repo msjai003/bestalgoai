@@ -22,6 +22,7 @@ export const addToWishlist = async (
     
     if (existingWishlist) {
       // Entry already exists, no need to insert
+      console.log("Strategy already in wishlist, skipping insert");
       return;
     }
     
@@ -36,6 +37,7 @@ export const addToWishlist = async (
       });
       
     if (error) throw error;
+    console.log("Strategy added to wishlist_maintain table");
     
     // Also update the strategy_selections table to maintain backward compatibility
     // First check if the strategy exists in strategy_selections
@@ -60,6 +62,7 @@ export const addToWishlist = async (
         .eq('strategy_id', strategyId);
         
       if (updateError) throw updateError;
+      console.log("Strategy updated in strategy_selections table");
     }
   } catch (error) {
     console.error("Error adding to wishlist:", error);
@@ -70,6 +73,8 @@ export const addToWishlist = async (
 // Helper function to remove strategy from wishlist
 export const removeFromWishlist = async (userId: string, strategyId: number): Promise<void> => {
   try {
+    console.log(`Removing strategy ${strategyId} from wishlist for user ${userId}`);
+    
     // Delete from wishlist_maintain table
     const { error: deleteError } = await supabase
       .from('wishlist_maintain')
@@ -77,7 +82,11 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
       
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("Error deleting from wishlist_maintain:", deleteError);
+      throw deleteError;
+    }
+    console.log("Deleted from wishlist_maintain table");
     
     // Update the strategy_selections table to maintain backward compatibility
     // Check if the strategy is a paid strategy
@@ -87,9 +96,14 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
       
-    if (queryError) throw queryError;
+    if (queryError) {
+      console.error("Error querying strategy_selections:", queryError);
+      throw queryError;
+    }
     
     if (strategies && strategies.length > 0) {
+      console.log(`Found ${strategies.length} entries in strategy_selections to update`);
+      
       // Check if any of the strategies are paid
       const paidStrategy = strategies.find(strategy => strategy.paid_status === 'paid');
       
@@ -102,7 +116,11 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
           })
           .eq('id', paidStrategy.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating paid strategy:", error);
+          throw error;
+        }
+        console.log("Updated paid strategy wishlist status");
       } else {
         // If it's not a paid strategy, update the is_wishlisted flag to false
         const { error } = await supabase
@@ -113,7 +131,11 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
           .eq('user_id', userId)
           .eq('strategy_id', strategyId);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating non-paid strategy:", error);
+          throw error;
+        }
+        console.log("Updated non-paid strategy wishlist status");
       }
     }
   } catch (error) {
@@ -156,13 +178,18 @@ export const updateLocalStorageWishlist = (
 // New function to load wishlist items from the wishlist_maintain table
 export const loadWishlistItems = async (userId: string): Promise<Array<{id: number, name: string, description: string}>> => {
   try {
+    console.log(`Loading wishlist items for user ${userId}`);
     const { data, error } = await supabase
       .from('wishlist_maintain')
       .select('strategy_id, strategy_name, strategy_description')
       .eq('user_id', userId);
       
-    if (error) throw error;
+    if (error) {
+      console.error("Error loading wishlist items:", error);
+      throw error;
+    }
     
+    console.log(`Loaded ${data?.length || 0} wishlist items from database`);
     return (data || []).map(item => ({
       id: item.strategy_id,
       name: item.strategy_name,

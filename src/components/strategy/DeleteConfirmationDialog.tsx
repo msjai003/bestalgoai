@@ -35,7 +35,8 @@ export const DeleteConfirmationDialog = ({
             Confirm Wishlist Removal
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            Are you sure you want to remove <span className="font-semibold text-pink-400">{strategyName}</span> from your wishlist? You can add it back later if you change your mind.
+            Are you sure you want to remove <span className="font-semibold text-pink-400">{strategyName}</span> from your wishlist? 
+            This action will remove it from the wishlist_maintain table but won't affect any paid strategies.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">
