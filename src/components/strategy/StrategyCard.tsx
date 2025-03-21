@@ -124,21 +124,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
 
           <div className="bg-gray-700/20 p-3 rounded-md border border-gray-700 mt-3">
-            <div className="grid grid-cols-3 gap-3 mb-3">
-              <div className="flex flex-col items-center p-2 bg-blue-900/30 rounded-md border border-blue-800">
-                <span className="text-xs text-blue-300 mb-1">Win Rate</span>
-                <span className="text-blue-300 font-medium">{strategy.performance.winRate}</span>
-              </div>
-              <div className="flex flex-col items-center p-2 bg-green-900/30 rounded-md border border-green-800">
-                <span className="text-xs text-green-300 mb-1">Avg. Profit</span>
-                <span className="text-green-300 font-medium">{strategy.performance.avgProfit}</span>
-              </div>
-              <div className="flex flex-col items-center p-2 bg-red-900/30 rounded-md border border-red-800">
-                <span className="text-xs text-red-300 mb-1">Max Drawdown</span>
-                <span className="text-red-300 font-medium">{strategy.performance.drawdown}</span>
-              </div>
-            </div>
-              
             <Button 
               className="w-full"
               onClick={handleViewFullStrategy}
