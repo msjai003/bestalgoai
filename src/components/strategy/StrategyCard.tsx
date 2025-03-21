@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -24,6 +24,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   hasPremium = false
 }) => {
   const navigate = useNavigate();
+  const [showPerformance, setShowPerformance] = useState(false);
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
@@ -50,6 +51,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleViewDetails = () => {
     navigate(`/strategy-details/${strategy.id}`);
+  };
+
+  const togglePerformance = () => {
+    setShowPerformance(!showPerformance);
   };
 
   return (
@@ -123,39 +128,35 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           )}
           
-          {canAccess && (
-            <div className="mt-3 mb-3">
-              <div className="flex gap-2 mb-2">
-                <Badge 
-                  variant="outline" 
-                  className="bg-blue-900/30 text-blue-300 border-blue-800"
-                >
-                  Win Rate: {strategy.performance.winRate}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-900/30 text-green-300 border-green-800"
-                >
-                  Avg. Profit: {strategy.performance.avgProfit}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-red-900/30 text-red-300 border-red-800"
-                >
-                  Max Drawdown: {strategy.performance.drawdown}
-                </Badge>
+          {showPerformance && canAccess && (
+            <div className="mt-3 mb-3 p-3 bg-gray-700/30 rounded-md border border-gray-700">
+              <h4 className="text-sm font-medium text-gray-200 mb-2">Performance Metrics</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-blue-900/30 p-2 rounded-md border border-blue-800">
+                  <p className="text-xs text-blue-300 font-medium">Win Rate</p>
+                  <p className="text-blue-200 font-bold">{strategy.performance.winRate}</p>
+                </div>
+                <div className="bg-green-900/30 p-2 rounded-md border border-green-800">
+                  <p className="text-xs text-green-300 font-medium">Avg. Profit</p>
+                  <p className="text-green-200 font-bold">{strategy.performance.avgProfit}</p>
+                </div>
+                <div className="bg-red-900/30 p-2 rounded-md border border-red-800">
+                  <p className="text-xs text-red-300 font-medium">Max Drawdown</p>
+                  <p className="text-red-200 font-bold">{strategy.performance.drawdown}</p>
+                </div>
               </div>
             </div>
           )}
           
-          <div className="flex justify-end items-center mt-3">            
+          <div className="flex justify-center mt-4">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleViewDetails}
-              className="text-green-400 text-xs bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300"
+              onClick={togglePerformance}
+              className="text-green-400 text-xs bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 w-full"
             >
-              Full Details
+              View Details
+              <ChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </div>
           
