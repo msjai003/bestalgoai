@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -24,7 +24,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   hasPremium = false
 }) => {
   const navigate = useNavigate();
-  const [showDetails, setShowDetails] = useState(false);
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
@@ -51,10 +50,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleViewDetails = () => {
     navigate(`/strategy-details/${strategy.id}`);
-  };
-
-  const toggleShowDetails = () => {
-    setShowDetails(!showDetails);
   };
 
   return (
@@ -128,7 +123,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           )}
           
-          {showDetails && canAccess && (
+          {canAccess && (
             <div className="mt-3 mb-3">
               <div className="flex gap-2 mb-2">
                 <Badge 
@@ -153,17 +148,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           )}
           
-          <div className="flex justify-between items-center mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleShowDetails}
-              className="text-gray-300 text-xs border-gray-700 hover:bg-gray-700 flex items-center gap-1"
-            >
-              {showDetails ? "Hide Details" : "View Details"}
-              {showDetails ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            </Button>
-            
+          <div className="flex justify-end items-center mt-3">            
             <Button
               variant="outline"
               size="sm"
