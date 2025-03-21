@@ -3,14 +3,6 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { GraduationCap } from 'lucide-react';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 
 interface RegistrationStepThreeProps {
   formData: {
@@ -25,24 +17,17 @@ const RegistrationStepThree: React.FC<RegistrationStepThreeProps> = ({ formData,
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-sm text-gray-300">Trading Experience Level <span className="text-red-400">*</span></Label>
-        <div className="relative">
-          <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
-          <Select 
-            value={formData.tradingExperience} 
-            onValueChange={(value) => handleChange('tradingExperience', value)}
-            required
-          >
-            <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10">
-              <SelectValue placeholder="Select your experience level" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700 text-white">
-              <SelectItem value="beginner">Beginner</SelectItem>
-              <SelectItem value="intermediate">Intermediate</SelectItem>
-              <SelectItem value="advanced">Advanced</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Label className="text-sm text-gray-300">Trading Experience</Label>
+        <select
+          value={formData.tradingExperience}
+          onChange={(e) => handleChange('tradingExperience', e.target.value)}
+          className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none text-white"
+        >
+          <option value="">Select your experience level</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
       </div>
       
       <div className="flex items-center justify-between pt-3">
@@ -59,13 +44,12 @@ const RegistrationStepThree: React.FC<RegistrationStepThreeProps> = ({ formData,
       
       {formData.isResearchAnalyst && (
         <div className="space-y-2 pt-2">
-          <Label className="text-sm text-gray-300">RA Certification Number <span className="text-red-400">*</span></Label>
+          <Label className="text-sm text-gray-300">RA Certification Number</Label>
           <Input
             placeholder="Enter your certification number"
             value={formData.certificationNumber}
             onChange={(e) => handleChange('certificationNumber', e.target.value)}
-            className="w-full bg-gray-800/50 border-gray-700 rounded-lg p-3 text-white h-12"
-            required
+            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 focus:border-[#FF00D4] focus:outline-none"
           />
         </div>
       )}

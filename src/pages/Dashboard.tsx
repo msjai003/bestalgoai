@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -188,7 +187,62 @@ const Dashboard = () => {
           </div>
         </section>
         
-        {/* Recent Strategies section removed as requested */}
+        <section id="recent-strategies" className="p-4 mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">Recent Strategies</h3>
+            <Link to="/strategy-selection" className="text-[#FF00D4] text-sm flex items-center">
+              View all <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          </div>
+          
+          <div className="space-y-3">
+            {mockStrategies.map((strategy) => (
+              <div key={strategy.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-medium text-white">{strategy.name}</h4>
+                  <div className="flex items-center text-emerald-400 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <span>+12.4%</span>
+                  </div>
+                </div>
+                
+                {(!strategy.isPremium || hasPremium) ? (
+                  <>
+                    <p className="text-gray-400 text-sm mb-3">{strategy.description}</p>
+                    <Link 
+                      to={`/strategy-details/${strategy.id}`}
+                      className="text-[#FF00D4] text-sm hover:underline"
+                    >
+                      View details
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-400 text-sm mb-3">This premium strategy requires a subscription.</p>
+                    <div className="flex justify-between items-center">
+                      <div 
+                        onClick={handlePremiumClick}
+                        className="text-[#FF00D4] text-sm cursor-pointer hover:underline flex items-center"
+                      >
+                        <Lock className="h-4 w-4 mr-1" />
+                        Unlock with premium
+                      </div>
+                      {hasPremium && (
+                        <Link 
+                          to={`/strategy-details/${strategy.id}`}
+                          className="text-green-400 text-sm hover:underline flex items-center"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Access strategy
+                        </Link>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
       <BottomNav />
     </div>
