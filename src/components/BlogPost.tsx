@@ -11,15 +11,15 @@ interface BlogPostProps {
 
 export const BlogPost = ({ title, excerpt, date, image, imageAlt }: BlogPostProps) => {
   return (
-    <article className="bg-gray-800/50 rounded-xl overflow-hidden shadow-lg border border-gray-700 transition-all duration-300 hover:shadow-pink-500/10 hover:border-gray-600 hover:translate-y-[-5px]">
+    <article className="pro-card overflow-hidden shadow-lg">
       <div className="overflow-hidden">
         <img 
-          className="w-full h-48 object-cover transition-transform duration-700 hover:scale-110 img-hover-shine" 
+          className="w-full h-48 object-cover transition-transform duration-700 hover:scale-110 img-hover-shine image-hifi" 
           src={image}
           alt={imageAlt}
         />
       </div>
-      <div className="p-4">
+      <div className="p-6">
         <div className="text-gray-400 text-sm mb-2">{date}</div>
         <h2 className="text-xl font-bold text-white mb-2 transition-colors duration-300 hover:text-pink-400">{title}</h2>
         <p className="text-gray-400 mb-4">{excerpt}</p>
