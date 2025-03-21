@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Play, Trash2 } from "lucide-react";
+import { Plus, Play, Trash2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StrategySectionProps {
@@ -29,6 +29,12 @@ export const StrategySection = ({
   showEmptyStateButton = true,
 }: StrategySectionProps) => {
   const navigate = useNavigate();
+
+  // Helper function to determine if a strategy is premium based on its ID
+  const isPremiumStrategy = (strategyId: number | string) => {
+    // Use the same logic as in StrategyCard component
+    return Number(strategyId) > 1;
+  };
 
   return (
     <div className="mb-6">
@@ -100,15 +106,25 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className={`${strategy.isLive ? 'text-green-500' : 'text-gray-400'} hover:text-green-500`}
+                        className={isPremiumStrategy(strategy.id) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")}
                         onClick={() => onToggleLiveMode(strategy.id)}
-                        aria-label={strategy.isLive ? 'Switch to paper trading' : 'Switch to live trading'}
+                        aria-label={isPremiumStrategy(strategy.id) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
-                        <Play className="h-4 w-4" />
+                        {isPremiumStrategy(strategy.id) ? (
+                          <Lock className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      <p>{strategy.isLive ? 'Switch to paper trading' : 'Click to live trade'}</p>
+                      {isPremiumStrategy(strategy.id) ? (
+                        <p>Unlock this premium strategy</p>
+                      ) : strategy.isLive ? (
+                        <p>Switch to paper trading</p>
+                      ) : (
+                        <p>Click to live trade</p>
+                      )}
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -125,8 +141,8 @@ export const StrategySection = ({
                     )}
                   </div>
                   
-                  <div className={`${strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'} px-2 py-1 rounded-md text-xs font-medium`}>
-                    {strategy.isLive ? 'Live Trading' : 'Paper Trading'}
+                  <div className={`${isPremiumStrategy(strategy.id) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400')} px-2 py-1 rounded-md text-xs font-medium`}>
+                    {isPremiumStrategy(strategy.id) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
                   </div>
                 </div>
               </div>
