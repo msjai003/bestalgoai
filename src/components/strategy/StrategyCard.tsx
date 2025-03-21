@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -156,11 +156,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               className="text-green-400 text-xs bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 w-full"
             >
               View Details
-              {showPerformance ? (
-                <ChevronUp className="ml-1 h-3 w-3" />
-              ) : (
-                <ChevronDown className="ml-1 h-3 w-3" />
-              )}
+              <ChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </div>
           
