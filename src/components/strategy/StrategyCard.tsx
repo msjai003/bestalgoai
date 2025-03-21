@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +26,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
-  const [showDetails, setShowDetails] = useState(false);
 
   const toggleWishlist = () => {
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
@@ -49,12 +48,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     onToggleLiveMode(strategy.id);
   };
 
-  const handleViewDetails = () => {
+  const handleViewFullStrategy = () => {
     navigate(`/strategy-details/${strategy.id}`);
-  };
-
-  const toggleDetails = () => {
-    setShowDetails(!showDetails);
   };
 
   return (
@@ -128,42 +123,29 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           )}
 
-          <div className="mt-3">
+          <div className="bg-gray-700/20 p-3 rounded-md border border-gray-700 mt-3">
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="flex flex-col items-center p-2 bg-blue-900/30 rounded-md border border-blue-800">
+                <span className="text-xs text-blue-300 mb-1">Win Rate</span>
+                <span className="text-blue-300 font-medium">{strategy.performance.winRate}</span>
+              </div>
+              <div className="flex flex-col items-center p-2 bg-green-900/30 rounded-md border border-green-800">
+                <span className="text-xs text-green-300 mb-1">Avg. Profit</span>
+                <span className="text-green-300 font-medium">{strategy.performance.avgProfit}</span>
+              </div>
+              <div className="flex flex-col items-center p-2 bg-red-900/30 rounded-md border border-red-800">
+                <span className="text-xs text-red-300 mb-1">Max Drawdown</span>
+                <span className="text-red-300 font-medium">{strategy.performance.drawdown}</span>
+              </div>
+            </div>
+              
             <Button 
-              variant="outline" 
-              className="w-full justify-between border-gray-600 bg-gray-700/50 hover:bg-gray-700"
-              onClick={toggleDetails}
+              className="w-full"
+              onClick={handleViewFullStrategy}
             >
-              View Details
-              {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              View Full Strategy
             </Button>
           </div>
-          
-          {showDetails && (
-            <div className="mt-3 bg-gray-700/20 p-3 rounded-md border border-gray-700">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center p-2 bg-blue-900/30 rounded-md border border-blue-800">
-                  <span className="text-xs text-blue-300 mb-1">Win Rate</span>
-                  <span className="text-blue-300 font-medium">{strategy.performance.winRate}</span>
-                </div>
-                <div className="flex flex-col items-center p-2 bg-green-900/30 rounded-md border border-green-800">
-                  <span className="text-xs text-green-300 mb-1">Avg. Profit</span>
-                  <span className="text-green-300 font-medium">{strategy.performance.avgProfit}</span>
-                </div>
-                <div className="flex flex-col items-center p-2 bg-red-900/30 rounded-md border border-red-800">
-                  <span className="text-xs text-red-300 mb-1">Max Drawdown</span>
-                  <span className="text-red-300 font-medium">{strategy.performance.drawdown}</span>
-                </div>
-              </div>
-              
-              <Button 
-                className="w-full mt-3"
-                onClick={handleViewDetails}
-              >
-                View Full Strategy
-              </Button>
-            </div>
-          )}
           
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
