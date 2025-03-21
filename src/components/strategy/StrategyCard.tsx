@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +61,26 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <h3 className="text-xl font-semibold text-white mb-1">
                 {strategy.name}
               </h3>
+              <div className="flex gap-2 mb-2">
+                <Badge 
+                  variant="outline" 
+                  className="bg-blue-900/30 text-blue-300 border-blue-800"
+                >
+                  Win Rate: {strategy.performance.winRate}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-green-900/30 text-green-300 border-green-800"
+                >
+                  Avg. Profit: {strategy.performance.avgProfit}
+                </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-red-900/30 text-red-300 border-red-800"
+                >
+                  Max Drawdown: {strategy.performance.drawdown}
+                </Badge>
+              </div>
             </div>
             <div className="flex gap-2">
               <TooltipProvider>
@@ -123,42 +143,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           )}
           
-          {canAccess && (
-            <div className="mt-3 mb-3">
-              <div className="flex gap-2 mb-2">
-                <Badge 
-                  variant="outline" 
-                  className="bg-blue-900/30 text-blue-300 border-blue-800"
-                >
-                  Win Rate: {strategy.performance.winRate}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-900/30 text-green-300 border-green-800"
-                >
-                  Avg. Profit: {strategy.performance.avgProfit}
-                </Badge>
-                <Badge 
-                  variant="outline" 
-                  className="bg-red-900/30 text-red-300 border-red-800"
-                >
-                  Max Drawdown: {strategy.performance.drawdown}
-                </Badge>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end items-center mt-3">            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleViewDetails}
-              className="text-green-400 text-xs bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300"
-            >
-              Full Details
-            </Button>
-          </div>
-          
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="bg-gray-700/50 p-2 rounded">
@@ -179,3 +163,4 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </Card>
   );
 };
+
