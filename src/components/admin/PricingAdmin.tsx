@@ -50,7 +50,13 @@ const PricingAdmin = () => {
         throw error;
       }
 
-      setPlans(data || []);
+      // Transform the data to ensure features is always a string array
+      const transformedData = data?.map(plan => ({
+        ...plan,
+        features: Array.isArray(plan.features) ? plan.features : []
+      })) as PricingPlan[];
+
+      setPlans(transformedData || []);
     } catch (err) {
       console.error('Error fetching pricing plans:', err);
       toast({
