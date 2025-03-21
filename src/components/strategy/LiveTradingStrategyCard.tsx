@@ -1,6 +1,5 @@
-
 import React from "react";
-import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
+import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -12,19 +11,14 @@ interface StrategyCardProps {
   onToggleLiveMode: () => void;
   onEditQuantity: () => void;
   onViewDetails: () => void;
-  hasPremium?: boolean;
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   onToggleLiveMode,
   onEditQuantity,
-  onViewDetails,
-  hasPremium = false
+  onViewDetails
 }) => {
-  const isPremium = strategy.id > 1; // First strategy is free, others are premium
-  const canAccess = !isPremium || hasPremium || strategy.isPaid;
-
   return (
     <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
       <div className="flex items-center justify-between mb-3">
@@ -60,105 +54,81 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </div>
       
       <div className="mb-4">
-        {canAccess ? (
-          <>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-300 text-sm">Quantity</span>
-              <div className="flex items-center gap-2">
-                <span className="text-white font-medium">{strategy.quantity || 0}</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-gray-400 hover:text-white p-1 h-auto"
-                  onClick={onEditQuantity}
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-gray-300 text-sm">Quantity</span>
+          <div className="flex items-center gap-2">
+            <span className="text-white font-medium">{strategy.quantity || 0}</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-400 hover:text-white p-1 h-auto"
+              onClick={onEditQuantity}
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        {strategy.selectedBroker && (
+          <div className="bg-gray-800/50 p-3 rounded-lg mb-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-gray-300 text-sm">Broker</span>
+              <span className="text-white font-medium">{strategy.selectedBroker}</span>
             </div>
             
-            {strategy.selectedBroker && (
-              <div className="bg-gray-800/50 p-3 rounded-lg mb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-gray-300 text-sm">Broker</span>
-                  <span className="text-white font-medium">{strategy.selectedBroker}</span>
-                </div>
-                
-                {strategy.brokerUsername && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">Account</span>
-                    <Badge variant="outline" className="text-blue-400 border-blue-400">
-                      {strategy.brokerUsername}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {strategy.tradeType && (
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-300 text-sm">Trade Type</span>
-                <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400' : 'text-blue-400 border-blue-400'}`}>
-                  {strategy.tradeType}
+            {strategy.brokerUsername && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-sm">Account</span>
+                <Badge variant="outline" className="text-blue-400 border-blue-400">
+                  {strategy.brokerUsername}
                 </Badge>
               </div>
             )}
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300 text-sm">Status</span>
-              <div className="flex items-center gap-2">
-                <span className={strategy.isLive ? "text-emerald-400" : "text-blue-400"}>
-                  {strategy.isLive ? "Active" : "Inactive"}
-                </span>
-                {strategy.isLive && (
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                )}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-4">
-            <Lock className="h-12 w-12 mx-auto mb-3 text-yellow-500" />
-            <p className="text-yellow-400 font-medium mb-1">Premium Strategy</p>
-            <p className="text-gray-400 text-sm mb-2">Upgrade to unlock this strategy</p>
           </div>
         )}
+        
+        {strategy.tradeType && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-300 text-sm">Trade Type</span>
+            <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400' : 'text-blue-400 border-blue-400'}`}>
+              {strategy.tradeType}
+            </Badge>
+          </div>
+        )}
+        
+        <div className="flex items-center justify-between">
+          <span className="text-gray-300 text-sm">Status</span>
+          <div className="flex items-center gap-2">
+            <span className={strategy.isLive ? "text-emerald-400" : "text-blue-400"}>
+              {strategy.isLive ? "Active" : "Inactive"}
+            </span>
+            {strategy.isLive && (
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+            )}
+          </div>
+        </div>
       </div>
       
       <div className="flex items-center justify-between gap-2">
-        {canAccess ? (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">
-                {strategy.isLive ? "Live" : "Paper"}
-              </span>
-              <Switch
-                checked={strategy.isLive}
-                onCheckedChange={onToggleLiveMode}
-                className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onViewDetails}
-              className="text-green-400 bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 flex-1"
-            >
-              View Details
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onViewDetails}
-            className="text-yellow-400 bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-yellow-300 w-full"
-          >
-            Unlock Premium
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">
+            {strategy.isLive ? "Live" : "Paper"}
+          </span>
+          <Switch
+            checked={strategy.isLive}
+            onCheckedChange={onToggleLiveMode}
+            className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onViewDetails}
+          className="text-green-400 bg-gray-700 border-gray-600 hover:bg-gray-600 hover:text-green-300 flex-1"
+        >
+          View Details
+          <ChevronRight className="ml-1 h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

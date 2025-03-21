@@ -108,14 +108,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")}
+                      className={canAccess ? (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400") : "text-yellow-500"}
                       onClick={toggleLiveMode}
                       disabled={!isAuthenticated}
                     >
-                      {!canAccess ? (
-                        <LockIcon size={20} />
-                      ) : (
+                      {canAccess ? (
                         strategy.isLive ? <StopCircleIcon size={20} /> : <PlayIcon size={20} />
+                      ) : (
+                        <LockIcon size={20} />
                       )}
                     </Button>
                   </TooltipTrigger>
