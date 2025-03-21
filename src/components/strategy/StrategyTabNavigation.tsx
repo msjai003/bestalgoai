@@ -11,23 +11,23 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="menu-frame p-1 rounded-xl mb-3">
+    <div className="bg-gray-800/50 p-1 rounded-xl mb-3">
       <div className="grid grid-cols-2 gap-1">
         <button 
-          className={`py-2 px-4 rounded-lg text-sm font-medium text-center transition-all duration-300 ${
+          className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
             selectedTab === "predefined" 
-              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white shadow-glow" 
-              : "text-gray-400 hover:text-white hover:bg-white/5"
+              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
+              : "text-gray-400"
           }`}
           onClick={() => onTabChange("predefined")}
         >
           Predefined Strategies
         </button>
         <button 
-          className={`py-2 px-4 rounded-lg text-sm font-medium text-center transition-all duration-300 ${
+          className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
             selectedTab === "custom" 
-              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white shadow-glow" 
-              : "text-gray-400 hover:text-white hover:bg-white/5"
+              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
+              : "text-gray-400"
           }`}
           onClick={() => onTabChange("custom")}
         >
