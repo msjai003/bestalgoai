@@ -16,7 +16,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield, Percent, Users } from "lucide-react";
+import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield } from "lucide-react";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -169,7 +169,7 @@ const Dashboard = () => {
             </Link>
           </div>
           
-          <div className="mt-3 grid grid-cols-4 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <Link to="/broker-integration" className="block">
               <QuickActionButton 
                 icon="fa-building" 
@@ -180,22 +180,8 @@ const Dashboard = () => {
             <Link to="/risk-management" className="block">
               <QuickActionButton 
                 icon="fa-shield" 
-                label="Risk Management" 
+                label="Risk" 
                 lucideIcon={<Shield className="text-[#FF00D4] h-5 w-5" />}
-              />
-            </Link>
-            <Link to="/offers" className="block">
-              <QuickActionButton 
-                icon="fa-percent" 
-                label="Offers" 
-                lucideIcon={<Percent className="text-[#FF00D4] h-5 w-5" />}
-              />
-            </Link>
-            <Link to="/customers" className="block">
-              <QuickActionButton 
-                icon="fa-users" 
-                label="Customers" 
-                lucideIcon={<Users className="text-[#FF00D4] h-5 w-5" />}
               />
             </Link>
           </div>
