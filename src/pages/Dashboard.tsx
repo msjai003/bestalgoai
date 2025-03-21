@@ -16,7 +16,12 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield } from "lucide-react";
+import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield, HelpCircle } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -158,23 +163,47 @@ const Dashboard = () => {
         <section id="quick-actions" className="px-4 mt-6">
           <div className="grid grid-cols-4 gap-3">
             <Link to="/strategy-selection" className="block">
-              <QuickActionButton icon="fa-chart-line" label="Strategies" />
+              <QuickActionButton 
+                icon="fa-chart-line" 
+                label="Strategies" 
+                helpText="Browse and configure automated trading strategies for your portfolio"
+              />
             </Link>
-            <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
+            <QuickActionButton 
+              icon="fa-magnifying-glass-chart" 
+              label="Analysis" 
+              helpText="Analyze market data and trends to make informed trading decisions"
+            />
             <Link to="/subscription" className="block">
-              <QuickActionButton icon="fa-star" label="Premium" />
+              <QuickActionButton 
+                icon="fa-star" 
+                label="Premium" 
+                helpText="Upgrade to premium for advanced features and exclusive strategies"
+              />
             </Link>
             <Link to="/community" className="block">
-              <QuickActionButton icon="fa-users" label="Community" />
+              <QuickActionButton 
+                icon="fa-users" 
+                label="Community" 
+                helpText="Connect with other traders and share insights"
+              />
             </Link>
           </div>
           
           <div className="mt-3 grid grid-cols-2 gap-3">
             <Link to="/broker-integration" className="block">
-              <QuickActionButton icon="fa-building" label="Brokers" />
+              <QuickActionButton 
+                icon="fa-building" 
+                label="Brokers" 
+                helpText="Connect and manage your trading accounts with supported brokers"
+              />
             </Link>
             <Link to="/risk-management" className="block">
-              <QuickActionButton icon="fa-shield" label="Risk Management" />
+              <QuickActionButton 
+                icon="fa-shield" 
+                label="Risk Management" 
+                helpText="Configure risk parameters to protect your capital while trading"
+              />
             </Link>
           </div>
         </section>
@@ -241,10 +270,31 @@ const Dashboard = () => {
   );
 };
 
-const QuickActionButton = ({ icon, label }: { icon: string; label: string }) => (
-  <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3">
+const QuickActionButton = ({ 
+  icon, 
+  label, 
+  helpText 
+}: { 
+  icon: string; 
+  label: string; 
+  helpText?: string;
+}) => (
+  <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3 relative">
     <i className={`fa-solid ${icon} text-[#FF00D4] text-xl mb-2`}></i>
     <span className="text-gray-300 text-xs">{label}</span>
+    
+    {helpText && (
+      <Popover>
+        <PopoverTrigger asChild>
+          <button className="absolute top-1 right-1 text-gray-400 hover:text-gray-300 transition-colors">
+            <HelpCircle className="h-3.5 w-3.5" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-3 bg-gray-800 border-gray-700 text-gray-200 text-xs">
+          {helpText}
+        </PopoverContent>
+      </Popover>
+    )}
   </div>
 );
 
