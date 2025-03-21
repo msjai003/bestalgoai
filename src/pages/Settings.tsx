@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Bell, Building, TrendingUp, Shield, User, HelpCircle } from "lucide-react";
+import { Bell, User, HelpCircle, Shield } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 import { PersonalDetailsDialog } from "@/components/settings/PersonalDetails/PersonalDetailsDialog";
 import { ProfilePictureUpload } from "@/components/settings/ProfilePictureUpload";
@@ -42,7 +41,6 @@ const Settings = () => {
       try {
         console.log("Fetching profile for user ID:", user.id);
         
-        // Get user profile from Supabase
         const { data, error } = await supabase
           .from('user_profiles')
           .select('full_name, email, profile_picture')
@@ -51,7 +49,6 @@ const Settings = () => {
 
         if (error) {
           console.error('Error fetching user profile:', error);
-          // Fix: Don't attempt to access user_metadata since it doesn't exist on the User type
           setUserProfile({
             full_name: "",
             email: user.email || "",
@@ -97,9 +94,7 @@ const Settings = () => {
         toast.error("Failed to update profile picture");
         console.error("Error updating profile picture:", error);
       } else {
-        // This is the only place where the success toast should appear
         toast.success("Profile picture uploaded successfully");
-        // Update the local state
         setUserProfile(prev => ({
           ...prev,
           profile_picture: newImageUrl
@@ -184,22 +179,6 @@ const Settings = () => {
                       icon={<Bell className="w-5 h-5 text-pink-500" />} 
                       label="Notifications" 
                       onClick={() => navigate("/notifications")}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-                  <h3 className="text-sm font-medium text-gray-400 mb-3">Trading Settings</h3>
-                  <div className="space-y-3">
-                    <SettingsLink 
-                      icon={<Building className="w-5 h-5 text-pink-500" />} 
-                      label="Broker Integration" 
-                      onClick={() => navigate("/broker-integration")}
-                    />
-                    <SettingsLink 
-                      icon={<TrendingUp className="w-5 h-5 text-pink-500" />} 
-                      label="Risk Management" 
-                      onClick={() => navigate("/risk-management")}
                     />
                   </div>
                 </div>
