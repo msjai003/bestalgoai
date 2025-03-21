@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     }
     
     if (!canAccess) {
-      // Store the strategy ID and return path in sessionStorage before redirecting
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
@@ -125,7 +123,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
           <div className="bg-gray-700/20 p-3 rounded-md border border-gray-700 mt-3">
             <Button 
-              className="w-full"
+              className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 hover:from-[#FF00D4]/90 hover:to-purple-600/90 text-white"
               onClick={handleViewFullStrategy}
             >
               View Full Strategy
