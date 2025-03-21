@@ -24,7 +24,8 @@ export const addToWishlist = async (
       .from('strategy_selections')
       .update({ 
         strategy_name: strategyName,
-        strategy_description: strategyDescription
+        strategy_description: strategyDescription,
+        is_wishlisted: true // Explicitly mark as wishlisted
       })
       .eq('user_id', userId)
       .eq('strategy_id', strategyId);
@@ -38,7 +39,8 @@ export const addToWishlist = async (
         user_id: userId,
         strategy_id: strategyId,
         strategy_name: strategyName,
-        strategy_description: strategyDescription
+        strategy_description: strategyDescription,
+        is_wishlisted: true // Explicitly mark as wishlisted
       });
       
     if (error) throw error;
@@ -61,10 +63,10 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
     const paidStrategy = strategies.find(strategy => strategy.paid_status === 'paid');
     
     if (paidStrategy) {
-      // If this is a paid strategy, don't delete it - just update any fields that would affect wishlist status
+      // If this is a paid strategy, don't delete it - just update the wishlist status
       const { error } = await supabase
         .from('strategy_selections')
-        .update({}) // Keep the record but don't change any fields
+        .update({ is_wishlisted: false }) // Set wishlist status to false but keep the record
         .eq('id', paidStrategy.id);
         
       if (error) throw error;

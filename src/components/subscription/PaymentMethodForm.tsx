@@ -110,7 +110,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
             
           if (strategiesError) throw strategiesError;
           
-          // Mark all strategies as paid
+          // Mark all strategies as paid without affecting wishlist status
           if (strategies && strategies.length > 0) {
             for (const strategy of strategies) {
               await supabase.rpc('force_strategy_paid_status', {
