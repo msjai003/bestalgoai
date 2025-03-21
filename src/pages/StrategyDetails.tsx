@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -99,26 +100,41 @@ const StrategyDetails = () => {
     
     try {
       if (!isWishlisted) {
-        const { error } = await supabase.from('strategy_selections')
-          .upsert({
-            user_id: user.id,
-            strategy_id: strategy.id,
-            strategy_name: strategy.name,
-            strategy_description: strategy.description,
-            paid_status: isPaidStrategy ? 'paid' : 'free'
-          }, {
-            onConflict: 'user_id,strategy_id',
-            ignoreDuplicates: false
-          });
+        // Fixed: Use a basic upsert pattern instead of maybeSingle()
+        const { data: existingData, error: checkError } = await supabase
+          .from('strategy_selections')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('strategy_id', strategy.id);
           
-        if (error) {
-          console.error('Error adding to wishlist:', error);
-          toast({
-            title: "Error",
-            description: "Failed to add strategy to wishlist",
-            variant: "destructive"
-          });
-          return;
+        if (checkError) throw checkError;
+        
+        if (existingData && existingData.length > 0) {
+          // Update existing record
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({
+              strategy_name: strategy.name,
+              strategy_description: strategy.description,
+              paid_status: isPaidStrategy ? 'paid' : 'free'
+            })
+            .eq('user_id', user.id)
+            .eq('strategy_id', strategy.id);
+            
+          if (error) throw error;
+        } else {
+          // Insert new record
+          const { error } = await supabase
+            .from('strategy_selections')
+            .insert({
+              user_id: user.id,
+              strategy_id: strategy.id,
+              strategy_name: strategy.name,
+              strategy_description: strategy.description,
+              paid_status: isPaidStrategy ? 'paid' : 'free'
+            });
+            
+          if (error) throw error;
         }
         
         setIsWishlisted(true);
@@ -128,36 +144,23 @@ const StrategyDetails = () => {
         });
       } else {
         if (isPaidStrategy) {
-          const { error } = await supabase.from('strategy_selections')
-            .update({
-            })
+          // For paid strategies, just update any fields that would affect wishlist status
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({})
             .eq('user_id', user.id)
             .eq('strategy_id', strategy.id);
             
-          if (error) {
-            console.error('Error updating wishlist status:', error);
-            toast({
-              title: "Error",
-              description: "Failed to remove strategy from wishlist",
-              variant: "destructive"
-            });
-            return;
-          }
+          if (error) throw error;
         } else {
-          const { error } = await supabase.from('strategy_selections')
+          // For non-paid strategies, we can delete the record
+          const { error } = await supabase
+            .from('strategy_selections')
             .delete()
             .eq('user_id', user.id)
             .eq('strategy_id', strategy.id);
             
-          if (error) {
-            console.error('Error removing from wishlist:', error);
-            toast({
-              title: "Error",
-              description: "Failed to remove strategy from wishlist",
-              variant: "destructive"
-            });
-            return;
-          }
+          if (error) throw error;
         }
         
         setIsWishlisted(false);
@@ -168,6 +171,11 @@ const StrategyDetails = () => {
       }
     } catch (error) {
       console.error('Error toggling wishlist status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist status",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -137,9 +138,18 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         console.error('Error updating wishlist in Supabase:', error);
         toast({
           title: "Error",
-          description: "Failed to update wishlist in database",
+          description: "Failed to update wishlist in database. Please try again.",
           variant: "destructive"
         });
+        
+        // Revert the local change if the server update failed
+        setStrategies(prev => 
+          prev.map(strategy => 
+            strategy.id === id 
+              ? { ...strategy, isWishlisted: !isWishlisted } 
+              : strategy
+          )
+        );
       }
     } else if (isWishlisted) {
       toast({

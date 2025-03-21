@@ -9,24 +9,24 @@ export const addToWishlist = async (
   strategyDescription: string
 ): Promise<void> => {
   // Check if the strategy already exists in the database for this user
-  const { data: existingStrategy, error: queryError } = await supabase
+  const { data: existingStrategies, error: queryError } = await supabase
     .from('strategy_selections')
     .select('*')
     .eq('user_id', userId)
-    .eq('strategy_id', strategyId)
-    .maybeSingle();
+    .eq('strategy_id', strategyId);
     
   if (queryError) throw queryError;
   
-  if (existingStrategy) {
-    // Update existing record to mark as wishlisted but preserve paid status
+  if (existingStrategies && existingStrategies.length > 0) {
+    // Update existing record to preserve paid status
     const { error } = await supabase
       .from('strategy_selections')
       .update({ 
         strategy_name: strategyName,
         strategy_description: strategyDescription
       })
-      .eq('id', existingStrategy.id);
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId);
       
     if (error) throw error;
   } else {
@@ -47,37 +47,35 @@ export const addToWishlist = async (
 // Helper function to remove strategy from wishlist
 export const removeFromWishlist = async (userId: string, strategyId: number): Promise<void> => {
   // Check if the strategy is a paid strategy
-  const { data: strategy, error: queryError } = await supabase
+  const { data: strategies, error: queryError } = await supabase
     .from('strategy_selections')
     .select('*')
     .eq('user_id', userId)
-    .eq('strategy_id', strategyId)
-    .maybeSingle();
+    .eq('strategy_id', strategyId);
     
   if (queryError) throw queryError;
   
-  if (strategy && strategy.paid_status === 'paid') {
-    // If this is a paid strategy, don't delete it - just make it not wishlisted
-    // We'll use a dummy field since there's no explicit "is_wishlisted" column
-    // The presence in the database without being marked as paid means it's wishlisted
-    const { error } = await supabase
-      .from('strategy_selections')
-      .update({ 
-        // Keep in database but update any fields that would affect wishlist status
-        // We're keeping the record because it's a paid strategy
-      })
-      .eq('id', strategy.id);
-      
-    if (error) throw error;
-  } else {
-    // If it's not a paid strategy, we can safely delete it
-    const { error } = await supabase
-      .from('strategy_selections')
-      .delete()
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
-      
-    if (error) throw error;
+  if (strategies && strategies.length > 0) {
+    const paidStrategy = strategies.find(strategy => strategy.paid_status === 'paid');
+    
+    if (paidStrategy) {
+      // If this is a paid strategy, don't delete it - just update any fields that would affect wishlist status
+      const { error } = await supabase
+        .from('strategy_selections')
+        .update({}) // Keep the record but don't change any fields
+        .eq('id', paidStrategy.id);
+        
+      if (error) throw error;
+    } else {
+      // If it's not a paid strategy, we can safely delete it
+      const { error } = await supabase
+        .from('strategy_selections')
+        .delete()
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId);
+        
+      if (error) throw error;
+    }
   }
 };
 
