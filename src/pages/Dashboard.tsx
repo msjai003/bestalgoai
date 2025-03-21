@@ -16,7 +16,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield } from "lucide-react";
+import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield, Percent } from "lucide-react";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -169,12 +169,27 @@ const Dashboard = () => {
             </Link>
           </div>
           
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-3 gap-3">
             <Link to="/broker-integration" className="block">
-              <QuickActionButton icon="fa-building" label="Brokers" />
+              <QuickActionButton 
+                icon="fa-building" 
+                label="Brokers" 
+                lucideIcon={<Building className="text-[#FF00D4] h-5 w-5" />}
+              />
             </Link>
             <Link to="/risk-management" className="block">
-              <QuickActionButton icon="fa-shield" label="Risk Management" />
+              <QuickActionButton 
+                icon="fa-shield" 
+                label="Risk Management" 
+                lucideIcon={<Shield className="text-[#FF00D4] h-5 w-5" />}
+              />
+            </Link>
+            <Link to="/offers" className="block">
+              <QuickActionButton 
+                icon="fa-percent" 
+                label="Offers" 
+                lucideIcon={<Percent className="text-[#FF00D4] h-5 w-5" />}
+              />
             </Link>
           </div>
         </section>
@@ -241,9 +256,17 @@ const Dashboard = () => {
   );
 };
 
-const QuickActionButton = ({ icon, label }: { icon: string; label: string }) => (
+const QuickActionButton = ({ 
+  icon, 
+  label, 
+  lucideIcon 
+}: { 
+  icon: string; 
+  label: string;
+  lucideIcon?: React.ReactNode;
+}) => (
   <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3">
-    <i className={`fa-solid ${icon} text-[#FF00D4] text-xl mb-2`}></i>
+    {lucideIcon || <i className={`fa-solid ${icon} text-[#FF00D4] text-xl mb-2`}></i>}
     <span className="text-gray-300 text-xs">{label}</span>
   </div>
 );
