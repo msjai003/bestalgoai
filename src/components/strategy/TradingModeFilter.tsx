@@ -15,16 +15,16 @@ export const TradingModeFilter = ({
   onModeChange,
 }: TradingModeFilterProps) => {
   return (
-    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-gray-800/30 rounded-lg border border-gray-700/50">
+    <div className="menu-frame inline-flex flex-wrap items-center gap-1.5 p-1 rounded-lg">
       <Button
         variant="outline"
         size="sm"
         onClick={() => onModeChange("all")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0 transition-all duration-300",
           selectedMode === "all"
-            ? "bg-gray-700 text-white shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-gradient-to-r from-gray-600/80 to-gray-700/80 text-white shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
         )}
       >
         All
@@ -34,10 +34,10 @@ export const TradingModeFilter = ({
         size="sm"
         onClick={() => onModeChange("live")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0 transition-all duration-300",
           selectedMode === "live"
-            ? "bg-green-900/50 text-green-400 shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-gradient-to-r from-green-600/30 to-green-800/30 text-green-400 shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
         )}
       >
         Live Trading
@@ -47,10 +47,10 @@ export const TradingModeFilter = ({
         size="sm"
         onClick={() => onModeChange("paper")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0 transition-all duration-300",
           selectedMode === "paper"
-            ? "bg-blue-900/50 text-blue-400 shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-gradient-to-r from-blue-600/30 to-blue-800/30 text-blue-400 shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
         )}
       >
         Paper Trading
