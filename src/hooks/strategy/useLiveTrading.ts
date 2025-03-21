@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useLiveTrading = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -34,11 +35,44 @@ export const useLiveTrading = () => {
     fetchStrategies();
   }, [user]);
 
+  useEffect(() => {
+    const checkPremium = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremium();
+  }, [user]);
+
   const handleToggleLiveMode = (id: number, uniqueId?: string, rowId?: string) => {
     const strategy = strategies.find(s => s.id === id && 
       (s.uniqueId === uniqueId || (uniqueId === undefined && rowId === undefined)));
     
     if (strategy) {
+      const isPremium = id > 1;
+      
+      if (isPremium && !hasPremium && !strategy.isPaid) {
+        sessionStorage.setItem('selectedStrategyId', id.toString());
+        sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+        navigate('/pricing');
+        return;
+      }
+      
       dialogState.setTargetStrategyId(id);
       if (uniqueId) {
         dialogState.setTargetUniqueId(uniqueId);
@@ -58,6 +92,16 @@ export const useLiveTrading = () => {
   };
 
   const handleOpenQuantityDialog = (id: number) => {
+    const isPremium = id > 1;
+    const strategy = strategies.find(s => s.id === id);
+    
+    if (isPremium && !hasPremium && (!strategy || !strategy.isPaid)) {
+      sessionStorage.setItem('selectedStrategyId', id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
+      return;
+    }
+    
     dialogState.setTargetStrategyId(id);
     dialogState.setShowQuantityDialog(true);
   };
@@ -65,11 +109,21 @@ export const useLiveTrading = () => {
   const confirmModeChange = async () => {
     if (dialogState.targetStrategyId === null || dialogState.targetMode === null) return;
     
+    const isPremium = dialogState.targetStrategyId > 1;
+    const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
+    
+    if (isPremium && !hasPremium && (!strategy || !strategy.isPaid)) {
+      dialogState.resetDialogState();
+      sessionStorage.setItem('selectedStrategyId', dialogState.targetStrategyId.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
+      return;
+    }
+    
     dialogState.setShowConfirmationDialog(false);
     
     try {
       if (dialogState.targetMode === 'live') {
-        // First check if this strategy already exists in the database
         if (user) {
           const { data: existingEntries, error: queryError } = await supabase
             .from('strategy_selections')
@@ -79,12 +133,9 @@ export const useLiveTrading = () => {
             
           if (queryError) throw queryError;
           
-          // If the strategy already exists, we'll update it later in handleBrokerSubmit
-          // Otherwise, we'll need to create a new entry
           if (!existingEntries || existingEntries.length === 0) {
             dialogState.setShowQuantityDialog(true);
           } else {
-            // Strategy exists, just open the quantity dialog to get new values
             dialogState.setShowQuantityDialog(true);
           }
         } else {
@@ -131,6 +182,17 @@ export const useLiveTrading = () => {
   const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
     if (dialogState.targetStrategyId === null || !user) return;
     
+    const isPremium = dialogState.targetStrategyId > 1;
+    const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
+    
+    if (isPremium && !hasPremium && (!strategy || !strategy.isPaid)) {
+      dialogState.resetDialogState();
+      sessionStorage.setItem('selectedStrategyId', dialogState.targetStrategyId.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
+      return;
+    }
+    
     try {
       console.log("Processing broker selection:", brokerId, "with name:", brokerName);
       
@@ -151,7 +213,6 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      // First check if there's an existing record for this strategy
       const { data: existingRecords, error: searchError } = await supabase
         .from('strategy_selections')
         .select('id')
@@ -164,7 +225,6 @@ export const useLiveTrading = () => {
       }
       
       if (existingRecords && existingRecords.length > 0) {
-        // Update existing record instead of creating a new one
         console.log("Found existing record, updating to live trading mode:", existingRecords[0].id);
         
         const { error: updateError } = await supabase
@@ -182,7 +242,6 @@ export const useLiveTrading = () => {
           throw updateError;
         }
       } else {
-        // Create a new record only if one doesn't exist yet
         console.log("Creating new strategy selection for live trading:", {
           user_id: user.id,
           strategy_id: dialogState.targetStrategyId,
@@ -394,6 +453,7 @@ export const useLiveTrading = () => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    navigate
+    navigate,
+    hasPremium
   };
 };

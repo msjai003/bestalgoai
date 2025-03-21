@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -197,54 +196,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const isPremium = id > 1; // All strategies except the first are premium
     
     if (isPremium && !hasPremium && !strategy?.isPaid) {
-      const checkPaidStatus = async () => {
-        if (!user) {
-          navigate('/pricing');
-          return;
-        }
-        
-        try {
-          const { data, error } = await supabase
-            .from('strategy_selections')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('strategy_id', id)
-            .eq('paid_status', 'paid')
-            .maybeSingle();
-            
-          if (error) throw error;
-          
-          if (data) {
-            setStrategies(prev => 
-              prev.map(s => s.id === id ? { ...s, isPaid: true } : s)
-            );
-            
-            if (newStatus) {
-              setSelectedStrategyId(id);
-              setTargetMode("live");
-              setConfirmDialogOpen(true);
-            } else {
-              updateLiveMode(id, false);
-            }
-          } else {
-            toast({
-              title: "Premium Required",
-              description: "Please upgrade to access premium strategies",
-            });
-            
-            sessionStorage.setItem('selectedStrategyId', id.toString());
-            sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
-            navigate('/pricing');
-          }
-        } catch (error) {
-          console.error("Error checking strategy paid status:", error);
-          sessionStorage.setItem('selectedStrategyId', id.toString());
-          sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
-          navigate('/pricing');
-        }
-      };
-      
-      checkPaidStatus();
+      sessionStorage.setItem('selectedStrategyId', id.toString());
+      sessionStorage.setItem('redirectAfterPayment', window.location.pathname);
+      navigate('/pricing');
       return;
     }
     
