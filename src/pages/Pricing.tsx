@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -10,8 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
 import PaymentDialog from '@/components/subscription/PaymentDialog';
 import { usePredefinedStrategies } from '@/hooks/strategy/usePredefinedStrategies';
+import { usePricingPlans } from '@/hooks/usePricingPlans';
 
-const plans = [
+// Fallback plans in case of database connection issues
+const fallbackPlans = [
   {
     id: 'basic',
     name: 'Basic',
@@ -65,6 +68,22 @@ const PricingPage = () => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
   const { data: predefinedStrategies } = usePredefinedStrategies();
   const [selectedStrategyName, setSelectedStrategyName] = useState<string | null>(null);
+  
+  // Fetch pricing plans from Supabase
+  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePricingPlans();
+  
+  // Use plans from database if available, otherwise use fallback plans
+  const plans = dbPlans.length > 0 
+    ? dbPlans.map(plan => ({
+        id: plan.plan_id,
+        name: plan.plan_name,
+        description: plan.plan_description,
+        price: plan.plan_price,
+        period: plan.plan_period,
+        popular: plan.is_popular,
+        features: plan.features as string[]
+      }))
+    : fallbackPlans;
 
   useEffect(() => {
     const strategyId = sessionStorage.getItem('selectedStrategyId');
@@ -98,7 +117,7 @@ const PricingPage = () => {
           .limit(1)
           .maybeSingle();
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Premium')) {
           setHasPremium(true);
         }
       } catch (error) {
@@ -178,50 +197,62 @@ const PricingPage = () => {
           </p>
         </section>
 
-        <section className="space-y-6 mb-12">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative bg-gray-800/50 rounded-xl p-6 border border-gray-700 shadow-lg overflow-hidden`}
-            >
-              {plan.popular && (
-                <div className="absolute top-0 right-0 bg-[#FF00D4] text-xs px-3 py-1 rounded-bl-lg">
-                  POPULAR
-                </div>
-              )}
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p className="text-gray-400 text-sm">{plan.description}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">{plan.price}</div>
-                  <div className="text-sm text-gray-400">{plan.period}</div>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <i className="fa-solid fa-check text-[#FF00D4] mr-2"></i>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button 
-                className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
-                onClick={() => handlePlanSelection(plan.name, plan.price)}
-                disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
+        {plansLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader className="h-8 w-8 animate-spin text-[#FF00D4]" />
+          </div>
+        ) : plansError ? (
+          <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-8">
+            <p className="text-center text-white">
+              {plansError}. Using default pricing.
+            </p>
+          </div>
+        ) : (
+          <section className="space-y-6 mb-12">
+            {plans.map((plan) => (
+              <div
+                key={plan.id}
+                className={`relative bg-gray-800/50 rounded-xl p-6 border border-gray-700 shadow-lg overflow-hidden`}
               >
-                {isLoading === `${plan.name}-${plan.price}` ? (
-                  <>
-                    <Loader className="h-4 w-4 animate-spin mr-2" />
-                    Processing...
-                  </>
-                ) : hasPremium ? "Already Subscribed" : selectedStrategyName ? `Unlock ${selectedStrategyName}` : "Get Started"}
-              </Button>
-            </div>
-          ))}
-        </section>
+                {plan.popular && (
+                  <div className="absolute top-0 right-0 bg-[#FF00D4] text-xs px-3 py-1 rounded-bl-lg">
+                    POPULAR
+                  </div>
+                )}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold">{plan.name}</h3>
+                    <p className="text-gray-400 text-sm">{plan.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">{plan.price}</div>
+                    <div className="text-sm text-gray-400">{plan.period}</div>
+                  </div>
+                </div>
+                <ul className="space-y-3 mb-6">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      <i className="fa-solid fa-check text-[#FF00D4] mr-2"></i>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                  onClick={() => handlePlanSelection(plan.name, plan.price)}
+                  disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
+                >
+                  {isLoading === `${plan.name}-${plan.price}` ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : hasPremium ? "Already Subscribed" : selectedStrategyName ? `Unlock ${selectedStrategyName}` : "Get Started"}
+                </Button>
+              </div>
+            ))}
+          </section>
+        )}
       </main>
       
       {selectedPlan && (

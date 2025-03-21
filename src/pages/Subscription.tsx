@@ -8,8 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePricingPlans } from "@/hooks/usePricingPlans";
 
-const plans = [
+// Fallback plans in case of database connection issues
+const fallbackPlans = [
   {
     name: "Basic",
     price: "₹999",
@@ -62,6 +64,20 @@ const Subscription = () => {
   const { toast } = useToast();
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch pricing plans from Supabase
+  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePricingPlans();
+  
+  // Use plans from database if available, otherwise use fallback plans
+  const plans = dbPlans.length > 0 
+    ? dbPlans.map(plan => ({
+        name: plan.plan_name,
+        price: plan.plan_price,
+        period: plan.plan_period.replace('per', '/'),
+        features: plan.features as string[],
+        isPopular: plan.is_popular
+      }))
+    : fallbackPlans;
   
   // Fetch user's plan details when component mounts
   useEffect(() => {
@@ -219,54 +235,66 @@ const Subscription = () => {
           </section>
         )}
 
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
-          <div className="space-y-4">
-            {plans.map((plan) => (
-              <div 
-                key={plan.name}
-                className={cn(
-                  "rounded-xl p-4 border",
-                  plan.isPopular 
-                    ? "bg-gradient-to-br from-[#FF00D4]/5 to-purple-900/10 border-[#FF00D4]/20" 
-                    : "bg-gray-800/50 border-gray-700"
-                )}
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className={cn(
-                    "font-bold",
-                    plan.isPopular ? "text-[#FF00D4]" : ""
-                  )}>{plan.name}</h3>
-                  <p className="text-lg font-bold">
-                    {plan.price}<span className="text-sm text-gray-400">{plan.period}</span>
-                  </p>
-                </div>
-                <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                  {plan.features.map((feature, index) => (
-                    <li key={index}>
-                      <i className={cn(
-                        "fa-solid fa-check mr-2",
-                        plan.isPopular ? "text-[#FF00D4]" : "text-green-400"
-                      )}></i>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button 
-                  className={cn(
-                    "w-full",
-                    plan.isPopular 
-                      ? "bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90" 
-                      : "border border-[#FF00D4] text-[#FF00D4] bg-transparent hover:bg-[#FF00D4]/10"
-                  )}
-                  onClick={() => handlePlanSelect(plan.name, plan.price)}
-                >
-                  Select Plan
-                </Button>
-              </div>
-            ))}
+        {plansLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader className="h-6 w-6 animate-spin text-[#FF00D4]" />
           </div>
-        </section>
+        ) : plansError ? (
+          <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-8">
+            <p className="text-center text-white">
+              {plansError}. Using default pricing.
+            </p>
+          </div>
+        ) : (
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
+            <div className="space-y-4">
+              {plans.map((plan) => (
+                <div 
+                  key={plan.name}
+                  className={cn(
+                    "rounded-xl p-4 border",
+                    plan.isPopular 
+                      ? "bg-gradient-to-br from-[#FF00D4]/5 to-purple-900/10 border-[#FF00D4]/20" 
+                      : "bg-gray-800/50 border-gray-700"
+                  )}
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className={cn(
+                      "font-bold",
+                      plan.isPopular ? "text-[#FF00D4]" : ""
+                    )}>{plan.name}</h3>
+                    <p className="text-lg font-bold">
+                      {plan.price}<span className="text-sm text-gray-400">{plan.period}</span>
+                    </p>
+                  </div>
+                  <ul className="text-sm text-gray-400 space-y-2 mb-4">
+                    {plan.features.map((feature, index) => (
+                      <li key={index}>
+                        <i className={cn(
+                          "fa-solid fa-check mr-2",
+                          plan.isPopular ? "text-[#FF00D4]" : "text-green-400"
+                        )}></i>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button 
+                    className={cn(
+                      "w-full",
+                      plan.isPopular 
+                        ? "bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90" 
+                        : "border border-[#FF00D4] text-[#FF00D4] bg-transparent hover:bg-[#FF00D4]/10"
+                    )}
+                    onClick={() => handlePlanSelect(plan.name, plan.price)}
+                  >
+                    Select Plan
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section>
           <h2 className="text-lg font-semibold mb-4">Payment Methods</h2>

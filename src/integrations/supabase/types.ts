@@ -228,6 +228,51 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_adminpanel: {
+        Row: {
+          created_at: string | null
+          features: Json
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          plan_description: string
+          plan_id: string
+          plan_name: string
+          plan_period: string
+          plan_price: string
+          sort_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          plan_description: string
+          plan_id: string
+          plan_name: string
+          plan_period?: string
+          plan_price: string
+          sort_order?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          plan_description?: string
+          plan_id?: string
+          plan_name?: string
+          plan_period?: string
+          plan_price?: string
+          sort_order?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       send_message: {
         Row: {
           created_at: string | null
