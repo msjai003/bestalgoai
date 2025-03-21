@@ -134,7 +134,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
                   })
                   .eq('id', existingStrategy.id);
               } else {
-                // Insert new strategy entry with paid status but not wishlisted
+                // Insert new strategy entry with paid status but explicitly not wishlisted
                 await supabase
                   .from('strategy_selections')
                   .insert({
@@ -183,7 +183,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
             })
             .eq('id', existingStrategy.id);
         } else {
-          // If the strategy doesn't exist, create a new entry with paid status
+          // If the strategy doesn't exist, create a new entry with paid status but explicitly not wishlisted
           await supabase
             .from('strategy_selections')
             .insert({
