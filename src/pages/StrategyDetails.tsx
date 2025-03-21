@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
+import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,17 +35,16 @@ const StrategyDetails = () => {
           .from('strategy_selections')
           .select('id, paid_status')
           .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id)
-          .single();
+          .eq('strategy_id', strategy.id);
           
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Error checking wishlist status:', error);
           return;
         }
         
-        setIsWishlisted(!!data);
+        setIsWishlisted(data && data.length > 0);
         
-        if (data && data.paid_status === 'paid') {
+        if (data && data.length > 0 && data[0].paid_status === 'paid') {
           setIsPaidStrategy(true);
         }
       } catch (error) {
@@ -88,7 +87,7 @@ const StrategyDetails = () => {
   }, [isPremium, hasPremium, isPaidStrategy, user, toast]);
 
   const handleToggleWishlist = async () => {
-    if (!user) {
+    if (!user || !strategy) {
       toast({
         title: "Authentication required",
         description: "Please log in to add strategies to your wishlist",
@@ -100,42 +99,8 @@ const StrategyDetails = () => {
     
     try {
       if (!isWishlisted) {
-        // Fixed: Use a basic upsert pattern instead of maybeSingle()
-        const { data: existingData, error: checkError } = await supabase
-          .from('strategy_selections')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id);
-          
-        if (checkError) throw checkError;
-        
-        if (existingData && existingData.length > 0) {
-          // Update existing record
-          const { error } = await supabase
-            .from('strategy_selections')
-            .update({
-              strategy_name: strategy.name,
-              strategy_description: strategy.description,
-              paid_status: isPaidStrategy ? 'paid' : 'free'
-            })
-            .eq('user_id', user.id)
-            .eq('strategy_id', strategy.id);
-            
-          if (error) throw error;
-        } else {
-          // Insert new record
-          const { error } = await supabase
-            .from('strategy_selections')
-            .insert({
-              user_id: user.id,
-              strategy_id: strategy.id,
-              strategy_name: strategy.name,
-              strategy_description: strategy.description,
-              paid_status: isPaidStrategy ? 'paid' : 'free'
-            });
-            
-          if (error) throw error;
-        }
+        // Add to wishlist
+        await addToWishlist(user.id, strategy.id, strategy.name, strategy.description);
         
         setIsWishlisted(true);
         toast({
@@ -143,25 +108,8 @@ const StrategyDetails = () => {
           description: "Strategy has been added to your wishlist",
         });
       } else {
-        if (isPaidStrategy) {
-          // For paid strategies, just update any fields that would affect wishlist status
-          const { error } = await supabase
-            .from('strategy_selections')
-            .update({})
-            .eq('user_id', user.id)
-            .eq('strategy_id', strategy.id);
-            
-          if (error) throw error;
-        } else {
-          // For non-paid strategies, we can delete the record
-          const { error } = await supabase
-            .from('strategy_selections')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('strategy_id', strategy.id);
-            
-          if (error) throw error;
-        }
+        // Remove from wishlist
+        await removeFromWishlist(user.id, strategy.id);
         
         setIsWishlisted(false);
         toast({
@@ -173,7 +121,7 @@ const StrategyDetails = () => {
       console.error('Error toggling wishlist status:', error);
       toast({
         title: "Error",
-        description: "Failed to update wishlist status",
+        description: "Failed to update wishlist in database",
         variant: "destructive"
       });
     } finally {
@@ -222,7 +170,7 @@ const StrategyDetails = () => {
         <Card className="bg-gray-800 border border-gray-700 shadow-lg">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold mb-4">{strategy.name}</h1>
+              <h1 className="text-2xl font-bold mb-4">{strategy?.name}</h1>
               <div className="flex space-x-2">
                 {isPremium && !canAccess && (
                   <Button 

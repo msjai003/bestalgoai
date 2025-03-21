@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 
@@ -56,6 +57,7 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
   if (queryError) throw queryError;
   
   if (strategies && strategies.length > 0) {
+    // Check if any of the strategies are paid
     const paidStrategy = strategies.find(strategy => strategy.paid_status === 'paid');
     
     if (paidStrategy) {
