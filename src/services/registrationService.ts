@@ -65,9 +65,10 @@ export const registerUser = async (formData: RegistrationData) => {
       return { success: false, error };
     }
 
-    // Fetch welcome message from database first
+    // Send welcome email after successful registration
     try {
-      console.log("Registration successful, getting welcome message from database");
+      console.log("Registration successful, sending welcome email to:", formData.email);
+      // Fetch welcome message from database first
       const { data: welcomeMessageData, error: messageError } = await supabase
         .from('send_message')
         .select('message_content')
@@ -80,7 +81,7 @@ export const registerUser = async (formData: RegistrationData) => {
       }
       
       const welcomeMessage = welcomeMessageData?.message_content || "Thank you for signing up with InfoCap Company";
-      console.log(`Using welcome message from database: "${welcomeMessage}"`);
+      console.log(`Using welcome message: "${welcomeMessage}"`);
       
       // Call the edge function to send welcome email
       const emailResult = await supabase.functions.invoke('send-welcome-email', {
