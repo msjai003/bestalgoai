@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface OtpStepProps {
   otp: string;
@@ -11,124 +12,93 @@ interface OtpStepProps {
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onBack: () => void;
-  onResendOtp: () => Promise<void>;
-  newPassword: string;
-  setNewPassword: (password: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (password: string) => void;
-  email: string;
+  onResendOtp: () => void;
+  newPassword?: string;
+  setNewPassword?: (password: string) => void;
+  confirmPassword?: string;
+  setConfirmPassword?: (password: string) => void;
+  email?: string;
+  resetLinkSent?: boolean;
 }
 
-const OtpStep: React.FC<OtpStepProps> = ({ 
-  otp, 
-  setOtp, 
-  isLoading, 
-  onSubmit, 
+const OtpStep: React.FC<OtpStepProps> = ({
+  otp,
+  setOtp,
+  isLoading,
+  onSubmit,
   onBack,
   onResendOtp,
-  newPassword,
-  setNewPassword,
-  confirmPassword,
-  setConfirmPassword,
-  email
+  email,
+  resetLinkSent = false,
 }) => {
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0 || resendLoading) return;
-    
-    setResendLoading(true);
-    await onResendOtp();
-    setResendLoading(false);
-    
-    // Start cooldown (60 seconds)
-    setResendCooldown(60);
-    const interval = setInterval(() => {
-      setResendCooldown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <div className="bg-gray-800/30 p-3 rounded-md mb-4">
-        <p className="text-sm text-gray-300">
-          <span className="text-gray-400">Recovery email:</span> {email}
-        </p>
+    <div className="space-y-6">
+      {resetLinkSent && (
+        <Alert className="bg-green-900/30 border-green-800 mb-4">
+          <CheckCircle className="h-4 w-4 text-green-400" />
+          <AlertDescription className="text-green-200 ml-2">
+            Reset link sent to your mail ID ✅
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="mb-4">
+        <p className="text-gray-300 mb-2">Enter the verification code sent to {email && <span className="font-medium text-white">{email}</span>}</p>
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="otp" className="text-gray-300 mb-2 block">Verification Code</Label>
-        <p className="text-sm text-gray-400 mb-2">
-          Enter the 6-digit code sent to your email. The email contains a numeric verification code.
-        </p>
-        <p className="text-sm text-gray-400 mb-4 bg-yellow-900/20 p-3 rounded border border-yellow-700 text-yellow-300">
-          <strong>Important:</strong> If you received a magic link email, please look carefully in the email body or subject line for a 6-digit numeric code. If you can't find one, please request a new code using the button below.
-        </p>
-        
-        <div className="flex justify-center mb-4">
-          <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-            <InputOTPGroup>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <InputOTPSlot
-                  key={i}
-                  index={i}
-                  className="w-10 h-12 text-center bg-gray-800/50 border-gray-700 text-white"
-                />
-              ))}
-            </InputOTPGroup>
-          </InputOTP>
+
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div>
+          <Label htmlFor="otp" className="text-gray-300 mb-2 block">Verification Code</Label>
+          <Input
+            id="otp"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            placeholder="Enter 6-digit code"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+            className="bg-gray-800/50 border-gray-700 text-white h-12"
+            disabled={isLoading}
+            required
+          />
+          <p className="text-gray-400 text-sm mt-2">Enter the 6-digit code sent to your email</p>
         </div>
         
-        <div className="flex justify-center mt-2 mb-6">
+        <div className="flex flex-col gap-3">
           <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleResendOtp}
-            disabled={resendCooldown > 0 || resendLoading}
-            className="text-sm text-gray-400 hover:text-white flex items-center gap-1"
+            type="submit"
+            disabled={isLoading || otp.length !== 6}
+            className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
           >
-            {resendLoading ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : (
-              <RefreshCw className="h-3 w-3 mr-1" />
-            )}
-            {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend verification code'}
+            {isLoading ? 'Verifying...' : 'Verify Code'}
           </Button>
+          
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              onClick={onBack}
+              variant="ghost"
+              className="text-gray-400 hover:text-white"
+              disabled={isLoading}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            
+            <Button
+              type="button"
+              onClick={onResendOtp}
+              variant="ghost"
+              className="text-gray-400 hover:text-white"
+              disabled={isLoading}
+            >
+              Resend Code
+            </Button>
+          </div>
         </div>
-      </div>
-      
-      <Button
-        type="submit"
-        disabled={isLoading || otp.length < 6}
-        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Verifying...
-          </>
-        ) : 'Verify Code'}
-      </Button>
-      
-      <div className="text-center mt-4">
-        <Button
-          type="button"
-          variant="link"
-          onClick={onBack}
-          className="text-[#FF00D4]"
-        >
-          Back to Email
-        </Button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 

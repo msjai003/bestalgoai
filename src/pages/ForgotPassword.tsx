@@ -21,6 +21,7 @@ const ForgotPassword = () => {
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   const [magicLinkSessionActive, setMagicLinkSessionActive] = useState<boolean>(false);
+  const [resetLinkSent, setResetLinkSent] = useState<boolean>(false);
   const { resetPassword, updatePassword } = useAuth();
 
   useEffect(() => {
@@ -231,6 +232,8 @@ const ForgotPassword = () => {
       setVerificationId(verificationId);
       
       sessionStorage.setItem(`email_${verificationId}`, email);
+      
+      setResetLinkSent(true);
       
       setCurrentStep('otp');
       toast.success('A reset link has been sent to your email. Check your email for the link or use the numeric code.');
@@ -444,6 +447,7 @@ const ForgotPassword = () => {
           confirmPassword={confirmPassword}
           setConfirmPassword={setConfirmPassword}
           email={email}
+          resetLinkSent={resetLinkSent}
         />
       )}
       
