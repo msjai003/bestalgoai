@@ -53,6 +53,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Adding custom colors as per the new design system
+        appBg: "#1A1B1F",      // Primary Background
+        surfaceBg: "#2B2D33",  // Secondary Background / Surfaces
+        accentPink: "#E91E63", // Accent Color (Pink/Magenta)
+        accentPurple: "#9C27B0", // Accent Color (Purple Option)
+        textPrimary: "#FFFFFF", // Primary Text
+        textSecondary: "#B0B0B0", // Secondary Text
+        success: "#00C853",    // Success / Positive
+        danger: "#FF5252",     // Danger / Negative
       },
       borderRadius: {
         lg: "var(--radius)",

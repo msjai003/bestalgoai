@@ -14,7 +14,7 @@ import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 const fallbackPlans = [
   {
     name: "Basic",
-    price: "₹999",
+    price: "₹1",
     period: "/mo",
     features: [
       "5 Trading Strategies",
@@ -25,7 +25,7 @@ const fallbackPlans = [
   },
   {
     name: "Pro",
-    price: "₹2,499",
+    price: "₹1",
     period: "/mo",
     features: [
       "20 Trading Strategies",
@@ -37,7 +37,7 @@ const fallbackPlans = [
   },
   {
     name: "Premium",
-    price: "₹4,999",
+    price: "₹1",
     period: "/mo",
     features: [
       "Unlimited Strategies",
@@ -179,18 +179,18 @@ const Subscription = () => {
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-white">
-      <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
+    <div className="bg-appBg min-h-screen text-textPrimary">
+      <header className="fixed top-0 left-0 right-0 bg-appBg/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Button
             onClick={() => navigate('/dashboard')}
             className="p-2"
           >
-            <i className="fa-solid fa-arrow-left text-gray-400"></i>
+            <i className="fa-solid fa-arrow-left text-textSecondary"></i>
           </Button>
           <h1 className="text-lg font-semibold">Subscription & Billing</h1>
           <button className="p-2">
-            <i className="fa-solid fa-gear text-gray-400"></i>
+            <i className="fa-solid fa-gear text-textSecondary"></i>
           </button>
         </div>
       </header>
@@ -198,22 +198,22 @@ const Subscription = () => {
       <main className="pt-20 px-4 pb-24">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
-            <Loader className="h-8 w-8 animate-spin text-[#FF00D4]" />
+            <Loader className="h-8 w-8 animate-spin text-accentPink" />
           </div>
         ) : userPlan ? (
           <section className="mb-8">
-            <div className="bg-gradient-to-br from-[#FF00D4]/10 to-purple-900/20 rounded-2xl p-6 border border-[#FF00D4]/20 shadow-lg">
+            <div className="bg-gradient-to-br from-accentPink/10 to-accentPurple/10 rounded-2xl p-6 border border-accentPink/20 shadow-lg">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h2 className="text-[#FF00D4] font-bold text-xl">{userPlan.plan_name} Plan</h2>
-                  <p className="text-gray-400 text-sm">Valid until {formatExpirationDate()}</p>
+                  <h2 className="text-accentPink font-bold text-xl">{userPlan.plan_name} Plan</h2>
+                  <p className="text-textSecondary text-sm">Valid until {formatExpirationDate()}</p>
                 </div>
-                <span className="bg-[#FF00D4]/20 text-[#FF00D4] px-3 py-1 rounded-full text-sm">Active</span>
+                <span className="bg-accentPink/20 text-accentPink px-3 py-1 rounded-full text-sm">Active</span>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-gray-400">/month</span></p>
+                <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-textSecondary">/month</span></p>
                 <Button 
-                  className="bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90"
+                  className="bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
                   onClick={() => navigate('/pricing')}
                 >
                   Upgrade Plan
@@ -223,10 +223,10 @@ const Subscription = () => {
           </section>
         ) : (
           <section className="mb-8">
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 shadow-lg">
-              <p className="text-center text-gray-400 mb-4">You don't have an active subscription plan.</p>
+            <div className="bg-surfaceBg rounded-2xl p-6 border border-gray-700 shadow-lg">
+              <p className="text-center text-textSecondary mb-4">You don't have an active subscription plan.</p>
               <Button 
-                className="w-full bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90"
+                className="w-full bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
                 onClick={() => navigate('/pricing')}
               >
                 Choose a Plan
@@ -237,11 +237,11 @@ const Subscription = () => {
 
         {plansLoading ? (
           <div className="flex justify-center py-8">
-            <Loader className="h-6 w-6 animate-spin text-[#FF00D4]" />
+            <Loader className="h-6 w-6 animate-spin text-accentPink" />
           </div>
         ) : plansError ? (
-          <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-8">
-            <p className="text-center text-white">
+          <div className="bg-danger/20 border border-danger rounded-xl p-4 mb-8">
+            <p className="text-center text-textPrimary">
               {plansError}. Using default pricing.
             </p>
           </div>
@@ -255,25 +255,25 @@ const Subscription = () => {
                   className={cn(
                     "rounded-xl p-4 border",
                     plan.isPopular 
-                      ? "bg-gradient-to-br from-[#FF00D4]/5 to-purple-900/10 border-[#FF00D4]/20" 
-                      : "bg-gray-800/50 border-gray-700"
+                      ? "bg-gradient-to-br from-accentPink/5 to-accentPurple/10 border-accentPink/20" 
+                      : "bg-surfaceBg border-gray-700"
                   )}
                 >
                   <div className="flex justify-between items-center mb-3">
                     <h3 className={cn(
                       "font-bold",
-                      plan.isPopular ? "text-[#FF00D4]" : ""
+                      plan.isPopular ? "text-accentPink" : ""
                     )}>{plan.name}</h3>
                     <p className="text-lg font-bold">
-                      {plan.price}<span className="text-sm text-gray-400">{plan.period}</span>
+                      {plan.price}<span className="text-sm text-textSecondary">{plan.period}</span>
                     </p>
                   </div>
-                  <ul className="text-sm text-gray-400 space-y-2 mb-4">
+                  <ul className="text-sm text-textSecondary space-y-2 mb-4">
                     {plan.features.map((feature, index) => (
                       <li key={index}>
                         <i className={cn(
                           "fa-solid fa-check mr-2",
-                          plan.isPopular ? "text-[#FF00D4]" : "text-green-400"
+                          plan.isPopular ? "text-accentPink" : "text-success"
                         )}></i>
                         {feature}
                       </li>
@@ -283,8 +283,8 @@ const Subscription = () => {
                     className={cn(
                       "w-full",
                       plan.isPopular 
-                        ? "bg-[#FF00D4] text-white shadow-lg shadow-[#FF00D4]/20 hover:bg-[#FF00D4]/90" 
-                        : "border border-[#FF00D4] text-[#FF00D4] bg-transparent hover:bg-[#FF00D4]/10"
+                        ? "bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90" 
+                        : "border border-accentPink text-accentPink bg-transparent hover:bg-accentPink/10"
                     )}
                     onClick={() => handlePlanSelect(plan.name, plan.price)}
                   >
@@ -298,20 +298,20 @@ const Subscription = () => {
 
         <section>
           <h2 className="text-lg font-semibold mb-4">Payment Methods</h2>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="bg-surfaceBg rounded-xl p-4 border border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <i className="fa-regular fa-credit-card text-gray-400 mr-3"></i>
+                <i className="fa-regular fa-credit-card text-textSecondary mr-3"></i>
                 <div>
                   <p className="font-medium">•••• 4242</p>
-                  <p className="text-sm text-gray-400">Expires 08/25</p>
+                  <p className="text-sm text-textSecondary">Expires 08/25</p>
                 </div>
               </div>
-              <span className="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs">Default</span>
+              <span className="bg-success/20 text-success px-2 py-1 rounded-full text-xs">Default</span>
             </div>
             <Button 
               variant="outline"
-              className="w-full border-gray-700 text-gray-400 hover:bg-gray-700/50"
+              className="w-full border-gray-700 text-textSecondary hover:bg-surfaceBg/80"
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add Payment Method

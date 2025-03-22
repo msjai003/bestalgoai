@@ -17,7 +17,7 @@ const fallbackPlans = [
     id: 'basic',
     name: 'Basic',
     description: 'Perfect for beginners',
-    price: '₹999',
+    price: '₹1',
     period: 'per month',
     features: [
       '5 Pre-built Strategies',
@@ -29,7 +29,7 @@ const fallbackPlans = [
     id: 'pro',
     name: 'Pro',
     description: 'For serious traders',
-    price: '₹2499',
+    price: '₹1',
     period: 'per month',
     popular: true,
     features: [
@@ -43,7 +43,7 @@ const fallbackPlans = [
     id: 'premium',
     name: 'Premium',
     description: 'For professional traders',
-    price: '₹4999',
+    price: '₹1',
     period: 'per month',
     features: [
       'All Pro Features',
@@ -199,36 +199,36 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pb-16">
+    <div className="min-h-screen bg-appBg text-textPrimary pb-16">
       <Header />
       <main className="pt-24 px-4">
         {selectedStrategyName && (
           <section className="mb-8">
-            <div className="bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 rounded-xl p-4 border border-[#FF00D4]/30">
+            <div className="bg-gradient-to-r from-accentPink/20 to-accentPurple/20 rounded-xl p-4 border border-accentPink/30">
               <h2 className="text-lg font-medium mb-2">Unlock Premium Strategy</h2>
-              <p className="text-gray-300">
-                Subscribe to unlock <span className="text-[#FF00D4] font-semibold">{selectedStrategyName}</span> and all other premium strategies.
+              <p className="text-textSecondary">
+                Subscribe to unlock <span className="text-accentPink font-semibold">{selectedStrategyName}</span> and all other premium strategies.
               </p>
             </div>
           </section>
         )}
 
         <section className="mb-12">
-          <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-[#FF00D4] to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-accentPink to-accentPurple bg-clip-text text-transparent">
             Choose Your Trading Power
           </h1>
-          <p className="text-gray-400">
+          <p className="text-textSecondary">
             Unlock advanced algo trading strategies with plans designed for every trader
           </p>
         </section>
 
         {plansLoading ? (
           <div className="flex justify-center py-12">
-            <Loader className="h-8 w-8 animate-spin text-[#FF00D4]" />
+            <Loader className="h-8 w-8 animate-spin text-accentPink" />
           </div>
         ) : plansError ? (
-          <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-8">
-            <p className="text-center text-white">
+          <div className="bg-danger/20 border border-danger rounded-xl p-4 mb-8">
+            <p className="text-center text-textPrimary">
               {plansError}. Using default pricing.
             </p>
           </div>
@@ -237,33 +237,36 @@ const PricingPage = () => {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-gray-800/50 rounded-xl p-6 border border-gray-700 shadow-lg overflow-hidden`}
+                className={`relative bg-surfaceBg rounded-xl p-6 border ${plan.popular ? 'border-accentPink/30' : 'border-gray-700'} shadow-lg overflow-hidden`}
               >
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-[#FF00D4] text-xs px-3 py-1 rounded-bl-lg">
+                  <div className="absolute top-0 right-0 bg-accentPink text-xs px-3 py-1 rounded-bl-lg">
                     POPULAR
                   </div>
                 )}
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold">{plan.name}</h3>
-                    <p className="text-gray-400 text-sm">{plan.description}</p>
+                    <p className="text-textSecondary text-sm">{plan.description}</p>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold">{plan.price}</div>
-                    <div className="text-sm text-gray-400">{plan.period}</div>
+                    <div className="text-sm text-textSecondary">{plan.period}</div>
                   </div>
                 </div>
                 <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
-                      <i className="fa-solid fa-check text-[#FF00D4] mr-2"></i>
+                      <i className="fa-solid fa-check text-accentPink mr-2"></i>
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Button 
-                  className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                  className={`w-full ${plan.popular 
+                    ? 'bg-gradient-to-r from-accentPink to-accentPurple' 
+                    : 'bg-surfaceBg border border-accentPink/50 hover:bg-accentPink/10'} 
+                    text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity`}
                   onClick={() => handlePlanSelection(plan.name, plan.price)}
                   disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
                 >
