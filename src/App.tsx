@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +38,7 @@ import AuthCallback from "./pages/AuthCallback";
 import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
 import PriceAdminPage from "./pages/PriceAdminPage";
+import ColorTest from "./pages/ColorTest";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,7 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/colortest" element={<ColorTest />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={
