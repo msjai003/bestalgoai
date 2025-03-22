@@ -16,6 +16,29 @@ interface RazorpayOptions {
     color: string;
   };
   handler?: (response: any) => void;
+  modal?: {
+    confirm_close?: boolean;
+    escape?: boolean;
+    animation?: boolean;
+    backdropclose?: boolean;
+    handleback?: boolean;
+  };
+  notes?: Record<string, string>;
+  // Add the payment methods option to control available methods
+  config?: {
+    display?: {
+      blocks?: {
+        upi?: { name: string; instruments: { [key: string]: { method: string } }[] };
+        card?: { name: string; instruments: any[] };
+        netbanking?: { name: string; instruments: any[] };
+        wallet?: { name: string; instruments: any[] };
+      };
+      sequence?: string[];
+      preferences?: {
+        show_default_blocks?: boolean;
+      };
+    };
+  };
 }
 
 // Initialize Razorpay payment
@@ -46,8 +69,38 @@ const createRazorpayInstance = (
   onError: () => void
 ) => {
   try {
-    const rzp = new (window as any).Razorpay({
+    // Configure Razorpay options with direct payment flow
+    const razorpayOptions = {
       ...options,
+      // Force modal to stay open and handle back button
+      modal: {
+        confirm_close: true,
+        escape: false,
+        animation: true,
+        backdropclose: false,
+        handleback: true
+      },
+      // Configure direct Card payment without showing other options
+      config: {
+        display: {
+          blocks: {
+            // Configure only card as a payment method for simplicity
+            card: {
+              name: "Card",
+              instruments: [
+                {
+                  method: "card"
+                }
+              ]
+            }
+          },
+          sequence: ["card"],
+          preferences: {
+            show_default_blocks: false
+          }
+        }
+      },
+      // Set handler for payment completion
       handler: function (response: any) {
         onSuccess(
           response.razorpay_payment_id,
@@ -55,7 +108,9 @@ const createRazorpayInstance = (
           response.razorpay_signature
         );
       },
-    });
+    };
+    
+    const rzp = new (window as any).Razorpay(razorpayOptions);
     
     rzp.on('payment.failed', function (response: any) {
       console.error('Payment failed:', response.error);

@@ -163,6 +163,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       theme: {
         color: "#FF00D4",
       },
+      notes: {
+        plan_name: planName,
+        plan_price: planPrice,
+        user_id: user.id
+      }
     };
 
     initializeRazorpayPayment(
