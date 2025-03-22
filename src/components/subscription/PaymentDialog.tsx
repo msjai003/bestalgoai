@@ -37,6 +37,51 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
   
+  // Function to unlock all strategies for Premium subscribers
+  const unlockAllStrategies = async (userId: string) => {
+    try {
+      // Fetch all predefined strategies
+      const { data: strategies, error: strategiesError } = await supabase
+        .from('predefined_strategies')
+        .select('id, name, description');
+        
+      if (strategiesError) {
+        console.error('Error fetching strategies:', strategiesError);
+        throw strategiesError;
+      }
+      
+      if (!strategies || strategies.length === 0) {
+        console.log('No strategies found to unlock');
+        return;
+      }
+      
+      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
+      
+      // Mark all strategies as paid
+      for (const strategy of strategies) {
+        const { error: strategyError } = await supabase.rpc(
+          'force_strategy_paid_status',
+          {
+            p_user_id: userId,
+            p_strategy_id: strategy.id,
+            p_strategy_name: strategy.name,
+            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
+          }
+        );
+        
+        if (strategyError) {
+          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
+          // Continue with other strategies even if one fails
+        }
+      }
+      
+      console.log('All strategies successfully unlocked');
+    } catch (error) {
+      console.error('Error in unlocking all strategies:', error);
+      // Not throwing error to allow payment process to complete
+    }
+  };
+  
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
     
@@ -56,8 +101,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         throw error;
       }
       
+      // If Premium plan is selected, unlock all strategies
+      if (planName === 'Premium' || planPrice === '₹4999') {
+        await unlockAllStrategies(user.id);
+      }
       // If a strategy was selected, update its status to paid
-      if (selectedStrategyId) {
+      else if (selectedStrategyId) {
         const { error: strategyError } = await supabase.rpc(
           'force_strategy_paid_status',
           {
@@ -124,7 +173,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           setIsProcessing(false);
           toast({
             title: "Payment Successful",
-            description: `Payment ID: ${payment_id}`,
+            description: planName === 'Premium' || planPrice === '₹4999' 
+              ? "All premium strategies have been unlocked!" 
+              : `Payment completed: ${payment_id}`,
             variant: "default",
           });
           onSuccess();
@@ -154,9 +205,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Processing Payment</DialogTitle>
           <DialogDescription className="text-gray-400">
-            {selectedStrategyName ? 
-              `Connecting to payment gateway to unlock ${selectedStrategyName}` :
-              `Connecting to payment gateway for the ${planName} plan`
+            {planName === 'Premium' || planPrice === '₹4999' ? 
+              "Connecting to payment gateway to unlock all premium strategies" :
+              (selectedStrategyName ? 
+                `Connecting to payment gateway to unlock ${selectedStrategyName}` :
+                `Connecting to payment gateway for the ${planName} plan`)
             }
           </DialogDescription>
         </DialogHeader>
@@ -165,6 +218,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <Loader className="h-12 w-12 animate-spin text-[#FF00D4] mb-4" />
           <p className="text-center text-gray-300">Please wait while we connect to Razorpay...</p>
           <p className="text-center text-gray-300 mt-2">Amount: {planPrice}</p>
+          {(planName === 'Premium' || planPrice === '₹4999') && (
+            <p className="text-center text-[#FF00D4] mt-4 font-medium">
+              All premium strategies will be unlocked with this plan!
+            </p>
+          )}
         </div>
         
         <div className="flex justify-end">
