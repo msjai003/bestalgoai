@@ -14,7 +14,7 @@ import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 const fallbackPlans = [
   {
     name: "Basic",
-    price: "₹999",
+    price: "₹1",
     period: "/mo",
     features: [
       "5 Trading Strategies",
@@ -25,7 +25,7 @@ const fallbackPlans = [
   },
   {
     name: "Pro",
-    price: "₹2,499",
+    price: "₹1",
     period: "/mo",
     features: [
       "20 Trading Strategies",
@@ -37,7 +37,7 @@ const fallbackPlans = [
   },
   {
     name: "Premium",
-    price: "₹4,999",
+    price: "₹1",
     period: "/mo",
     features: [
       "Unlimited Strategies",
