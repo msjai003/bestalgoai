@@ -8,6 +8,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import PaymentMethodForm from "./PaymentMethodForm";
+import { Button } from "@/components/ui/button";
+import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -28,31 +32,99 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   selectedStrategyId,
   selectedStrategyName
 }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const handleRazorpayPayment = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to make a payment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amount = convertPriceToAmount(planPrice);
+    
+    const options = {
+      key: "rzp_test_iN0M3B79HiBpvQ", // Razorpay Key
+      amount: amount,
+      currency: "INR",
+      name: "AlgoTrade",
+      description: `Payment for ${planName} plan`,
+      prefill: {
+        name: user.user_metadata?.full_name || "",
+        email: user.email || "",
+      },
+      theme: {
+        color: "#FF00D4",
+      },
+    };
+
+    initializeRazorpayPayment(
+      options,
+      (payment_id) => {
+        toast({
+          title: "Payment Successful",
+          description: `Payment ID: ${payment_id}`,
+          variant: "default",
+        });
+        onSuccess();
+      },
+      () => {
+        toast({
+          title: "Payment Failed",
+          description: "Please try again",
+          variant: "destructive",
+        });
+      }
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle>Payment Details</DialogTitle>
+          <DialogTitle>Payment Options</DialogTitle>
           <DialogDescription className="text-gray-400">
             {selectedStrategyName ? 
-              `Complete payment to unlock ${selectedStrategyName} and all premium strategies.` :
-              `Enter your card details to subscribe to the ${planName} plan.`
+              `Choose a payment method to unlock ${selectedStrategyName} and all premium strategies.` :
+              `Choose a payment method to subscribe to the ${planName} plan.`
             }
           </DialogDescription>
         </DialogHeader>
         
-        <PaymentMethodForm
-          planName={planName}
-          planPrice={planPrice}
-          onSuccess={onSuccess}
-          onCancel={() => onOpenChange(false)}
-          selectedStrategyId={selectedStrategyId}
-          selectedStrategyName={selectedStrategyName}
-        />
+        <div className="flex flex-col gap-4">
+          <Button 
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-6 rounded-lg font-medium shadow-lg hover:opacity-90 transition-opacity"
+            onClick={handleRazorpayPayment}
+          >
+            Pay with Razorpay
+          </Button>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-700"></span>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-gray-800 px-2 text-sm text-gray-400">or pay with credit card</span>
+            </div>
+          </div>
+          
+          <PaymentMethodForm
+            planName={planName}
+            planPrice={planPrice}
+            onSuccess={onSuccess}
+            onCancel={() => onOpenChange(false)}
+            selectedStrategyId={selectedStrategyId}
+            selectedStrategyName={selectedStrategyName}
+          />
+        </div>
         
         <div className="text-xs text-gray-400 mt-4">
-          <p>This is a demo application. No actual payment will be processed.</p>
-          <p>Use any valid-looking card number like: 4242 4242 4242 4242</p>
+          <p>This is a demo application using Razorpay test mode.</p>
+          <p>No actual payment will be processed.</p>
         </div>
       </DialogContent>
     </Dialog>
