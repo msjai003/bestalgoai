@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -10,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
 import PaymentDialog from '@/components/subscription/PaymentDialog';
 import { usePredefinedStrategies } from '@/hooks/strategy/usePredefinedStrategies';
-import { usePricingPlans } from '@/hooks/usePricingPlans';
+import { usePriceAdmin } from '@/hooks/usePriceAdmin';
 
 // Fallback plans in case of database connection issues
 const fallbackPlans = [
@@ -72,8 +73,8 @@ const PricingPage = () => {
   const { data: predefinedStrategies } = usePredefinedStrategies();
   const [selectedStrategyName, setSelectedStrategyName] = useState<string | null>(null);
   
-  // Fetch pricing plans from Supabase
-  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePricingPlans();
+  // Fetch pricing plans from Supabase using the new price_admin table
+  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePriceAdmin();
   
   // Use plans from database if available, otherwise use fallback plans
   const plans = dbPlans.length > 0 

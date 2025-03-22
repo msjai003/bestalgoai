@@ -228,48 +228,48 @@ export type Database = {
         }
         Relationships: []
       }
-      pricing_adminpanel: {
+      price_admin: {
         Row: {
-          created_at: string | null
-          features: Json
+          created_at: string
+          features: Json | null
           id: string
           is_active: boolean | null
           is_popular: boolean | null
-          plan_description: string
+          plan_description: string | null
           plan_id: string
           plan_name: string
-          plan_period: string
+          plan_period: string | null
           plan_price: string
-          sort_order: number
-          updated_at: string | null
+          sort_order: number | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          features?: Json
+          created_at?: string
+          features?: Json | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
-          plan_description: string
+          plan_description?: string | null
           plan_id: string
           plan_name: string
-          plan_period?: string
+          plan_period?: string | null
           plan_price: string
-          sort_order?: number
-          updated_at?: string | null
+          sort_order?: number | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
-          features?: Json
+          created_at?: string
+          features?: Json | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
-          plan_description?: string
+          plan_description?: string | null
           plan_id?: string
           plan_name?: string
-          plan_period?: string
+          plan_period?: string | null
           plan_price?: string
-          sort_order?: number
-          updated_at?: string | null
+          sort_order?: number | null
+          updated_at?: string
         }
         Relationships: []
       }

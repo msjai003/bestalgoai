@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +36,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import AuthCallback from "./pages/AuthCallback";
 import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
+import PriceAdminPage from "./pages/PriceAdminPage";
 
 const queryClient = new QueryClient();
 
@@ -140,6 +140,7 @@ function AppRoutes() {
       } />
       <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
+      <Route path="/price-admin" element={<PriceAdminPage />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

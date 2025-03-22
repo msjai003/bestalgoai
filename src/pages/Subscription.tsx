@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { usePricingPlans } from "@/hooks/usePricingPlans";
+import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 
 // Fallback plans in case of database connection issues
 const fallbackPlans = [
@@ -64,8 +65,8 @@ const Subscription = () => {
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch pricing plans from Supabase
-  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePricingPlans();
+  // Fetch pricing plans from Supabase using the new price_admin table
+  const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePriceAdmin();
   
   // Use plans from database if available, otherwise use fallback plans
   const plans = dbPlans.length > 0 
