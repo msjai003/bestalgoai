@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import PaymentMethodForm from "./PaymentMethodForm";
 import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader } from "lucide-react";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -35,6 +35,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = React.useState(false);
   
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
@@ -93,6 +94,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       return;
     }
 
+    setIsProcessing(true);
     const amount = convertPriceToAmount(planPrice);
     
     // Extract user information safely, checking if properties exist
@@ -119,6 +121,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       (payment_id) => {
         // Save the plan selection to the database
         savePlanSelection(payment_id).then(() => {
+          setIsProcessing(false);
           toast({
             title: "Payment Successful",
             description: `Payment ID: ${payment_id}`,
@@ -128,6 +131,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         });
       },
       () => {
+        setIsProcessing(false);
         toast({
           title: "Payment Failed",
           description: "Please try again",
@@ -137,44 +141,40 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     );
   };
 
+  // Automatically initiate payment when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      handleRazorpayPayment();
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle>Payment Options</DialogTitle>
+          <DialogTitle>Processing Payment</DialogTitle>
           <DialogDescription className="text-gray-400">
             {selectedStrategyName ? 
-              `Choose a payment method to unlock ${selectedStrategyName} and all premium strategies.` :
-              `Choose a payment method to subscribe to the ${planName} plan.`
+              `Connecting to payment gateway to unlock ${selectedStrategyName}` :
+              `Connecting to payment gateway for the ${planName} plan`
             }
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col items-center justify-center py-8">
+          <Loader className="h-12 w-12 animate-spin text-[#FF00D4] mb-4" />
+          <p className="text-center text-gray-300">Please wait while we connect to Razorpay...</p>
+          <p className="text-center text-gray-300 mt-2">Amount: {planPrice}</p>
+        </div>
+        
+        <div className="flex justify-end">
           <Button 
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-6 rounded-lg font-medium shadow-lg hover:opacity-90 transition-opacity"
-            onClick={handleRazorpayPayment}
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            disabled={isProcessing}
           >
-            Pay with Razorpay
+            Cancel
           </Button>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-700"></span>
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-gray-800 px-2 text-sm text-gray-400">or pay with credit card</span>
-            </div>
-          </div>
-          
-          <PaymentMethodForm
-            planName={planName}
-            planPrice={planPrice}
-            onSuccess={onSuccess}
-            onCancel={() => onOpenChange(false)}
-            selectedStrategyId={selectedStrategyId}
-            selectedStrategyName={selectedStrategyName}
-          />
         </div>
         
         <div className="text-xs text-gray-400 mt-4">
