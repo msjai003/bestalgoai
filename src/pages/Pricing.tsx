@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -18,7 +17,7 @@ const fallbackPlans = [
     id: 'basic',
     name: 'Basic',
     description: 'Perfect for beginners',
-    price: '₹1',
+    price: '₹999',
     period: 'per month',
     features: [
       '5 Pre-built Strategies',
@@ -30,7 +29,7 @@ const fallbackPlans = [
     id: 'pro',
     name: 'Pro',
     description: 'For serious traders',
-    price: '₹1',
+    price: '₹2499',
     period: 'per month',
     popular: true,
     features: [
@@ -44,7 +43,7 @@ const fallbackPlans = [
     id: 'premium',
     name: 'Premium',
     description: 'For professional traders',
-    price: '₹1',
+    price: '₹4999',
     period: 'per month',
     features: [
       'All Pro Features',
