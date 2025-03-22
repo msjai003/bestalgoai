@@ -42,7 +42,7 @@ const PricingAdmin = () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('pricing_adminpanel')
+        .from('price_admin')
         .select('*')
         .order('sort_order', { ascending: true });
 
@@ -146,7 +146,7 @@ const PricingAdmin = () => {
       if (!planToUpdate) return;
 
       const { error } = await supabase
-        .from('pricing_adminpanel')
+        .from('price_admin')
         .update({
           plan_name: planToUpdate.plan_name,
           plan_description: planToUpdate.plan_description,

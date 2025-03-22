@@ -25,7 +25,7 @@ export const usePricingPlans = () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from('pricing_adminpanel')
+          .from('price_admin')
           .select('*')
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
