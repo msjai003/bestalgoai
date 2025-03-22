@@ -37,6 +37,50 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
   
+  const unlockAllStrategies = async () => {
+    if (!user) return;
+    
+    try {
+      // Fetch all predefined strategies
+      const { data: strategies, error: fetchError } = await supabase
+        .from('predefined_strategies')
+        .select('id, name, description');
+        
+      if (fetchError) {
+        console.error('Error fetching strategies:', fetchError);
+        throw fetchError;
+      }
+      
+      if (strategies && strategies.length > 0) {
+        // For each strategy, update its status to paid
+        for (const strategy of strategies) {
+          const { error: strategyError } = await supabase.rpc(
+            'force_strategy_paid_status',
+            {
+              p_user_id: user.id,
+              p_strategy_id: strategy.id,
+              p_strategy_name: strategy.name,
+              p_strategy_description: strategy.description || `Premium strategy unlocked with ${planName} plan`
+            }
+          );
+          
+          if (strategyError) {
+            console.error(`Error updating strategy ${strategy.id} status:`, strategyError);
+            // Continue with the next strategy even if one fails
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error unlocking all strategies:', error);
+      toast({
+        title: "Error",
+        description: "There was an issue unlocking all strategies. Please contact support.",
+        variant: "destructive",
+      });
+      // Still continuing with success callback as payment was processed
+    }
+  };
+  
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
     
@@ -56,8 +100,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         throw error;
       }
       
-      // If a strategy was selected, update its status to paid
-      if (selectedStrategyId) {
+      // If Premium plan, unlock all strategies
+      if (planName === 'Premium') {
+        await unlockAllStrategies();
+      }
+      // If a specific strategy was selected, update its status to paid
+      else if (selectedStrategyId) {
         const { error: strategyError } = await supabase.rpc(
           'force_strategy_paid_status',
           {
@@ -124,7 +172,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           setIsProcessing(false);
           toast({
             title: "Payment Successful",
-            description: `Payment ID: ${payment_id}`,
+            description: planName === 'Premium' 
+              ? "All premium strategies have been unlocked!" 
+              : `Payment ID: ${payment_id}`,
             variant: "default",
           });
           onSuccess();
@@ -154,9 +204,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Processing Payment</DialogTitle>
           <DialogDescription className="text-gray-400">
-            {selectedStrategyName ? 
-              `Connecting to payment gateway to unlock ${selectedStrategyName}` :
-              `Connecting to payment gateway for the ${planName} plan`
+            {planName === 'Premium' 
+              ? "Connecting to payment gateway to unlock all premium strategies" 
+              : selectedStrategyName 
+                ? `Connecting to payment gateway to unlock ${selectedStrategyName}` 
+                : `Connecting to payment gateway for the ${planName} plan`
             }
           </DialogDescription>
         </DialogHeader>
@@ -165,6 +217,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <Loader className="h-12 w-12 animate-spin text-[#FF00D4] mb-4" />
           <p className="text-center text-gray-300">Please wait while we connect to Razorpay...</p>
           <p className="text-center text-gray-300 mt-2">Amount: {planPrice}</p>
+          {planName === 'Premium' && (
+            <p className="text-center text-[#FF00D4] mt-4 font-semibold">
+              All premium strategies will be unlocked with this plan!
+            </p>
+          )}
         </div>
         
         <div className="flex justify-end">
