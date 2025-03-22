@@ -151,7 +151,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const userEmail = user.email || "";
     
     const options = {
-      key: "rzp_test_iN0M3B79HiBpvQ", // Razorpay Key
+      key: "rzp_live_AlwIwA3L3AFrKc", // Updated to live key
       amount: amount,
       currency: "INR",
       name: "AlgoTrade",
@@ -236,8 +236,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </div>
         
         <div className="text-xs text-gray-400 mt-4">
-          <p>This is a demo application using Razorpay test mode.</p>
-          <p>No actual payment will be processed.</p>
+          <p>This application is using Razorpay's live payment processing.</p>
+          <p>Your payment information is securely handled by Razorpay.</p>
         </div>
       </DialogContent>
     </Dialog>
