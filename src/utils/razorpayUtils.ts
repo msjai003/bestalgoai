@@ -1,6 +1,4 @@
 
-import { useToast } from "@/hooks/use-toast";
-
 // Type definition for Razorpay options
 interface RazorpayOptions {
   key: string;

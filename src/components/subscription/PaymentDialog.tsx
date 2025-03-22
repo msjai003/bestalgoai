@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -34,6 +35,53 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const savePlanSelection = async (payment_id: string) => {
+    if (!user) return;
+    
+    try {
+      // Insert plan selection into the database
+      const { error } = await supabase
+        .from('plan_details')
+        .insert({
+          user_id: user.id,
+          plan_name: planName,
+          plan_price: planPrice,
+          is_paid: true
+        });
+
+      if (error) {
+        console.error('Error saving plan selection:', error);
+        throw error;
+      }
+      
+      // If a strategy was selected, update its status to paid
+      if (selectedStrategyId) {
+        const { error: strategyError } = await supabase.rpc(
+          'force_strategy_paid_status',
+          {
+            p_user_id: user.id,
+            p_strategy_id: selectedStrategyId,
+            p_strategy_name: selectedStrategyName || '',
+            p_strategy_description: `Premium strategy unlocked with ${planName} plan`
+          }
+        );
+        
+        if (strategyError) {
+          console.error('Error updating strategy status:', strategyError);
+          throw strategyError;
+        }
+      }
+    } catch (error) {
+      console.error('Error in plan selection:', error);
+      toast({
+        title: "Database Error",
+        description: "Failed to save your plan selection. Please contact support.",
+        variant: "destructive",
+      });
+      // Still continuing with success callback as payment was processed
+    }
+  };
   
   const handleRazorpayPayment = () => {
     if (!user) {
@@ -69,12 +117,15 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     initializeRazorpayPayment(
       options,
       (payment_id) => {
-        toast({
-          title: "Payment Successful",
-          description: `Payment ID: ${payment_id}`,
-          variant: "default",
+        // Save the plan selection to the database
+        savePlanSelection(payment_id).then(() => {
+          toast({
+            title: "Payment Successful",
+            description: `Payment ID: ${payment_id}`,
+            variant: "default",
+          });
+          onSuccess();
         });
-        onSuccess();
       },
       () => {
         toast({
