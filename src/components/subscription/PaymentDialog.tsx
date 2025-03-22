@@ -47,6 +47,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
     const amount = convertPriceToAmount(planPrice);
     
+    // Extract user information safely, checking if properties exist
+    const userName = user.email?.split('@')[0] || "";
+    const userEmail = user.email || "";
+    
     const options = {
       key: "rzp_test_iN0M3B79HiBpvQ", // Razorpay Key
       amount: amount,
@@ -54,8 +58,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       name: "AlgoTrade",
       description: `Payment for ${planName} plan`,
       prefill: {
-        name: user.user_metadata?.full_name || "",
-        email: user.email || "",
+        name: userName,
+        email: userEmail,
       },
       theme: {
         color: "#FF00D4",
