@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,11 +24,13 @@ import { Strategy } from '@/hooks/strategy/types';
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
 // Extend the imported Strategy type for local usage
-interface ExtendedStrategy extends Strategy {
+interface ExtendedStrategy extends Omit<Strategy, 'id'> {
+  id: number | string;
   isCustom: boolean;
   createdBy?: string;
   category?: StrategyCategory;
   legs?: any;
+  isPaid?: boolean;
 }
 
 const StrategyManagement = () => {
@@ -45,10 +48,15 @@ const StrategyManagement = () => {
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
+  const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
 
-  // For filter mode - pass the properly typed array to useStrategyFiltering
-  const { selectedMode, handleModeChange, filteredStrategies } = useStrategyFiltering(wishlistedStrategies);
+  // For filter mode - cast the wishlistedStrategies to Strategy[] for useStrategyFiltering
+  const { selectedMode, handleModeChange, filteredStrategies } = useStrategyFiltering(
+    wishlistedStrategies.map(s => ({
+      ...s,
+      id: typeof s.id === 'string' ? parseInt(s.id, 10) : s.id
+    })) as Strategy[]
+  );
 
   // Check if user has premium subscription
   useEffect(() => {
@@ -143,7 +151,7 @@ const StrategyManagement = () => {
           
           // Convert Supabase data to match the Strategy type
           const supabaseStrategies: ExtendedStrategy[] = data.map(strategy => ({
-            id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id as number,
+            id: strategy.id,
             name: strategy.name,
             description: strategy.description || "",
             isCustom: true,
@@ -171,6 +179,8 @@ const StrategyManagement = () => {
           // Merge strategies from Supabase with local strategies
           // (avoiding duplicates by name)
           const supabaseStrategyNames = supabaseStrategies.map(s => s.name.toLowerCase());
+          
+          // Fix: Ensure we're handling string arrays correctly
           const filteredLocalStrategies = localStrategies.filter(
             s => !s.isCustom || !supabaseStrategyNames.includes(s.name.toLowerCase())
           );
@@ -217,7 +227,7 @@ const StrategyManagement = () => {
     wishlistedStrategies.filter(strategy => strategy.isCustom)
   );
 
-  const handleDeleteStrategy = (id: number) => {
+  const handleDeleteStrategy = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -228,7 +238,11 @@ const StrategyManagement = () => {
   const confirmDeleteStrategy = async () => {
     if (!strategyToDelete) return;
     
-    if (user && typeof strategyToDelete.id === 'string' && strategyToDelete.id.includes('-')) {
+    // Updated to handle string IDs properly
+    const isStringId = typeof strategyToDelete.id === 'string';
+    const hasHyphen = isStringId && (strategyToDelete.id as string).includes('-');
+    
+    if (user && isStringId && hasHyphen) {
       try {
         const { error } = await supabase
           .from('custom_strategies')
@@ -270,7 +284,7 @@ const StrategyManagement = () => {
     setStrategyToDelete(null);
   };
 
-  const handleToggleLiveMode = (id: number) => {
+  const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -284,7 +298,7 @@ const StrategyManagement = () => {
       return;
     }
     
-    setCurrentStrategyId(id);
+    setCurrentStrategyId(typeof id === 'string' ? parseInt(id, 10) : id);
     setTargetMode(strategy.isLive ? "paper" : "live");
     setConfirmationOpen(true);
   };
@@ -328,11 +342,11 @@ const StrategyManagement = () => {
     navigate('/strategy-builder');
   };
 
-  const handleViewDetails = (id: number) => {
+  const handleViewDetails = (id: number | string) => {
     navigate(`/strategy-details/${id}`);
   };
   
-  const handleEditQuantity = (id: number) => {
+  const handleEditQuantity = (id: number | string) => {
     navigate('/live-trading');
   };
 
@@ -581,4 +595,3 @@ const StrategyManagement = () => {
 };
 
 export default StrategyManagement;
-
