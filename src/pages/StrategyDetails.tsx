@@ -5,8 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Heart, Lock, Play, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
@@ -22,6 +23,7 @@ const StrategyDetails = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPremium, setHasPremium] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -137,11 +139,11 @@ const StrategyDetails = () => {
 
   if (!strategy) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center mb-4">
-            <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-[#FF00D4] transition-colors">
+            <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-cyan transition-colors">
               <ChevronLeft className="mr-1 h-5 w-5" />
               Back to Strategies
             </Link>
@@ -158,25 +160,25 @@ const StrategyDetails = () => {
   const canAccess = !isPremium || hasPremium || isPaidStrategy;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center mb-6">
-          <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-[#FF00D4] transition-colors">
+          <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-cyan transition-colors">
             <ChevronLeft className="mr-1 h-5 w-5" />
-            Back to Strategies
+            <span className="font-medium">Back to Strategies</span>
           </Link>
         </div>
 
-        <Card className="bg-gray-800 border border-gray-700 shadow-lg rounded-xl overflow-hidden">
+        <Card className="bg-charcoalSecondary border border-cyan/20 shadow-lg rounded-xl overflow-hidden">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-6">
-              <h1 className="text-2xl font-bold text-white bg-clip-text bg-gradient-to-r from-[#FF00D4] to-purple-500">{strategy?.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-white bg-clip-text bg-gradient-to-r from-cyan to-cyan/80">{strategy?.name}</h1>
               <div className="flex space-x-2">
                 {isPremium && !canAccess && (
                   <Button 
                     variant="outline"
-                    className="text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/10"
+                    className="text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10"
                     onClick={handleUpgrade}
                   >
                     <Lock className="h-4 w-4 mr-2" />
@@ -197,68 +199,129 @@ const StrategyDetails = () => {
             
             {canAccess ? (
               <>
-                <p className="text-gray-400 mb-6 leading-relaxed">{strategy.description}</p>
+                <p className="text-gray-400 mb-8 leading-relaxed md:text-lg">{strategy.description}</p>
 
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-3 text-white/90">Key Metrics</h2>
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
+                    <BarChart3 className="h-5 w-5 text-cyan mr-2" />
+                    Key Metrics
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-blue-900/20 border border-blue-800/30 rounded-lg p-4">
+                    <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-800/30 rounded-lg p-4 hover:shadow-lg hover:border-blue-700/40 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Win Rate
                       </p>
-                      <p className="text-blue-300 font-semibold text-lg">
+                      <p className="text-blue-300 font-semibold text-xl">
                         {strategy.performance.winRate}
                       </p>
                     </div>
-                    <div className="bg-green-900/20 border border-green-800/30 rounded-lg p-4">
+                    <div className="bg-gradient-to-br from-green-900/20 to-green-800/10 border border-green-800/30 rounded-lg p-4 hover:shadow-lg hover:border-green-700/40 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Average Return
                       </p>
-                      <p className="text-green-300 font-semibold text-lg">
+                      <p className="text-green-300 font-semibold text-xl">
                         {strategy.performance.avgProfit}
                       </p>
                     </div>
-                    <div className="bg-red-900/20 border border-red-800/30 rounded-lg p-4">
+                    <div className="bg-gradient-to-br from-red-900/20 to-red-800/10 border border-red-800/30 rounded-lg p-4 hover:shadow-lg hover:border-red-700/40 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Max Drawdown
                       </p>
-                      <p className="text-red-300 font-semibold text-lg">
+                      <p className="text-red-300 font-semibold text-xl">
                         {strategy.performance.drawdown}
                       </p>
                     </div>
-                    <div className="bg-purple-900/20 border border-purple-800/30 rounded-lg p-4">
+                    <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-800/30 rounded-lg p-4 hover:shadow-lg hover:border-purple-700/40 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Risk Score
                       </p>
-                      <p className="text-purple-300 font-semibold text-lg">
+                      <p className="text-purple-300 font-semibold text-xl">
                         {strategy.parameters.find(p => p.name === "Risk Score")?.value || "N/A"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mb-8">
-                  <h2 className="text-xl font-semibold mb-3 text-white/90">Strategy Logic</h2>
-                  <ScrollArea className="h-48 bg-gray-700/20 rounded-lg p-5 border border-gray-700">
-                    <p className="text-sm text-gray-300 leading-relaxed">{strategy.description}</p>
-                  </ScrollArea>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-white/90 flex items-center">
+                    <TrendingUp className="h-5 w-5 text-cyan mr-2" />
+                    Strategy Logic
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-400">Advanced View</span>
+                    <Switch 
+                      checked={showAdvanced} 
+                      onCheckedChange={setShowAdvanced}
+                    />
+                  </div>
                 </div>
 
-                <div className="flex justify-end items-center">
-                  <Button className="bg-gradient-to-r from-[#FF00D4] to-purple-600 hover:from-[#FF00D4]/90 hover:to-purple-600/90 text-white px-6 py-2 rounded-lg shadow-lg">
+                <ScrollArea className="h-48 bg-gradient-to-br from-gray-800/80 to-gray-800/40 rounded-lg p-5 border border-gray-700/50 mb-8">
+                  {showAdvanced ? (
+                    <div className="space-y-4">
+                      <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
+                      <div className="p-3 bg-gray-900/50 rounded border border-gray-700/70">
+                        <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
+                        <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                          <li>Moving Average Crossover (EMA 9/21)</li>
+                          <li>Relative Strength Index (RSI)</li>
+                          <li>Volume Profile Analysis</li>
+                        </ul>
+                      </div>
+                      <div className="p-3 bg-gray-900/50 rounded border border-gray-700/70">
+                        <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
+                        <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                          <li>EMA 9 crosses above EMA 21</li>
+                          <li>RSI moves above 50 from below</li>
+                          <li>Volume confirms price movement</li>
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
+                  )}
+                </ScrollArea>
+
+                <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Award className="h-5 w-5 text-cyan" />
+                    <h3 className="text-lg font-semibold text-white">Performance Highlights</h3>
+                  </div>
+                  <ul className="space-y-2 pl-9">
+                    <li className="text-gray-300 list-disc">Consistent returns in ranging markets</li>
+                    <li className="text-gray-300 list-disc">Optimal for medium-term horizons (1-3 days)</li>
+                    <li className="text-gray-300 list-disc">Manages downside risk with adaptive stop-loss</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-between items-center flex-wrap gap-4">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-charcoalPrimary rounded-full border border-gray-700 mr-3">
+                      <AlertCircle className="h-5 w-5 text-cyan" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Risk Level</p>
+                      <p className="font-medium text-white">Moderate</p>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-6 py-6 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-base"
+                  >
+                    <Play className="h-5 w-5 mr-2" />
                     Deploy Strategy
                   </Button>
                 </div>
               </>
             ) : (
-              <div className="text-center py-10 bg-gray-700/10 rounded-xl border border-gray-700">
-                <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70" />
-                <h3 className="text-xl font-semibold mb-2">Premium Strategy</h3>
-                <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                  <span className="font-medium text-[#FF00D4]">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
+              <div className="text-center py-12 bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-xl border border-gray-700/50">
+                <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70 animate-pulse-slow" />
+                <h3 className="text-xl font-semibold mb-2 text-gradient-to-r from-amber-200 to-amber-400">Premium Strategy</h3>
+                <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                  <span className="font-medium text-cyan">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
                 </p>
                 <Button 
-                  className="bg-gradient-to-r from-[#FF00D4] to-purple-600 hover:from-[#FF00D4]/90 hover:to-purple-600/90 text-white px-8 py-2 rounded-lg shadow-lg"
+                  className="bg-gradient-to-r from-cyan to-blue-500 hover:from-cyan/90 hover:to-blue-500/90 text-charcoalPrimary px-8 py-6 rounded-lg shadow-lg font-medium text-base"
                   onClick={handleUpgrade}
                 >
                   Unlock {strategy.name}
