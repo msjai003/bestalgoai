@@ -9,14 +9,14 @@ export const CTA = () => {
       
       <div className="glass-card p-8 relative z-10 border-cyan/20">
         <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 tracking-tight">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
-          <p className="text-cyan/70 mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
+          <p className="text-charcoalTextSecondary mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
           <Button 
             variant="gradient" 
-            className="w-full py-3 px-6 rounded-xl font-semibold shadow-lg group relative overflow-hidden border border-cyan/30"
+            className="w-full py-3 px-6 rounded-xl font-semibold shadow-lg group relative overflow-hidden"
           >
             <span className="relative z-10 group-hover:animate-micro-bounce inline-block">Get Started Free</span>
-            <span className="absolute inset-0 bg-cyan/10 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+            <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
           </Button>
         </div>
       </div>
