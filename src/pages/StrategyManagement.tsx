@@ -18,13 +18,12 @@ import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { TradingModeFilter } from '@/components/strategy/TradingModeFilter';
 import { useStrategyFiltering } from '@/hooks/strategy/useStrategyFiltering';
-import { Strategy as StrategyType } from '@/hooks/strategy/types';
+import { Strategy } from '@/hooks/strategy/types';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
-// Extended version of the imported Strategy type with additional properties
-interface Strategy extends Omit<StrategyType, 'id'> {
-  id: number;
+// Extend the imported Strategy type for local usage
+interface ExtendedStrategy extends Strategy {
   isCustom: boolean;
   createdBy?: string;
   category?: StrategyCategory;
@@ -35,7 +34,7 @@ const StrategyManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [wishlistedStrategies, setWishlistedStrategies] = useState<Strategy[]>([]);
+  const [wishlistedStrategies, setWishlistedStrategies] = useState<ExtendedStrategy[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   const [hasPremium, setHasPremium] = useState(false);
   
@@ -48,9 +47,8 @@ const StrategyManagement = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
 
-  // For filter mode
-  // Cast the wishlistedStrategies to StrategyType[] to match the expected type for useStrategyFiltering
-  const { selectedMode, handleModeChange } = useStrategyFiltering(wishlistedStrategies as unknown as StrategyType[]);
+  // For filter mode - pass the properly typed array to useStrategyFiltering
+  const { selectedMode, handleModeChange, filteredStrategies } = useStrategyFiltering(wishlistedStrategies);
 
   // Check if user has premium subscription
   useEffect(() => {
@@ -113,11 +111,21 @@ const StrategyManagement = () => {
     const fetchStrategies = async () => {
       // Get strategies from localStorage first
       const storedStrategies = localStorage.getItem('wishlistedStrategies');
-      let localStrategies: Strategy[] = [];
+      let localStrategies: ExtendedStrategy[] = [];
       
       if (storedStrategies) {
         try {
-          localStrategies = JSON.parse(storedStrategies);
+          // Parse and ensure the strategies have the required properties
+          const parsedStrategies = JSON.parse(storedStrategies);
+          localStrategies = parsedStrategies.map((strategy: any) => ({
+            ...strategy,
+            // Ensure required properties exist
+            quantity: strategy.quantity || 0,
+            id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id,
+            // Add other required properties if missing
+            isWishlisted: strategy.isWishlisted ?? true,
+            isLive: strategy.isLive ?? false,
+          }));
         } catch (error) {
           console.error("Error parsing wishlisted strategies:", error);
         }
@@ -133,14 +141,15 @@ const StrategyManagement = () => {
             
           if (error) throw error;
           
-          // Convert Supabase data to match local storage format
-          const supabaseStrategies: Strategy[] = data.map(strategy => ({
-            id: strategy.id,
+          // Convert Supabase data to match the Strategy type
+          const supabaseStrategies: ExtendedStrategy[] = data.map(strategy => ({
+            id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id as number,
             name: strategy.name,
             description: strategy.description || "",
             isCustom: true,
             isLive: false, // Default to paper trading
             isWishlisted: true,
+            quantity: 0, // Add required property
             legs: strategy.legs,
             createdBy: strategy.created_by || user.email,
             performance: typeof strategy.performance === 'object' && strategy.performance !== null
@@ -179,7 +188,7 @@ const StrategyManagement = () => {
     fetchStrategies();
   }, [user]);
 
-  const filterStrategies = (strategies: Strategy[]) => {
+  const filterStrategies = (strategies: ExtendedStrategy[]) => {
     let filteredStrats = strategies;
     
     // Category filter
@@ -572,3 +581,4 @@ const StrategyManagement = () => {
 };
 
 export default StrategyManagement;
+

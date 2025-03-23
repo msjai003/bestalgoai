@@ -11,15 +11,13 @@ export const useStrategyFiltering = (strategies: Strategy[]) => {
     setSelectedMode(mode);
   };
 
-  const filteredStrategies = () => {
-    if (selectedMode === "all") return strategies;
-    
-    return strategies.filter(strategy => {
-      if (selectedMode === "live") return strategy.isLive;
-      if (selectedMode === "paper") return !strategy.isLive;
-      return true;
-    });
-  };
+  // Change this from a function to a computed value
+  const filteredStrategies = strategies.filter(strategy => {
+    if (selectedMode === "all") return true;
+    if (selectedMode === "live") return strategy.isLive;
+    if (selectedMode === "paper") return !strategy.isLive;
+    return true;
+  });
 
   return {
     selectedMode,

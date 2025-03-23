@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -16,11 +17,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useLiveTrading = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [isActive, setIsActive] = useState(false); // Add isActive state
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   
   const dialogState = useStrategyDialogs();
+  // Provide the strategies array to useStrategyFiltering
   const filterState = useStrategyFiltering(strategies);
   
   useEffect(() => {
@@ -33,6 +36,15 @@ export const useLiveTrading = () => {
     
     fetchStrategies();
   }, [user]);
+
+  // Add handleTradingToggle function
+  const handleTradingToggle = () => {
+    setIsActive(prev => !prev);
+    toast({
+      title: isActive ? "Trading Stopped" : "Trading Started",
+      description: isActive ? "All positions have been squared off" : "Your strategies are now actively trading",
+    });
+  };
 
   const handleToggleLiveMode = (id: number, uniqueId?: string, rowId?: string) => {
     const strategy = strategies.find(s => s.id === id && 
@@ -384,8 +396,10 @@ export const useLiveTrading = () => {
 
   return {
     ...filterState,
-    strategies: filterState.filteredStrategies,
+    strategies: filterState.filteredStrategies, // Pass the filtered array directly
     ...dialogState,
+    isActive, // Include isActive state
+    handleTradingToggle, // Include handleTradingToggle function
     handleToggleLiveMode,
     handleOpenQuantityDialog,
     confirmModeChange,
