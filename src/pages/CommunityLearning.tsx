@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -58,21 +59,21 @@ const CommunityLearning = () => {
       <main className="pt-16 pb-20 px-4">
         {/* Hero Section */}
         <section className="mb-8">
-          <div className="bg-gradient-to-br from-[#FF00D4]/10 to-purple-900/20 rounded-2xl p-6 border border-[#FF00D4]/20">
+          <div className="bg-gradient-to-br from-[#00BCD4]/10 to-[#00BCD4]/20 rounded-2xl p-6 border border-[#00BCD4]/20">
             <div className="flex items-center gap-3 mb-4">
-              <Users className="w-6 h-6 text-[#FF00D4]" />
+              <Users className="w-6 h-6 text-[#00BCD4]" />
               <h1 className="text-xl font-bold">Community & Learning</h1>
             </div>
             <p className="text-gray-400 mb-4">Connect with traders and master algo trading</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 w-full sm:w-auto"
+                className="bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 w-full sm:w-auto"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Join Discussion
               </Button>
               <Button 
-                className="bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 w-full sm:w-auto"
+                className="bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 w-full sm:w-auto"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Browse Courses
@@ -84,7 +85,7 @@ const CommunityLearning = () => {
         {/* Create Post Button */}
         <section className="mb-8">
           <Button 
-            className="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700 flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
+            className="w-full bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
             onClick={() => navigate("/create-post")}
           >
             <PlusCircle className="w-5 h-5" />
@@ -99,13 +100,13 @@ const CommunityLearning = () => {
             {learningPaths.map((path) => (
               <div key={path.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex items-center gap-3 mb-3">
-                  <path.icon className="w-5 h-5 text-[#FF00D4]" />
+                  <path.icon className="w-5 h-5 text-[#00BCD4]" />
                   <h3 className="font-semibold">{path.title}</h3>
                 </div>
                 <p className="text-sm text-gray-400 mb-4">{path.description}</p>
                 <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    className="absolute left-0 top-0 h-full bg-[#FF00D4] rounded-full"
+                    className="absolute left-0 top-0 h-full bg-[#00BCD4] rounded-full"
                     style={{ width: `${path.progress}%` }}
                   />
                 </div>
@@ -135,7 +136,7 @@ const CommunityLearning = () => {
                 </div>
                 <p className="text-sm text-gray-400 mb-4">{group.description}</p>
                 <Button 
-                  className="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:bg-gradient-to-r hover:from-pink-700 hover:to-purple-700"
+                  className="w-full bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70"
                 >
                   Join Group
                 </Button>

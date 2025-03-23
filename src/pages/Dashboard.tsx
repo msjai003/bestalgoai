@@ -98,7 +98,7 @@ const Dashboard = () => {
     return (
       <div className="bg-gray-900 min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-[#FF00D4] mx-auto mb-4" />
+          <Loader className="h-8 w-8 animate-spin text-[#00BCD4] mx-auto mb-4" />
           <p className="text-white">Loading dashboard...</p>
         </div>
       </div>
@@ -118,7 +118,7 @@ const Dashboard = () => {
               </div>
               <Link 
                 to="/subscription" 
-                className="text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg text-sm hover:bg-emerald-400/20"
+                className="text-[#00BCD4] bg-[#00BCD4]/10 px-2 py-1 rounded-lg text-sm hover:bg-[#00BCD4]/20"
               >
                 Upgrade
               </Link>
@@ -134,10 +134,10 @@ const Dashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="#FF00D4" 
+                    stroke="#00BCD4" 
                     strokeWidth={2}
-                    dot={{ stroke: '#FF00D4', strokeWidth: 2, r: 4 }}
-                    activeDot={{ stroke: '#FF00D4', strokeWidth: 2, r: 6 }}
+                    dot={{ stroke: '#00BCD4', strokeWidth: 2, r: 4 }}
+                    activeDot={{ stroke: '#00BCD4', strokeWidth: 2, r: 6 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -175,14 +175,14 @@ const Dashboard = () => {
               <QuickActionButton 
                 icon="fa-building" 
                 label="Brokers" 
-                lucideIcon={<Building className="text-[#FF00D4] h-5 w-5" />}
+                lucideIcon={<Building className="text-[#00BCD4] h-5 w-5" />}
               />
             </Link>
             <Link to="/risk-management" className="block">
               <QuickActionButton 
                 icon="fa-shield" 
                 label="Risk" 
-                lucideIcon={<Shield className="text-[#FF00D4] h-5 w-5" />}
+                lucideIcon={<Shield className="text-[#00BCD4] h-5 w-5" />}
               />
             </Link>
           </div>
@@ -205,7 +205,7 @@ const QuickActionButton = ({
   lucideIcon?: React.ReactNode;
 }) => (
   <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3">
-    {lucideIcon || <i className={`fa-solid ${icon} text-[#FF00D4] text-xl mb-2`}></i>}
+    {lucideIcon || <i className={`fa-solid ${icon} text-[#00BCD4] text-xl mb-2`}></i>}
     <span className="text-gray-300 text-xs">{label}</span>
   </div>
 );
