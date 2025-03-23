@@ -39,7 +39,7 @@ export const ConnectionStepActions = ({
     <div className="flex flex-col gap-3">
       <Button
         variant="gradient"
-        className="w-full h-12 rounded-xl font-semibold"
+        className="w-full h-12 rounded-xl font-semibold hover:shadow-cyan/30 hover:shadow-lg hover:scale-[1.01] transition-all duration-300"
         onClick={onSubmit}
         disabled={isSubmitting}
       >
@@ -49,12 +49,12 @@ export const ConnectionStepActions = ({
             <span>Submitting...</span>
           </>
         ) : (
-          getButtonText()
+          <span className="animate-pulse-slow">{getButtonText()}</span>
         )}
       </Button>
       <Button
         variant="outline"
-        className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold"
+        className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold hover:border-cyan/30 transition-all duration-300"
         onClick={onBack}
         disabled={isSubmitting}
       >
