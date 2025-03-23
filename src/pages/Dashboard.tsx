@@ -96,41 +96,22 @@ const Dashboard = () => {
 
   if (user === null) {
     return (
-      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-8 w-8 animate-spin text-[#00BCD4] mx-auto mb-4" />
-          <p className="text-white">Loading dashboard...</p>
+          <p>Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/4 -left-20 w-60 h-60 bg-[#8B5CF6]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-full h-48 bg-gradient-to-t from-black/20 to-transparent"></div>
-        
-        {/* Animated glow effects */}
-        <div className="absolute top-1/3 left-1/4 w-1 h-1 bg-cyan rounded-full animate-pulse opacity-80"></div>
-        <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-cyan rounded-full animate-pulse opacity-80" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-1/4 left-1/2 w-1 h-1 bg-cyan rounded-full animate-pulse opacity-80" style={{ animationDelay: '2s' }}></div>
-        
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC4wMSI+PHBhdGggZD0iTTM2IDM0aDR2MWgtNHYtMXptMC0yaDF2LTJoLTF2MnptMCAydjFoMXYtMWgtMXptLTItMmgxdjFoLTF2LTF6bTIgMGgxdjFoLTF2LTF6bS0yIDJoMXYxaC0xdi0xem0yLTRoMXYxaC0xVjMwem0tMi0yaDF2MWgtMXYtMXptMiAwaDF2MWgtMXYtMXoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
-      </div>
-
+    <div className="relative min-h-screen">
       <Header />
       <main className="relative pt-16 pb-20 z-10">
         <section id="portfolio-overview" className="p-4">
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-800/60 relative overflow-hidden">
-            {/* Card decorative elements */}
-            <div className="absolute -top-16 -right-16 w-32 h-32 bg-cyan/10 rounded-full blur-2xl"></div>
-            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-cyan/5 rounded-full blur-xl"></div>
-            
-            <div className="flex justify-between items-start mb-4 relative z-10">
+          <div className="bg-charcoalSecondary rounded-2xl p-6 shadow-lg border border-gray-800/60">
+            <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
                 <p className="text-2xl font-bold text-white">₹12,45,678</p>
@@ -143,8 +124,7 @@ const Dashboard = () => {
               </Link>
             </div>
             
-            <div className="h-36 my-6 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan/5 to-transparent rounded-lg"></div>
+            <div className="h-36 my-6">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={mockPerformanceData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
@@ -155,7 +135,6 @@ const Dashboard = () => {
                     contentStyle={{ 
                       backgroundColor: 'rgba(17, 17, 17, 0.8)', 
                       borderColor: '#333',
-                      backdropFilter: 'blur(12px)',
                       borderRadius: '0.5rem',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                     }}
@@ -170,8 +149,7 @@ const Dashboard = () => {
                       stroke: '#00BCD4', 
                       strokeWidth: 2, 
                       r: 6, 
-                      fill: '#00BCD4',
-                      className: 'animate-micro-glow'
+                      fill: '#00BCD4'
                     }}
                   />
                 </LineChart>
@@ -237,7 +215,7 @@ const QuickActionButton = ({
   label: string;
   lucideIcon?: React.ReactNode;
 }) => (
-  <div className="flex flex-col items-center bg-gray-800/40 backdrop-blur-md rounded-xl p-3 border border-gray-700/30 shadow-lg hover:bg-gray-800/60 transition-all hover:-translate-y-0.5 hover:shadow-cyan/5">
+  <div className="flex flex-col items-center bg-charcoalSecondary rounded-xl p-3 border border-gray-700/30 shadow-lg hover:bg-gray-800/60 transition-all hover:-translate-y-0.5 hover:shadow-cyan/5">
     <div className="mb-1 w-8 h-8 flex items-center justify-center">
       {lucideIcon || <i className={`fa-solid ${icon} text-[#00BCD4] text-xl`}></i>}
     </div>
