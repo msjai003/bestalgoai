@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon } from "lucide-react";
+import { Heart, Play, StopCircle, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -57,7 +57,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   return (
-    <Card className="pro-card overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/10">
+    <Card className="pro-card overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <CardContent className="p-0">
         <div className="p-5">
           <div className="flex justify-between items-start">
@@ -73,11 +73,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-transform hover:scale-110 active:scale-95 glass`}
+                      className={`${strategy.isWishlisted ? "text-cyan" : "text-gray-400 hover:text-cyan"} transition-transform hover:scale-110 active:scale-95 glass`}
                       onClick={toggleWishlist}
                       disabled={!isAuthenticated}
                     >
-                      <HeartIcon size={20} className={strategy.isWishlisted ? "fill-red-400 animate-micro-bounce" : ""} />
+                      <Heart size={20} className={strategy.isWishlisted ? "fill-cyan animate-micro-bounce" : ""} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -92,14 +92,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} transition-transform hover:scale-110 active:scale-95 glass`}
+                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-cyan")} transition-transform hover:scale-110 active:scale-95 glass`}
                       onClick={toggleLiveMode}
                       disabled={!isAuthenticated}
                     >
                       {!canAccess ? (
-                        <LockIcon size={20} className="animate-soft-rotate" />
+                        <Lock size={20} className="animate-soft-rotate" />
                       ) : (
-                        strategy.isLive ? <StopCircleIcon size={20} className="animate-pulse" /> : <PlayIcon size={20} />
+                        strategy.isLive ? <StopCircle size={20} className="animate-pulse" /> : <Play size={20} />
                       )}
                     </Button>
                   </TooltipTrigger>
@@ -129,7 +129,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
           <div className="glass-card p-3 mt-3 transition-all duration-300 hover:bg-gray-700/30">
             <Button 
-              className="w-full gradient-button hover:from-[#FF00D4]/90 hover:to-purple-600/90 text-white hover:animate-micro-glow"
+              className="w-full gradient-button hover:from-cyan/90 hover:to-cyan/80 text-white hover:animate-micro-glow"
               onClick={handleViewFullStrategy}
             >
               View Full Strategy

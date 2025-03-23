@@ -59,10 +59,10 @@ export const StrategySection = ({
           <Button 
             variant="outline"
             size="sm"
-            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
+            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-cyan"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1 text-green-500" />
+            <Plus className="h-4 w-4 mr-1 text-cyan" />
             {actionButtonText}
           </Button>
         )}
@@ -73,16 +73,16 @@ export const StrategySection = ({
           <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 flex flex-col items-center justify-center">
             <p className="text-gray-400 mb-4">
               {title === "Predefined Strategies" 
-                ? "Click \"Add Strategy\" to view strategies. Tap the ❤️ heart icon to add a strategy to your wishlist." 
+                ? "Click \"Add Strategy\" to view strategies. Tap the heart icon to add a strategy to your wishlist." 
                 : emptyMessage}
             </p>
             {title !== "Predefined Strategies" && showEmptyStateButton && actionButtonText && actionButtonPath && (
               <Button 
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
-                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
+                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-cyan"
               >
-                <Plus className="h-4 w-4 mr-1 text-green-500" />
+                <Plus className="h-4 w-4 mr-1 text-cyan" />
                 Browse Strategies
               </Button>
             )}
@@ -104,7 +104,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-pink-500 hover:text-pink-400"
+                        className="text-cyan hover:text-cyan/80"
                         onClick={() => onDeleteStrategy(strategy.id)}
                         aria-label="Remove from wishlist"
                       >
@@ -121,7 +121,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")}
+                        className={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-cyan")}
                         onClick={() => isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? handlePremiumClick(strategy.id) : onToggleLiveMode(strategy.id)}
                         aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
@@ -151,12 +151,12 @@ export const StrategySection = ({
                     {strategy.performance && (
                       <>
                         <span className="text-gray-400">Win Rate:</span>
-                        <span className="text-green-400">{strategy.performance.winRate}</span>
+                        <span className="text-cyan">{strategy.performance.winRate}</span>
                       </>
                     )}
                   </div>
                   
-                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400')} px-2 py-1 rounded-md text-xs font-medium`}>
+                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-cyan/20 text-cyan')} px-2 py-1 rounded-md text-xs font-medium`}>
                     {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
                   </div>
                 </div>
