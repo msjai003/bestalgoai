@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, UserCircle } from "lucide-react";
@@ -72,11 +73,11 @@ export const ProfilePictureUpload = ({
       />
       <label htmlFor="profilePicture">
         <div className="relative cursor-pointer">
-          <Avatar className="w-20 h-20 border-2 border-gray-700 group-hover:border-pink-500 transition-all">
+          <Avatar className="w-20 h-20 border-2 border-gray-700 group-hover:border-cyan transition-all">
             {currentImageUrl ? (
               <AvatarImage src={currentImageUrl} alt="Profile" className="object-cover" />
             ) : null}
-            <AvatarFallback className="bg-gray-800 text-white">
+            <AvatarFallback className="bg-charcoalSecondary text-white">
               <UserCircle className="w-8 h-8" />
             </AvatarFallback>
           </Avatar>

@@ -30,7 +30,7 @@ export const DialogNavigation = ({
         {Array.from({length: totalPages}).map((_, i) => (
           <div 
             key={i} 
-            className={`w-2 h-2 rounded-full ${currentPage === i+1 ? 'bg-pink-500' : 'bg-gray-600'}`}
+            className={`w-2 h-2 rounded-full ${currentPage === i+1 ? 'bg-cyan' : 'bg-gray-600'}`}
           />
         ))}
       </div>

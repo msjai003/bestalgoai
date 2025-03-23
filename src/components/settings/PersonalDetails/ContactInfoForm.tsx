@@ -22,6 +22,7 @@ export const ContactInfoForm = ({
   onToggleEditMode,
   onFieldChange,
   onSaveChanges,
+  onOpenSecuritySettings,
 }: ContactInfoFormProps) => {
   return (
     <div className="space-y-4">
@@ -50,15 +51,14 @@ export const ContactInfoForm = ({
       <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
         <Button 
           onClick={onSaveChanges}
-          variant="gradient"
-          className="w-full py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
+          className="w-full bg-cyan text-charcoalPrimary py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0 hover:bg-cyan/90"
         >
           Save Changes
         </Button>
         <DialogClose asChild>
           <Button 
             variant="outline" 
-            className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium hover:bg-gray-800/30 hover:text-cyan"
+            className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium hover:bg-charcoalSecondary/30 hover:text-cyan"
           >
             Cancel
           </Button>

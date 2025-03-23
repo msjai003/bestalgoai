@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -126,13 +125,13 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 text-gray-100 p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="bg-charcoalPrimary/95 backdrop-blur-xl border border-gray-700 text-charcoalTextPrimary p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-pink-500" />
+            <Shield className="w-5 h-5 text-cyan" />
             Security Settings {currentPage > 1 && `(${currentPage}/${totalPages})`}
           </DialogTitle>
-          <DialogDescription className="text-gray-400">
+          <DialogDescription className="text-charcoalTextSecondary">
             Manage your account security preferences
           </DialogDescription>
         </DialogHeader>
@@ -145,8 +144,8 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                 <h2 className="text-lg font-semibold">Password Management</h2>
                 
                 <form onSubmit={handlePasswordUpdate} className="space-y-4">
-                  <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="current-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
+                  <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+                    <Label htmlFor="current-password" className="text-xs sm:text-sm text-charcoalTextSecondary block mb-1">
                       Current Password
                     </Label>
                     <div className="pl-4 relative">
@@ -172,8 +171,8 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     </div>
                   </div>
                   
-                  <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="new-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
+                  <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+                    <Label htmlFor="new-password" className="text-xs sm:text-sm text-charcoalTextSecondary block mb-1">
                       New Password
                     </Label>
                     <div className="pl-4 relative">
@@ -199,8 +198,8 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                     </div>
                   </div>
                   
-                  <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
-                    <Label htmlFor="confirm-password" className="text-xs sm:text-sm text-gray-400 block mb-1">
+                  <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+                    <Label htmlFor="confirm-password" className="text-xs sm:text-sm text-charcoalTextSecondary block mb-1">
                       Confirm New Password
                     </Label>
                     <div className="pl-4 relative">
@@ -228,7 +227,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
+                    className="w-full bg-cyan text-charcoalPrimary py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0 hover:bg-cyan/90"
                     disabled={isLoading}
                   >
                     {isLoading ? "Updating..." : "Update Password"}
@@ -241,16 +240,15 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
           {currentPage === 2 && (
             <div className="space-y-4">
               {/* Two-Factor Authentication Section */}
-              <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+              <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
                   <Switch 
                     checked={twoFactorEnabled} 
-                    onCheckedChange={handleTwoFactorToggle} 
-                    className="data-[state=checked]:bg-pink-600"
+                    onCheckedChange={handleTwoFactorToggle}
                   />
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-charcoalTextSecondary">
                   Enable 2FA for additional account security. This adds an extra layer of protection to your account.
                 </p>
               </div>
@@ -258,14 +256,14 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
               <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
                 <Button 
                   onClick={handleSaveChanges}
-                  className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
+                  className="w-full bg-cyan text-charcoalPrimary py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0 hover:bg-cyan/90"
                 >
                   Save Changes
                 </Button>
                 <DialogClose asChild>
                   <Button 
                     variant="outline" 
-                    className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium"
+                    className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium hover:bg-charcoalSecondary/30"
                   >
                     Cancel
                   </Button>
@@ -289,7 +287,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
             {Array.from({length: totalPages}).map((_, i) => (
               <div 
                 key={i} 
-                className={`w-2 h-2 rounded-full ${currentPage === i+1 ? 'bg-pink-500' : 'bg-gray-600'}`}
+                className={`w-2 h-2 rounded-full ${currentPage === i+1 ? 'bg-cyan' : 'bg-gray-600'}`}
               />
             ))}
           </div>

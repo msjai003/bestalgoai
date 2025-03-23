@@ -1,10 +1,9 @@
 
-import { useState } from "react";
+import { ProfilePictureUpload } from "../ProfilePictureUpload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import { ProfilePictureUpload } from "../ProfilePictureUpload";
 
 interface PersonalInfoFormProps {
   fullName: string;
