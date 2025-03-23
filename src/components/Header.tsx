@@ -20,7 +20,6 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   
   const handleLogout = () => {
-    // Navigate to the logout page instead of calling signOut directly
     navigate('/logout');
   };
 
@@ -32,18 +31,17 @@ const Header: React.FC = () => {
     navigate('/registration');
   };
   
-  // External blog link handler
   const handleBlogClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.open(EXTERNAL_BLOG_URL, '_blank', 'noopener,noreferrer');
   };
   
   return (
-    <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-lg border-b border-gray-800/50">
+    <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-lg border-b border-cyan/20">
       <div className="container flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center">
-          <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
-          <span className="text-cyan text-xl ml-2 font-semibold">BestAlgo.ai</span>
+        <Link to="/" className="flex items-center group">
+          <i className="fa-solid fa-chart-line text-cyan text-2xl group-hover:text-cyan/80 transition-colors"></i>
+          <span className="text-cyan text-xl ml-2 font-bold tracking-tight hover:text-cyan/90 transition-colors">BestAlgo.ai</span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-6">
@@ -55,27 +53,27 @@ const Header: React.FC = () => {
           </Link>
           <Link
             to="/about"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
+            className="text-cyan/90 hover:text-cyan transition-colors font-medium"
           >
             About
           </Link>
           <Link
             to="/pricing"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
+            className="text-cyan/90 hover:text-cyan transition-colors font-medium"
           >
             Pricing
           </Link>
           <a
             href={EXTERNAL_BLOG_URL}
             onClick={handleBlogClick}
-            className="text-gray-300 hover:text-cyan transition-colors font-medium flex items-center"
+            className="text-cyan/90 hover:text-cyan transition-colors font-medium flex items-center"
           >
             Blog
-            <ExternalLink className="ml-1 w-3 h-3" />
+            <ExternalLink className="ml-1 w-3 h-3 text-cyan/90" />
           </a>
           <Link
             to="/contact"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
+            className="text-cyan/90 hover:text-cyan transition-colors font-medium"
           >
             Contact
           </Link>
@@ -83,16 +81,16 @@ const Header: React.FC = () => {
             <>
               <Link
                 to="/dashboard"
-                className="text-gray-300 hover:text-cyan transition-colors font-medium"
+                className="text-cyan/90 hover:text-cyan transition-colors font-medium"
               >
                 Dashboard
               </Link>
               <Button 
                 variant="ghost" 
-                className="text-gray-300 hover:text-cyan font-medium" 
+                className="text-cyan/90 hover:text-cyan font-medium" 
                 onClick={handleLogout}
               >
-                <LogOut className="w-4 h-4 mr-2" />
+                <LogOut className="w-4 h-4 mr-2 text-cyan/90" />
                 Logout
               </Button>
             </>
@@ -100,13 +98,13 @@ const Header: React.FC = () => {
             <>
               <Button
                 variant="ghost"
-                className="text-gray-300 hover:text-cyan font-medium"
+                className="text-cyan/90 hover:text-cyan font-medium"
                 onClick={handleSignIn}
               >
                 Sign In
               </Button>
               <Button
-                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors"
+                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors border border-cyan/30"
                 onClick={handleSignUp}
               >
                 Sign Up
@@ -118,13 +116,13 @@ const Header: React.FC = () => {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" className="md:hidden">
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-cyan" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="bg-charcoalPrimary border-l border-gray-700">
+          <SheetContent side="right" className="bg-charcoalPrimary border-l border-cyan/20">
             <SheetHeader className="space-y-2.5">
-              <SheetTitle className="text-cyan">Menu</SheetTitle>
-              <SheetDescription className="text-charcoalTextSecondary">
+              <SheetTitle className="text-cyan font-bold">Menu</SheetTitle>
+              <SheetDescription className="text-cyan/70">
                 Navigate through the application
               </SheetDescription>
             </SheetHeader>
@@ -137,27 +135,27 @@ const Header: React.FC = () => {
               </Link>
               <Link
                 to="/about"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
+                className="text-cyan/90 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 About
               </Link>
               <Link
                 to="/pricing"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
+                className="text-cyan/90 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 Pricing
               </Link>
               <a
                 href={EXTERNAL_BLOG_URL}
                 onClick={handleBlogClick}
-                className="text-gray-300 hover:text-cyan transition-colors flex items-center py-2 font-medium"
+                className="text-cyan/90 hover:text-cyan transition-colors flex items-center py-2 font-medium"
               >
                 Blog
-                <ExternalLink className="ml-1 w-3 h-3" />
+                <ExternalLink className="ml-1 w-3 h-3 text-cyan/90" />
               </a>
               <Link
                 to="/contact"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
+                className="text-cyan/90 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 Contact
               </Link>
@@ -166,16 +164,16 @@ const Header: React.FC = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
+                    className="text-cyan/90 hover:text-cyan transition-colors block py-2 font-medium"
                   >
                     Dashboard
                   </Link>
                   <Button 
                     variant="ghost" 
-                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium" 
+                    className="text-cyan/90 hover:text-cyan justify-start p-2 font-medium" 
                     onClick={handleLogout}
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="w-4 h-4 mr-2 text-cyan/90" />
                     Logout
                   </Button>
                 </>
@@ -183,13 +181,13 @@ const Header: React.FC = () => {
                 <>
                   <Button
                     variant="ghost"
-                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium"
+                    className="text-cyan/90 hover:text-cyan justify-start p-2 font-medium"
                     onClick={handleSignIn}
                   >
                     Sign In
                   </Button>
                   <Button
-                    className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold"
+                    className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold border border-cyan/30"
                     onClick={handleSignUp}
                   >
                     Sign Up
