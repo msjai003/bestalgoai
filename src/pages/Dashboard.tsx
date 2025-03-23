@@ -1,5 +1,8 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,8 +18,6 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -95,7 +96,7 @@ const Dashboard = () => {
 
   if (user === null) {
     return (
-      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
+      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-8 w-8 animate-spin text-[#00BCD4] mx-auto mb-4" />
           <p className="text-white">Loading dashboard...</p>
@@ -105,14 +106,14 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="bg-[#121212] min-h-screen">
+    <div className="bg-gray-900 min-h-screen">
       <Header />
       <main className="pt-16 pb-20">
         <section id="portfolio-overview" className="p-4">
-          <div className="bg-[#1F1F1F] rounded-xl p-6 border border-gray-800">
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 shadow-xl border border-gray-800">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-[#B0B0B0] text-sm">Portfolio Value</h2>
+                <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
                 <p className="text-2xl font-bold text-white">₹12,45,678</p>
               </div>
               <Link 
@@ -144,12 +145,12 @@ const Dashboard = () => {
             
             <div className="flex justify-between text-sm mt-4">
               <div>
-                <p className="text-[#B0B0B0]">Today's P&L</p>
-                <p className="text-[#4CAF50] font-medium">+₹24,500</p>
+                <p className="text-gray-400">Today's P&L</p>
+                <p className="text-emerald-400 font-medium">+₹24,500</p>
               </div>
               <div>
-                <p className="text-[#B0B0B0]">Overall P&L</p>
-                <p className="text-[#4CAF50] font-medium">+₹1,45,500</p>
+                <p className="text-gray-400">Overall P&L</p>
+                <p className="text-emerald-400 font-medium">+₹1,45,500</p>
               </div>
             </div>
           </div>
@@ -186,6 +187,8 @@ const Dashboard = () => {
             </Link>
           </div>
         </section>
+        
+        {/* Recent Strategies section removed as requested */}
       </main>
       <BottomNav />
     </div>
@@ -201,7 +204,7 @@ const QuickActionButton = ({
   label: string;
   lucideIcon?: React.ReactNode;
 }) => (
-  <div className="flex flex-col items-center bg-[#1F1F1F] rounded-xl p-3">
+  <div className="flex flex-col items-center bg-gray-800/30 rounded-xl p-3">
     {lucideIcon || <i className={`fa-solid ${icon} text-[#00BCD4] text-xl mb-2`}></i>}
     <span className="text-gray-300 text-xs">{label}</span>
   </div>
