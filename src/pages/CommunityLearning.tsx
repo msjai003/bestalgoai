@@ -2,19 +2,14 @@
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { 
   BookOpen, 
   Users, 
   MessageSquare, 
   GraduationCap, 
-  PlusCircle,
-  Image
+  PlusCircle
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
 
 const learningPaths = [
   {
@@ -51,97 +46,93 @@ const communityHighlights = [
 ];
 
 const CommunityLearning = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="bg-gray-900 min-h-screen text-white">
+    <div className="bg-[#121212] min-h-screen text-white">
       <Header />
       <main className="pt-16 pb-20 px-4">
+        {/* Categories Scroll */}
+        <div className="py-3 overflow-x-auto whitespace-nowrap mb-4">
+          <div className="inline-flex space-x-3">
+            <button className="px-4 py-2 bg-[#00BCD4] rounded-full text-sm">All Posts</button>
+            <button className="px-4 py-2 bg-[#1F1F1F] rounded-full text-sm text-[#B0B0B0]">Trading Strategies</button>
+            <button className="px-4 py-2 bg-[#1F1F1F] rounded-full text-sm text-[#B0B0B0]">Market Analysis</button>
+            <button className="px-4 py-2 bg-[#1F1F1F] rounded-full text-sm text-[#B0B0B0]">Risk Management</button>
+          </div>
+        </div>
+
         {/* Hero Section */}
         <section className="mb-8">
-          <div className="bg-gradient-to-br from-[#00BCD4]/10 to-[#00BCD4]/20 rounded-2xl p-6 border border-[#00BCD4]/20">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="w-6 h-6 text-[#00BCD4]" />
-              <h1 className="text-xl font-bold">Community & Learning</h1>
+          <div className="bg-[#1F1F1F] rounded-xl p-4">
+            <div className="mb-3">
+              <span className="text-[#00BCD4] text-xs">FEATURED</span>
             </div>
-            <p className="text-gray-400 mb-4">Connect with traders and master algo trading</p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                className="bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 w-full sm:w-auto"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Join Discussion
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 w-full sm:w-auto"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Browse Courses
-              </Button>
+            <h2 className="text-lg font-bold mb-2">AI Trading Strategies: A Complete Guide for 2025</h2>
+            <p className="text-[#B0B0B0] text-sm mb-4">Learn how to leverage AI for better trading decisions and automated strategy execution...</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" className="w-8 h-8 rounded-full" alt="author"/>
+                <div>
+                  <p className="text-sm">Rahul Sharma</p>
+                  <p className="text-xs text-[#B0B0B0]">10 min read</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 text-[#B0B0B0]">
+                <i className="fa-regular fa-heart"></i>
+                <i className="fa-regular fa-bookmark"></i>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Create Post Button */}
         <section className="mb-8">
-          <Button 
-            className="w-full bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70 flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
-            onClick={() => navigate("/create-post")}
+          <Link 
+            to="/create-post"
+            className="w-full bg-[#00BCD4] text-white flex items-center justify-center gap-2 py-6 rounded-xl shadow-lg"
           >
             <PlusCircle className="w-5 h-5" />
             Create New Post
-          </Button>
+          </Link>
         </section>
 
-        {/* Learning Paths */}
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Learning Paths</h2>
-          <div className="space-y-4">
-            {learningPaths.map((path) => (
-              <div key={path.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                <div className="flex items-center gap-3 mb-3">
-                  <path.icon className="w-5 h-5 text-[#00BCD4]" />
-                  <h3 className="font-semibold">{path.title}</h3>
-                </div>
-                <p className="text-sm text-gray-400 mb-4">{path.description}</p>
-                <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute left-0 top-0 h-full bg-[#00BCD4] rounded-full"
-                    style={{ width: `${path.progress}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-2">{path.progress}% completed</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Community Section */}
+        {/* Recent Posts */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Community Highlights</h2>
-          <div className="space-y-4">
-            {communityHighlights.map((group) => (
-              <div key={group.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold mb-1">{group.title}</h3>
-                    <p className="text-sm text-gray-400">{group.members}</p>
-                  </div>
-                  {group.isLive && (
-                    <span className="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                      Live
-                    </span>
-                  )}
+          <h3 className="text-lg font-bold mb-3">Recent Posts</h3>
+          
+          <div className="bg-[#1F1F1F] rounded-xl p-4 mb-3">
+            <div className="flex items-start space-x-3">
+              <div className="flex-1">
+                <span className="text-xs text-[#4CAF50] bg-[#4CAF50]/10 px-2 py-1 rounded">Trading Strategies</span>
+                <h4 className="text-base font-bold my-2">Market Making Strategy Using ML Models</h4>
+                <p className="text-sm text-[#B0B0B0] mb-3">Implementation of machine learning in market making...</p>
+                <div className="flex items-center space-x-4 text-xs text-[#B0B0B0]">
+                  <span>5 min read</span>
+                  <span>•</span>
+                  <span>42 likes</span>
                 </div>
-                <p className="text-sm text-gray-400 mb-4">{group.description}</p>
-                <Button 
-                  className="w-full bg-gradient-to-r from-[#00BCD4] to-[#00BCD4]/80 text-white hover:bg-gradient-to-r hover:from-[#00BCD4]/90 hover:to-[#00BCD4]/70"
-                >
-                  Join Group
-                </Button>
               </div>
-            ))}
+              <div className="w-20 h-20 rounded-lg overflow-hidden">
+                <img className="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/24cfae832e-73acd5c0bef96eeb24cf.png" alt="trading chart" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#1F1F1F] rounded-xl p-4 mb-3">
+            <div className="flex items-start space-x-3">
+              <div className="flex-1">
+                <span className="text-xs text-[#00BCD4] bg-[#00BCD4]/10 px-2 py-1 rounded">Market Analysis</span>
+                <h4 className="text-base font-bold my-2">Nifty 50: Technical Analysis for Q2 2025</h4>
+                <p className="text-sm text-[#B0B0B0] mb-3">In-depth analysis of market trends and predictions...</p>
+                <div className="flex items-center space-x-4 text-xs text-[#B0B0B0]">
+                  <span>8 min read</span>
+                  <span>•</span>
+                  <span>127 likes</span>
+                </div>
+              </div>
+              <div className="w-20 h-20 rounded-lg overflow-hidden">
+                <img className="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/6187763f59-631a34e904b183b423d5.png" alt="stock chart" />
+              </div>
+            </div>
           </div>
         </section>
       </main>
