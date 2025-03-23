@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { StrategyType } from "@/types/strategy";
-import { Code, Lightning } from "lucide-react";
+import { Code, Zap } from "lucide-react";
 
 interface StrategyTypeStepProps {
   strategyType: StrategyType;
@@ -27,7 +27,7 @@ export const StrategyTypeStep = ({
         >
           <div className="flex items-center">
             <div className="bg-charcoalPrimary/30 p-2 rounded-lg mr-3">
-              <Lightning className="h-5 w-5 text-cyan" />
+              <Zap className="h-5 w-5 text-cyan" />
             </div>
             <span>Predefined Strategies</span>
           </div>

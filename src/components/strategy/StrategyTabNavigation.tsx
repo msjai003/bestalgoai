@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Code, Lightning } from "lucide-react";
+import { Code, Zap } from "lucide-react";
 
 interface StrategyTabNavigationProps {
   selectedTab: "predefined" | "custom";
@@ -26,7 +26,7 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
           )}
           onClick={() => onTabChange("predefined")}
         >
-          <Lightning className="h-4 w-4 mr-2" />
+          <Zap className="h-4 w-4 mr-2" />
           Predefined Strategies
         </Button>
         <Button 

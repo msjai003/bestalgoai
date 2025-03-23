@@ -1,6 +1,6 @@
 
 import { WizardStep } from "@/types/strategy-wizard";
-import { FileText, SliderHorizontal, Check, Zap } from "lucide-react";
+import { FileText, SlidersHorizontal, Check, Zap } from "lucide-react";
 
 interface WizardStepIndicatorProps {
   currentStep: WizardStep;
@@ -9,7 +9,7 @@ interface WizardStepIndicatorProps {
 export const WizardStepIndicator = ({ currentStep }: WizardStepIndicatorProps) => {
   const steps = [
     { label: "Setup", icon: Zap },
-    { label: "Strike", icon: SliderHorizontal },
+    { label: "Strike", icon: SlidersHorizontal },
     { label: "Risk", icon: FileText },
     { label: "Review", icon: Check }
   ];
