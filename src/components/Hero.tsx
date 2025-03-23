@@ -41,23 +41,30 @@ export const Hero = () => {
         </div>
       )}
       
-      <div className="relative">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3">
+      <div className="relative max-w-3xl mx-auto text-center">
+        <div className="flex items-center justify-center mb-6">
+          <i className="fa-solid fa-chart-line text-cyan text-3xl mr-3"></i>
+          <h2 className="text-cyan text-3xl font-bold">BestAlgo.ai</h2>
+        </div>
+        
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
           <span className="text-cyan">AI-Powered</span> Algo Trading for Everyone
         </h1>
-        <p className="text-gray-300 mb-6 font-medium">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
+        <p className="text-gray-300 mb-8 text-lg md:text-xl mx-auto max-w-2xl font-medium">
+          Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market
+        </p>
         <Button 
           variant="gradient"
-          className="w-full py-6 rounded-xl font-semibold shadow-lg hover:animate-micro-glow"
+          className="w-full md:w-auto md:px-10 py-6 rounded-xl font-semibold shadow-lg hover:animate-micro-glow"
           onClick={handleStartTrading}
         >
           Start Trading Now
         </Button>
       </div>
-      <div className="mt-8">
-        <div className="premium-frame border-cyan/30">
+      <div className="mt-12 max-w-4xl mx-auto">
+        <div className="premium-frame border-cyan/30 hover:border-cyan/50 transition-all duration-300">
           <img 
-            className="w-full h-48 object-cover transform transition-all duration-700 hover:scale-[1.02] animate-image-float image-hifi"
+            className="w-full h-48 md:h-64 object-cover transform transition-all duration-700 hover:scale-[1.02] animate-image-float image-hifi"
             src="https://storage.googleapis.com/uxpilot-auth.appspot.com/493f062fc3-bc315fc272ae97137e07.png" 
             alt="3D illustration of trading dashboard with charts and graphs, dark theme with purple accents, modern UI"
           />
