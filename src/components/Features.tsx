@@ -1,4 +1,6 @@
 
+import { Card } from "@/components/ui/card";
+
 export const Features = () => {
   const features = [
     {
@@ -22,14 +24,18 @@ export const Features = () => {
   ];
 
   return (
-    <section className="px-4 py-12">
-      <h2 className="text-2xl font-bold mb-6">Why Choose BestAlgo.ai?</h2>
+    <section className="px-4 py-12 bg-charcoalPrimary">
+      <h2 className="text-2xl font-bold mb-6 text-charcoalTextPrimary">Why Choose BestAlgo.ai?</h2>
       <div className="space-y-6">
         {features.map((feature) => (
-          <div key={feature.id} id={feature.id} className="p-4 rounded-xl bg-gray-800/50 border border-gray-700">
-            <i className={`${feature.icon} text-[#FF00D4] text-2xl mb-3`}></i>
-            <h3 className="font-semibold mb-2">{feature.title}</h3>
-            <p className="text-sm text-gray-300">{feature.description}</p>
+          <div 
+            key={feature.id} 
+            id={feature.id} 
+            className="p-5 rounded-xl bg-charcoalSecondary/30 border border-cyan/20 shadow-lg hover:shadow-cyan/10 transition-all duration-300"
+          >
+            <i className={`${feature.icon} text-cyan text-2xl mb-3`}></i>
+            <h3 className="font-semibold mb-2 text-charcoalTextPrimary">{feature.title}</h3>
+            <p className="text-sm text-charcoalTextSecondary">{feature.description}</p>
           </div>
         ))}
       </div>
