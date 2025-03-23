@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,13 +11,12 @@ import { TradingModeConfirmationDialog } from "@/components/strategy/TradingMode
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 import { StrategyFilter } from "@/components/strategy/StrategyFilter";
 import { Button } from "@/components/ui/button";
-import { Star, User, Plus, Play, Trash2 } from 'lucide-react';
+import { Star, User, Plus, Play, Trash2, ChevronRight, Eye } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
 import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
-import { StrategySection } from "@/components/strategy/StrategySection";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -335,9 +335,10 @@ const StrategyManagement = () => {
           <Button 
             variant="outline" 
             size="sm"
-            className="border-[#2A2A2A] text-[#B0B0B0] hover:text-white"
+            className="border-[#2A2A2A] text-cyan hover:text-white"
             onClick={() => navigate('/strategy-selection')}
           >
+            <Plus className="mr-1 h-4 w-4" />
             Add Strategy
           </Button>
         </div>
@@ -361,24 +362,78 @@ const StrategyManagement = () => {
               className="border-[#2A2A2A] text-cyan hover:bg-[#2A2A2A]"
               onClick={() => navigate('/strategy-selection')}
             >
+              <Plus className="mr-1 h-4 w-4" />
               Add Strategy
             </Button>
           </div>
           
           {predefinedWishlistedStrategies.length > 0 ? (
-            <TooltipProvider>
-              <StrategySection 
-                title=""
-                icon={<></>}
-                strategies={predefinedWishlistedStrategies}
-                emptyMessage=""
-                actionButtonText=""
-                actionButtonPath=""
-                onDeleteStrategy={handleDeleteStrategy}
-                onToggleLiveMode={handleToggleLiveMode}
-                showEmptyStateButton={false}
-              />
-            </TooltipProvider>
+            <div className="grid gap-4">
+              {predefinedWishlistedStrategies.map((strategy) => (
+                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-gray-800 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-white font-medium">{strategy.name}</h3>
+                        {strategy.description && (
+                          <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <TooltipProvider>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="text-red-500 hover:text-red-400 h-8 w-8"
+                            onClick={() => handleDeleteStrategy(strategy.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipProvider>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="glass-card p-3">
+                        <p className="text-gray-400 text-xs mb-1">Success Rate</p>
+                        <p className="text-cyan text-lg font-semibold">{strategy.performance?.winRate || "N/A"}</p>
+                      </div>
+                      <div className="glass-card p-3">
+                        <p className="text-gray-400 text-xs mb-1">Avg. Profit</p>
+                        <p className="text-emerald-400 text-lg font-semibold">{strategy.performance?.avgProfit || "N/A"}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400">
+                          {strategy.isLive ? "Live" : "Paper"}
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-blue-500/20 text-cyan border-blue-500/30'} hover:bg-opacity-30`}
+                          onClick={() => handleToggleLiveMode(strategy.id)}
+                        >
+                          <Play className="mr-1 h-4 w-4" />
+                          {strategy.isLive ? "Active" : "Inactive"}
+                        </Button>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(strategy.id)}
+                        className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan glass-card"
+                      >
+                        <Eye className="mr-1 h-4 w-4" />
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
           )}
@@ -396,24 +451,78 @@ const StrategyManagement = () => {
               className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
               onClick={() => navigate('/strategy-builder')}
             >
+              <Plus className="mr-1 h-4 w-4" />
               Create Strategy
             </Button>
           </div>
           
           {customWishlistedStrategies.length > 0 ? (
-            <TooltipProvider>
-              <StrategySection 
-                title=""
-                icon={<></>}
-                strategies={customWishlistedStrategies}
-                emptyMessage=""
-                actionButtonText=""
-                actionButtonPath=""
-                onDeleteStrategy={handleDeleteStrategy}
-                onToggleLiveMode={handleToggleLiveMode}
-                showEmptyStateButton={false}
-              />
-            </TooltipProvider>
+            <div className="grid gap-4">
+              {customWishlistedStrategies.map((strategy) => (
+                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-gray-800 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-white font-medium">{strategy.name}</h3>
+                        {strategy.description && (
+                          <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <TooltipProvider>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="text-red-500 hover:text-red-400 h-8 w-8"
+                            onClick={() => handleDeleteStrategy(strategy.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipProvider>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="glass-card p-3">
+                        <p className="text-gray-400 text-xs mb-1">Success Rate</p>
+                        <p className="text-cyan text-lg font-semibold">{strategy.performance?.winRate || "N/A"}</p>
+                      </div>
+                      <div className="glass-card p-3">
+                        <p className="text-gray-400 text-xs mb-1">Avg. Profit</p>
+                        <p className="text-emerald-400 text-lg font-semibold">{strategy.performance?.avgProfit || "N/A"}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400">
+                          {strategy.isLive ? "Live" : "Paper"}
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-blue-500/20 text-cyan border-blue-500/30'} hover:bg-opacity-30`}
+                          onClick={() => handleToggleLiveMode(strategy.id)}
+                        >
+                          <Play className="mr-1 h-4 w-4" />
+                          {strategy.isLive ? "Active" : "Inactive"}
+                        </Button>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(strategy.id)}
+                        className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan glass-card"
+                      >
+                        <Eye className="mr-1 h-4 w-4" />
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="glass-card p-6 text-center">
               <p className="text-gray-300 mb-4">No custom strategies created yet</p>
@@ -422,6 +531,7 @@ const StrategyManagement = () => {
                 variant="outline"
                 className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
               >
+                <Plus className="mr-1 h-4 w-4" />
                 Create New Strategy
               </Button>
             </div>
