@@ -16,6 +16,8 @@ import { Star, User } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
+import { StrategyList } from "@/components/strategy/StrategyList";
+import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -35,6 +37,12 @@ interface Strategy {
     avgProfit: string;
     drawdown: string;
   };
+  quantity?: number;
+  selectedBroker?: string;
+  brokerUsername?: string;
+  tradeType?: string;
+  successRate?: string;
+  pnl?: string;
 }
 
 const StrategyManagement = () => {
@@ -310,10 +318,19 @@ const StrategyManagement = () => {
     navigate('/strategy-builder');
   };
 
+  const handleViewDetails = (id: number | string) => {
+    navigate(`/strategy-details/${id}`);
+  };
+  
+  const handleEditQuantity = (id: number | string) => {
+    // This would normally open the quantity dialog, but we'll just navigate to live trading for now
+    navigate('/live-trading');
+  };
+
   return (
     <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
-      <main className="pt-16 pb-20 px-4 flex-grow">
+      <main className="pt-16 pb-24 px-4 flex-grow">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-white">Strategy Management</h1>
           <Button 
@@ -333,20 +350,35 @@ const StrategyManagement = () => {
           />
         </div>
 
+        <div className="space-y-6 mb-6">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Predefined Strategies
+          </h3>
+          
+          {predefinedWishlistedStrategies.length > 0 ? (
+            <StrategyList 
+              strategies={predefinedWishlistedStrategies.map(s => ({
+                ...s,
+                id: typeof s.id === 'string' ? parseInt(s.id) : s.id,
+                quantity: s.quantity || 0,
+                selectedBroker: s.selectedBroker || '',
+                brokerUsername: s.brokerUsername || '',
+                tradeType: s.tradeType || 'paper trade',
+                pnl: "+₹0",
+                successRate: s.performance?.winRate || "N/A"
+              }))}
+              onToggleLiveMode={(id) => handleToggleLiveMode(id)}
+              onEditQuantity={(id) => handleEditQuantity(id)}
+              onViewDetails={(id) => handleViewDetails(id)}
+            />
+          ) : (
+            <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
+          )}
+        </div>
+
         <div className="space-y-6">
           <TooltipProvider>
-            <StrategySection 
-              title="Predefined Strategies"
-              icon={<Star className="h-5 w-5 text-yellow-500" />}
-              strategies={predefinedWishlistedStrategies}
-              emptyMessage="No predefined strategies in your wishlist"
-              actionButtonText="Add Strategy"
-              actionButtonPath="/strategy-selection"
-              onDeleteStrategy={handleDeleteStrategy}
-              onToggleLiveMode={handleToggleLiveMode}
-              showEmptyStateButton={true}
-            />
-
             <StrategySection 
               title="Custom Strategies"
               icon={<User className="h-5 w-5 text-blue-500" />}
