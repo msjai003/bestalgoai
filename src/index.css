@@ -36,7 +36,7 @@
   }
 
   body {
-    @apply bg-appBg text-textPrimary antialiased;
+    @apply bg-charcoalPrimary text-charcoalTextPrimary antialiased;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -54,7 +54,7 @@
   }
   
   .premium-card {
-    @apply backdrop-blur-lg border border-accentPink/30 shadow-lg rounded-xl bg-gradient-to-br from-surfaceBg to-surfaceBg/90;
+    @apply backdrop-blur-lg border border-cyan/30 shadow-lg rounded-xl bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/90;
   }
   
   /* Charcoal & Cyan Theme */
@@ -89,7 +89,7 @@
 
 /* Gradient Text and Buttons */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-accentPink to-accentPurple;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan to-cyan/80;
 }
 
 .gradient-text-gold {
@@ -97,11 +97,11 @@
 }
 
 .gradient-button {
-  @apply bg-gradient-to-r from-accentPink to-accentPurple text-white hover:from-accentPink/90 hover:to-accentPurple/90 transition-all duration-300 shadow-md shadow-accentPink/20 hover:shadow-lg hover:shadow-accentPink/30;
+  @apply bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:from-cyan/90 hover:to-cyan/70 transition-all duration-300 shadow-md shadow-cyan/20 hover:shadow-lg hover:shadow-cyan/30;
 }
 
 .gradient-button-subtle {
-  @apply bg-gradient-to-r from-accentPink/80 to-accentPurple/80 text-white hover:from-accentPink/90 hover:to-accentPurple/90 shadow-md shadow-accentPink/10 hover:shadow-lg hover:shadow-accentPink/20 transition-all duration-300;
+  @apply bg-gradient-to-r from-cyan/80 to-cyan/60 text-charcoalPrimary hover:from-cyan/90 hover:to-cyan/70 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300;
 }
 
 .gradient-button-gold {
@@ -114,7 +114,7 @@
 }
 
 .cyan-gradient-button {
-  @apply bg-gradient-to-r from-cyan to-blue-500 text-white hover:from-cyan/90 hover:to-blue-500/90 transition-all duration-300 shadow-md shadow-cyan/20 hover:shadow-lg hover:shadow-cyan/30;
+  @apply bg-gradient-to-r from-cyan to-blue-500 text-charcoalPrimary hover:from-cyan/90 hover:to-blue-500/90 transition-all duration-300 shadow-md shadow-cyan/20 hover:shadow-lg hover:shadow-cyan/30;
 }
 
 .cyan-glow {
@@ -128,12 +128,12 @@
 /* Frame Styles */
 .premium-frame {
   @apply rounded-xl border border-white/10 shadow-lg overflow-hidden;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(233, 30, 99, 0.05), 0 0 15px rgba(233, 30, 99, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(0, 188, 212, 0.05), 0 0 15px rgba(0, 188, 212, 0.1);
 }
 
 .glow-frame {
   @apply rounded-xl border border-white/10 shadow-lg overflow-hidden;
-  box-shadow: 0 5px 20px -5px rgba(233, 30, 99, 0.3);
+  box-shadow: 0 5px 20px -5px rgba(0, 188, 212, 0.3);
 }
 
 .cyan-frame {
@@ -178,7 +178,7 @@
 }
 
 .img-hover-grow:hover {
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.35), 0 0 10px rgba(233, 30, 99, 0.2);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.35), 0 0 10px rgba(0, 188, 212, 0.2);
 }
 
 .img-hover-shine {
@@ -205,19 +205,19 @@
 .image-hifi:hover {
   filter: contrast(1.1) saturate(1.2);
   transform: scale(1.01);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(233, 30, 99, 0.15);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 188, 212, 0.15);
 }
 
 /* Professional card styles */
 .pro-card {
-  @apply bg-gradient-to-br from-surfaceBg via-surfaceBg to-appBg rounded-xl border border-gray-700/50 shadow-xl;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(233, 30, 99, 0.05);
+  @apply bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl border border-gray-700/50 shadow-xl;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(0, 188, 212, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .pro-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(233, 30, 99, 0.15);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 188, 212, 0.15);
 }
 
 .charcoal-card {

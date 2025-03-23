@@ -54,16 +54,16 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         // Original custom colors
-        appBg: "#1A1B1F",      // Primary Background
-        surfaceBg: "#2B2D33",  // Secondary Background / Surfaces
-        accentPink: "#E91E63", // Accent Color (Pink/Magenta)
-        accentPurple: "#9C27B0", // Accent Color (Purple Option)
+        appBg: "#121212",      // Updated to Charcoal Primary Background
+        surfaceBg: "#1F1F1F",  // Updated to Charcoal Secondary Background
+        accentPink: "#00BCD4", // Updated to Cyan
+        accentPurple: "#00BCD4", // Also updated to Cyan for consistency
         textPrimary: "#FFFFFF", // Primary Text
         textSecondary: "#B0B0B0", // Secondary Text
-        success: "#00C853",    // Success / Positive
-        danger: "#FF5252",     // Danger / Negative
+        success: "#4CAF50",    // Updated Success
+        danger: "#F44336",     // Updated Danger
         
-        // New Charcoal & Cyan theme
+        // Charcoal & Cyan theme
         charcoalPrimary: "#121212",   // Primary Background
         charcoalSecondary: "#1F1F1F", // Secondary Background
         cyan: "#00BCD4",              // Accent (Cyan)
