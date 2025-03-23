@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 
 interface RegistrationStepTwoProps {
   formData: {
@@ -26,15 +26,17 @@ const RegistrationStepTwo: React.FC<RegistrationStepTwoProps> = ({ formData, han
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label className="text-sm text-gray-300">Password <span className="text-red-400">*</span></Label>
+      <div>
+        <Label htmlFor="password" className="text-gray-300 mb-2 block">Password <span className="text-charcoalDanger">*</span></Label>
         <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
           <Input
+            id="password"
             type={showPassword ? "text" : "password"}
             placeholder="Create a secure password"
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
-            className="w-full bg-gray-800/50 border-gray-700 rounded-lg p-3 text-white h-12 pr-10"
+            className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
             required
           />
           <button 
@@ -47,15 +49,18 @@ const RegistrationStepTwo: React.FC<RegistrationStepTwoProps> = ({ formData, han
           </button>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label className="text-sm text-gray-300">Confirm Password <span className="text-red-400">*</span></Label>
+      
+      <div>
+        <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password <span className="text-charcoalDanger">*</span></Label>
         <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
           <Input
+            id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm your password"
             value={formData.confirmPassword}
             onChange={(e) => handleChange('confirmPassword', e.target.value)}
-            className="w-full bg-gray-800/50 border-gray-700 rounded-lg p-3 text-white h-12 pr-10"
+            className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
             required
           />
           <button 

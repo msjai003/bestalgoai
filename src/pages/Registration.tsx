@@ -6,7 +6,7 @@ import { useRegistration } from '@/hooks/useRegistration';
 import { validateStep1, validateStep2, validateStep3 } from '@/utils/registrationValidation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 import RegistrationHeader from '@/components/registration/RegistrationHeader';
 import ProgressIndicator from '@/components/registration/ProgressIndicator';
 import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
@@ -50,88 +50,100 @@ const Registration = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <RegistrationHeader handleBack={handleBack} />
+    <div className="bg-charcoalPrimary min-h-screen flex flex-col">
+      <div className="pt-4 px-4">
+        <RegistrationHeader handleBack={handleBack} />
 
-      <section className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
-        <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
+        <section className="mb-6">
+          <h1 className="text-xl font-bold text-white mb-2">Create Your Account</h1>
+          <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
 
-        <div className="mt-6">
-          <ProgressIndicator step={step} totalSteps={3} />
-        </div>
-      </section>
+          <div className="mt-6">
+            <ProgressIndicator step={step} totalSteps={3} />
+          </div>
+        </section>
 
-      {connectionError && (
-        <Alert className="bg-red-900/30 border-red-800 mb-6" variant="destructive">
-          <AlertTriangle className="h-4 w-4 text-red-400" />
-          <AlertDescription className="text-red-200 ml-2">
-            {connectionError}
+        <Alert className="bg-cyan/10 border-cyan/30 mb-6" variant="info">
+          <Info className="h-4 w-4 text-cyan" />
+          <AlertDescription className="text-gray-200 ml-2">
+            {step === 1 && "Fill in your personal details to get started with your trading journey."}
+            {step === 2 && "Create a secure password to protect your account."}
+            {step === 3 && "Tell us about your trading experience to help us personalize your experience."}
           </AlertDescription>
         </Alert>
-      )}
 
-      {browserIssue?.browser === 'Firefox' && showFirefoxHelp && <FirefoxHelpSection />}
-
-      <form onSubmit={handleStepSubmit} className="space-y-6">
-        {step === 1 && (
-          <RegistrationStepOne 
-            formData={formData} 
-            handleChange={(field, value) => handleChange(field as any, value)} 
-          />
-        )}
-        
-        {step === 2 && (
-          <RegistrationStepTwo 
-            formData={formData} 
-            handleChange={(field, value) => handleChange(field as any, value)} 
-          />
-        )}
-        
-        {step === 3 && (
-          <RegistrationStepThree 
-            formData={formData} 
-            handleChange={(field, value) => handleChange(field as any, value)} 
-          />
+        {connectionError && (
+          <Alert className="bg-charcoalDanger/10 border-charcoalDanger/30 mb-6" variant="destructive">
+            <AlertTriangle className="h-4 w-4 text-charcoalDanger" />
+            <AlertDescription className="text-red-200 ml-2">
+              {connectionError}
+            </AlertDescription>
+          </Alert>
         )}
 
-        <div className="flex gap-4">
-          {step > 1 && (
-            <Button
-              type="button"
-              onClick={handleBack}
-              variant="outline"
-              className="flex-1 bg-transparent border-gray-700 text-white"
-              disabled={isLoading}
-            >
-              Back
-            </Button>
+        {browserIssue?.browser === 'Firefox' && showFirefoxHelp && <FirefoxHelpSection />}
+
+        <form onSubmit={handleStepSubmit} className="space-y-6 premium-card p-6 border border-cyan/30">
+          {step === 1 && (
+            <RegistrationStepOne 
+              formData={formData} 
+              handleChange={(field, value) => handleChange(field as any, value)} 
+            />
           )}
           
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
-          >
-            {isLoading 
-              ? 'Processing...' 
-              : step < 3 
-                ? 'Continue' 
-                : 'Create Account'}
-          </Button>
-        </div>
+          {step === 2 && (
+            <RegistrationStepTwo 
+              formData={formData} 
+              handleChange={(field, value) => handleChange(field as any, value)} 
+            />
+          )}
+          
+          {step === 3 && (
+            <RegistrationStepThree 
+              formData={formData} 
+              handleChange={(field, value) => handleChange(field as any, value)} 
+            />
+          )}
 
-        <div className="text-center mt-6">
-          <p className="text-gray-400 text-sm">
-            Already have an account? 
-            <Link to="/auth" className="text-[#FF00D4] ml-2 hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </form>
+          <div className="flex gap-4">
+            {step > 1 && (
+              <Button
+                type="button"
+                onClick={handleBack}
+                variant="secondary"
+                className="flex-1 bg-charcoalSecondary/50 border-gray-700 text-white"
+                disabled={isLoading}
+              >
+                Back
+              </Button>
+            )}
+            
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="gradient"
+              className="flex-1 py-6 rounded-xl shadow-lg"
+            >
+              {isLoading 
+                ? 'Processing...' 
+                : step < 3 
+                  ? 'Continue' 
+                  : 'Create Account'}
+            </Button>
+          </div>
 
-      <RegistrationFooter />
+          <div className="text-center mt-6">
+            <p className="text-gray-400 text-sm">
+              Already have an account? 
+              <Link to="/auth" className="text-cyan ml-2 hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+        
+        <RegistrationFooter />
+      </div>
     </div>
   );
 };

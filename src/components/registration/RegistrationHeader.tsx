@@ -9,21 +9,23 @@ interface RegistrationHeaderProps {
 
 const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ handleBack }) => {
   return (
-    <header className="flex items-center justify-between mb-8">
-      <button 
-        onClick={handleBack}
-        className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110"
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <Link to="/" className="flex items-center group">
-        <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl group-hover:animate-micro-bounce"></i>
-        <span className="text-white text-xl ml-2 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#FF00D4] after:scale-x-0 after:origin-right after:transition-transform group-hover:after:scale-x-100 group-hover:after:origin-left">BestAlgo.ai</span>
-      </Link>
-      <Link to="/auth" className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110">
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={handleBack}
+          className="text-gray-400"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <Link to="/" className="flex items-center">
+          <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
+          <span className="text-white text-xl ml-2">BestAlgo.ai</span>
+        </Link>
+      </div>
+      <Link to="/" className="text-gray-400">
         <X className="h-5 w-5" />
       </Link>
-    </header>
+    </div>
   );
 };
 
