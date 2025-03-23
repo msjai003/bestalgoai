@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Strategy } from './types';
 
 type TradingModeFilter = "all" | "live" | "paper";
@@ -11,13 +11,15 @@ export const useStrategyFiltering = (strategies: Strategy[]) => {
     setSelectedMode(mode);
   };
 
-  // Change this from a function to a computed value
-  const filteredStrategies = strategies.filter(strategy => {
-    if (selectedMode === "all") return true;
-    if (selectedMode === "live") return strategy.isLive;
-    if (selectedMode === "paper") return !strategy.isLive;
-    return true;
-  });
+  // Using useMemo to compute filtered strategies
+  const filteredStrategies = useMemo(() => {
+    return strategies.filter(strategy => {
+      if (selectedMode === "all") return true;
+      if (selectedMode === "live") return strategy.isLive;
+      if (selectedMode === "paper") return !strategy.isLive;
+      return true;
+    });
+  }, [strategies, selectedMode]);
 
   return {
     selectedMode,
