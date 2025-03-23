@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,31 +18,17 @@ import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { TradingModeFilter } from '@/components/strategy/TradingModeFilter';
 import { useStrategyFiltering } from '@/hooks/strategy/useStrategyFiltering';
+import { Strategy as StrategyType } from '@/hooks/strategy/types';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
-interface Strategy {
-  id: number | string;
-  name: string;
-  description: string;
+// Extended version of the imported Strategy type with additional properties
+interface Strategy extends Omit<StrategyType, 'id'> {
+  id: number;
   isCustom: boolean;
-  isLive: boolean;
-  isWishlisted: boolean;
-  isPaid?: boolean;
-  legs?: any;
   createdBy?: string;
   category?: StrategyCategory;
-  performance: {
-    winRate: string;
-    avgProfit: string;
-    drawdown: string;
-  };
-  quantity?: number;
-  selectedBroker?: string;
-  brokerUsername?: string;
-  tradeType?: string;
-  successRate?: string;
-  pnl?: string;
+  legs?: any;
 }
 
 const StrategyManagement = () => {
@@ -56,15 +41,16 @@ const StrategyManagement = () => {
   
   // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [currentStrategyId, setCurrentStrategyId] = useState<number | string | null>(null);
+  const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
+  const [strategyToDelete, setStrategyToDelete] = useState<{id: number, name: string} | null>(null);
 
   // For filter mode
-  const { selectedMode, handleModeChange } = useStrategyFiltering(wishlistedStrategies);
+  // Cast the wishlistedStrategies to StrategyType[] to match the expected type for useStrategyFiltering
+  const { selectedMode, handleModeChange } = useStrategyFiltering(wishlistedStrategies as unknown as StrategyType[]);
 
   // Check if user has premium subscription
   useEffect(() => {
@@ -222,7 +208,7 @@ const StrategyManagement = () => {
     wishlistedStrategies.filter(strategy => strategy.isCustom)
   );
 
-  const handleDeleteStrategy = (id: number | string) => {
+  const handleDeleteStrategy = (id: number) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -275,7 +261,7 @@ const StrategyManagement = () => {
     setStrategyToDelete(null);
   };
 
-  const handleToggleLiveMode = (id: number | string) => {
+  const handleToggleLiveMode = (id: number) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -333,11 +319,11 @@ const StrategyManagement = () => {
     navigate('/strategy-builder');
   };
 
-  const handleViewDetails = (id: number | string) => {
+  const handleViewDetails = (id: number) => {
     navigate(`/strategy-details/${id}`);
   };
   
-  const handleEditQuantity = (id: number | string) => {
+  const handleEditQuantity = (id: number) => {
     navigate('/live-trading');
   };
 

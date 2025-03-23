@@ -1,36 +1,29 @@
 
-import { useState } from "react";
-import { Strategy } from "./types";
+import { useState } from 'react';
+import { Strategy } from './types';
+
+type TradingModeFilter = "all" | "live" | "paper";
 
 export const useStrategyFiltering = (strategies: Strategy[]) => {
-  const [timeFrame, setTimeFrame] = useState("1D");
-  const [isActive, setIsActive] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<"all" | "live" | "paper">("all");
+  const [selectedMode, setSelectedMode] = useState<TradingModeFilter>("all");
 
-  const handleTradingToggle = () => {
-    setIsActive(!isActive);
-  };
-
-  const handleModeChange = (mode: "all" | "live" | "paper") => {
+  const handleModeChange = (mode: TradingModeFilter) => {
     setSelectedMode(mode);
   };
 
-  const filteredStrategies = selectedMode === "all" 
-    ? strategies 
-    : strategies.filter(strategy => 
-        (selectedMode === "live" && strategy.isLive) || 
-        (selectedMode === "paper" && !strategy.isLive)
-      );
+  const filteredStrategies = () => {
+    if (selectedMode === "all") return strategies;
+    
+    return strategies.filter(strategy => {
+      if (selectedMode === "live") return strategy.isLive;
+      if (selectedMode === "paper") return !strategy.isLive;
+      return true;
+    });
+  };
 
   return {
-    timeFrame,
-    setTimeFrame,
-    isActive,
-    setIsActive,
     selectedMode,
-    setSelectedMode,
-    filteredStrategies,
-    handleTradingToggle,
-    handleModeChange
+    handleModeChange,
+    filteredStrategies
   };
 };
