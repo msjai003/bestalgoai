@@ -19,6 +19,7 @@ const ColorTest = () => {
         <Tabs defaultValue="current" className="mb-10" onValueChange={setActiveTab}>
           <TabsList className="mb-6 bg-surfaceBg border border-white/10">
             <TabsTrigger value="current">Current Theme</TabsTrigger>
+            <TabsTrigger value="charcoal">Charcoal & Cyan</TabsTrigger>
             <TabsTrigger value="modern">Modern Dark</TabsTrigger>
             <TabsTrigger value="professional">Light Professional</TabsTrigger>
             <TabsTrigger value="gradient">Gradient Modern</TabsTrigger>
@@ -98,6 +99,82 @@ const ColorTest = () => {
                 <h3 className="text-xl font-bold mb-2">Glass Card</h3>
                 <p className="text-textSecondary mb-4">Card with glassmorphism effect.</p>
                 <Button variant="outline" className="border-white/20 hover:bg-white/10">Glass Button</Button>
+              </div>
+            </section>
+          </TabsContent>
+
+          {/* Charcoal & Cyan Theme */}
+          <TabsContent value="charcoal">
+            <section className="mb-10">
+              <h2 className="text-2xl font-semibold mb-4 cyan-gradient-text">Charcoal & Cyan Theme</h2>
+              
+              <h3 className="text-xl font-semibold mb-4">Background Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="p-6 rounded-lg bg-charcoalPrimary border border-white/10">
+                  <h3 className="font-medium mb-2">Primary Background</h3>
+                  <p className="text-charcoalTextSecondary">#121212</p>
+                </div>
+                <div className="p-6 rounded-lg bg-charcoalSecondary border border-white/10">
+                  <h3 className="font-medium mb-2">Secondary Background</h3>
+                  <p className="text-charcoalTextSecondary">#1F1F1F</p>
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-4">Accent Colors</h3>
+              <div className="p-6 rounded-lg bg-charcoalSecondary border border-cyan/30 mb-6">
+                <h3 className="font-medium mb-2 text-cyan">Accent (Cyan)</h3>
+                <p className="text-charcoalTextSecondary">#00BCD4</p>
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-4">Text Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="p-6 rounded-lg bg-charcoalSecondary border border-white/10">
+                  <h3 className="font-medium mb-2 text-charcoalTextPrimary">Primary Text</h3>
+                  <p className="text-charcoalTextSecondary">#FFFFFF</p>
+                </div>
+                <div className="p-6 rounded-lg bg-charcoalSecondary border border-white/10">
+                  <h3 className="font-medium mb-2">Secondary Text</h3>
+                  <p className="text-charcoalTextSecondary">#B0B0B0</p>
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-4">Status Colors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="p-6 rounded-lg bg-charcoalSecondary border border-charcoalSuccess/30">
+                  <h3 className="font-medium mb-2 text-charcoalSuccess">Success</h3>
+                  <p className="text-charcoalTextSecondary">#4CAF50</p>
+                </div>
+                <div className="p-6 rounded-lg bg-charcoalSecondary border border-charcoalDanger/30">
+                  <h3 className="font-medium mb-2 text-charcoalDanger">Danger</h3>
+                  <p className="text-charcoalTextSecondary">#F44336</p>
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-4">UI Components</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="charcoal-card p-6">
+                  <h3 className="text-xl font-bold mb-2">Basic Card</h3>
+                  <p className="text-charcoalTextSecondary mb-4">A simple card with the Charcoal theme.</p>
+                  <Button className="bg-cyan text-black hover:bg-cyan/90">Cyan Button</Button>
+                </div>
+                
+                <div className="bg-charcoalSecondary border border-cyan/20 rounded-xl p-6 cyan-glow">
+                  <h3 className="text-xl font-bold mb-2 cyan-gradient-text">Glow Card</h3>
+                  <p className="text-charcoalTextSecondary mb-4">Card with cyan glow effect.</p>
+                  <Button className="cyan-gradient-button">Gradient Button</Button>
+                </div>
+              </div>
+              
+              <div className="charcoal-glass p-6 rounded-xl mb-6">
+                <h3 className="text-xl font-bold mb-2">Glass Card</h3>
+                <p className="text-charcoalTextSecondary mb-4">Card with glassmorphism effect.</p>
+                <Button variant="outline" className="cyan-outline">Outline Button</Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Button className="bg-cyan text-black hover:bg-cyan/90">Primary Button</Button>
+                <Button variant="outline" className="cyan-outline">Outline Button</Button>
+                <Button className="bg-charcoalSecondary border border-white/10 hover:bg-charcoalSecondary/80">Secondary Button</Button>
               </div>
             </section>
           </TabsContent>
@@ -213,9 +290,12 @@ const ColorTest = () => {
           <Card className="glass-card">
             <CardContent className="pt-6">
               <h3 className="text-lg font-medium mb-4">Which theme do you prefer?</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <Button variant="outline" className={`border-white/20 ${activeTab === 'current' ? 'bg-accentPink/20 border-accentPink/50' : 'hover:bg-white/10'}`}>
                   Current Theme
+                </Button>
+                <Button variant="outline" className={`border-white/20 ${activeTab === 'charcoal' ? 'bg-cyan/20 border-cyan/50' : 'hover:bg-white/10'}`}>
+                  Charcoal & Cyan
                 </Button>
                 <Button variant="outline" className={`border-white/20 ${activeTab === 'modern' ? 'bg-accentPink/20 border-accentPink/50' : 'hover:bg-white/10'}`}>
                   Modern Dark

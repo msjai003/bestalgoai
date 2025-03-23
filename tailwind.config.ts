@@ -53,7 +53,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Adding custom colors as per the new design system
+        // Original custom colors
         appBg: "#1A1B1F",      // Primary Background
         surfaceBg: "#2B2D33",  // Secondary Background / Surfaces
         accentPink: "#E91E63", // Accent Color (Pink/Magenta)
@@ -62,6 +62,15 @@ export default {
         textSecondary: "#B0B0B0", // Secondary Text
         success: "#00C853",    // Success / Positive
         danger: "#FF5252",     // Danger / Negative
+        
+        // New Charcoal & Cyan theme
+        charcoalPrimary: "#121212",   // Primary Background
+        charcoalSecondary: "#1F1F1F", // Secondary Background
+        cyan: "#00BCD4",              // Accent (Cyan)
+        charcoalTextPrimary: "#FFFFFF",    // Primary Text
+        charcoalTextSecondary: "#B0B0B0",  // Secondary Text
+        charcoalSuccess: "#4CAF50",        // Success
+        charcoalDanger: "#F44336",         // Danger
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -91,9 +100,9 @@ export default {
           "100%": { transform: "scale(1)" }
         },
         "micro-glow": {
-          "0%": { boxShadow: "0 0 0 rgba(255, 0, 212, 0)" },
-          "50%": { boxShadow: "0 0 10px rgba(255, 0, 212, 0.5)" },
-          "100%": { boxShadow: "0 0 0 rgba(255, 0, 212, 0)" }
+          "0%": { boxShadow: "0 0 0 rgba(0, 188, 212, 0)" },
+          "50%": { boxShadow: "0 0 10px rgba(0, 188, 212, 0.5)" },
+          "100%": { boxShadow: "0 0 0 rgba(0, 188, 212, 0)" }
         },
         "image-float": {
           "0%, 100%": { transform: "translateY(0)" },
