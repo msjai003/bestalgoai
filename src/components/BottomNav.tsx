@@ -9,7 +9,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 w-full z-50 pb-safe">
-      <div className="h-16 bg-gradient-to-t from-gray-900 to-gray-900/95 backdrop-blur-md border-t border-gray-800/40 shadow-lg">
+      <div className="h-16 bg-black/60 backdrop-blur-lg border-t border-gray-800/50">
         <div className="flex justify-around h-full items-center px-4">
           <NavItem 
             to="/dashboard" 
@@ -66,18 +66,18 @@ const NavItem = ({
       <div className={cn(
         "flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all",
         isActive 
-          ? "bg-[#00BCD4]/10 shadow-[0_0_8px_rgba(0,188,212,0.3)]" 
+          ? "bg-transparent" 
           : "bg-transparent"
       )}>
         <i className={cn(
           "fa-solid", 
           icon, 
-          isActive ? "text-[#00BCD4]" : "text-[#B0B0B0]"
+          isActive ? "text-cyan" : "text-gray-300 hover:text-cyan transition-colors"
         )}></i>
       </div>
       <span className={cn(
         "text-[10px] font-medium tracking-wide",
-        isActive ? "text-[#00BCD4]" : "text-[#B0B0B0]"
+        isActive ? "text-cyan" : "text-gray-300"
       )}>
         {label}
       </span>
