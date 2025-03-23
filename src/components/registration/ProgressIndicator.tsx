@@ -8,19 +8,19 @@ interface ProgressIndicatorProps {
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ step, totalSteps }) => {
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2 glass-card p-2 rounded-full">
         {Array.from({ length: totalSteps }).map((_, index) => (
           <div
             key={index}
-            className={`w-1/3 h-1 rounded-full ${
-              index + 1 <= step ? 'bg-cyan' : 'bg-gray-700'
-            } ${index + 1 !== totalSteps ? 'mr-1' : ''}`}
+            className={`h-1.5 rounded-full ${
+              index + 1 <= step ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-700'
+            } ${index + 1 !== totalSteps ? 'flex-1 mr-1' : 'flex-1'}`}
           />
         ))}
       </div>
-      <p className="text-gray-400 text-sm">Step {step} of {totalSteps}</p>
-    </>
+      <p className="text-gray-400 text-sm text-center">Step {step} of {totalSteps}</p>
+    </div>
   );
 };
 

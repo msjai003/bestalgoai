@@ -52,7 +52,14 @@ const StrategySelection = () => {
       <TooltipProvider>
         <main className="pt-14 pb-16 flex-1 overflow-hidden">
           <section className="px-4 py-2 h-full flex flex-col">
-            <h1 className="text-2xl font-bold text-white mb-3">Strategy Selection</h1>
+            {/* Header with premium card styling */}
+            <div className="premium-card p-5 mb-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/20 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
+              <div className="relative z-10">
+                <h1 className="text-2xl font-bold text-white mb-2">Strategy Selection</h1>
+                <p className="text-gray-400">Choose from predefined strategies or create your own custom strategy</p>
+              </div>
+            </div>
             
             <StrategyTabNavigation
               selectedTab={selectedTab}

@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
 import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
+import { TradingModeFilter } from '@/components/strategy/TradingModeFilter';
+import { useStrategyFiltering } from '@/hooks/strategy/useStrategyFiltering';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -60,6 +62,9 @@ const StrategyManagement = () => {
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
+
+  // For filter mode
+  const { selectedMode, handleModeChange } = useStrategyFiltering(wishlistedStrategies);
 
   // Check if user has premium subscription
   useEffect(() => {
@@ -189,13 +194,24 @@ const StrategyManagement = () => {
   }, [user]);
 
   const filterStrategies = (strategies: Strategy[]) => {
-    if (selectedFilter === "all") {
-      return strategies;
+    let filteredStrats = strategies;
+    
+    // Category filter
+    if (selectedFilter !== "all") {
+      filteredStrats = filteredStrats.filter(strategy => 
+        strategy.category === selectedFilter
+      );
     }
-    // Only filter by category if it exists
-    return strategies.filter(strategy => 
-      strategy.category === selectedFilter
-    );
+    
+    // Trading mode filter
+    if (selectedMode !== "all") {
+      filteredStrats = filteredStrats.filter(strategy => 
+        (selectedMode === "live" && strategy.isLive) || 
+        (selectedMode === "paper" && !strategy.isLive)
+      );
+    }
+    
+    return filteredStrats;
   };
 
   const predefinedWishlistedStrategies = filterStrategies(
@@ -322,7 +338,6 @@ const StrategyManagement = () => {
   };
   
   const handleEditQuantity = (id: number | string) => {
-    // This would normally open the quantity dialog, but we'll just navigate to live trading for now
     navigate('/live-trading');
   };
 
@@ -330,26 +345,37 @@ const StrategyManagement = () => {
     <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
       <main className="pt-16 pb-24 px-4 flex-grow">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-white">Strategy Management</h1>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="border-[#2A2A2A] text-cyan hover:text-white"
-            onClick={() => navigate('/strategy-selection')}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            Add Strategy
-          </Button>
+        {/* Header section with glass effect */}
+        <div className="premium-card p-5 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/20 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
+          <div className="relative z-10">
+            <h1 className="text-2xl font-bold text-white mb-2">Strategy Management</h1>
+            <p className="text-gray-400 mb-4">Manage your trading strategies and settings</p>
+            
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <StrategyFilter 
+                selectedFilter={selectedFilter}
+                onFilterChange={setSelectedFilter}
+              />
+              
+              <TradingModeFilter
+                selectedMode={selectedMode}
+                onModeChange={handleModeChange}
+              />
+              
+              <Button 
+                variant="gradient"
+                size="sm"
+                className="ml-auto"
+                onClick={() => navigate('/strategy-selection')}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Add Strategy
+              </Button>
+            </div>
+          </div>
         </div>
         
-        <div className="mb-6">
-          <StrategyFilter 
-            selectedFilter={selectedFilter}
-            onFilterChange={setSelectedFilter}
-          />
-        </div>
-
         <div className="space-y-6 mb-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -359,7 +385,7 @@ const StrategyManagement = () => {
             <Button 
               variant="outline" 
               size="sm"
-              className="border-[#2A2A2A] text-cyan hover:bg-[#2A2A2A]"
+              className="border-[#2A2A2A] bg-cyan/10 text-cyan hover:bg-cyan/20"
               onClick={() => navigate('/strategy-selection')}
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -370,7 +396,7 @@ const StrategyManagement = () => {
           {predefinedWishlistedStrategies.length > 0 ? (
             <div className="grid gap-4">
               {predefinedWishlistedStrategies.map((strategy) => (
-                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-gray-800 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
+                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-cyan/20 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-3">
@@ -385,7 +411,7 @@ const StrategyManagement = () => {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="text-red-500 hover:text-red-400 h-8 w-8"
+                            className="text-red-500 hover:text-red-400 h-8 w-8 glass hover:bg-gray-700/20"
                             onClick={() => handleDeleteStrategy(strategy.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -413,7 +439,7 @@ const StrategyManagement = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-blue-500/20 text-cyan border-blue-500/30'} hover:bg-opacity-30`}
+                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30`}
                           onClick={() => handleToggleLiveMode(strategy.id)}
                         >
                           <Play className="mr-1 h-4 w-4" />
@@ -446,9 +472,8 @@ const StrategyManagement = () => {
               Custom Strategies
             </h3>
             <Button 
-              variant="outline" 
+              variant="gradient"
               size="sm"
-              className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
               onClick={() => navigate('/strategy-builder')}
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -459,7 +484,7 @@ const StrategyManagement = () => {
           {customWishlistedStrategies.length > 0 ? (
             <div className="grid gap-4">
               {customWishlistedStrategies.map((strategy) => (
-                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-gray-800 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
+                <div key={strategy.id} className="premium-card p-5 relative z-10 overflow-hidden border border-cyan/20 rounded-lg hover:shadow-lg hover:shadow-cyan/10 transition-all duration-300">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-3">
@@ -474,7 +499,7 @@ const StrategyManagement = () => {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="text-red-500 hover:text-red-400 h-8 w-8"
+                            className="text-red-500 hover:text-red-400 h-8 w-8 glass hover:bg-gray-700/20"
                             onClick={() => handleDeleteStrategy(strategy.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -502,7 +527,7 @@ const StrategyManagement = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-blue-500/20 text-cyan border-blue-500/30'} hover:bg-opacity-30`}
+                          className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30`}
                           onClick={() => handleToggleLiveMode(strategy.id)}
                         >
                           <Play className="mr-1 h-4 w-4" />
@@ -524,12 +549,12 @@ const StrategyManagement = () => {
               ))}
             </div>
           ) : (
-            <div className="glass-card p-6 text-center">
+            <div className="premium-card p-6 text-center border border-cyan/20">
               <p className="text-gray-300 mb-4">No custom strategies created yet</p>
               <Button 
                 onClick={() => navigate('/strategy-builder')}
-                variant="outline"
-                className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
+                variant="gradient"
+                className="w-full"
               >
                 <Plus className="mr-1 h-4 w-4" />
                 Create New Strategy
