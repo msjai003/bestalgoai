@@ -351,10 +351,20 @@ const StrategyManagement = () => {
         </div>
 
         <div className="space-y-6 mb-6">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
-            Predefined Strategies
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              Predefined Strategies
+            </h3>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-[#2A2A2A] text-cyan hover:bg-[#2A2A2A]"
+              onClick={() => navigate('/strategy-selection')}
+            >
+              Add Strategy
+            </Button>
+          </div>
           
           {predefinedWishlistedStrategies.length > 0 ? (
             <StrategyList 
@@ -378,19 +388,49 @@ const StrategyManagement = () => {
         </div>
 
         <div className="space-y-6">
-          <TooltipProvider>
-            <StrategySection 
-              title="Custom Strategies"
-              icon={<User className="h-5 w-5 text-blue-500" />}
-              strategies={customWishlistedStrategies}
-              emptyMessage="No custom strategies in your wishlist"
-              actionButtonText="Create Strategy"
-              actionButtonPath="/strategy-builder"
-              onDeleteStrategy={handleDeleteStrategy}
-              onToggleLiveMode={handleToggleLiveMode}
-              showEmptyStateButton={false}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <User className="h-5 w-5 text-cyan" />
+              Custom Strategies
+            </h3>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
+              onClick={() => navigate('/strategy-builder')}
+            >
+              Create Strategy
+            </Button>
+          </div>
+          
+          {customWishlistedStrategies.length > 0 ? (
+            <StrategyList 
+              strategies={customWishlistedStrategies.map(s => ({
+                ...s,
+                id: s.id,
+                quantity: s.quantity || 0,
+                selectedBroker: s.selectedBroker || '',
+                brokerUsername: s.brokerUsername || '',
+                tradeType: s.tradeType || 'paper trade',
+                pnl: "+₹0",
+                successRate: s.performance?.winRate || "N/A"
+              }))}
+              onToggleLiveMode={(id) => handleToggleLiveMode(id)}
+              onEditQuantity={(id) => handleEditQuantity(id)}
+              onViewDetails={(id) => handleViewDetails(id)}
             />
-          </TooltipProvider>
+          ) : (
+            <div className="glass-card p-6 text-center">
+              <p className="text-gray-300 mb-4">No custom strategies created yet</p>
+              <Button 
+                onClick={() => navigate('/strategy-builder')}
+                variant="outline"
+                className="bg-gray-800/50 hover:bg-gray-700 border border-gray-700 text-cyan"
+              >
+                Create New Strategy
+              </Button>
+            </div>
+          )}
         </div>
       </main>
       
