@@ -9,7 +9,7 @@ import { BottomNav } from '@/components/BottomNav';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-900 text-white pb-16">
+    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary pb-16">
       <Header />
       <main className="pt-16">
         <Hero />
