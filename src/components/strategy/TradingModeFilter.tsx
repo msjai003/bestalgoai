@@ -15,7 +15,7 @@ export const TradingModeFilter = ({
   onModeChange,
 }: TradingModeFilterProps) => {
   return (
-    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-gray-800/30 rounded-lg border border-gray-700/50">
+    <div className="inline-flex flex-wrap items-center gap-1.5 p-1 bg-charcoalSecondary/30 rounded-lg border border-gray-700/50">
       <Button
         variant="outline"
         size="sm"
@@ -23,8 +23,8 @@ export const TradingModeFilter = ({
         className={cn(
           "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "all"
-            ? "bg-gray-700 text-white shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-charcoalSecondary text-white shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
         )}
       >
         All
@@ -36,8 +36,8 @@ export const TradingModeFilter = ({
         className={cn(
           "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "live"
-            ? "bg-green-900/50 text-green-400 shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-charcoalSuccess/20 text-charcoalSuccess shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
         )}
       >
         Live Trading
@@ -49,8 +49,8 @@ export const TradingModeFilter = ({
         className={cn(
           "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "paper"
-            ? "bg-blue-900/50 text-blue-400 shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-gray-700/50"
+            ? "bg-cyan/20 text-cyan shadow-sm"
+            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
         )}
       >
         Paper Trading

@@ -24,7 +24,8 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+            variant="gradient"
+            className="w-full h-12 rounded-xl font-semibold"
             disabled={true}
           >
             Continue
@@ -42,7 +43,8 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+            variant="gradient"
+            className="w-full h-12 rounded-xl font-semibold"
             onClick={handleCredentialsSubmit}
           >
             Continue to Settings
@@ -60,7 +62,8 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+            variant="gradient"
+            className="w-full h-12 rounded-xl font-semibold"
             onClick={handleSettingsSubmit}
           >
             Connect Broker
@@ -78,7 +81,8 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+            variant="gradient"
+            className="w-full h-12 rounded-xl font-semibold"
             onClick={() => navigate("/settings")}
           >
             Continue

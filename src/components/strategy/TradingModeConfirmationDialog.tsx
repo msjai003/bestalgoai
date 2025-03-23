@@ -28,7 +28,7 @@ export const TradingModeConfirmationDialog = ({
 }: TradingModeConfirmationDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white">
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -43,14 +43,13 @@ export const TradingModeConfirmationDialog = ({
         <DialogFooter className="flex gap-2 sm:justify-end">
           <Button 
             variant="secondary" 
-            className="bg-gray-700 hover:bg-gray-600 text-gray-200"
+            className="text-gray-200"
             onClick={onCancel}
           >
             Cancel
           </Button>
           <Button 
-            variant={targetMode === "live" ? "destructive" : "default"}
-            className={targetMode === "live" ? "" : "bg-blue-600 hover:bg-blue-700"}
+            variant={targetMode === "live" ? "destructive" : "cyan"}
             onClick={onConfirm}
           >
             {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}

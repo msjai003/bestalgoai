@@ -26,9 +26,9 @@ export const Hero = () => {
   };
   
   return (
-    <section className="relative px-4 py-12 bg-gradient-to-b from-gray-900 via-gray-900 to-black">
+    <section className="relative px-4 py-12 bg-gradient-to-b from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary">
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-10"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-pink-500/5 to-purple-500/5"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
       
       {/* Top header with sign in/sign up buttons aligned to the right */}
       {!user && (
@@ -42,7 +42,8 @@ export const Hero = () => {
               Sign In
             </Button>
             <Button
-              className="gradient-button rounded-lg hover:animate-micro-scale"
+              variant="gradient"
+              className="rounded-lg hover:animate-micro-scale"
               onClick={handleSignUp}
             >
               Sign Up
@@ -57,7 +58,8 @@ export const Hero = () => {
         </h1>
         <p className="text-gray-300 mb-6">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
         <Button 
-          className="w-full py-6 gradient-button rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity hover:animate-micro-glow"
+          variant="gradient"
+          className="w-full py-6 rounded-xl font-semibold shadow-lg hover:animate-micro-glow"
           onClick={handleStartTrading}
         >
           Start Trading Now

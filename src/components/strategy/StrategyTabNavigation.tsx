@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface StrategyTabNavigationProps {
   selectedTab: "predefined" | "custom";
@@ -11,28 +13,28 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="bg-gray-800/50 p-1 rounded-xl mb-3">
+    <div className="bg-charcoalSecondary/50 p-1 rounded-xl mb-3">
       <div className="grid grid-cols-2 gap-1">
-        <button 
-          className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
-            selectedTab === "predefined" 
-              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
-              : "text-gray-400"
-          }`}
+        <Button 
+          variant={selectedTab === "predefined" ? "cyan" : "ghost"}
+          className={cn(
+            "py-2 px-4 rounded-lg text-sm font-medium text-center",
+            selectedTab !== "predefined" && "text-gray-400"
+          )}
           onClick={() => onTabChange("predefined")}
         >
           Predefined Strategies
-        </button>
-        <button 
-          className={`py-2 px-4 rounded-lg text-sm font-medium text-center ${
-            selectedTab === "custom" 
-              ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white" 
-              : "text-gray-400"
-          }`}
+        </Button>
+        <Button 
+          variant={selectedTab === "custom" ? "cyan" : "ghost"}
+          className={cn(
+            "py-2 px-4 rounded-lg text-sm font-medium text-center",
+            selectedTab !== "custom" && "text-gray-400"
+          )}
           onClick={() => onTabChange("custom")}
         >
           Custom Strategy
-        </button>
+        </Button>
       </div>
     </div>
   );

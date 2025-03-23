@@ -49,7 +49,7 @@ export const QuantityInputDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white">
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl">Enter Trading Quantity</DialogTitle>
           <DialogDescription className="text-gray-400">
@@ -70,7 +70,7 @@ export const QuantityInputDialog = ({
                       type="number"
                       step={75}
                       min={75}
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-charcoalSecondary/70 border-gray-600 text-white"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
@@ -84,15 +84,14 @@ export const QuantityInputDialog = ({
               <Button 
                 type="button"
                 variant="secondary" 
-                className="bg-gray-700 hover:bg-gray-600 text-gray-200"
+                className="text-gray-200"
                 onClick={onCancel}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit"
-                variant="default"
-                className="bg-green-600 hover:bg-green-700"
+                variant="cyan"
               >
                 OK
               </Button>
