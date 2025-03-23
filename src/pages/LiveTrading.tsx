@@ -38,9 +38,9 @@ const LiveTrading = () => {
   } = useLiveTrading();
 
   return (
-    <div className="bg-[#121212] min-h-screen">
+    <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
-      <main className="pt-16 pb-24 px-4">
+      <main className="pt-16 pb-24 px-4 flex-grow">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-white">Live Trading</h1>
           <Button 
