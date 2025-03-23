@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -247,7 +246,7 @@ const StrategyManagement = () => {
         const { error } = await supabase
           .from('custom_strategies')
           .delete()
-          .eq('id', strategyToDelete.id)
+          .eq('id', String(strategyToDelete.id))
           .eq('user_id', user.id);
           
         if (error) throw error;
