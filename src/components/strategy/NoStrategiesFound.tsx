@@ -9,7 +9,7 @@ interface NoStrategiesFoundProps {
 export const NoStrategiesFound: React.FC<NoStrategiesFoundProps> = ({ onAddStrategies }) => {
   return (
     <div className="bg-charcoalSecondary/30 rounded-xl p-6 border border-gray-700 shadow-lg text-center">
-      <p className="text-gray-400 mb-4">No strategies found in your wishlist.</p>
+      <p className="text-charcoalTextSecondary mb-4">No strategies found in your wishlist.</p>
       <Button
         onClick={onAddStrategies}
         variant="cyan"

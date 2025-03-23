@@ -17,19 +17,19 @@ const BrokerIntegration = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
+    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
+      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-charcoalSecondary z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Button 
             variant="ghost" 
             className="p-2"
             onClick={() => navigate('/settings')}
           >
-            <ChevronLeft className="w-5 h-5 text-gray-300" />
+            <ChevronLeft className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
           <h1 className="text-lg font-semibold">Select Your Broker</h1>
           <Button variant="ghost" className="p-2">
-            <HelpCircle className="w-5 h-5 text-gray-300" />
+            <HelpCircle className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
         </div>
       </header>
@@ -38,17 +38,17 @@ const BrokerIntegration = () => {
         <BrokerList brokers={brokers} onSelectBroker={handleSelectBroker} />
       </main>
 
-      <section className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
+      <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-charcoalSecondary">
         <div className="flex flex-col gap-3">
           <Button
-            className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl font-semibold"
+            className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-xl font-semibold"
             disabled={!selectedBrokerId}
           >
             Continue
           </Button>
           <Button
             variant="outline"
-            className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold"
+            className="w-full h-12 border border-charcoalSecondary bg-transparent text-charcoalTextPrimary rounded-xl font-semibold"
             onClick={() => navigate("/settings")}
           >
             Cancel

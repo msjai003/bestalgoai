@@ -13,7 +13,7 @@ export const StrategyTypeStep = ({
 }: StrategyTypeStepProps) => {
   return (
     <div className="space-y-6">
-      <h3 className="text-white font-medium">Choose Strategy Type</h3>
+      <h3 className="text-charcoalTextPrimary font-medium">Choose Strategy Type</h3>
       <div className="flex flex-col space-y-4">
         <Button
           variant={strategyType === "predefined" ? "gradient" : "secondary"}
