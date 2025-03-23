@@ -27,10 +27,6 @@ const Header: React.FC = () => {
   const handleSignIn = () => {
     navigate('/auth');
   };
-
-  const handleSignUp = () => {
-    navigate('/registration');
-  };
   
   // External blog link handler
   const handleBlogClick = (e: React.MouseEvent) => {
@@ -97,21 +93,12 @@ const Header: React.FC = () => {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                className="text-gray-300 hover:text-cyan font-medium"
-                onClick={handleSignIn}
-              >
-                Sign In
-              </Button>
-              <Button
-                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors"
-                onClick={handleSignUp}
-              >
-                Sign Up
-              </Button>
-            </>
+            <Button
+              className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors"
+              onClick={handleSignIn}
+            >
+              Sign In
+            </Button>
           )}
         </nav>
 
@@ -180,21 +167,12 @@ const Header: React.FC = () => {
                   </Button>
                 </>
               ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium"
-                    onClick={handleSignIn}
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold"
-                    onClick={handleSignUp}
-                  >
-                    Sign Up
-                  </Button>
-                </>
+                <Button
+                  className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold"
+                  onClick={handleSignIn}
+                >
+                  Sign In
+                </Button>
               )}
             </div>
           </SheetContent>

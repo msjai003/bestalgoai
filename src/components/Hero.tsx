@@ -12,16 +12,12 @@ export const Hero = () => {
   const handleSignIn = () => {
     navigate('/auth');
   };
-
-  const handleSignUp = () => {
-    navigate('/registration');
-  };
   
   const handleStartTrading = () => {
     if (user) {
       navigate('/dashboard');
     } else {
-      navigate('/registration');
+      navigate('/auth');
     }
   };
   
@@ -30,23 +26,16 @@ export const Hero = () => {
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
       
-      {/* Top header with sign in/sign up buttons aligned to the right */}
+      {/* Top header with sign in button aligned to the right */}
       {!user && (
         <div className="relative flex justify-end mb-10">
           <div className="flex space-x-3">
             <Button
-              variant="ghost"
-              className="text-gray-300 hover:text-cyan border border-gray-700/50 hover:border-cyan/30 hover:animate-micro-scale glass font-medium"
+              variant="gradient"
+              className="rounded-lg hover:animate-micro-scale font-semibold"
               onClick={handleSignIn}
             >
               Sign In
-            </Button>
-            <Button
-              variant="gradient"
-              className="rounded-lg hover:animate-micro-scale font-semibold"
-              onClick={handleSignUp}
-            >
-              Sign Up
             </Button>
           </div>
         </div>
