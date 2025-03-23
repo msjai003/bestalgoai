@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ConnectionStep } from "@/types/broker";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Link2 } from "lucide-react";
 
 interface ConnectionStepActionsProps {
   connectionStep: ConnectionStep;
@@ -39,7 +39,7 @@ export const ConnectionStepActions = ({
     <div className="flex flex-col gap-3">
       <Button
         variant="gradient"
-        className="w-full h-12 rounded-xl font-semibold hover:shadow-cyan/30 hover:shadow-lg hover:scale-[1.01] transition-all duration-300"
+        className="w-full h-12 rounded-xl font-semibold bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg transition-all duration-300"
         onClick={onSubmit}
         disabled={isSubmitting}
       >
@@ -49,15 +49,23 @@ export const ConnectionStepActions = ({
             <span>Submitting...</span>
           </>
         ) : (
-          <span className="animate-pulse-slow">{getButtonText()}</span>
+          <>
+            {connectionStep === "settings" ? (
+              <Link2 className="mr-2 h-4 w-4" />
+            ) : (
+              <ArrowRight className="mr-2 h-4 w-4" />
+            )}
+            <span>{getButtonText()}</span>
+          </>
         )}
       </Button>
       <Button
         variant="outline"
-        className="w-full h-12 border border-gray-700 bg-transparent text-white rounded-xl font-semibold hover:border-cyan/30 transition-all duration-300"
+        className="w-full h-12 border border-gray-700 bg-charcoalSecondary text-white rounded-xl font-semibold hover:border-cyan/30 transition-all duration-300"
         onClick={onBack}
         disabled={isSubmitting}
       >
+        <ArrowLeft className="mr-2 h-4 w-4" />
         {getBackButtonText()}
       </Button>
     </div>

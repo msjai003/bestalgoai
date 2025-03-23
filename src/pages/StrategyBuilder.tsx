@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
@@ -10,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { WizardFormData } from "@/types/strategy-wizard";
-import { v4 as uuidv4 } from "uuid";
+import { ArrowLeft, ChevronRight, Rocket } from "lucide-react";
 
 const addStrategyToWishlist = (
   strategyName: string, 
@@ -129,65 +130,66 @@ const StrategyBuilder = () => {
 
   const renderConfirmationDialog = () => (
     <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-      <DialogContent className="bg-gray-800 text-white max-w-[90%] max-h-[90vh]">
+      <DialogContent className="bg-charcoalPrimary text-white max-w-[90%] max-h-[90vh] border border-gray-700">
         <DialogHeader>
-          <DialogTitle>Confirm Strategy Setup</DialogTitle>
+          <DialogTitle className="text-center text-lg font-semibold">Confirm Strategy Setup</DialogTitle>
         </DialogHeader>
         <ScrollArea className="mt-4 max-h-[60vh] pr-4">
           <div className="space-y-4">
-            <div>
-              <h4 className="font-medium text-gray-300">Strategy Type</h4>
+            <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+              <h4 className="font-medium text-cyan mb-1">Strategy Type</h4>
               <p>{strategyType === "predefined" ? "Predefined Strategy" : "Custom Strategy"}</p>
             </div>
             {strategyType === "predefined" && selectedCategory && (
-              <div>
-                <h4 className="font-medium text-gray-300">Category</h4>
+              <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+                <h4 className="font-medium text-cyan mb-1">Category</h4>
                 <p className="capitalize">{selectedCategory}</p>
               </div>
             )}
-            <div>
-              <h4 className="font-medium text-gray-300">Strategy Name</h4>
+            <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+              <h4 className="font-medium text-cyan mb-1">Strategy Name</h4>
               <p>{formData.strategy}</p>
             </div>
-            <div>
-              <h4 className="font-medium text-gray-300">Description</h4>
+            <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+              <h4 className="font-medium text-cyan mb-1">Description</h4>
               <p className="text-sm">{formData.strategyDescription}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium text-gray-300">Position</h4>
+              <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+                <h4 className="font-medium text-cyan mb-1">Position</h4>
                 <p>{formData.position}</p>
+              </div>
+              <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+                <h4 className="font-medium text-cyan mb-1">Broker</h4>
+                <p>{formData.broker}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium text-gray-300">Target</h4>
+              <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+                <h4 className="font-medium text-cyan mb-1">Target</h4>
                 <p>{formData.target}%</p>
               </div>
-              <div>
-                <h4 className="font-medium text-gray-300">Stop Loss</h4>
+              <div className="bg-charcoalSecondary/30 p-3 rounded-lg">
+                <h4 className="font-medium text-cyan mb-1">Stop Loss</h4>
                 <p>{formData.stoploss}%</p>
               </div>
             </div>
-            <div>
-              <h4 className="font-medium text-gray-300">Broker</h4>
-              <p>{formData.broker}</p>
-            </div>
           </div>
         </ScrollArea>
-        <DialogFooter className="mt-6">
+        <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
           <Button
             variant="outline"
             onClick={() => setShowConfirmation(false)}
-            className="bg-gray-700 border-gray-600 text-white"
+            className="w-full sm:w-auto bg-charcoalSecondary border-gray-600 text-white hover:bg-charcoalSecondary/70"
           >
             Edit
           </Button>
           <Button
             onClick={handleConfirmStrategy}
-            className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+            className="w-full sm:w-auto bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg"
           >
-            Confirm & Create
+            <Rocket className="mr-2 h-4 w-4" />
+            Deploy Strategy
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -220,10 +222,11 @@ const StrategyBuilder = () => {
             {strategyType === "predefined" && formData.strategy && (
               <div className="mt-6">
                 <Button 
-                  className="w-full h-14 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg font-semibold"
                   onClick={handleCreateStrategy}
                 >
-                  Execute Algorithm Strategy
+                  <Rocket className="mr-2 h-5 w-5" />
+                  Deploy Algorithm Strategy
                 </Button>
               </div>
             )}
@@ -235,33 +238,34 @@ const StrategyBuilder = () => {
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen">
-      <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
+    <div className="bg-charcoalPrimary min-h-screen">
+      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Link to="/dashboard" className="p-2">
-            <i className="fa-solid fa-arrow-left text-gray-300"></i>
+            <ArrowLeft className="h-5 w-5 text-gray-300" />
           </Link>
           <h1 className="text-white text-lg font-medium">Strategy Builder</h1>
-          <button className="p-2">
-            <i className="fa-solid fa-gear text-gray-300"></i>
-          </button>
+          <div className="w-8"></div> {/* Spacer for alignment */}
         </div>
       </header>
 
-      <main className="pt-16 pb-20 px-4">
-        <div className="bg-gray-800/50 p-1 rounded-xl mt-4 mb-6">
+      <main className="pt-20 pb-20 px-4">
+        <div className="bg-charcoalSecondary/50 p-1 rounded-xl mb-6">
           <div className="grid grid-cols-2 gap-1">
-            <Link to="/backtest" className="text-gray-400 py-2 px-4 rounded-lg text-sm font-medium text-center">
+            <Link 
+              to="/backtest" 
+              className="text-gray-400 py-2 px-4 rounded-lg text-sm font-medium text-center transition-colors hover:text-white"
+            >
               Backtesting
             </Link>
-            <button className="bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white py-2 px-4 rounded-lg text-sm font-medium">
+            <button className="bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary py-2 px-4 rounded-lg text-sm font-medium">
               Strategy Builder
             </button>
           </div>
         </div>
 
         <section className="space-y-4 mb-6">
-          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 shadow-lg">
+          <div className="bg-charcoalSecondary/30 rounded-xl p-5 border border-gray-700/50 shadow-lg">
             <div className="space-y-6">
               {renderStepContent()}
             </div>
