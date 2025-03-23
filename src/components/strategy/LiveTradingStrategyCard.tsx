@@ -21,8 +21,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onViewDetails
 }) => {
   return (
-    <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-[#FF00D4]/10">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-500/10 to-purple-600/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
+    <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -49,7 +49,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   </div>
                 </div>
               </TooltipTrigger>
-              <TooltipContent className="bg-gray-800 text-white border-gray-700">
+              <TooltipContent className="bg-charcoalSecondary text-white border-gray-700">
                 <p>Based on latest backtest results</p>
               </TooltipContent>
             </Tooltip>
@@ -82,7 +82,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               {strategy.brokerUsername && (
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 text-sm">Account</span>
-                  <Badge variant="outline" className="text-blue-400 border-blue-400 bg-blue-400/10">
+                  <Badge variant="outline" className="text-cyan border-cyan bg-cyan/10">
                     {strategy.brokerUsername}
                   </Badge>
                 </div>
@@ -93,7 +93,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           {strategy.tradeType && (
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-300 text-sm">Trade Type</span>
-              <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400 bg-emerald-400/10' : 'text-blue-400 border-blue-400 bg-blue-400/10'}`}>
+              <Badge variant="outline" className={`${strategy.tradeType === 'live trade' ? 'text-emerald-400 border-emerald-400 bg-emerald-400/10' : 'text-cyan border-cyan bg-cyan/10'}`}>
                 {strategy.tradeType}
               </Badge>
             </div>
@@ -102,7 +102,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-gray-300 text-sm">Status</span>
             <div className="flex items-center gap-2">
-              <span className={strategy.isLive ? "text-emerald-400" : "text-blue-400"}>
+              <span className={strategy.isLive ? "text-emerald-400" : "text-cyan"}>
                 {strategy.isLive ? "Active" : "Inactive"}
               </span>
               {strategy.isLive && (
@@ -120,14 +120,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <Switch
               checked={strategy.isLive}
               onCheckedChange={onToggleLiveMode}
-              className={`${strategy.isLive ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-gray-600'}`}
+              className={`${strategy.isLive ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-600'}`}
             />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={onViewDetails}
-            className="text-green-400 bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-green-300 flex-1 glass-card"
+            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan flex-1 glass-card"
           >
             View Details
             <ChevronRight className="ml-1 h-4 w-4" />

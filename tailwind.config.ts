@@ -53,7 +53,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Original custom colors
+        // Applying the Charcoal & Cyan theme color codes
         appBg: "#121212",      // Updated to Charcoal Primary Background
         surfaceBg: "#1F1F1F",  // Updated to Charcoal Secondary Background
         accentPink: "#00BCD4", // Updated to Cyan
