@@ -60,7 +60,7 @@ const NavItem = ({
       to={to} 
       className={cn(
         "flex flex-col items-center w-16 transition-all duration-300",
-        isActive ? "scale-105 animate-micro-bounce" : "opacity-80 hover:opacity-100"
+        isActive ? "scale-100" : "opacity-80 hover:opacity-100"
       )}
     >
       <div className={cn(
@@ -72,7 +72,7 @@ const NavItem = ({
         <i className={cn(
           "fa-solid", 
           icon, 
-          isActive ? "text-cyan animate-pulse-slow" : "text-gray-300 hover:text-cyan transition-colors"
+          isActive ? "text-cyan" : "text-gray-300 hover:text-cyan transition-colors"
         )}></i>
       </div>
       <span className={cn(
