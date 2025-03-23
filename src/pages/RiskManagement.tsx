@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
@@ -47,7 +46,6 @@ const RiskManagement = () => {
   const [notifyPush, setNotifyPush] = useState(true);
   const [notifySMS, setNotifySMS] = useState(false);
   
-  // Calculate risk score based on settings (simplified for demo)
   const calculateRiskScore = () => {
     const exposureScore = maxExposure > 30 ? 3 : maxExposure > 20 ? 2 : 1;
     const drawdownScore = dailyDrawdown > 7 ? 3 : dailyDrawdown > 4 ? 2 : 1;
@@ -74,7 +72,6 @@ const RiskManagement = () => {
 
   return (
     <div className="bg-charcoalPrimary min-h-screen text-white">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-charcoalSecondary/95 backdrop-blur-lg border-b border-cyan/20 z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Link to="/settings" className="p-2 hover:text-cyan transition-colors">
@@ -97,7 +94,6 @@ const RiskManagement = () => {
       </header>
 
       <main className="pt-20 pb-24 px-4 space-y-6 max-w-3xl mx-auto">
-        {/* Risk Overview & Indicators */}
         <section className="premium-card p-5 rounded-xl">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <BarChart4 className="w-5 h-5 text-cyan" />
@@ -141,7 +137,6 @@ const RiskManagement = () => {
           </div>
         </section>
 
-        {/* Risk Settings */}
         <section className="premium-card p-5 rounded-xl">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-cyan" />
@@ -175,7 +170,6 @@ const RiskManagement = () => {
           </div>
         </section>
 
-        {/* Drawdown Controls */}
         <section className="premium-card p-5 rounded-xl">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <TrendingDown className="w-5 h-5 text-cyan" />
@@ -239,7 +233,6 @@ const RiskManagement = () => {
           </div>
         </section>
 
-        {/* Stop-Loss / Take-Profit */}
         <section className="premium-card p-5 rounded-xl">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <i className="fa-solid fa-shield-alt text-cyan mr-1"></i>
@@ -291,26 +284,35 @@ const RiskManagement = () => {
           </div>
         </section>
 
-        {/* Volatility Filters */}
         <section className="premium-card p-5 rounded-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <i className="fa-solid fa-wind text-cyan"></i>
               <h2 className="text-lg font-semibold">Volatility Filters</h2>
             </div>
-            <Switch 
-              checked={volatilityFilter}
-              onCheckedChange={setVolatilityFilter}
-              className="data-[state=checked]:bg-cyan"
-            />
+            <div className="relative">
+              <div className="absolute -inset-1 bg-cyan/20 rounded-full blur-sm"></div>
+              <Switch 
+                checked={volatilityFilter}
+                onCheckedChange={setVolatilityFilter}
+                className="relative data-[state=checked]:bg-cyan"
+              />
+            </div>
           </div>
           
           <p className="text-sm text-gray-400 mt-2">
             Automatically adjust position sizes during high market volatility periods
           </p>
+          
+          {volatilityFilter && (
+            <div className="mt-4 p-3 bg-charcoalPrimary/50 rounded-lg border border-cyan/20">
+              <p className="text-xs text-white/80">
+                When enabled, your position sizes will be automatically reduced during periods of high market volatility to protect your capital.
+              </p>
+            </div>
+          )}
         </section>
 
-        {/* Alert Preferences */}
         <section className="premium-card p-5 rounded-xl">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Bell className="w-5 h-5 text-cyan" />
@@ -361,7 +363,6 @@ const RiskManagement = () => {
           </div>
         </section>
 
-        {/* Disclaimers */}
         <section className="bg-charcoalSecondary/30 rounded-xl p-4 border border-cyan/10">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
