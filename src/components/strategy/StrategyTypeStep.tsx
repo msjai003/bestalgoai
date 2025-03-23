@@ -16,15 +16,15 @@ export const StrategyTypeStep = ({
       <h3 className="text-charcoalTextPrimary font-medium">Choose Strategy Type</h3>
       <div className="flex flex-col space-y-4">
         <Button
-          variant={strategyType === "predefined" ? "gradient" : "secondary"}
-          className="h-14 w-full"
+          variant={strategyType === "predefined" ? "gradient" : "outline"}
+          className={`h-14 w-full ${strategyType === "predefined" ? "shadow-cyan/20" : "border-cyan/30 text-cyan hover:bg-cyan/10"}`}
           onClick={() => onStrategyTypeChange("predefined")}
         >
           Predefined Strategies
         </Button>
         <Button
-          variant={strategyType === "custom" ? "gradient" : "secondary"}
-          className="h-14 w-full"
+          variant={strategyType === "custom" ? "gradient" : "outline"}
+          className={`h-14 w-full ${strategyType === "custom" ? "shadow-cyan/20" : "border-cyan/30 text-cyan hover:bg-cyan/10"}`}
           onClick={() => onStrategyTypeChange("custom")}
         >
           Custom Strategy

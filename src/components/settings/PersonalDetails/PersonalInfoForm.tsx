@@ -37,13 +37,13 @@ export const PersonalInfoForm = ({
         />
       </div>
 
-      <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+      <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
         <div className="flex justify-between items-center">
-          <Label htmlFor="fullName" className="text-xs sm:text-sm text-gray-400">Full Name</Label>
+          <Label htmlFor="fullName" className="text-xs sm:text-sm text-cyan/80">Full Name</Label>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-6 w-6 text-gray-400 hover:text-white"
+            className="h-6 w-6 text-gray-400 hover:text-cyan"
             onClick={() => onToggleEditMode("fullName")}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -58,13 +58,13 @@ export const PersonalInfoForm = ({
         />
       </div>
       
-      <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+      <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
         <div className="flex justify-between items-center">
-          <Label htmlFor="email" className="text-xs sm:text-sm text-gray-400">Email</Label>
+          <Label htmlFor="email" className="text-xs sm:text-sm text-cyan/80">Email</Label>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-6 w-6 text-gray-400 hover:text-white"
+            className="h-6 w-6 text-gray-400 hover:text-cyan"
             onClick={() => onToggleEditMode("email")}
           >
             <Pencil className="h-3.5 w-3.5" />

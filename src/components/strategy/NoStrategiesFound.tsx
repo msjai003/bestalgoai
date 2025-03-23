@@ -12,7 +12,7 @@ export const NoStrategiesFound: React.FC<NoStrategiesFoundProps> = ({ onAddStrat
       <p className="text-charcoalTextSecondary mb-4">No strategies found in your wishlist.</p>
       <Button
         onClick={onAddStrategies}
-        variant="cyan"
+        variant="gradient"
         className="w-full py-2"
       >
         Add Strategies

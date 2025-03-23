@@ -25,13 +25,13 @@ export const ContactInfoForm = ({
 }: ContactInfoFormProps) => {
   return (
     <div className="space-y-4">
-      <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
+      <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
         <div className="flex justify-between items-center">
-          <Label htmlFor="phone" className="text-xs sm:text-sm text-gray-400">Phone</Label>
+          <Label htmlFor="phone" className="text-xs sm:text-sm text-cyan/80">Phone</Label>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-6 w-6 text-gray-400 hover:text-white"
+            className="h-6 w-6 text-gray-400 hover:text-cyan"
             onClick={() => onToggleEditMode("phone")}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -50,14 +50,15 @@ export const ContactInfoForm = ({
       <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
         <Button 
           onClick={onSaveChanges}
-          className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
+          variant="gradient"
+          className="w-full py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium shadow-xl border-0"
         >
           Save Changes
         </Button>
         <DialogClose asChild>
           <Button 
             variant="outline" 
-            className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium"
+            className="w-full border border-gray-700 bg-transparent text-white py-5 sm:py-6 rounded-xl text-sm sm:text-base font-medium hover:bg-gray-800/30 hover:text-cyan"
           >
             Cancel
           </Button>

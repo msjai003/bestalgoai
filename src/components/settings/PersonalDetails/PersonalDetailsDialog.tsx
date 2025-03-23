@@ -171,7 +171,7 @@ export const PersonalDetailsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-gray-700 text-gray-100 p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-semibold mb-4">
+          <DialogTitle className="text-xl sm:text-2xl font-semibold mb-4 text-cyan">
             Personal Details {currentPage > 1 && `(${currentPage}/${totalPages})`}
           </DialogTitle>
         </DialogHeader>

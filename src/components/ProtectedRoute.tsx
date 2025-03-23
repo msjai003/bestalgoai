@@ -15,10 +15,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // While still checking authentication status, show loading
   if (isLoading) {
     return (
-      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+      <div className="bg-charcoalPrimary min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-[#FF00D4] mx-auto mb-4" />
-          <p className="text-white">Verifying authentication...</p>
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-charcoalTextPrimary">Verifying authentication...</p>
         </div>
       </div>
     );
