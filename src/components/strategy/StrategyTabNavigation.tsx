@@ -14,15 +14,15 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="bg-charcoalSecondary/50 p-1 rounded-xl mb-3">
-      <div className="grid grid-cols-2 gap-1">
+    <div className="bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30">
+      <div className="grid grid-cols-2 gap-2">
         <Button 
-          variant={selectedTab === "predefined" ? "cyan" : "ghost"}
+          variant={selectedTab === "predefined" ? "gradient" : "ghost"}
           className={cn(
-            "py-2 px-4 rounded-lg text-sm font-medium text-center",
+            "py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300",
             selectedTab === "predefined" 
-              ? "bg-gradient-to-r from-cyan to-cyan/80"
-              : "text-gray-400 hover:text-white"
+              ? "shadow-md shadow-cyan/20" 
+              : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("predefined")}
         >
@@ -30,12 +30,12 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
           Predefined Strategies
         </Button>
         <Button 
-          variant={selectedTab === "custom" ? "cyan" : "ghost"}
+          variant={selectedTab === "custom" ? "gradient" : "ghost"}
           className={cn(
-            "py-2 px-4 rounded-lg text-sm font-medium text-center",
+            "py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300",
             selectedTab === "custom" 
-              ? "bg-gradient-to-r from-cyan to-cyan/80" 
-              : "text-gray-400 hover:text-white"
+              ? "shadow-md shadow-cyan/20" 
+              : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("custom")}
         >
