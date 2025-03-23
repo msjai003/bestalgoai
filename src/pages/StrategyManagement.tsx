@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,17 +6,17 @@ import { toast } from "@/components/ui/use-toast";
 import Header from '@/components/Header';
 import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { StrategySection } from "@/components/strategy/StrategySection";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 import { StrategyFilter } from "@/components/strategy/StrategyFilter";
 import { Button } from "@/components/ui/button";
-import { Star, User } from 'lucide-react';
+import { Star, User, Plus, Play, Trash2 } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
 import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
+import { StrategySection } from "@/components/strategy/StrategySection";
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
@@ -265,7 +264,7 @@ const StrategyManagement = () => {
     if (!strategy) return;
     
     // For premium strategies that haven't been paid for
-    const isPremium = Number(id) > 1;
+    const isPremium = typeof id === 'number' && id > 1;
     if (isPremium && !hasPremium && !strategy.isPaid) {
       // Redirect to pricing page with strategy context
       sessionStorage.setItem('selectedStrategyId', id.toString());
@@ -367,21 +366,19 @@ const StrategyManagement = () => {
           </div>
           
           {predefinedWishlistedStrategies.length > 0 ? (
-            <StrategyList 
-              strategies={predefinedWishlistedStrategies.map(s => ({
-                ...s,
-                id: typeof s.id === 'string' ? parseInt(s.id) : s.id,
-                quantity: s.quantity || 0,
-                selectedBroker: s.selectedBroker || '',
-                brokerUsername: s.brokerUsername || '',
-                tradeType: s.tradeType || 'paper trade',
-                pnl: "+₹0",
-                successRate: s.performance?.winRate || "N/A"
-              }))}
-              onToggleLiveMode={(id) => handleToggleLiveMode(id)}
-              onEditQuantity={(id) => handleEditQuantity(id)}
-              onViewDetails={(id) => handleViewDetails(id)}
-            />
+            <TooltipProvider>
+              <StrategySection 
+                title=""
+                icon={<></>}
+                strategies={predefinedWishlistedStrategies}
+                emptyMessage=""
+                actionButtonText=""
+                actionButtonPath=""
+                onDeleteStrategy={handleDeleteStrategy}
+                onToggleLiveMode={handleToggleLiveMode}
+                showEmptyStateButton={false}
+              />
+            </TooltipProvider>
           ) : (
             <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
           )}
@@ -404,21 +401,19 @@ const StrategyManagement = () => {
           </div>
           
           {customWishlistedStrategies.length > 0 ? (
-            <StrategyList 
-              strategies={customWishlistedStrategies.map(s => ({
-                ...s,
-                id: s.id,
-                quantity: s.quantity || 0,
-                selectedBroker: s.selectedBroker || '',
-                brokerUsername: s.brokerUsername || '',
-                tradeType: s.tradeType || 'paper trade',
-                pnl: "+₹0",
-                successRate: s.performance?.winRate || "N/A"
-              }))}
-              onToggleLiveMode={(id) => handleToggleLiveMode(id)}
-              onEditQuantity={(id) => handleEditQuantity(id)}
-              onViewDetails={(id) => handleViewDetails(id)}
-            />
+            <TooltipProvider>
+              <StrategySection 
+                title=""
+                icon={<></>}
+                strategies={customWishlistedStrategies}
+                emptyMessage=""
+                actionButtonText=""
+                actionButtonPath=""
+                onDeleteStrategy={handleDeleteStrategy}
+                onToggleLiveMode={handleToggleLiveMode}
+                showEmptyStateButton={false}
+              />
+            </TooltipProvider>
           ) : (
             <div className="glass-card p-6 text-center">
               <p className="text-gray-300 mb-4">No custom strategies created yet</p>
