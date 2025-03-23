@@ -7,10 +7,10 @@ export const CTA = () => {
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-5"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
       
-      <div className="glass-card p-8 relative z-10">
+      <div className="glass-card p-8 relative z-10 border-cyan/20">
         <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to <span className="gradient-text">Transform</span> Your Trading?</h2>
-          <p className="text-charcoalTextSecondary mb-6">Join thousands of successful traders using BestAlgo.ai</p>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
+          <p className="text-charcoalTextSecondary mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
           <Button 
             variant="gradient" 
             className="w-full py-3 px-6 rounded-xl font-semibold shadow-lg group relative overflow-hidden"

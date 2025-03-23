@@ -25,17 +25,17 @@ export const Features = () => {
 
   return (
     <section className="px-4 py-12 bg-charcoalPrimary">
-      <h2 className="text-2xl font-bold mb-6 text-charcoalTextPrimary">Why Choose BestAlgo.ai?</h2>
+      <h2 className="text-2xl font-bold mb-6 text-cyan">Why Choose BestAlgo.ai?</h2>
       <div className="space-y-6">
         {features.map((feature) => (
           <div 
             key={feature.id} 
             id={feature.id} 
-            className="p-5 rounded-xl bg-charcoalSecondary/30 border border-cyan/20 shadow-lg hover:shadow-cyan/10 transition-all duration-300"
+            className="p-5 rounded-xl bg-charcoalSecondary/30 border border-cyan/30 shadow-lg hover:shadow-cyan/20 transition-all duration-300"
           >
-            <i className={`${feature.icon} text-cyan text-2xl mb-3`}></i>
-            <h3 className="font-semibold mb-2 text-charcoalTextPrimary">{feature.title}</h3>
-            <p className="text-sm text-charcoalTextSecondary">{feature.description}</p>
+            <i className={`${feature.icon} text-cyan text-2xl mb-4`}></i>
+            <h3 className="font-semibold mb-3 text-cyan text-lg">{feature.title}</h3>
+            <p className="text-sm text-charcoalTextSecondary font-medium">{feature.description}</p>
           </div>
         ))}
       </div>

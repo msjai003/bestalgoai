@@ -43,39 +43,39 @@ const Header: React.FC = () => {
       <div className="container flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center">
           <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
-          <span className="text-white text-xl ml-2 font-medium">BestAlgo.ai</span>
+          <span className="text-cyan text-xl ml-2 font-semibold">BestAlgo.ai</span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-6">
           <Link
             to="/"
-            className="text-gray-300 hover:text-cyan transition-colors"
+            className="text-cyan hover:text-cyan/80 transition-colors font-medium"
           >
             Home
           </Link>
           <Link
             to="/about"
-            className="text-gray-300 hover:text-cyan transition-colors"
+            className="text-gray-300 hover:text-cyan transition-colors font-medium"
           >
             About
           </Link>
           <Link
             to="/pricing"
-            className="text-gray-300 hover:text-cyan transition-colors"
+            className="text-gray-300 hover:text-cyan transition-colors font-medium"
           >
             Pricing
           </Link>
           <a
             href={EXTERNAL_BLOG_URL}
             onClick={handleBlogClick}
-            className="text-gray-300 hover:text-cyan transition-colors flex items-center"
+            className="text-gray-300 hover:text-cyan transition-colors font-medium flex items-center"
           >
             Blog
             <ExternalLink className="ml-1 w-3 h-3" />
           </a>
           <Link
             to="/contact"
-            className="text-gray-300 hover:text-cyan transition-colors"
+            className="text-gray-300 hover:text-cyan transition-colors font-medium"
           >
             Contact
           </Link>
@@ -83,13 +83,13 @@ const Header: React.FC = () => {
             <>
               <Link
                 to="/dashboard"
-                className="text-gray-300 hover:text-cyan transition-colors"
+                className="text-gray-300 hover:text-cyan transition-colors font-medium"
               >
                 Dashboard
               </Link>
               <Button 
                 variant="ghost" 
-                className="text-gray-300 hover:text-cyan" 
+                className="text-gray-300 hover:text-cyan font-medium" 
                 onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -100,13 +100,13 @@ const Header: React.FC = () => {
             <>
               <Button
                 variant="ghost"
-                className="text-gray-300 hover:text-cyan"
+                className="text-gray-300 hover:text-cyan font-medium"
                 onClick={handleSignIn}
               >
                 Sign In
               </Button>
               <Button
-                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-medium px-4 py-2 rounded-lg transition-colors"
+                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors"
                 onClick={handleSignUp}
               >
                 Sign Up
@@ -123,7 +123,7 @@ const Header: React.FC = () => {
           </SheetTrigger>
           <SheetContent side="right" className="bg-charcoalPrimary border-l border-gray-700">
             <SheetHeader className="space-y-2.5">
-              <SheetTitle className="text-charcoalTextPrimary">Menu</SheetTitle>
+              <SheetTitle className="text-cyan">Menu</SheetTitle>
               <SheetDescription className="text-charcoalTextSecondary">
                 Navigate through the application
               </SheetDescription>
@@ -131,33 +131,33 @@ const Header: React.FC = () => {
             <div className="grid gap-4 py-4">
               <Link
                 to="/"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2"
+                className="text-cyan hover:text-cyan/80 transition-colors block py-2 font-medium"
               >
                 Home
               </Link>
               <Link
                 to="/about"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2"
+                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 About
               </Link>
               <Link
                 to="/pricing"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2"
+                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 Pricing
               </Link>
               <a
                 href={EXTERNAL_BLOG_URL}
                 onClick={handleBlogClick}
-                className="text-gray-300 hover:text-cyan transition-colors flex items-center py-2"
+                className="text-gray-300 hover:text-cyan transition-colors flex items-center py-2 font-medium"
               >
                 Blog
                 <ExternalLink className="ml-1 w-3 h-3" />
               </a>
               <Link
                 to="/contact"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2"
+                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
               >
                 Contact
               </Link>
@@ -166,13 +166,13 @@ const Header: React.FC = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="text-gray-300 hover:text-cyan transition-colors block py-2"
+                    className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
                   >
                     Dashboard
                   </Link>
                   <Button 
                     variant="ghost" 
-                    className="text-gray-300 hover:text-cyan justify-start p-2" 
+                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium" 
                     onClick={handleLogout}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
@@ -183,13 +183,13 @@ const Header: React.FC = () => {
                 <>
                   <Button
                     variant="ghost"
-                    className="text-gray-300 hover:text-cyan justify-start p-2"
+                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium"
                     onClick={handleSignIn}
                   >
                     Sign In
                   </Button>
                   <Button
-                    className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-medium"
+                    className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold"
                     onClick={handleSignUp}
                   >
                     Sign Up

@@ -36,14 +36,14 @@ export const Hero = () => {
           <div className="flex space-x-3">
             <Button
               variant="ghost"
-              className="text-gray-300 hover:text-white border border-gray-700/50 hover:border-gray-500 hover:animate-micro-scale glass"
+              className="text-gray-300 hover:text-cyan border border-gray-700/50 hover:border-cyan/30 hover:animate-micro-scale glass font-medium"
               onClick={handleSignIn}
             >
               Sign In
             </Button>
             <Button
               variant="gradient"
-              className="rounded-lg hover:animate-micro-scale"
+              className="rounded-lg hover:animate-micro-scale font-semibold"
               onClick={handleSignUp}
             >
               Sign Up
@@ -54,9 +54,9 @@ export const Hero = () => {
       
       <div className="relative">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
-          <span className="gradient-text">AI-Powered</span> Algo Trading for Everyone
+          <span className="text-cyan">AI-Powered</span> Algo Trading for Everyone
         </h1>
-        <p className="text-gray-300 mb-6">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
+        <p className="text-gray-300 mb-6 font-medium">Join 10,000+ traders using advanced algorithms to maximize their returns in the Indian stock market</p>
         <Button 
           variant="gradient"
           className="w-full py-6 rounded-xl font-semibold shadow-lg hover:animate-micro-glow"
@@ -66,7 +66,7 @@ export const Hero = () => {
         </Button>
       </div>
       <div className="mt-8">
-        <div className="premium-frame">
+        <div className="premium-frame border-cyan/30">
           <img 
             className="w-full h-48 object-cover transform transition-all duration-700 hover:scale-[1.02] animate-image-float image-hifi"
             src="https://storage.googleapis.com/uxpilot-auth.appspot.com/493f062fc3-bc315fc272ae97137e07.png" 
