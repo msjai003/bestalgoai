@@ -36,7 +36,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="glass-card p-3">
             <p className="text-gray-400 text-xs mb-1">Current P&L</p>
-            <p className="text-cyan text-lg font-semibold">{strategy.pnl || "+₹0"}</p>
+            <p className="text-emerald-400 text-lg font-semibold">{strategy.pnl || "+₹0"}</p>
           </div>
           <TooltipProvider>
             <Tooltip>
@@ -45,7 +45,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   <p className="text-gray-400 text-xs mb-1">Success Rate</p>
                   <div className="flex items-center">
                     <p className="text-white text-lg font-semibold">{strategy.successRate || strategy.performance?.winRate || "N/A"}</p>
-                    <BarChart2 className="w-4 h-4 text-cyan ml-1" />
+                    <BarChart2 className="w-4 h-4 text-gray-400 ml-1" />
                   </div>
                 </div>
               </TooltipTrigger>
@@ -64,7 +64,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-cyan hover:text-white p-1 h-auto glass hover:bg-gray-700/50"
+                className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50"
                 onClick={onEditQuantity}
               >
                 <Settings className="w-4 h-4" />
