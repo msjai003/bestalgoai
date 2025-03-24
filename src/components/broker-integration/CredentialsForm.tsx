@@ -1,5 +1,5 @@
 
-import { ChevronLeft, User, Lock, Key, Shield, Hash, Token } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Broker } from "@/types/broker";
@@ -96,7 +96,7 @@ export const CredentialsForm = ({
 
         <div>
           <Label htmlFor="accessToken" className="text-gray-300 flex items-center gap-2">
-            <Token className="w-4 h-4" /> Access Token
+            <KeyRound className="w-4 h-4" /> Access Token
           </Label>
           <Input
             id="accessToken"
