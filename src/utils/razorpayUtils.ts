@@ -1,4 +1,3 @@
-
 // Type definition for Razorpay options
 interface RazorpayOptions {
   key: string;
@@ -28,7 +27,7 @@ export const initializeRazorpayPayment = (
   const timeoutId = setTimeout(() => {
     console.error('Razorpay script load timed out');
     onError();
-  }, 15000); // Increasing timeout to 15 seconds for better reliability
+  }, 15000); // 15 seconds timeout for better reliability
   
   if (!(window as any).Razorpay) {
     const script = document.createElement('script');

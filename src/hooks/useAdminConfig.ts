@@ -12,8 +12,9 @@ const fallbackConfigs = {
   razorpay_config: {
     test_key: 'rzp_test_Q9hmPFiRhnZuqK',
     test_secret: 'UwAgfVIu0WyhWYVzvaemWse2',
-    live_key: '',
-    mode: 'test' as const
+    live_key: 'rzp_live_AlwIwA3L3AFrKc',
+    live_secret: 'mVIVbHy7ATembdBaNfNaMvdv',
+    mode: 'live' as const  // Changed default mode to 'live'
   }
 };
 

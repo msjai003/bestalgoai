@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -51,7 +50,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     error: configError 
   } = useAdminConfig<RazorpayConfig>('razorpay_config');
   
-  // If there's an error fetching the config, show a toast
   React.useEffect(() => {
     if (configError) {
       console.error('Error loading Razorpay config:', configError);
@@ -163,7 +161,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     if (!razorpayConfig) {
       toast({
         title: "Configuration Notice",
-        description: "Using test payment configuration.",
+        description: "Using default payment configuration.",
         variant: "default",
       });
       // Continue with default config that will be set in initializeRazorpayPayment
@@ -175,10 +173,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
-    // If razorpayConfig is null, use the updated test key
     const apiKey = razorpayConfig?.mode === 'test' 
       ? (razorpayConfig?.test_key || 'rzp_test_Q9hmPFiRhnZuqK')
-      : (razorpayConfig?.live_key || 'rzp_test_Q9hmPFiRhnZuqK');
+      : (razorpayConfig?.live_key || 'rzp_live_AlwIwA3L3AFrKc');
     
     const options = {
       key: apiKey,
@@ -221,7 +218,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     );
   };
 
-  // Initiate payment when dialog opens, but only after config is loaded or if we're using fallback
   React.useEffect(() => {
     if (open && (!configLoading || configError)) {
       handleRazorpayPayment();
