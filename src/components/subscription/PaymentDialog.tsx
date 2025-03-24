@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -11,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader } from "lucide-react";
+import { useAdminConfig } from "@/hooks/useAdminConfig";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -43,73 +43,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [razorpayConfig, setRazorpayConfig] = React.useState<RazorpayConfig | null>(null);
   
-  React.useEffect(() => {
-    const fetchRazorpayConfig = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('admin_panel')
-          .select('feature_value')
-          .eq('feature_name', 'razorpay_config')
-          .single();
-        
-        if (error) {
-          console.error('Error fetching Razorpay config:', error);
-          return;
-        }
-        
-        if (data && data.feature_value) {
-          setRazorpayConfig(data.feature_value as RazorpayConfig);
-          console.log('Razorpay config loaded:', data.feature_value);
-        }
-      } catch (err) {
-        console.error('Failed to fetch Razorpay config:', err);
-      }
-    };
-    
-    fetchRazorpayConfig();
-  }, []);
-  
-  const unlockAllStrategies = async (userId: string) => {
-    try {
-      const { data: strategies, error: strategiesError } = await supabase
-        .from('predefined_strategies')
-        .select('id, name, description');
-        
-      if (strategiesError) {
-        console.error('Error fetching strategies:', strategiesError);
-        throw strategiesError;
-      }
-      
-      if (!strategies || strategies.length === 0) {
-        console.log('No strategies found to unlock');
-        return;
-      }
-      
-      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
-      
-      for (const strategy of strategies) {
-        const { error: strategyError } = await supabase.rpc(
-          'force_strategy_paid_status',
-          {
-            p_user_id: userId,
-            p_strategy_id: strategy.id,
-            p_strategy_name: strategy.name,
-            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
-          }
-        );
-        
-        if (strategyError) {
-          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
-        }
-      }
-      
-      console.log('All strategies successfully unlocked');
-    } catch (error) {
-      console.error('Error in unlocking all strategies:', error);
-    }
-  };
+  const { config: razorpayConfig, loading: configLoading } = useAdminConfig<RazorpayConfig>('razorpay_config');
   
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
@@ -158,6 +93,46 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     }
   };
   
+  const unlockAllStrategies = async (userId: string) => {
+    try {
+      const { data: strategies, error: strategiesError } = await supabase
+        .from('predefined_strategies')
+        .select('id, name, description');
+        
+      if (strategiesError) {
+        console.error('Error fetching strategies:', strategiesError);
+        throw strategiesError;
+      }
+      
+      if (!strategies || strategies.length === 0) {
+        console.log('No strategies found to unlock');
+        return;
+      }
+      
+      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
+      
+      for (const strategy of strategies) {
+        const { error: strategyError } = await supabase.rpc(
+          'force_strategy_paid_status',
+          {
+            p_user_id: userId,
+            p_strategy_id: strategy.id,
+            p_strategy_name: strategy.name,
+            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
+          }
+        );
+        
+        if (strategyError) {
+          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
+        }
+      }
+      
+      console.log('All strategies successfully unlocked');
+    } catch (error) {
+      console.error('Error in unlocking all strategies:', error);
+    }
+  };
+  
   const handleRazorpayPayment = () => {
     if (!user) {
       toast({
@@ -183,7 +158,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
-    // Use the key based on the mode from admin_panel
     const apiKey = razorpayConfig.mode === 'test' 
       ? razorpayConfig.test_key 
       : razorpayConfig.live_key;
@@ -230,10 +204,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   React.useEffect(() => {
-    if (open && razorpayConfig) {
+    if (open && razorpayConfig && !configLoading) {
       handleRazorpayPayment();
     }
-  }, [open, razorpayConfig]);
+  }, [open, razorpayConfig, configLoading]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

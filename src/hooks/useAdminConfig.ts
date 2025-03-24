@@ -15,8 +15,8 @@ interface AdminPanelConfig {
   description: string;
 }
 
-export const useAdminConfig = (featureName: FeatureName) => {
-  const [config, setConfig] = useState<any>(null);
+export const useAdminConfig = <T>(featureName: FeatureName) => {
+  const [config, setConfig] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -35,7 +35,8 @@ export const useAdminConfig = (featureName: FeatureName) => {
         }
 
         if (data) {
-          setConfig(data.feature_value);
+          // Cast the feature_value to the expected type
+          setConfig(data.feature_value as T);
         }
       } catch (err: any) {
         console.error(`Error fetching ${featureName} config:`, err);
