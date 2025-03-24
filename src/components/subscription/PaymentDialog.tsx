@@ -162,8 +162,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
     if (!razorpayConfig) {
       toast({
-        title: "Configuration Error",
-        description: "Payment system configuration is not available. Using default test configuration.",
+        title: "Configuration Notice",
+        description: "Using test payment configuration.",
         variant: "default",
       });
       // Continue with default config that will be set in initializeRazorpayPayment
@@ -175,10 +175,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
-    // If razorpayConfig is null, use a default test key
+    // If razorpayConfig is null, use the updated test key
     const apiKey = razorpayConfig?.mode === 'test' 
-      ? (razorpayConfig?.test_key || 'rzp_test_1DP5mmOlF5G5ag')
-      : (razorpayConfig?.live_key || 'rzp_test_1DP5mmOlF5G5ag');
+      ? (razorpayConfig?.test_key || 'rzp_test_Q9hmPFiRhnZuqK')
+      : (razorpayConfig?.live_key || 'rzp_test_Q9hmPFiRhnZuqK');
     
     const options = {
       key: apiKey,

@@ -28,7 +28,7 @@ export const initializeRazorpayPayment = (
   const timeoutId = setTimeout(() => {
     console.error('Razorpay script load timed out');
     onError();
-  }, 10000); // 10 seconds timeout
+  }, 15000); // Increasing timeout to 15 seconds for better reliability
   
   if (!(window as any).Razorpay) {
     const script = document.createElement('script');
