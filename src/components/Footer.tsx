@@ -2,8 +2,6 @@
 import { Link } from "react-router-dom";
 import { Twitter, Linkedin, Instagram, Mail, MapPin, Phone, ExternalLink } from "lucide-react";
 
-const EXTERNAL_BLOG_URL = 'https://infocapinfo.blogspot.com/';
-
 export const Footer = () => {
   return (
     <footer className="bg-charcoalSecondary border-t border-gray-800/50">
@@ -52,18 +50,6 @@ export const Footer = () => {
                   <span className="w-1.5 h-1.5 bg-cyan rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                   Strategies
                 </Link>
-              </li>
-              <li>
-                <a 
-                  href={EXTERNAL_BLOG_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-cyan transition-colors flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-cyan rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  Blog
-                  <ExternalLink className="ml-1 w-3 h-3" />
-                </a>
               </li>
             </ul>
           </div>
