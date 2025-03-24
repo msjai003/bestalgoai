@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -37,10 +36,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
   
-  // Function to unlock all strategies for Premium subscribers
   const unlockAllStrategies = async (userId: string) => {
     try {
-      // Fetch all predefined strategies
       const { data: strategies, error: strategiesError } = await supabase
         .from('predefined_strategies')
         .select('id, name, description');
@@ -57,7 +54,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       
       console.log(`Unlocking ${strategies.length} strategies for Premium user`);
       
-      // Mark all strategies as paid
       for (const strategy of strategies) {
         const { error: strategyError } = await supabase.rpc(
           'force_strategy_paid_status',
@@ -71,14 +67,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         
         if (strategyError) {
           console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
-          // Continue with other strategies even if one fails
         }
       }
       
       console.log('All strategies successfully unlocked');
     } catch (error) {
       console.error('Error in unlocking all strategies:', error);
-      // Not throwing error to allow payment process to complete
     }
   };
   
@@ -86,7 +80,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     if (!user) return;
     
     try {
-      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -101,11 +94,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         throw error;
       }
       
-      // If Premium plan is selected, unlock all strategies
       if (planName === 'Premium' || planPrice === '₹4999') {
         await unlockAllStrategies(user.id);
       }
-      // If a strategy was selected, update its status to paid
       else if (selectedStrategyId) {
         const { error: strategyError } = await supabase.rpc(
           'force_strategy_paid_status',
@@ -129,7 +120,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         description: "Failed to save your plan selection. Please contact support.",
         variant: "destructive",
       });
-      // Still continuing with success callback as payment was processed
     }
   };
   
@@ -146,12 +136,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     setIsProcessing(true);
     const amount = convertPriceToAmount(planPrice);
     
-    // Extract user information safely, checking if properties exist
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
     const options = {
-      key: "rzp_live_AlwIwA3L3AFrKc", // Updated to live key
+      key: "rzp_test_iN0M3B79HiBpvQ",
       amount: amount,
       currency: "INR",
       name: "AlgoTrade",
@@ -168,7 +157,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     initializeRazorpayPayment(
       options,
       (payment_id) => {
-        // Save the plan selection to the database
         savePlanSelection(payment_id).then(() => {
           setIsProcessing(false);
           toast({
@@ -192,7 +180,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     );
   };
 
-  // Automatically initiate payment when dialog opens
   React.useEffect(() => {
     if (open) {
       handleRazorpayPayment();
@@ -236,7 +223,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </div>
         
         <div className="text-xs text-gray-400 mt-4">
-          <p>This application is using Razorpay's live payment processing.</p>
+          <p>This application is using Razorpay's test payment processing.</p>
           <p>Your payment information is securely handled by Razorpay.</p>
         </div>
       </DialogContent>
