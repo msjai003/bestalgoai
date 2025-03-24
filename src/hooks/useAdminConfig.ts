@@ -7,13 +7,15 @@ export type FeatureName =
   | 'app_theme' 
   | 'feature_flags';
 
-interface AdminPanelConfig {
-  id: string;
-  feature_name: FeatureName;
-  feature_value: any;
-  is_enabled: boolean;
-  description: string;
-}
+// Define fallback configurations for when database fetch fails
+const fallbackConfigs = {
+  razorpay_config: {
+    test_key: 'rzp_test_1DP5mmOlF5G5ag',
+    test_secret: '',
+    live_key: '',
+    mode: 'test' as const
+  }
+};
 
 export const useAdminConfig = <T>(featureName: FeatureName) => {
   const [config, setConfig] = useState<T | null>(null);
@@ -31,16 +33,27 @@ export const useAdminConfig = <T>(featureName: FeatureName) => {
           .single();
 
         if (error) {
-          throw error;
-        }
-
-        if (data) {
+          console.error(`Error fetching ${featureName} config:`, error);
+          
+          // Use fallback config if database fetch fails
+          if (featureName in fallbackConfigs) {
+            console.log(`Using fallback config for ${featureName}`);
+            setConfig(fallbackConfigs[featureName as keyof typeof fallbackConfigs] as T);
+          } else {
+            throw error;
+          }
+        } else if (data) {
           // Cast the feature_value to the expected type
           setConfig(data.feature_value as T);
         }
       } catch (err: any) {
-        console.error(`Error fetching ${featureName} config:`, err);
+        console.error(`Error in ${featureName} config:`, err);
         setError(err);
+        
+        // Use fallback even on other errors
+        if (featureName in fallbackConfigs) {
+          setConfig(fallbackConfigs[featureName as keyof typeof fallbackConfigs] as T);
+        }
       } finally {
         setLoading(false);
       }

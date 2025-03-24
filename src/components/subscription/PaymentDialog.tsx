@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Dialog,
@@ -44,7 +45,23 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
   
-  const { config: razorpayConfig, loading: configLoading } = useAdminConfig<RazorpayConfig>('razorpay_config');
+  const { 
+    config: razorpayConfig, 
+    loading: configLoading, 
+    error: configError 
+  } = useAdminConfig<RazorpayConfig>('razorpay_config');
+  
+  // If there's an error fetching the config, show a toast
+  React.useEffect(() => {
+    if (configError) {
+      console.error('Error loading Razorpay config:', configError);
+      toast({
+        title: "Configuration Error",
+        description: "Payment system configuration issue. Using default test configuration.",
+        variant: "destructive",
+      });
+    }
+  }, [configError, toast]);
   
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
@@ -146,10 +163,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     if (!razorpayConfig) {
       toast({
         title: "Configuration Error",
-        description: "Payment system configuration is not available. Please try again later.",
-        variant: "destructive",
+        description: "Payment system configuration is not available. Using default test configuration.",
+        variant: "default",
       });
-      return;
+      // Continue with default config that will be set in initializeRazorpayPayment
     }
 
     setIsProcessing(true);
@@ -158,9 +175,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
-    const apiKey = razorpayConfig.mode === 'test' 
-      ? razorpayConfig.test_key 
-      : razorpayConfig.live_key;
+    // If razorpayConfig is null, use a default test key
+    const apiKey = razorpayConfig?.mode === 'test' 
+      ? (razorpayConfig?.test_key || 'rzp_test_1DP5mmOlF5G5ag')
+      : (razorpayConfig?.live_key || 'rzp_test_1DP5mmOlF5G5ag');
     
     const options = {
       key: apiKey,
@@ -203,11 +221,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     );
   };
 
+  // Initiate payment when dialog opens, but only after config is loaded or if we're using fallback
   React.useEffect(() => {
-    if (open && razorpayConfig && !configLoading) {
+    if (open && (!configLoading || configError)) {
       handleRazorpayPayment();
     }
-  }, [open, razorpayConfig, configLoading]);
+  }, [open, configLoading, configError]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

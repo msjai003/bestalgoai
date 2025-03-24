@@ -24,17 +24,28 @@ export const initializeRazorpayPayment = (
   onSuccess: (payment_id: string, order_id?: string, signature?: string) => void,
   onError: () => void
 ) => {
+  // Set a timeout to handle case where script fails to load or initialize
+  const timeoutId = setTimeout(() => {
+    console.error('Razorpay script load timed out');
+    onError();
+  }, 10000); // 10 seconds timeout
+  
   if (!(window as any).Razorpay) {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
-    script.onload = () => createRazorpayInstance(options, onSuccess, onError);
+    script.onload = () => {
+      clearTimeout(timeoutId);
+      createRazorpayInstance(options, onSuccess, onError);
+    };
     script.onerror = () => {
+      clearTimeout(timeoutId);
       console.error('Razorpay SDK failed to load');
       onError();
     };
     document.body.appendChild(script);
   } else {
+    clearTimeout(timeoutId);
     createRazorpayInstance(options, onSuccess, onError);
   }
 };
