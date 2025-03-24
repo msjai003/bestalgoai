@@ -69,12 +69,6 @@ const Header: React.FC = () => {
             Blog
             <ExternalLink className="ml-1 w-3 h-3" />
           </a>
-          <Link
-            to="/contact"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
-          >
-            Contact
-          </Link>
           {user ? (
             <>
               <Link
@@ -142,12 +136,6 @@ const Header: React.FC = () => {
                 Blog
                 <ExternalLink className="ml-1 w-3 h-3" />
               </a>
-              <Link
-                to="/contact"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
-              >
-                Contact
-              </Link>
               
               {user ? (
                 <>
