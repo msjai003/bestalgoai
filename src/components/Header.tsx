@@ -61,14 +61,6 @@ const Header: React.FC = () => {
           >
             Pricing
           </Link>
-          <a
-            href={EXTERNAL_BLOG_URL}
-            onClick={handleBlogClick}
-            className="text-gray-300 hover:text-cyan transition-colors font-medium flex items-center"
-          >
-            Blog
-            <ExternalLink className="ml-1 w-3 h-3" />
-          </a>
           {user ? (
             <>
               <Link
@@ -128,14 +120,6 @@ const Header: React.FC = () => {
               >
                 Pricing
               </Link>
-              <a
-                href={EXTERNAL_BLOG_URL}
-                onClick={handleBlogClick}
-                className="text-gray-300 hover:text-cyan transition-colors flex items-center py-2 font-medium"
-              >
-                Blog
-                <ExternalLink className="ml-1 w-3 h-3" />
-              </a>
               
               {user ? (
                 <>
