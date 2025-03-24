@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Dialog,
@@ -10,9 +11,8 @@ import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader } from "lucide-react";
-import { useAdminConfig } from "@/hooks/useAdminConfig";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader } from "lucide-react";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -22,13 +22,6 @@ interface PaymentDialogProps {
   onSuccess: () => void;
   selectedStrategyId?: number;
   selectedStrategyName?: string | null;
-}
-
-interface RazorpayConfig {
-  test_key: string;
-  test_secret: string;
-  live_key: string;
-  mode: 'test' | 'live';
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -44,12 +37,56 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
   
-  const { config: razorpayConfig, loading: configLoading } = useAdminConfig<RazorpayConfig>('razorpay_config');
+  // Function to unlock all strategies for Premium subscribers
+  const unlockAllStrategies = async (userId: string) => {
+    try {
+      // Fetch all predefined strategies
+      const { data: strategies, error: strategiesError } = await supabase
+        .from('predefined_strategies')
+        .select('id, name, description');
+        
+      if (strategiesError) {
+        console.error('Error fetching strategies:', strategiesError);
+        throw strategiesError;
+      }
+      
+      if (!strategies || strategies.length === 0) {
+        console.log('No strategies found to unlock');
+        return;
+      }
+      
+      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
+      
+      // Mark all strategies as paid
+      for (const strategy of strategies) {
+        const { error: strategyError } = await supabase.rpc(
+          'force_strategy_paid_status',
+          {
+            p_user_id: userId,
+            p_strategy_id: strategy.id,
+            p_strategy_name: strategy.name,
+            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
+          }
+        );
+        
+        if (strategyError) {
+          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
+          // Continue with other strategies even if one fails
+        }
+      }
+      
+      console.log('All strategies successfully unlocked');
+    } catch (error) {
+      console.error('Error in unlocking all strategies:', error);
+      // Not throwing error to allow payment process to complete
+    }
+  };
   
   const savePlanSelection = async (payment_id: string) => {
     if (!user) return;
     
     try {
+      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -64,9 +101,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         throw error;
       }
       
+      // If Premium plan is selected, unlock all strategies
       if (planName === 'Premium' || planPrice === '₹4999') {
         await unlockAllStrategies(user.id);
       }
+      // If a strategy was selected, update its status to paid
       else if (selectedStrategyId) {
         const { error: strategyError } = await supabase.rpc(
           'force_strategy_paid_status',
@@ -90,46 +129,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         description: "Failed to save your plan selection. Please contact support.",
         variant: "destructive",
       });
-    }
-  };
-  
-  const unlockAllStrategies = async (userId: string) => {
-    try {
-      const { data: strategies, error: strategiesError } = await supabase
-        .from('predefined_strategies')
-        .select('id, name, description');
-        
-      if (strategiesError) {
-        console.error('Error fetching strategies:', strategiesError);
-        throw strategiesError;
-      }
-      
-      if (!strategies || strategies.length === 0) {
-        console.log('No strategies found to unlock');
-        return;
-      }
-      
-      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
-      
-      for (const strategy of strategies) {
-        const { error: strategyError } = await supabase.rpc(
-          'force_strategy_paid_status',
-          {
-            p_user_id: userId,
-            p_strategy_id: strategy.id,
-            p_strategy_name: strategy.name,
-            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
-          }
-        );
-        
-        if (strategyError) {
-          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
-        }
-      }
-      
-      console.log('All strategies successfully unlocked');
-    } catch (error) {
-      console.error('Error in unlocking all strategies:', error);
+      // Still continuing with success callback as payment was processed
     }
   };
   
@@ -143,27 +143,15 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       return;
     }
 
-    if (!razorpayConfig) {
-      toast({
-        title: "Configuration Error",
-        description: "Payment system configuration is not available. Please try again later.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsProcessing(true);
     const amount = convertPriceToAmount(planPrice);
     
+    // Extract user information safely, checking if properties exist
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
-    const apiKey = razorpayConfig.mode === 'test' 
-      ? razorpayConfig.test_key 
-      : razorpayConfig.live_key;
-    
     const options = {
-      key: apiKey,
+      key: "rzp_live_AlwIwA3L3AFrKc", // Updated to live key
       amount: amount,
       currency: "INR",
       name: "AlgoTrade",
@@ -180,6 +168,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     initializeRazorpayPayment(
       options,
       (payment_id) => {
+        // Save the plan selection to the database
         savePlanSelection(payment_id).then(() => {
           setIsProcessing(false);
           toast({
@@ -203,11 +192,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     );
   };
 
+  // Automatically initiate payment when dialog opens
   React.useEffect(() => {
-    if (open && razorpayConfig && !configLoading) {
+    if (open) {
       handleRazorpayPayment();
     }
-  }, [open, razorpayConfig, configLoading]);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,7 +236,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </div>
         
         <div className="text-xs text-gray-400 mt-4">
-          <p>This application is using Razorpay's {razorpayConfig?.mode || 'test'} payment processing.</p>
+          <p>This application is using Razorpay's live payment processing.</p>
           <p>Your payment information is securely handled by Razorpay.</p>
         </div>
       </DialogContent>
