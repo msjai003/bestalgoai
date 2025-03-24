@@ -1,5 +1,5 @@
 
-import { ChevronLeft, User, Lock, Key, Shield, Hash } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash, Token } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Broker } from "@/types/broker";
@@ -91,6 +91,20 @@ export const CredentialsForm = ({
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.sessionId}
             onChange={(e) => setCredentials({ ...credentials, sessionId: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="accessToken" className="text-gray-300 flex items-center gap-2">
+            <Token className="w-4 h-4" /> Access Token
+          </Label>
+          <Input
+            id="accessToken"
+            type="text"
+            placeholder="Enter your access token"
+            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
+            value={credentials.accessToken}
+            onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
           />
         </div>
 

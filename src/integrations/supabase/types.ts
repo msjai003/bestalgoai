@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       broker_credentials: {
         Row: {
+          accesstoken: string | null
           api_key: string | null
           broker_id: number
           broker_name: string
@@ -25,6 +26,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          accesstoken?: string | null
           api_key?: string | null
           broker_id: number
           broker_name: string
@@ -39,6 +41,7 @@ export type Database = {
           username: string
         }
         Update: {
+          accesstoken?: string | null
           api_key?: string | null
           broker_id?: number
           broker_name?: string

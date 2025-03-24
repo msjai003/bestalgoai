@@ -13,6 +13,7 @@ export interface BrokerCredentials {
   username: string;
   password: string;
   apiKey: string;
+  accessToken: string; // Added new field
   twoFactorSecret: string;
   twoFactorCode: string;
   sessionId: string;

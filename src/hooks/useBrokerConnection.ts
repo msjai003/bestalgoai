@@ -14,6 +14,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
     username: "",
     password: "",
     apiKey: "",
+    accessToken: "", // Added new field
     twoFactorSecret: "",
     twoFactorCode: "",
     sessionId: ""
@@ -66,6 +67,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           username: credentials.username,
           password: credentials.password,
           api_key: credentials.apiKey || null,
+          accesstoken: credentials.accessToken || null, // Added new field
           two_factor_secret: credentials.twoFactorSecret || null,
           session_id: credentials.sessionId || null,
           status: 'connected' // Changed from 'pending' to 'connected'
