@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Dialog,
@@ -23,6 +24,13 @@ interface PaymentDialogProps {
   selectedStrategyName?: string | null;
 }
 
+interface RazorpayConfig {
+  test_key: string;
+  test_secret: string;
+  live_key: string;
+  mode: 'test' | 'live';
+}
+
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
   open,
   onOpenChange,
@@ -35,6 +43,33 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [razorpayConfig, setRazorpayConfig] = React.useState<RazorpayConfig | null>(null);
+  
+  React.useEffect(() => {
+    const fetchRazorpayConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_panel')
+          .select('feature_value')
+          .eq('feature_name', 'razorpay_config')
+          .single();
+        
+        if (error) {
+          console.error('Error fetching Razorpay config:', error);
+          return;
+        }
+        
+        if (data && data.feature_value) {
+          setRazorpayConfig(data.feature_value as RazorpayConfig);
+          console.log('Razorpay config loaded:', data.feature_value);
+        }
+      } catch (err) {
+        console.error('Failed to fetch Razorpay config:', err);
+      }
+    };
+    
+    fetchRazorpayConfig();
+  }, []);
   
   const unlockAllStrategies = async (userId: string) => {
     try {
@@ -133,14 +168,28 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       return;
     }
 
+    if (!razorpayConfig) {
+      toast({
+        title: "Configuration Error",
+        description: "Payment system configuration is not available. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     const amount = convertPriceToAmount(planPrice);
     
     const userName = user.email?.split('@')[0] || "";
     const userEmail = user.email || "";
     
+    // Use the key based on the mode from admin_panel
+    const apiKey = razorpayConfig.mode === 'test' 
+      ? razorpayConfig.test_key 
+      : razorpayConfig.live_key;
+    
     const options = {
-      key: "rzp_test_iN0M3B79HiBpvQ",
+      key: apiKey,
       amount: amount,
       currency: "INR",
       name: "AlgoTrade",
@@ -181,10 +230,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   React.useEffect(() => {
-    if (open) {
+    if (open && razorpayConfig) {
       handleRazorpayPayment();
     }
-  }, [open]);
+  }, [open, razorpayConfig]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -223,7 +272,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </div>
         
         <div className="text-xs text-gray-400 mt-4">
-          <p>This application is using Razorpay's test payment processing.</p>
+          <p>This application is using Razorpay's {razorpayConfig?.mode || 'test'} payment processing.</p>
           <p>Your payment information is securely handled by Razorpay.</p>
         </div>
       </DialogContent>
