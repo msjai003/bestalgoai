@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const RegistrationFooter: React.FC = () => {
   return (
@@ -9,18 +10,22 @@ const RegistrationFooter: React.FC = () => {
       <div className="relative z-10">
         <p className="mb-2">
           By continuing, you agree to our{' '}
-          <Button variant="link" className="text-cyan p-0 h-auto">
-            Terms
-          </Button>{' '}
+          <Link to="/terms">
+            <Button variant="link" className="text-cyan p-0 h-auto">
+              Terms
+            </Button>
+          </Link>{' '}
           &{' '}
-          <Button variant="link" className="text-cyan p-0 h-auto">
-            Privacy Policy
-          </Button>
+          <Link to="/terms">
+            <Button variant="link" className="text-cyan p-0 h-auto">
+              Privacy Policy
+            </Button>
+          </Link>
         </p>
         <p>
           Need help?{' '}
-          <Button variant="link" className="text-cyan p-0 h-auto">
-            Contact Support
+          <Button variant="link" className="text-cyan p-0 h-auto" asChild>
+            <a href="mailto:enquiry@infocap.info">Contact Support</a>
           </Button>
         </p>
       </div>

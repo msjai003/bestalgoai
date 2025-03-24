@@ -99,7 +99,7 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center space-x-3 text-gray-300 group">
                 <Mail size={16} className="text-cyan" />
-                <a href="mailto:support@bestalgo.ai" className="hover:text-cyan transition-colors">support@bestalgo.ai</a>
+                <a href="mailto:enquiry@infocap.info" className="hover:text-cyan transition-colors">enquiry@infocap.info</a>
               </li>
               <li className="flex items-center space-x-3 text-gray-300">
                 <MapPin size={16} className="text-cyan" />
@@ -107,7 +107,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center space-x-3 text-gray-300">
                 <Phone size={16} className="text-cyan" />
-                <span>+91 XXXXX XXXXX</span>
+                <a href="tel:+919600898633" className="hover:text-cyan transition-colors">+91 9600 898 633</a>
               </li>
             </ul>
           </div>

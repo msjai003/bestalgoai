@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -86,196 +87,87 @@ const Terms = () => {
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">1. Introduction</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-2">
-                    <p>Welcome to BestAlgo.ai - Platform, a trading software developed and owned by Infocap Securities Private Limited ("Company"). BestAlgo.ai is an algorithmic trading platform designed to facilitate automated and data-driven trading in the Indian stock market.</p>
-                    <p>By accessing and using BestAlgo.ai, you acknowledge that you have read, understood, and agreed to these Legal Terms & Privacy Policy. If you do not agree, please refrain from using our platform.</p>
-                    <p>BestAlgo.ai operates as a technology provider and does not provide investment advice. Users are solely responsible for their trading decisions, and all transactions are executed at their discretion.</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">2. Legal Disclaimer</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-2">
-                    <p><span className="font-medium">No Investment Advice:</span> BestAlgo.ai is a software product and does not provide financial, investment, tax, or legal advice. Users should conduct their own research or consult a professional before making trading decisions.</p>
-                    <p><span className="font-medium">SEBI Compliance:</span> BestAlgo.ai does not operate as a SEBI-registered investment advisor (RIA) or stockbroker. We do not guarantee profits, and users must comply with SEBI regulations while using the software.</p>
-                    <p><span className="font-medium">Market Risks:</span> Algorithmic trading involves risks such as market volatility, data inaccuracy, execution delays, and software limitations. Users must fully understand the risks before deploying live strategies.</p>
-                    <p><span className="font-medium">Brokerage Dependency:</span> BestAlgo.ai requires integration with third-party brokers for execution. Users are subject to the terms and conditions of their respective brokers.</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">3. Terms of Use</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-pink-500">1. Privacy Policy</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-4">
+                    <p>At Infocap Securities Private Limited, we prioritize the privacy and security of our clients' personal information. We collect and use data solely for providing our financial services and ensure that all information is kept confidential. We do not share your personal details with third parties without your consent, except as required by law. By using our services, you agree to our privacy practices as outlined in this policy.</p>
+                    
                     <div>
-                      <h4 className="font-medium mb-1">3.1 Account Registration & User Obligations</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Users must be 18 years or older and possess a valid Indian stockbroker trading account.</li>
-                        <li>The information provided during registration must be accurate, up-to-date, and complete.</li>
-                        <li>Users are responsible for maintaining the confidentiality of their credentials.</li>
+                      <h4 className="font-medium mb-2">Refund Policy:</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>Fees once paid are non-refundable under any circumstances.</li>
+                        <li>Refunds are applicable only for duplicate transactions.</li>
+                        <li>If you need a refund, you must provide a valid reason and intimate us within 3 days.</li>
+                        <li>Any disputes reported after 3 days will not be considered.</li>
+                        <li>Approved refunds will be processed within 10-15 business days.</li>
                       </ul>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-1">3.2 Permitted Use</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Users are granted a limited, non-exclusive, non-transferable license to access and use BestAlgo.ai.</li>
-                        <li>The software must not be used for fraudulent activities, market manipulation, or unauthorized access to financial data.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">3.3 Prohibited Activities</h4>
-                      <p>Users are strictly prohibited from:</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Reverse engineering, modifying, or reselling our software.</li>
-                        <li>Misusing APIs or attempting to manipulate market data.</li>
-                        <li>Executing trades in violation of SEBI or broker regulations.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">3.4 Software Integrity & Data Accuracy</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>BestAlgo.ai provides trading signals, automated execution, and analytical tools, but does not guarantee accuracy, performance, or uninterrupted access.</li>
-                        <li>Real-time data delays, broker API limitations, and system malfunctions may impact order execution.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">3.5 Service Downtime & Liability</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>While we ensure 99.9% uptime, occasional disruptions due to maintenance, broker API issues, or regulatory changes may occur.</li>
-                        <li>BestAlgo.ai is not liable for any financial losses due to software downtime or execution delays.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">4. Privacy Policy</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-1">4.1 Data Collection & Usage</h4>
-                      <p>BestAlgo.ai collects and processes the following user data:</p>
+                      <h4 className="font-medium mb-1">Data Collection & Usage</h4>
                       <ul className="list-disc pl-5 space-y-1">
                         <li><span className="italic">Personal Information:</span> Name, email, phone number, broker details.</li>
                         <li><span className="italic">Financial Data:</span> Trading account link, order history, strategy preferences.</li>
                         <li><span className="italic">Device & Usage Data:</span> IP address, browser type, system logs.</li>
                       </ul>
-                      <p className="mt-2">Why We Collect Data:</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>To facilitate automated trading and strategy execution.</li>
-                        <li>To enhance user experience with AI-driven insights.</li>
-                        <li>To comply with legal requirements and prevent fraud.</li>
-                      </ul>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-1">4.2 Data Security Measures</h4>
+                      <h4 className="font-medium mb-1">Data Security Measures</h4>
                       <ul className="list-disc pl-5 space-y-1">
                         <li>BestAlgo.ai implements AES-256 encryption and secured API integrations.</li>
                         <li>We do not store brokerage login credentials or execute unauthorized trades.</li>
                         <li>All transactions occur via user-authorized broker APIs, ensuring compliance with SEBI security protocols.</li>
                       </ul>
                     </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">4.3 Data Sharing & Third-Party Integrations</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>We do not sell or rent user data to third parties.</li>
-                        <li>User data may be shared with brokers, analytics providers, or regulatory bodies if required by law.</li>
-                        <li>Users will be notified if a third-party integration requires data access.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">4.4 Cookies & Tracking</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>We use cookies to track user activity and improve platform functionality.</li>
-                        <li>Users may manage cookie preferences in their browser settings.</li>
-                      </ul>
-                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">5. Subscription & Payments</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-pink-500">2. Terms of Use</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-4">
                     <div>
-                      <h4 className="font-medium mb-1">5.1 Pricing & Subscription Plans</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>BestAlgo.ai offers monthly, quarterly, and annual subscription plans.</li>
-                        <li>Payments are processed through secure payment gateways.</li>
-                      </ul>
+                      <h4 className="font-medium mb-1">1. Acceptance</h4>
+                      <p>By using our services, you agree to these terms. If you do not agree, please do not use our services.</p>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-1">5.2 Refund & Cancellation Policy</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>No refunds for used subscription periods.</li>
-                        <li>Users may cancel their subscription at any time, effective at the next billing cycle.</li>
-                      </ul>
+                      <h4 className="font-medium mb-1">2. Services</h4>
+                      <p>We provide trading solutions, educational webinars, and software for market analysis. All services are subject to availability and may change without prior notice.</p>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-1">5.3 Auto-Renewal</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Subscriptions are automatically renewed unless manually canceled.</li>
-                      </ul>
+                      <h4 className="font-medium mb-1">3. User Responsibility</h4>
+                      <p>Users must provide accurate information and comply with all applicable laws. We are not responsible for financial losses arising from market risks.</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-1">4. Privacy & Security</h4>
+                      <p>We protect user data as per our Privacy Policy and do not share personal information without consent, except as required by law.</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-1">5. Refund Policy</h4>
+                      <p>Payments are non-refundable except in cases of duplicate transactions. Refund requests must be made within 3 days with a valid reason.</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-1">6. Limitation of Liability</h4>
+                      <p>We are not liable for any financial losses, technical failures, or third-party disruptions affecting our services.</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-1">7. Changes to Terms</h4>
+                      <p>We reserve the right to modify these terms at any time. Continued use of our services means you accept the updated terms.</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">6. Liability & Indemnification</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-1">6.1 Limitation of Liability</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>BestAlgo.ai shall not be held responsible for any trading losses incurred while using our software.</li>
-                        <li>We do not guarantee profits or strategy performance.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">6.2 Indemnification</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Users agree to indemnify Infocap Securities Private Limited from any claims, losses, or damages arising from their trading activities.</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-1">6.3 Force Majeure</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>We are not liable for disruptions due to regulatory changes, cyber-attacks, or technical failures.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">7. Governing Law & Dispute Resolution</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-2">
-                    <p>This agreement is governed by Indian law.</p>
-                    <p>Disputes will be resolved through arbitration in Mumbai, India, per the Arbitration and Conciliation Act, 1996.</p>
-                    <p>Users submit to SEBI & Indian courts for any legal matters.</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">8. Updates & Modifications</h3>
-                  <div className="text-sm leading-relaxed text-gray-300 space-y-2">
-                    <p>BestAlgo.ai reserves the right to update this policy at any time.</p>
-                    <p>Users will be notified of major changes via email or dashboard alerts.</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">9. Contact Information</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-pink-500">3. Contact Information</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-2">
                     <p>For support or legal inquiries:</p>
-                    <p>📧 Email: <a href="mailto:support@bestalgo.ai" className="text-pink-500 hover:underline">support@bestalgo.ai</a></p>
+                    <p>📧 Email: <a href="mailto:enquiry@infocap.info" className="text-pink-500 hover:underline">enquiry@infocap.info</a></p>
+                    <p>📞 Phone: <a href="tel:+919600898633" className="text-pink-500 hover:underline">+91 9600 898 633</a></p>
                     <p>📍 Registered Office: Infocap Securities Private Limited, No.27/A, First Floor, Veerapathira Pillai Compound, APK Road, Villapuram, Madurai - 625012</p>
                     <p className="font-medium mt-4">By using BestAlgo.ai, you agree to these Legal Terms & Privacy Policy</p>
                   </div>
