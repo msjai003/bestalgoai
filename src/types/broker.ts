@@ -1,4 +1,3 @@
-
 export interface Broker {
   id: number;
   name: string;
@@ -11,11 +10,11 @@ export interface Broker {
 }
 
 export interface BrokerCredentials {
+  accessToken: string;
   username: string;
   password: string;
   apiKey: string;
-  secretKey: string; // Added new field for Zerodha secret key
-  accessToken: string;
+  secretKey: string;
   twoFactorSecret: string;
   twoFactorCode: string;
   sessionId: string;

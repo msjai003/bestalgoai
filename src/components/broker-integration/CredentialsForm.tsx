@@ -52,6 +52,25 @@ export const CredentialsForm = ({
       )}
 
       <div className="space-y-4">
+        {/* Access Token - Primary Credential */}
+        <div className="bg-cyan/10 p-4 rounded-lg border border-cyan/30 mb-6">
+          <Label htmlFor="accessToken" className="text-cyan flex items-center gap-2 mb-2 font-medium">
+            <KeyRound className="w-5 h-5" /> Access Token (Required)
+          </Label>
+          <Input
+            id="accessToken"
+            type="text"
+            placeholder="Enter your access token"
+            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
+            value={credentials.accessToken}
+            onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
+          />
+          <p className="text-gray-400 text-xs mt-2">
+            This is the primary credential needed to connect to your broker's API.
+          </p>
+        </div>
+
+        {/* Username and Password - Required by database schema */}
         <div>
           <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
             <User className="w-4 h-4" /> Username / Account ID
@@ -91,20 +110,6 @@ export const CredentialsForm = ({
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.sessionId}
             onChange={(e) => setCredentials({ ...credentials, sessionId: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="accessToken" className="text-gray-300 flex items-center gap-2">
-            <KeyRound className="w-4 h-4" /> Access Token
-          </Label>
-          <Input
-            id="accessToken"
-            type="text"
-            placeholder="Enter your access token"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.accessToken}
-            onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
           />
         </div>
 

@@ -14,7 +14,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
     username: "",
     password: "",
     apiKey: "",
-    secretKey: "", // Added new field for Zerodha secret key
+    secretKey: "",
     accessToken: "",
     twoFactorSecret: "",
     twoFactorCode: "",
@@ -29,13 +29,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCredentialsSubmit = async () => {
-    if (!credentials.username || !credentials.password) {
-      toast.error("Please enter your username and password");
-      return;
-    }
-
-    if (selectedBroker?.apiRequired && (!credentials.apiKey || !credentials.twoFactorSecret)) {
-      toast.error("API Key and 2FA Secret are required for this broker");
+    if (!credentials.accessToken) {
+      toast.error("Please enter your access token");
       return;
     }
 
@@ -58,20 +53,18 @@ export const useBrokerConnection = (selectedBroker: any) => {
     setIsSubmitting(true);
 
     try {
-      // Save broker credentials to the database with status 'connected'
+      // Save broker credentials to the database with status 'connected', focusing on accessToken
       const { data, error } = await supabase
         .from('broker_credentials')
         .insert({
           user_id: user.id,
           broker_id: selectedBroker.id,
           broker_name: selectedBroker.name,
+          // Only store username and password as required by the table schema
           username: credentials.username,
           password: credentials.password,
-          api_key: credentials.apiKey || null,
-          secret_key: credentials.secretKey || null, // Added new field
-          accesstoken: credentials.accessToken || null,
-          two_factor_secret: credentials.twoFactorSecret || null,
-          session_id: credentials.sessionId || null,
+          // Focus on storing the access token as the primary credential
+          accesstoken: credentials.accessToken, 
           status: 'connected'
         });
 
