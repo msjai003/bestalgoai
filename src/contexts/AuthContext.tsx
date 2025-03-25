@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -219,6 +220,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         provider: 'google',
         options: {
           redirectTo: window.location.origin + '/auth/callback',
+          queryParams: {
+            // Include prompt parameter to always show account selection
+            // This allows users to select different Google accounts for login
+            prompt: 'select_account',
+            // Also request profile information that will be stored in user metadata
+            access_type: 'offline',
+            include_granted_scopes: 'true'
+          }
         }
       });
 

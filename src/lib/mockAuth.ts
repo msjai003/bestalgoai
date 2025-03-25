@@ -1,4 +1,3 @@
-
 // Mock authentication service to replace Supabase
 import { toast } from 'sonner';
 
@@ -114,6 +113,7 @@ export const signInWithGoogle = async () => {
   localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
   
   console.log('Mock Google sign-in successful:', user);
+  toast.success('Google login successful!');
   
   return { data: { user }, error: null };
 };
