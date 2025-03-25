@@ -2,8 +2,9 @@
 import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Broker } from "@/types/broker";
-import { BrokerCredentials } from "@/types/broker";
+import { Broker, BrokerCredentials } from "@/types/broker";
+import { useBrokerFields } from "@/hooks/useBrokerFields";
+import { Loader2 } from "lucide-react";
 
 interface CredentialsFormProps {
   selectedBroker: Broker | null;
@@ -20,6 +21,68 @@ export const CredentialsForm = ({
   showApiFields,
   onBack,
 }: CredentialsFormProps) => {
+  const { fields, isLoading, error } = useBrokerFields(selectedBroker?.id || null);
+
+  const getIconForField = (fieldName: string) => {
+    switch (fieldName) {
+      case 'username':
+        return <User className="w-4 h-4" />;
+      case 'password':
+        return <Lock className="w-4 h-4" />;
+      case 'apiKey':
+        return <Key className="w-4 h-4" />;
+      case 'secretKey':
+        return <FileKey className="w-4 h-4" />;
+      case 'twoFactorSecret':
+        return <Shield className="w-4 h-4" />;
+      case 'sessionId':
+        return <Hash className="w-4 h-4" />;
+      case 'twoFactorCode':
+        return <KeyRound className="w-4 h-4" />;
+      default:
+        return <Key className="w-4 h-4" />;
+    }
+  };
+
+  const handleFieldChange = (fieldName: string, value: string) => {
+    setCredentials({ ...credentials, [fieldName]: value });
+  };
+
+  const renderFields = () => {
+    // Filter fields based on whether they're API fields and the showApiFields prop
+    const filteredFields = fields.filter(field => {
+      // ApiKey fields and similar should only show when showApiFields is true
+      const isApiField = field.field_name === 'apiKey' || 
+                         field.field_name === 'secretKey' || 
+                         field.field_name === 'twoFactorSecret';
+      
+      return isApiField ? showApiFields : true;
+    });
+
+    return filteredFields.map(field => (
+      <div key={field.id}>
+        <Label htmlFor={field.field_name} className="text-gray-300 flex items-center gap-2">
+          {getIconForField(field.field_name)} {field.display_name}
+          {field.is_required && <span className="text-red-500">*</span>}
+        </Label>
+        <Input
+          id={field.field_name}
+          type={field.field_type}
+          placeholder={field.placeholder || `Enter your ${field.display_name.toLowerCase()}`}
+          className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
+          value={credentials[field.field_name] || ''}
+          onChange={(e) => handleFieldChange(field.field_name, e.target.value)}
+          required={field.is_required}
+        />
+        {field.field_name === 'username' && (
+          <p className="text-gray-400 text-xs mt-1">
+            This will be used to connect to your broker's API.
+          </p>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <section className="mb-6">
       <div className="flex items-center mb-4">
@@ -52,103 +115,17 @@ export const CredentialsForm = ({
       )}
 
       <div className="space-y-4">
-        {/* Removed explicit Access Token field */}
-        
-        {/* Username and Password - Required by database schema */}
-        <div>
-          <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
-            <User className="w-4 h-4" /> Username / Account ID
-          </Label>
-          <Input
-            id="username"
-            type="text"
-            placeholder="Enter your broker username"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.username}
-            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-          />
-          <p className="text-gray-400 text-xs mt-1">
-            This will be used to connect to your broker's API.
-          </p>
-        </div>
-
-        <div>
-          <Label htmlFor="password" className="text-gray-300 flex items-center gap-2">
-            <Lock className="w-4 h-4" /> Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your broker password"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.password}
-            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="sessionId" className="text-gray-300 flex items-center gap-2">
-            <Hash className="w-4 h-4" /> Session ID
-          </Label>
-          <Input
-            id="sessionId"
-            type="text"
-            placeholder="Enter your session ID"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.sessionId}
-            onChange={(e) => setCredentials({ ...credentials, sessionId: e.target.value })}
-          />
-        </div>
-
-        {showApiFields && (
-          <>
-            <div>
-              <Label htmlFor="apiKey" className="text-gray-300 flex items-center gap-2">
-                <Key className="w-4 h-4" /> API Key
-              </Label>
-              <Input
-                id="apiKey"
-                type="text"
-                placeholder="Enter your API key"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                value={credentials.apiKey}
-                onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
-              />
-            </div>
-
-            {/* Show Secret Key only for Zerodha */}
-            {selectedBroker?.requiresSecretKey && (
-              <div>
-                <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
-                  <FileKey className="w-4 h-4" /> Secret Key
-                </Label>
-                <Input
-                  id="secretKey"
-                  type="password"
-                  placeholder="Enter your secret key"
-                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                  value={credentials.secretKey}
-                  onChange={(e) => setCredentials({ ...credentials, secretKey: e.target.value })}
-                />
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
-                <Shield className="w-4 h-4" /> 2FA Secret
-              </Label>
-              <Input
-                id="twoFactorSecret"
-                type="password"
-                placeholder="Enter your 2FA secret"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                value={credentials.twoFactorSecret}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, twoFactorSecret: e.target.value })
-                }
-              />
-            </div>
-          </>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span className="ml-2">Loading input fields...</span>
+          </div>
+        ) : error ? (
+          <div className="text-red-500 p-4 border border-red-500 rounded-md">
+            Error loading broker fields: {error}
+          </div>
+        ) : (
+          renderFields()
         )}
       </div>
 

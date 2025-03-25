@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -67,18 +68,27 @@ export const useBrokerConnection = (selectedBroker: any) => {
     setIsSubmitting(true);
 
     try {
+      // Prepare the credentials data for saving
+      const credentialsData = {
+        user_id: user.id,
+        broker_id: selectedBroker.id,
+        broker_name: selectedBroker.name,
+        username: credentials.username,
+        password: credentials.password,
+        accesstoken: credentials.accessToken
+      };
+
+      // Add optional fields if they have values
+      if (credentials.apiKey) credentialsData['api_key'] = credentials.apiKey;
+      if (credentials.secretKey) credentialsData['secret_key'] = credentials.secretKey;
+      if (credentials.twoFactorSecret) credentialsData['two_factor_secret'] = credentials.twoFactorSecret;
+      if (credentials.sessionId) credentialsData['session_id'] = credentials.sessionId;
+
       // Save broker credentials to the database with status 'connected'
       const { data, error } = await supabase
         .from('broker_credentials')
         .insert({
-          user_id: user.id,
-          broker_id: selectedBroker.id,
-          broker_name: selectedBroker.name,
-          // Store username and password as required by the schema
-          username: credentials.username,
-          password: credentials.password,
-          // Store the access token (auto-generated or provided)
-          accesstoken: credentials.accessToken,
+          ...credentialsData,
           status: 'connected'
         });
 
