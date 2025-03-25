@@ -90,6 +90,51 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers_adminpanel: {
+        Row: {
+          broker_id: number
+          broker_name: string
+          created_at: string | null
+          display_name: string
+          field_name: string
+          field_type: string
+          id: number
+          is_required: boolean | null
+          is_secret: boolean | null
+          placeholder: string | null
+          sort_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          broker_name: string
+          created_at?: string | null
+          display_name: string
+          field_name: string
+          field_type?: string
+          id?: number
+          is_required?: boolean | null
+          is_secret?: boolean | null
+          placeholder?: string | null
+          sort_order: number
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          broker_name?: string
+          created_at?: string | null
+          display_name?: string
+          field_name?: string
+          field_type?: string
+          id?: number
+          is_required?: boolean | null
+          is_secret?: boolean | null
+          placeholder?: string | null
+          sort_order?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       brokers_functions: {
         Row: {
           broker_id: number
