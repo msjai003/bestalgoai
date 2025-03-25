@@ -14,7 +14,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
     username: "",
     password: "",
     apiKey: "",
-    accessToken: "", // Added new field
+    secretKey: "", // Added new field for Zerodha secret key
+    accessToken: "",
     twoFactorSecret: "",
     twoFactorCode: "",
     sessionId: ""
@@ -67,10 +68,11 @@ export const useBrokerConnection = (selectedBroker: any) => {
           username: credentials.username,
           password: credentials.password,
           api_key: credentials.apiKey || null,
-          accesstoken: credentials.accessToken || null, // Added new field
+          secret_key: credentials.secretKey || null, // Added new field
+          accesstoken: credentials.accessToken || null,
           two_factor_secret: credentials.twoFactorSecret || null,
           session_id: credentials.sessionId || null,
-          status: 'connected' // Changed from 'pending' to 'connected'
+          status: 'connected'
         });
 
       if (error) {

@@ -7,13 +7,15 @@ export interface Broker {
   supportedAssets: string[];
   fees: string;
   apiRequired: boolean;
+  requiresSecretKey?: boolean; // New field to mark brokers that need secret key
 }
 
 export interface BrokerCredentials {
   username: string;
   password: string;
   apiKey: string;
-  accessToken: string; // Added new field
+  secretKey: string; // Added new field for Zerodha secret key
+  accessToken: string;
   twoFactorSecret: string;
   twoFactorCode: string;
   sessionId: string;

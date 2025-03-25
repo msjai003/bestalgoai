@@ -1,5 +1,5 @@
 
-import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Broker } from "@/types/broker";
@@ -123,6 +123,23 @@ export const CredentialsForm = ({
                 onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
               />
             </div>
+
+            {/* Show Secret Key only for Zerodha */}
+            {selectedBroker?.requiresSecretKey && (
+              <div>
+                <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
+                  <FileKey className="w-4 h-4" /> Secret Key
+                </Label>
+                <Input
+                  id="secretKey"
+                  type="password"
+                  placeholder="Enter your secret key"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
+                  value={credentials.secretKey}
+                  onChange={(e) => setCredentials({ ...credentials, secretKey: e.target.value })}
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">

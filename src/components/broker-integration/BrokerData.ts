@@ -9,7 +9,8 @@ export const brokers: Broker[] = [
     logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg",
     supportedAssets: ["Stocks", "Options", "Futures", "Commodities"],
     fees: "₹0 for equity delivery, ₹20 per order for intraday",
-    apiRequired: true
+    apiRequired: true,
+    requiresSecretKey: true  // Only Zerodha requires secret key
   },
   {
     id: 2,
