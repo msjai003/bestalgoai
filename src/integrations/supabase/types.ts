@@ -48,6 +48,7 @@ export type Database = {
           created_at: string
           id: string
           password: string
+          secret_key: string | null
           session_id: string | null
           status: string
           two_factor_secret: string | null
@@ -63,6 +64,7 @@ export type Database = {
           created_at?: string
           id?: string
           password: string
+          secret_key?: string | null
           session_id?: string | null
           status?: string
           two_factor_secret?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           created_at?: string
           id?: string
           password?: string
+          secret_key?: string | null
           session_id?: string | null
           status?: string
           two_factor_secret?: string | null

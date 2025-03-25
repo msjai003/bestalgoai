@@ -28,7 +28,7 @@ export const brokers: Broker[] = [
     logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg",
     supportedAssets: ["Stocks", "Options", "Futures", "Mutual Funds"],
     fees: "0.275% for delivery, 0.05% for intraday",
-    apiRequired: false
+    apiRequired: true  // Changed from false to true to require API key and 2FA
   },
   {
     id: 4,

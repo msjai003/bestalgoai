@@ -72,7 +72,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-gray-700">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-cyan/5 rounded-xl p-4 border border-cyan/20">
       <h3 className="text-lg font-medium text-white mb-4">Custom Strategy Configuration</h3>
       
       {/* Instrument & Market Settings */}
@@ -481,7 +481,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
       <div className="pt-4">
         <Button 
           type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white"
+          className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-white"
         >
           Deploy Strategy
         </Button>

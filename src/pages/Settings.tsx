@@ -180,6 +180,7 @@ const Settings = () => {
                       icon={<Bell className="w-5 h-5 text-cyan" />} 
                       label="Notifications" 
                       onClick={() => navigate("/notifications")}
+                      className="bg-cyan/10 hover:bg-cyan/20" // Added cyan background
                     />
                   </div>
                 </div>
@@ -215,14 +216,16 @@ const Settings = () => {
 const SettingsLink = ({ 
   icon, 
   label, 
-  onClick 
+  onClick,
+  className = "" 
 }: { 
   icon: React.ReactNode; 
   label: string; 
   onClick?: () => void;
+  className?: string;
 }) => (
   <button 
-    className="flex items-center justify-between py-3 px-2 w-full text-left rounded-lg hover:bg-charcoalSecondary/50 transition-colors"
+    className={`flex items-center justify-between py-3 px-2 w-full text-left rounded-lg hover:bg-charcoalSecondary/50 transition-colors ${className}`}
     onClick={onClick}
   >
     <div className="flex items-center space-x-3">
