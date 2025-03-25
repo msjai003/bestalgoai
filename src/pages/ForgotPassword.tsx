@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -128,68 +129,10 @@ const ForgotPassword = () => {
     checkForMagicLink();
   }, [searchParams, currentStep]);
 
-  const storePasswordResetAttempt = async (emailAddress: string, userAgent: string, resetToken?: string) => {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id;
-      
-      const ipAddress = window.navigator.userAgent;
-      
-      if (userId) {
-        const { error } = await supabase
-          .from('forgot_details')
-          .insert({
-            user_id: userId,
-            email: emailAddress,
-            ip_address: ipAddress,
-            user_agent: userAgent,
-            reset_token: resetToken || null
-          });
-          
-        if (error) {
-          console.error('Error storing password reset details for authenticated user:', error);
-        } else {
-          console.log('Password reset details stored for authenticated user');
-        }
-      } else {
-        const { data: userData, error: userError } = await supabase
-          .from('user_profiles')
-          .select('id')
-          .eq('email', emailAddress)
-          .single();
-          
-        if (userError || !userData) {
-          console.error('Could not find user profile for this email:', emailAddress);
-          return;
-        }
-        
-        const { error } = await supabase
-          .from('forgot_details')
-          .insert({
-            user_id: userData.id,
-            email: emailAddress,
-            ip_address: ipAddress,
-            user_agent: userAgent,
-            reset_token: resetToken || null
-          });
-          
-        if (error) {
-          console.error('Error storing password reset details:', error);
-        } else {
-          console.log('Password reset details stored for email lookup');
-        }
-      }
-    } catch (err) {
-      console.error('Error in storePasswordResetAttempt:', err);
-    }
-  };
-
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
-      const resetToken = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      
       const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
         redirectTo: `${window.location.origin}/auth/callback`,
       });
@@ -198,12 +141,6 @@ const ForgotPassword = () => {
         console.error('Error sending password reset email:', error);
         throw error;
       }
-      
-      await storePasswordResetAttempt(
-        emailAddress, 
-        window.navigator.userAgent,
-        resetToken
-      );
       
       return true;
     } catch (err) {
@@ -374,30 +311,6 @@ const ForgotPassword = () => {
         setErrorMessage(error.message || 'Failed to update password');
         setIsLoading(false);
         return;
-      }
-
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user.id;
-        
-        if (userId) {
-          const { error: updateError } = await supabase
-            .from('forgot_details')
-            .update({ 
-              is_used: true,
-              used_timestamp: new Date().toISOString()
-            })
-            .eq('user_id', userId)
-            .eq('is_used', false);
-            
-          if (updateError) {
-            console.error('Error updating forgot_details status:', updateError);
-          } else {
-            console.log('Password reset record marked as used');
-          }
-        }
-      } catch (updateErr) {
-        console.error('Error updating reset record:', updateErr);
       }
         
       console.log("Password updated successfully");
