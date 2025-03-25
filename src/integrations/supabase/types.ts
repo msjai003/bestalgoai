@@ -177,42 +177,6 @@ export type Database = {
         }
         Relationships: []
       }
-      forgot_details: {
-        Row: {
-          email: string
-          id: string
-          ip_address: string | null
-          is_used: boolean | null
-          request_timestamp: string
-          reset_token: string | null
-          used_timestamp: string | null
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          email: string
-          id?: string
-          ip_address?: string | null
-          is_used?: boolean | null
-          request_timestamp?: string
-          reset_token?: string | null
-          used_timestamp?: string | null
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          email?: string
-          id?: string
-          ip_address?: string | null
-          is_used?: boolean | null
-          request_timestamp?: string
-          reset_token?: string | null
-          used_timestamp?: string | null
-          user_agent?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       plan_details: {
         Row: {
           id: string

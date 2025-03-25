@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -29,12 +28,27 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCredentialsSubmit = async () => {
-    if (!credentials.accessToken) {
-      toast.error("Please enter your access token");
+    if (!credentials.username) {
+      toast.error("Please enter your username");
       return;
     }
 
-    // Move directly to settings instead of verification
+    if (!credentials.password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
+    // Auto-generate an access token from username and password
+    // This keeps the access token concept in the backend without exposing it in UI
+    const generatedToken = `${credentials.username}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    
+    // Update the accessToken in the credentials state
+    setCredentials(prev => ({
+      ...prev,
+      accessToken: generatedToken
+    }));
+
+    // Move to settings
     setConnectionStep("settings");
     toast.success("Credentials accepted");
   };
@@ -53,18 +67,18 @@ export const useBrokerConnection = (selectedBroker: any) => {
     setIsSubmitting(true);
 
     try {
-      // Save broker credentials to the database with status 'connected', focusing on accessToken
+      // Save broker credentials to the database with status 'connected'
       const { data, error } = await supabase
         .from('broker_credentials')
         .insert({
           user_id: user.id,
           broker_id: selectedBroker.id,
           broker_name: selectedBroker.name,
-          // Only store username and password as required by the table schema
+          // Store username and password as required by the schema
           username: credentials.username,
           password: credentials.password,
-          // Focus on storing the access token as the primary credential
-          accesstoken: credentials.accessToken, 
+          // Store the access token (auto-generated or provided)
+          accesstoken: credentials.accessToken,
           status: 'connected'
         });
 

@@ -52,24 +52,8 @@ export const CredentialsForm = ({
       )}
 
       <div className="space-y-4">
-        {/* Access Token - Primary Credential */}
-        <div className="bg-cyan/10 p-4 rounded-lg border border-cyan/30 mb-6">
-          <Label htmlFor="accessToken" className="text-cyan flex items-center gap-2 mb-2 font-medium">
-            <KeyRound className="w-5 h-5" /> Access Token (Required)
-          </Label>
-          <Input
-            id="accessToken"
-            type="text"
-            placeholder="Enter your access token"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.accessToken}
-            onChange={(e) => setCredentials({ ...credentials, accessToken: e.target.value })}
-          />
-          <p className="text-gray-400 text-xs mt-2">
-            This is the primary credential needed to connect to your broker's API.
-          </p>
-        </div>
-
+        {/* Removed explicit Access Token field */}
+        
         {/* Username and Password - Required by database schema */}
         <div>
           <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
@@ -83,6 +67,9 @@ export const CredentialsForm = ({
             value={credentials.username}
             onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
           />
+          <p className="text-gray-400 text-xs mt-1">
+            This will be used to connect to your broker's API.
+          </p>
         </div>
 
         <div>
@@ -165,7 +152,7 @@ export const CredentialsForm = ({
         )}
       </div>
 
-      {/* Security Notice - Moved to bottom and made smaller */}
+      {/* Security Notice */}
       <div className="mt-8 p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-lg border border-pink-600/40 text-sm">
         <div className="flex items-center">
           <Shield className="w-5 h-5 text-pink-400 mr-2 flex-shrink-0" />

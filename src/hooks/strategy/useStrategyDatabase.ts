@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Strategy } from "./types";
 import { loadWishlistItems } from "./useStrategyWishlist";
@@ -198,7 +199,7 @@ export const fetchUserBrokers = async (userId: string): Promise<Array<{id: strin
     .select('id, broker_name')
     .eq('user_id', userId)
     .eq('status', 'connected')
-    .not('accesstoken', 'is', null);  // Only return brokers with accesstoken set
+    .not('accesstoken', 'is', null);  // Keeping this filter to ensure only brokers with accesstoken are returned
     
   if (error) {
     console.error("Error fetching user brokers:", error);
