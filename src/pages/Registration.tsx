@@ -28,6 +28,9 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import RegistrationHeader from '@/components/registration/RegistrationHeader';
+import ProgressIndicator from '@/components/registration/ProgressIndicator';
+import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -38,6 +41,7 @@ const Registration = () => {
     confirmPassword: '',
     tradingExperience: 'beginner'
   });
+  const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +60,10 @@ const Registration = () => {
       ...prev,
       [field]: value
     }));
+    // Clear error when user makes changes
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
   };
 
   const validateForm = () => {
@@ -82,6 +90,14 @@ const Registration = () => {
     return true;
   };
 
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    } else {
+      navigate('/');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -103,7 +119,7 @@ const Registration = () => {
       if (profileCheckError) {
         console.error("Error checking for existing profile:", profileCheckError);
       } else if (existingProfiles) {
-        setErrorMessage('This email address you entered is already registered');
+        setErrorMessage('This email address is already registered');
         setIsLoading(false);
         return;
       }
@@ -127,7 +143,7 @@ const Registration = () => {
         if (error.message.includes("already registered") || 
             error.message.includes("already exists") ||
             error.message.includes("already in use")) {
-          setErrorMessage('This email address you entered is already registered');
+          setErrorMessage('This email address is already registered');
         } else {
           setErrorMessage(error.message);
         }
@@ -154,25 +170,14 @@ const Registration = () => {
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white p-4">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-gray-400">
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
-          <Link to="/" className="flex items-center">
-            <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
-            <span className="text-white text-xl ml-2">BestAlgo.ai</span>
-          </Link>
-        </div>
-        <Link to="/" className="text-gray-400">
-          <X className="h-5 w-5" />
-        </Link>
-      </div>
+      <RegistrationHeader handleBack={handleBack} />
 
       <section className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
         <p className="text-gray-400">Join thousands of traders using BestAlgo.ai</p>
       </section>
+
+      <ProgressIndicator step={step} totalSteps={1} />
 
       <Alert className="bg-cyan/10 border-cyan/30 mb-6" variant="info">
         <Info className="h-4 w-4 text-cyan" />
@@ -191,121 +196,77 @@ const Registration = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6 premium-card p-6 border border-cyan/30">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="Enter your name"
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
-                required
-              />
-            </div>
+        {/* Step 1: Basic Information */}
+        <RegistrationStepOne 
+          formData={formData} 
+          handleChange={handleChange} 
+        />
+        
+        <div>
+          <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level <span className="text-charcoalDanger">*</span></Label>
+          <div className="relative">
+            <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
+            <Select 
+              value={formData.tradingExperience} 
+              onValueChange={(value) => handleChange('tradingExperience', value)}
+            >
+              <SelectTrigger className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10">
+                <SelectValue placeholder="Select your experience level" />
+              </SelectTrigger>
+              <SelectContent className="bg-charcoalSecondary border-gray-700 text-white">
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="expert">Expert</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          
-          <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email address"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
-                required
-              />
-            </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="password" className="text-gray-300 mb-2 block">Password <span className="text-charcoalDanger">*</span></Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Create a secure password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
+              required
+            />
+            <button 
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
+        </div>
 
-          <div>
-            <Label htmlFor="mobile" className="text-gray-300 mb-2 block">Mobile Number <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="mobile"
-                type="tel"
-                placeholder="Enter your 10 digit mobile number"
-                value={formData.mobile}
-                onChange={(e) => handleChange('mobile', e.target.value)}
-                className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
-                required
-              />
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="tradingExperience" className="text-gray-300 mb-2 block">Trading Experience Level <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5 z-10" />
-              <Select 
-                value={formData.tradingExperience} 
-                onValueChange={(value) => handleChange('tradingExperience', value)}
-              >
-                <SelectTrigger className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10">
-                  <SelectValue placeholder="Select your experience level" />
-                </SelectTrigger>
-                <SelectContent className="bg-charcoalSecondary border-gray-700 text-white">
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="password" className="text-gray-300 mb-2 block">Password <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Create a secure password"
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
-                required
-              />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password <span className="text-charcoalDanger">*</span></Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
-                required
-              />
-              <button 
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-              >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
+        <div>
+          <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm Password <span className="text-charcoalDanger">*</span></Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10 pr-10"
+              required
+            />
+            <button 
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
         </div>
 

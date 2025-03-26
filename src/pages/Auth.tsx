@@ -40,7 +40,14 @@ const Auth = () => {
       const { error } = await signIn(email, password);
       
       if (error) {
-        setErrorMessage(error.message || 'Invalid email or password');
+        // Improved error message handling
+        if (error.message.includes("Invalid login")) {
+          setErrorMessage('Invalid email or password. Please try again.');
+        } else if (error.message.includes("Email not confirmed")) {
+          setErrorMessage('Please confirm your email address before logging in.');
+        } else {
+          setErrorMessage(error.message || 'An error occurred during login');
+        }
       } else {
         // Success handled by AuthContext's toast notification
         navigate('/dashboard');
@@ -61,6 +68,7 @@ const Auth = () => {
       const { error } = await signInWithGoogle();
       
       if (error) {
+        console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
       } else {
         // Success handled by AuthContext's toast notification
@@ -125,7 +133,10 @@ const Auth = () => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errorMessage) setErrorMessage(null); // Clear error on input change
+                }}
                 placeholder="your@email.com"
                 className="bg-charcoalSecondary/50 border-gray-700 text-white h-12"
               />
@@ -143,7 +154,10 @@ const Auth = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errorMessage) setErrorMessage(null); // Clear error on input change
+                  }}
                   placeholder="••••••••"
                   className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pr-10"
                 />
