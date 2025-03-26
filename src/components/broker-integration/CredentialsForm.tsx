@@ -20,6 +20,11 @@ export const CredentialsForm = ({
   showApiFields,
   onBack,
 }: CredentialsFormProps) => {
+  // Helper function to update a specific credential
+  const updateCredential = (field: keyof BrokerCredentials, value: string) => {
+    setCredentials({ ...credentials, [field]: value });
+  };
+
   return (
     <section className="mb-6">
       <div className="flex items-center mb-4">
@@ -52,8 +57,6 @@ export const CredentialsForm = ({
       )}
 
       <div className="space-y-4">
-        {/* Removed explicit Access Token field */}
-        
         {/* Username and Password - Required by database schema */}
         <div>
           <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
@@ -65,7 +68,7 @@ export const CredentialsForm = ({
             placeholder="Enter your broker username"
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.username}
-            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+            onChange={(e) => updateCredential('username', e.target.value)}
           />
           <p className="text-gray-400 text-xs mt-1">
             This will be used to connect to your broker's API.
@@ -82,7 +85,7 @@ export const CredentialsForm = ({
             placeholder="Enter your broker password"
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.password}
-            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+            onChange={(e) => updateCredential('password', e.target.value)}
           />
         </div>
 
@@ -96,7 +99,7 @@ export const CredentialsForm = ({
             placeholder="Enter your session ID"
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.sessionId}
-            onChange={(e) => setCredentials({ ...credentials, sessionId: e.target.value })}
+            onChange={(e) => updateCredential('sessionId', e.target.value)}
           />
         </div>
 
@@ -112,11 +115,11 @@ export const CredentialsForm = ({
                 placeholder="Enter your API key"
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
                 value={credentials.apiKey}
-                onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
+                onChange={(e) => updateCredential('apiKey', e.target.value)}
               />
             </div>
 
-            {/* Show Secret Key only for Zerodha */}
+            {/* Show Secret Key only for brokers that require it */}
             {selectedBroker?.requiresSecretKey && (
               <div>
                 <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
@@ -128,7 +131,7 @@ export const CredentialsForm = ({
                   placeholder="Enter your secret key"
                   className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
                   value={credentials.secretKey}
-                  onChange={(e) => setCredentials({ ...credentials, secretKey: e.target.value })}
+                  onChange={(e) => updateCredential('secretKey', e.target.value)}
                 />
               </div>
             )}
@@ -143,9 +146,7 @@ export const CredentialsForm = ({
                 placeholder="Enter your 2FA secret"
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
                 value={credentials.twoFactorSecret}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, twoFactorSecret: e.target.value })
-                }
+                onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
               />
             </div>
           </>
