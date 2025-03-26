@@ -90,7 +90,7 @@ export const educationData: Record<string, Module[]> = {
           id: 'card2',
           title: 'Stock Indices',
           question: 'What are stock indices and why are they important?',
-          answer: 'Stock indices are statistical measures that represent the value of a specific group of stocks. They're important because they provide a benchmark for market performance, allow investors to track specific market segments, and serve as the basis for index funds and ETFs.'
+          answer: "Stock indices are statistical measures that represent the value of a specific group of stocks. They're important because they provide a benchmark for market performance, allow investors to track specific market segments, and serve as the basis for index funds and ETFs."
         },
         {
           id: 'card3',
@@ -184,7 +184,7 @@ export const educationData: Record<string, Module[]> = {
           id: 'card1',
           title: 'Position Sizing',
           question: 'What is position sizing and why is it important?',
-          answer: 'Position sizing is determining how much of your capital to risk on a single trade. It's important because it helps protect your trading capital from excessive losses, ensures long-term survival in the markets, and helps maintain emotional control during drawdowns.'
+          answer: "Position sizing is determining how much of your capital to risk on a single trade. It's important because it helps protect your trading capital from excessive losses, ensures long-term survival in the markets, and helps maintain emotional control during drawdowns."
         },
         {
           id: 'card2',
@@ -196,7 +196,7 @@ export const educationData: Record<string, Module[]> = {
           id: 'card3',
           title: 'Risk-Reward Ratio',
           question: 'What is risk-reward ratio and how is it calculated?',
-          answer: 'Risk-reward ratio compares the potential profit of a trade to its potential loss. It's calculated by dividing the distance from entry to profit target by the distance from entry to stop loss. A favorable ratio (e.g., 1:2 or higher) means the potential reward exceeds the risk.'
+          answer: "Risk-reward ratio compares the potential profit of a trade to its potential loss. It's calculated by dividing the distance from entry to profit target by the distance from entry to stop loss. A favorable ratio (e.g., 1:2 or higher) means the potential reward exceeds the risk."
         }
       ],
       quiz: {
