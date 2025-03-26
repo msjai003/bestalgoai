@@ -123,7 +123,7 @@ export const educationData: Record<string, Module[]> = {
           {
             id: 'q5',
             question: 'Which of these is NOT a factor that affects market prices?',
-            options: ['Supply and demand', 'Economic indicators', 'Company earnings', 'The trader\'s zodiac sign'],
+            options: ['Supply and demand', 'Economic indicators', 'Company earnings', "The trader's zodiac sign"],
             correctAnswer: 3
           }
         ]
@@ -157,43 +157,13 @@ export const educationData: Record<string, Module[]> = {
           id: 'card4',
           title: 'Market Capitalization',
           question: 'What is market capitalization and how is it calculated?',
-          answer: 'Market capitalization (market cap) is the total market value of a company\'s outstanding shares. It\'s calculated by multiplying the current share price by the total number of outstanding shares. Companies are often classified as large-cap (>$10B), mid-cap ($2-10B), or small-cap ($300M-2B) based on their market cap.'
+          answer: "Market capitalization (market cap) is the total market value of a company's outstanding shares. It's calculated by multiplying the current share price by the total number of outstanding shares. Companies are often classified as large-cap (>$10B), mid-cap ($2-10B), or small-cap ($300M-2B) based on their market cap."
         },
         {
           id: 'card5',
           title: 'Primary vs. Secondary Markets',
           question: 'What is the difference between primary and secondary stock markets?',
           answer: 'The primary market is where new securities are issued and sold for the first time (IPOs). The secondary market is where existing securities are traded among investors. Companies raise capital in the primary market, while investors trade with each other in the secondary market.'
-        },
-        {
-          id: 'card6',
-          title: 'IPO Process',
-          question: 'What is an IPO and how does the process work?',
-          answer: 'An Initial Public Offering (IPO) is the process of offering shares of a private company to the public. The process involves hiring investment banks, filing registration statements with regulators, conducting a roadshow to attract investors, pricing the shares, and finally listing on an exchange.'
-        },
-        {
-          id: 'card7',
-          title: 'Stock Splits',
-          question: 'What is a stock split and why do companies do it?',
-          answer: 'A stock split increases the number of shares outstanding while proportionally decreasing the price per share. For example, in a 2:1 split, 100 shares at $50 become 200 shares at $25. Companies do this to make their shares more affordable and increase liquidity, without changing the company\'s market cap.'
-        },
-        {
-          id: 'card8',
-          title: 'Circuit Breakers',
-          question: 'What are market circuit breakers?',
-          answer: 'Circuit breakers are temporary trading halts triggered by severe market declines. They're designed to prevent panic selling and extreme volatility. In the U.S. markets, circuit breakers are triggered at three thresholds: 7% (Level 1), 13% (Level 2), and 20% (Level 3) drops in the S&P 500 index.'
-        },
-        {
-          id: 'card9',
-          title: 'Common Stock vs. Preferred Stock',
-          question: 'What is the difference between common stock and preferred stock?',
-          answer: 'Common stock provides voting rights but variable or no dividends. Preferred stock typically has no voting rights but offers fixed dividends that must be paid before common stock dividends. Preferred stockholders also have priority over common stockholders in case of liquidation.'
-        },
-        {
-          id: 'card10',
-          title: 'Dark Pools',
-          question: 'What are dark pools in stock trading?',
-          answer: 'Dark pools are private exchanges where financial institutions can trade securities without revealing their intentions to the public market. They allow large blocks of shares to be bought or sold anonymously, minimizing market impact. Dark pools account for a significant portion of total trading volume in many markets.'
         }
       ],
       quiz: {
@@ -265,37 +235,7 @@ export const educationData: Record<string, Module[]> = {
           id: 'card5',
           title: 'Balance Sheet Analysis',
           question: 'What are the key components of a balance sheet and what do they tell investors?',
-          answer: 'Key components include: Assets (what the company owns), Liabilities (what the company owes), and Shareholders\' Equity (assets minus liabilities). The balance sheet reveals a company\'s financial position, debt levels, liquidity, and overall financial strength at a specific point in time.'
-        },
-        {
-          id: 'card6',
-          title: 'Cash Flow Statement Analysis',
-          question: 'What are the key components of a cash flow statement and why is it important?',
-          answer: 'Key components include: Operating Activities (cash from core business), Investing Activities (cash from assets and investments), and Financing Activities (cash from debt and equity). The cash flow statement shows a company\'s ability to generate cash, fund operations, and support growth.'
-        },
-        {
-          id: 'card7',
-          title: 'EBITDA',
-          question: 'What is EBITDA and why is it used in fundamental analysis?',
-          answer: 'EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) measures a company\'s operational profitability by excluding non-operating expenses. It\'s used to evaluate a company\'s core operating performance, compare companies with different capital structures, and estimate enterprise value.'
-        },
-        {
-          id: 'card8',
-          title: 'Dividend Analysis',
-          question: 'What are dividends and how do investors analyze them?',
-          answer: 'Dividends are cash payments to shareholders from a company\'s profits. Investors analyze them using metrics like Dividend Yield (annual dividend/current price), Payout Ratio (dividends/net income), Dividend Growth Rate, and Dividend Coverage Ratio. These measure income potential, sustainability, and company maturity.'
-        },
-        {
-          id: 'card9',
-          title: 'Industry Analysis',
-          question: 'Why is industry analysis important in fundamental analysis?',
-          answer: 'Industry analysis examines the competitive landscape, growth prospects, regulatory environment, and economic factors affecting an entire sector. It\'s important because a company\'s performance is often tied to industry trends. Tools include Porter\'s Five Forces, SWOT analysis, and industry lifecycle assessment.'
-        },
-        {
-          id: 'card10',
-          title: 'Economic Indicators',
-          question: 'What are economic indicators and how do they affect stock performance?',
-          answer: 'Economic indicators are statistics that show the economic performance of a country or region. Key indicators include GDP growth, inflation rates, interest rates, unemployment, and consumer confidence. They affect stock performance by influencing corporate profits, consumer spending, borrowing costs, and overall market sentiment.'
+          answer: "Key components include: Assets (what the company owns), Liabilities (what the company owes), and Shareholders' Equity (assets minus liabilities). The balance sheet reveals a company's financial position, debt levels, liquidity, and overall financial strength at a specific point in time."
         }
       ],
       quiz: {
@@ -332,9 +272,7 @@ export const educationData: Record<string, Module[]> = {
           }
         ]
       }
-    },
-    // Additional modules for basics level would be defined here
-    // For brevity, I've just included 3 sample modules with detailed flashcards
+    }
   ],
   intermediate: [
     {
@@ -372,36 +310,6 @@ export const educationData: Record<string, Module[]> = {
           title: 'Relative Strength Index (RSI)',
           question: 'What is the RSI indicator and how is it interpreted?',
           answer: 'RSI is a momentum oscillator that measures the speed and magnitude of price movements on a scale from 0 to 100. Traditional interpretation considers readings above 70 as overbought (potential sell signal) and below 30 as oversold (potential buy signal). It can also show divergence when price and RSI move in opposite directions, signaling potential reversals.'
-        },
-        {
-          id: 'card6',
-          title: 'MACD Indicator',
-          question: 'What is the MACD indicator and how is it used?',
-          answer: 'Moving Average Convergence Divergence (MACD) shows the relationship between two moving averages of a security\'s price. It consists of the MACD line (difference between 12 and 26-period EMAs), the signal line (9-period EMA of MACD), and a histogram. Traders look for crossovers, divergences, and histogram changes to identify potential entry and exit points.'
-        },
-        {
-          id: 'card7',
-          title: 'Bollinger Bands',
-          question: 'What are Bollinger Bands and how do traders use them?',
-          answer: 'Bollinger Bands consist of a middle band (20-period SMA) with upper and lower bands at 2 standard deviations. They measure volatility and potential overbought/oversold conditions. Traders look for "the squeeze" (bands narrowing, indicating low volatility before a breakout), price touching bands (potential reversal), and price movement outside bands (strong trend continuation).'
-        },
-        {
-          id: 'card8',
-          title: 'Support and Resistance',
-          question: 'What are support and resistance levels in technical analysis?',
-          answer: 'Support is a price level where buying pressure is strong enough to prevent further decline. Resistance is a level where selling pressure prevents further rise. These levels form when prices repeatedly reverse at similar points, creating psychological barriers. When broken, support can become resistance and vice versa, often leading to significant price movements.'
-        },
-        {
-          id: 'card9',
-          title: 'Fibonacci Retracement',
-          question: 'What are Fibonacci retracements and how are they used in trading?',
-          answer: 'Fibonacci retracements identify potential support/resistance levels using the Fibonacci sequence ratios (23.6%, 38.2%, 50%, 61.8%, 78.6%). Traders draw them from significant highs and lows to predict where price might reverse during retracements. They\'re often used with other indicators for confirmation and work across different timeframes and markets.'
-        },
-        {
-          id: 'card10',
-          title: 'Volume Analysis',
-          question: 'Why is volume important in technical analysis?',
-          answer: 'Volume represents the number of shares or contracts traded and confirms price movements. High volume during price increases suggests strong buying pressure, while high volume during decreases indicates strong selling. Low volume suggests weak conviction. Volume often leads price, with increasing volume preceding significant price movements and decreasing volume suggesting potential reversals.'
         }
       ],
       quiz: {
@@ -474,36 +382,6 @@ export const educationData: Record<string, Module[]> = {
           title: 'Diversification',
           question: 'How does diversification reduce trading risk?',
           answer: 'Diversification involves spreading capital across different markets, sectors, strategies, or timeframes. It reduces risk because losses in one area can be offset by gains in another. Effective diversification requires investments with low correlation. However, over-diversification can dilute returns, so balance is key.'
-        },
-        {
-          id: 'card6',
-          title: 'Correlation Risk',
-          question: 'What is correlation risk and how can traders manage it?',
-          answer: 'Correlation risk occurs when seemingly diversified positions move together, amplifying losses. Traders manage it by analyzing historical correlation between markets, stress-testing portfolios under different scenarios, using assets with negative correlations, monitoring correlation changes, and adjusting position sizes based on correlation strength.'
-        },
-        {
-          id: 'card7',
-          title: 'Kelly Criterion',
-          question: 'What is the Kelly Criterion and how is it used in position sizing?',
-          answer: 'The Kelly Criterion is a formula that determines the optimal bet size as a percentage of capital based on edge and win rate: (win percentage × average win/loss ratio - loss percentage) / average win/loss ratio. It maximizes long-term growth but can be volatile, so traders often use a fraction of Kelly (e.g., Half-Kelly) for more conservative sizing.'
-        },
-        {
-          id: 'card8',
-          title: 'Black Swan Events',
-          question: 'What are black swan events and how can traders prepare for them?',
-          answer: 'Black swan events are rare, unpredictable occurrences with severe market impacts (e.g., 2008 financial crisis). Traders prepare by maintaining conservative leverage, using options as hedges, implementing circuit breaker stops, stress-testing strategies, maintaining cash reserves, and diversifying across uncorrelated assets and strategies.'
-        },
-        {
-          id: 'card9',
-          title: 'Trading Journal',
-          question: 'How does keeping a trading journal help with risk management?',
-          answer: 'A trading journal documents trade details, reasons for entry/exit, emotions, market conditions, and results. It helps identify patterns in winning and losing trades, recognize emotional biases affecting decisions, measure strategy effectiveness, enforce discipline, and provide data for continuous improvement in risk management.'
-        },
-        {
-          id: 'card10',
-          title: 'Risk of Ruin',
-          question: 'What is the risk of ruin and how is it calculated?',
-          answer: 'Risk of ruin is the probability of losing all trading capital. It\'s influenced by win rate, reward-to-risk ratio, position sizing, and consecutive losses. The formula for simplified risk of ruin (R) with equal bet sizes: R = ((1-W)/(1+W))^N, where W is win rate and N is number of units in account. Reducing position size decreases risk of ruin.'
         }
       ],
       quiz: {
@@ -576,36 +454,6 @@ export const educationData: Record<string, Module[]> = {
           title: 'Swing Trading Indicators',
           question: 'What technical indicators work well for swing trading?',
           answer: 'Effective swing trading indicators include: Moving Averages (identify trends), RSI (spot overbought/oversold conditions), MACD (confirm momentum), Bollinger Bands (measure volatility), and Volume indicators (confirm price movements). Most swing traders use multiple indicators for confirmation rather than relying on just one.'
-        },
-        {
-          id: 'card6',
-          title: 'Risk Management for Swing Trading',
-          question: 'How should risk be managed in swing trading?',
-          answer: 'Swing trading risk management involves: Setting stop losses at technical levels (not arbitrary percentages), maintaining appropriate position sizes (typically 1-2% risk per trade), using target prices for exits, having maximum portfolio exposure limits (e.g., 20-25% in related sectors), and adjusting stops to lock in profits as trades move favorably.'
-        },
-        {
-          id: 'card7',
-          title: 'Gap Trading',
-          question: 'How do swing traders approach price gaps?',
-          answer: 'Swing traders identify different types of gaps: Breakaway gaps (beginning of a trend), Runaway/Continuation gaps (during a trend), and Exhaustion gaps (end of a trend). Common strategies include trading continuation gaps in the direction of the trend and looking for gap fills (price returning to pre-gap level) on exhaustion gaps.'
-        },
-        {
-          id: 'card8',
-          title: 'Sector Rotation',
-          question: 'What is sector rotation and how is it used in swing trading?',
-          answer: 'Sector rotation refers to capital moving between market sectors in response to economic cycles. Swing traders profit from this by identifying strong sectors early, trading the strongest stocks within those sectors, monitoring sector ETFs for relative strength, and anticipating rotation based on economic indicators and market breadth.'
-        },
-        {
-          id: 'card9',
-          title: 'News and Catalysts',
-          question: 'How do swing traders incorporate news and catalysts?',
-          answer: 'Swing traders use fundamental catalysts (earnings reports, product launches, management changes) to identify potential price movements, but rely on technical analysis for timing. They often enter positions before anticipated events, use options to manage event risk, and avoid holding through high-uncertainty events like earnings if their strategy is purely technical.'
-        },
-        {
-          id: 'card10',
-          title: 'Market Correlation',
-          question: 'Why is market correlation important for swing traders?',
-          answer: 'Market correlation measures how securities move in relation to each other or the broader market. Swing traders monitor correlation to avoid overexposure to similar positions, identify stocks showing strength against weak markets (positive divergence), adjust position sizes based on correlation risk, and understand how broader market movements might affect their trades.'
         }
       ],
       quiz: {
@@ -643,7 +491,6 @@ export const educationData: Record<string, Module[]> = {
         ]
       }
     }
-    // Additional intermediate modules would be added here
   ],
   pro: [
     {
@@ -681,36 +528,6 @@ export const educationData: Record<string, Module[]> = {
           title: 'Market Microstructure',
           question: 'What is market microstructure and why is it important for algo traders?',
           answer: 'Market microstructure studies how prices are formed through the trading process, including order types, bid-ask spreads, market depth, and order book dynamics. Algo traders need to understand it to optimize trade execution, minimize slippage, avoid market impact, and exploit short-term price inefficiencies.'
-        },
-        {
-          id: 'card6',
-          title: 'High Frequency Trading',
-          question: 'What is high frequency trading (HFT) and how does it work?',
-          answer: 'HFT is a subset of algorithmic trading characterized by extremely high speeds, high turnover rates, and very short holding periods (milliseconds to seconds). It works by using advanced algorithms to detect and exploit tiny price discrepancies, often employing strategies like market making, statistical arbitrage, and latency arbitrage.'
-        },
-        {
-          id: 'card7',
-          title: 'Algorithmic Strategy Metrics',
-          question: 'What key metrics are used to evaluate algorithmic trading strategies?',
-          answer: 'Key metrics include: Sharpe Ratio (risk-adjusted returns), Maximum Drawdown (largest peak-to-trough decline), Win Rate (percentage of profitable trades), Profit Factor (gross profits/gross losses), Sortino Ratio (downside risk-adjusted returns), and Calmar Ratio (returns relative to maximum drawdown).'
-        },
-        {
-          id: 'card8',
-          title: 'Execution Algorithms',
-          question: 'What are execution algorithms and what problems do they solve?',
-          answer: 'Execution algorithms optimize how larger orders are executed to minimize market impact and execution costs. Common types include: TWAP (time-weighted average price), VWAP (volume-weighted average price), Implementation Shortfall, Dark Pool Algorithms, and Iceberg Orders. They solve the problem of how to execute large trades without moving the market against you.'
-        },
-        {
-          id: 'card9',
-          title: 'Latency and Colocation',
-          question: 'What is latency in algorithmic trading and why is colocation important?',
-          answer: 'Latency is the delay between order submission and execution, measured in milliseconds or microseconds. Colocation involves placing trading servers in the same physical location as exchange matching engines. It\'s important because lower latency provides a competitive edge in strategies where speed matters, such as arbitrage and certain HFT strategies.'
-        },
-        {
-          id: 'card10',
-          title: 'Risk Management in Algo Trading',
-          question: 'What specialized risk management techniques are used in algorithmic trading?',
-          answer: 'Specialized techniques include: Pre-trade risk checks, Position limits, Exposure limits, Drawdown limits, Circuit breakers, Order throttling, Fat-finger limits, Greek limits (for options), Correlation analysis, and Real-time monitoring and alerting systems. These help prevent system errors, unexpected market moves, or algorithm malfunctions from causing catastrophic losses.'
         }
       ],
       quiz: {
@@ -783,69 +600,39 @@ export const educationData: Record<string, Module[]> = {
           title: 'Backtesting Frameworks',
           question: 'What features should a good backtesting framework provide?',
           answer: 'A good backtesting framework should provide: Historical data management, Strategy implementation flexibility, Realistic order execution modeling, Transaction cost modeling, Performance analytics, Risk metrics, Visualization tools, Walk-forward testing capability, and Parameter optimization functionality.'
-        },
-        {
-          id: 'card6',
-          title: 'Trading Strategy Optimization',
-          question: 'What methods are used to optimize trading strategies?',
-          answer: 'Optimization methods include: Grid search (testing all parameter combinations), Genetic algorithms (evolutionary approach), Bayesian optimization (efficient parameter space exploration), Walk-forward optimization (testing on rolling time windows), Monte Carlo simulations (testing with randomized inputs), and Machine learning techniques for adaptive parameter adjustment.'
-        },
-        {
-          id: 'card7',
-          title: 'Data Sources and Quality',
-          question: 'What data sources are used in algorithmic trading and how is data quality ensured?',
-          answer: 'Data sources include: Exchange feeds, market data vendors (Bloomberg, Reuters), alternative data providers, and public APIs. Data quality is ensured through: Checking for missing values, detecting and handling outliers, adjusting for corporate actions, ensuring point-in-time accuracy (avoiding look-ahead bias), and normalizing across different sources.'
-        },
-        {
-          id: 'card8',
-          title: 'Algorithm Monitoring',
-          question: 'How are algorithmic trading systems monitored in production?',
-          answer: 'Monitoring involves: Real-time dashboards tracking strategy performance, risk exposure, and system health; Automated alerts for unusual behavior; Regular performance reports; Drawdown monitoring; Volatility monitoring; Correlation analysis with market conditions; Technical system monitoring (latency, error rates, resource usage); and Periodic strategy reviews.'
-        },
-        {
-          id: 'card9',
-          title: 'Machine Learning in Algorithmic Trading',
-          question: 'How is machine learning applied to algorithmic trading?',
-          answer: 'Applications include: Price prediction (regression models), Pattern recognition (classification models), Anomaly detection (identifying unusual market behavior), Clustering (grouping similar market regimes), Reinforcement learning (adaptive trading policies), Natural language processing (news/sentiment analysis), and Ensemble methods (combining multiple models).'
-        },
-        {
-          id: 'card10',
-          title: 'Deployment Infrastructure',
-          question: 'What infrastructure considerations are important for deploying trading algorithms?',
-          answer: 'Key considerations include: Reliability (redundant systems, failover mechanisms), Scalability (handling increased data or trading volume), Security (protecting strategy code and data), Performance (low-latency execution), Monitoring capabilities, Disaster recovery, Compliance and audit trail requirements, and Cost efficiency (cloud vs. on-premises).'
         }
       ],
       quiz: {
         questions: [
           {
             id: 'q1',
-            question: 'Which programming language is most popular for algo trading due to its data science libraries?',
-            options: ['Java', 'C++', 'Python', 'JavaScript'],
-            correctAnswer: 2
-          },
-          {
-            id: 'q2',
-            question: 'What is NOT a good method to prevent overfitting?',
-            options: ['Out-of-sample testing', 'Cross-validation', 'Maximizing parameter count', 'Walk-forward optimization'],
-            correctAnswer: 2
-          },
-          {
-            id: 'q3',
-            question: 'What should you do before deploying an algorithm to live trading?',
-            options: ['Skip testing to beat competitors', 'Paper trading/forward testing', 'Maximize leverage', 'Eliminate all risk controls'],
+            question: 'Which language is most commonly used for algorithmic trading development?',
+            options: ['JavaScript', 'Python', 'Ruby', 'PHP'],
             correctAnswer: 1
           },
           {
+            id: 'q2',
+            question: 'What is a key problem to avoid when developing trading algorithms?',
+            options: ['Overfitting', 'Underfitting', 'Code optimization', 'Using too many libraries'],
+            correctAnswer: 0
+          },
+          {
+            id: 'q3',
+            question: 'Which is NOT a step in the algorithm development process?',
+            options: ['Strategy formulation', 'Backtesting', 'Social media promotion', 'Risk management integration'],
+            correctAnswer: 2
+          },
+          {
             id: 'q4',
-            question: 'What is a common metric to evaluate algorithmic trading strategies?',
-            options: ['Social media mentions', 'Sharpe ratio', 'Number of trades per second', 'Strategy age'],
+            question: 'What is walk-forward optimization?',
+            options: ['A type of technical indicator', 'A way to test strategies on rolling time windows', 'A programming language', 'A trading platform'],
             correctAnswer: 1
           },
           {
             id: 'q5',
-            question: 'Which is NOT a common issue in algorithmic trading?',
-            options: ['Network latency', 'Execution slippage', 'Over-optimization', 'Excessive human intervention'],
-            correctAnswer: 3
+            question: 'Which Python library is primarily used for data manipulation in quant trading?',
+            options: ['TensorFlow', 'Django', 'Pandas', 'Flask'],
+            correctAnswer: 2
           }
         ]
       }
@@ -858,100 +645,69 @@ export const educationData: Record<string, Module[]> = {
       flashcards: [
         {
           id: 'card1',
-          title: 'ML in Trading',
+          title: 'Machine Learning in Trading',
           question: 'How is machine learning applied to trading?',
-          answer: 'Machine learning in trading uses algorithms to find patterns in data and make predictions or decisions without explicit programming. Applications include price prediction, pattern recognition, sentiment analysis, portfolio optimization, risk management, and trade execution optimization.'
+          answer: 'Machine learning is applied to trading for pattern recognition, market prediction, risk assessment, portfolio optimization, sentiment analysis, and algorithmic execution. It allows systems to adapt to changing market conditions by learning from historical and real-time data without being explicitly programmed for each scenario.'
         },
         {
           id: 'card2',
-          title: 'Common ML Algorithms',
-          question: 'What are common machine learning algorithms used in trading?',
-          answer: 'Common algorithms include: Linear/Logistic Regression, Decision Trees, Random Forests, Support Vector Machines, Neural Networks (including Deep Learning), Reinforcement Learning, and Clustering algorithms. Each has strengths for different types of market analysis.'
+          title: 'Supervised vs. Unsupervised Learning',
+          question: 'What is the difference between supervised and unsupervised learning in trading applications?',
+          answer: 'In trading, supervised learning uses labeled historical data to train models that predict outcomes like price movements or risk levels. Unsupervised learning finds hidden patterns in unlabeled market data, such as identifying market regimes or correlations between assets without predefined classifications.'
         },
         {
           id: 'card3',
           title: 'Feature Engineering',
-          question: 'What is feature engineering and why is it important for ML trading models?',
-          answer: "Feature engineering is the process of transforming raw data into meaningful inputs for ML models. It's crucial because the quality of features significantly impacts model performance. In trading, it includes creating technical indicators, transforming price data, and incorporating fundamental or alternative data."
+          question: 'What is feature engineering and why is it important in ML trading models?',
+          answer: 'Feature engineering is the process of creating meaningful inputs for machine learning models from raw market data. It includes calculating technical indicators, transforming price data, creating time-based features, and encoding categorical variables. Good feature engineering is often more important than algorithm selection for trading success.'
         },
         {
           id: 'card4',
-          title: 'Supervised Learning in Trading',
-          question: 'How is supervised learning applied to trading problems?',
-          answer: 'Supervised learning uses labeled historical data to train models that predict future outcomes. In trading, it\'s used for: Price prediction (regression), Direction prediction (classification), Volatility forecasting, Trading signal generation, and Risk modeling. Models learn from past market behaviors to identify similar patterns in current data.'
+          title: 'Common ML Algorithms for Trading',
+          question: 'What are some commonly used machine learning algorithms in trading?',
+          answer: 'Common algorithms include: Linear/Logistic Regression (for simple relationships), Decision Trees and Random Forests (for non-linear patterns), Support Vector Machines (for classification), Neural Networks (for complex patterns), Reinforcement Learning (for optimal execution), and Clustering algorithms (for market regime identification).'
         },
         {
           id: 'card5',
-          title: 'Unsupervised Learning in Trading',
-          question: 'How is unsupervised learning used in trading?',
-          answer: 'Unsupervised learning identifies patterns without labeled data. In trading, it\'s used for: Market regime identification (clustering similar market conditions), Anomaly detection (identifying unusual price movements or market behavior), Dimension reduction (simplifying complex data), and Feature discovery (finding hidden relationships in market data).'
-        },
-        {
-          id: 'card6',
-          title: 'Reinforcement Learning in Trading',
-          question: 'How is reinforcement learning applied to trading?',
-          answer: 'Reinforcement learning trains agents to make sequential decisions by rewarding desired outcomes. In trading, it\'s used to develop adaptive trading policies that learn optimal entry/exit timing, position sizing, and portfolio allocation. The agent learns to maximize returns while managing risk through trial and error in simulated environments.'
-        },
-        {
-          id: 'card7',
-          title: 'Deep Learning in Trading',
-          question: 'What are applications of deep learning in trading?',
-          answer: 'Deep learning applications include: Price prediction using recurrent neural networks (LSTM, GRU), Pattern recognition in charts using convolutional neural networks, Time series forecasting with transformer models, Alternative data analysis (processing unstructured data like news, social media), and Multimodal learning combining different data types.'
-        },
-        {
-          id: 'card8',
-          title: 'ML Model Evaluation',
+          title: 'Model Evaluation',
           question: 'How are machine learning trading models evaluated?',
-          answer: 'Evaluation methods include: Traditional ML metrics (accuracy, precision, recall), Trading-specific metrics (Sharpe ratio, maximum drawdown, profit factor), Cross-validation (time-series split, walk-forward), Out-of-sample testing, Robustness tests across different market conditions, Sensitivity analysis, and Ensemble model performance comparison.'
-        },
-        {
-          id: 'card9',
-          title: 'Challenges in ML Trading',
-          question: 'What challenges are specific to applying machine learning in trading?',
-          answer: 'Challenges include: Non-stationarity (changing market relationships), Low signal-to-noise ratio, Feature selection complexity, Overfitting risk, Regime changes, Look-ahead bias prevention, Computational requirements for real-time inference, Data quality issues, Explainability of "black box" models, and Implementation shortfall between backtest and live trading.'
-        },
-        {
-          id: 'card10',
-          title: 'Alternative Data in ML Trading',
-          question: 'How is alternative data used with machine learning in trading?',
-          answer: 'Alternative data includes non-traditional information sources like satellite imagery, credit card transactions, social media sentiment, web traffic, and app usage statistics. ML models extract trading signals from this data by identifying patterns that precede market movements, gaining insights before they appear in traditional financial data.'
+          answer: 'ML trading models are evaluated using: Traditional metrics (accuracy, precision, recall), Financial metrics (Sharpe ratio, drawdown, profit factor), Walk-forward testing, Monte Carlo simulations, Sensitivity analysis, and Out-of-sample testing to verify they generalize well to new market conditions. The ultimate test is consistent profitability with acceptable risk.'
         }
       ],
       quiz: {
         questions: [
           {
             id: 'q1',
-            question: 'Which type of ML algorithm learns through trial and error?',
+            question: 'Which type of machine learning tries to maximize rewards through actions?',
             options: ['Supervised learning', 'Unsupervised learning', 'Reinforcement learning', 'Transfer learning'],
             correctAnswer: 2
           },
           {
             id: 'q2',
-            question: 'What is the biggest challenge in applying ML to markets?',
-            options: ['Computing power', 'Non-stationarity of financial data', 'Lack of historical data', 'Programming difficulty'],
+            question: 'What is a key challenge in applying machine learning to financial markets?',
+            options: ['Too little data', 'Non-stationarity of markets', 'Lack of computing power', 'Too few algorithms available'],
             correctAnswer: 1
           },
           {
             id: 'q3',
-            question: 'What is overfitting in the context of ML trading models?',
-            options: ['When a model performs well in training but poorly in live trading', 'When a strategy trades too frequently', 'When a model uses too little data', 'When a model is too simple'],
-            correctAnswer: 0
+            question: 'What is feature engineering in the context of trading algorithms?',
+            options: ['Building trading platforms', 'Creating meaningful inputs from raw market data', 'Engineering faster execution systems', 'Designing user interfaces'],
+            correctAnswer: 1
           },
           {
             id: 'q4',
-            question: 'Which data type is NOT commonly used in ML trading models?',
-            options: ['Price data', 'Volume data', 'Social media sentiment', 'Trader\'s horoscope'],
-            correctAnswer: 3
+            question: 'Which metric is most commonly used to evaluate risk-adjusted returns?',
+            options: ['Sharpe ratio', 'Accuracy', 'Standard deviation', 'F1 score'],
+            correctAnswer: 0
           },
           {
             id: 'q5',
-            question: 'What is a neural network in machine learning?',
-            options: ['A computer network for traders', 'An algorithm inspired by the human brain', 'A network of trading computers', 'A social network for algorithms'],
+            question: 'Which algorithm type is best for identifying different market regimes?',
+            options: ['Linear regression', 'Clustering algorithms', 'Simple moving averages', 'Bollinger bands'],
             correctAnswer: 1
           }
         ]
       }
     }
-    // Additional pro modules would be added here
   ]
 };
