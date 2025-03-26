@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,8 +57,8 @@ const GoogleRegistration = () => {
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.email || !formData.mobile) {
-      setErrorMessage('Please fill in all required fields');
+    if (!formData.fullName || !formData.email) {
+      setErrorMessage('Please fill in your name and email');
       return false;
     }
 
@@ -96,7 +97,7 @@ const GoogleRegistration = () => {
             .update({
               full_name: formData.fullName,
               email: formData.email,
-              mobile_number: formData.mobile,
+              mobile_number: formData.mobile || null,
               trading_experience: formData.tradingExperience
             })
             .eq('id', user.id);
@@ -115,7 +116,7 @@ const GoogleRegistration = () => {
               id: user.id,
               full_name: formData.fullName,
               email: formData.email,
-              mobile_number: formData.mobile,
+              mobile_number: formData.mobile || null,
               trading_experience: formData.tradingExperience
             });
             

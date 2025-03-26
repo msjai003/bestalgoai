@@ -193,6 +193,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
             setUser(user);
             toast.success('Google login successful!');
+            
+            // Handle Google sign-in to save user details
+            await handleGoogleSignIn(mockResult.data.user);
+            
             return { error: null, data: { user } };
           }
         }
@@ -226,7 +230,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Google login successful!');
         
         // After successful login, fetch Google user details
-        await fetchUserGoogleDetails();
+        await handleGoogleSignIn(data.user);
         
         return { error: null, data: { user } };
       }

@@ -420,7 +420,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          mobile_number: string
+          mobile_number: string | null
           profile_picture: string | null
           trading_experience: string | null
           updated_at: string | null
@@ -430,7 +430,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          mobile_number: string
+          mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
@@ -440,7 +440,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          mobile_number?: string
+          mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
