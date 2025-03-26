@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -70,43 +69,39 @@ export const updateStrategyLiveConfig = async (
     }
 
     // Check if record exists
-    const { data: existingRecord, error: checkError } = await supabase
+    const { data: existingRecords, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .maybeSingle();
+      .eq('strategy_id', strategyId);
 
     if (checkError) {
-      console.error("Error checking for existing record:", checkError);
+      console.error("Error checking for existing records:", checkError);
       throw checkError;
     }
 
-    let data;
-    let error;
+    let result;
 
-    if (existingRecord) {
-      // Update existing record
-      console.log("Updating existing strategy record:", existingRecord.id);
-      const result = await supabase
+    // Fixed: Check if the record exists using array length instead of expecting a single object
+    if (existingRecords && existingRecords.length > 0) {
+      // Update existing record - we take the first matching record if there are multiple
+      console.log("Updating existing strategy record:", existingRecords[0].id);
+      result = await supabase
         .from('strategy_selections')
         .update({
           quantity: quantity,
           selected_broker: selectedBroker,
           broker_username: brokerUsername,
-          trade_type: tradeType,
+          trade_type: tradeType,  // This is where we update paper trade to live trade
           strategy_name: strategyName,
           strategy_description: strategyDescription
         })
-        .eq('id', existingRecord.id)
+        .eq('id', existingRecords[0].id)
         .select();
-      
-      data = result.data;
-      error = result.error;
     } else {
       // Insert new record
       console.log("Creating new strategy selection record");
-      const result = await supabase
+      result = await supabase
         .from('strategy_selections')
         .insert({
           user_id: userId,
@@ -119,17 +114,14 @@ export const updateStrategyLiveConfig = async (
           strategy_description: strategyDescription
         })
         .select();
-      
-      data = result.data;
-      error = result.error;
+    }
+    
+    if (result.error) {
+      console.error("Error updating strategy live config:", result.error);
+      throw result.error;
     }
 
-    if (error) {
-      console.error("Error updating strategy live config:", error);
-      throw error;
-    }
-
-    return data;
+    return result.data;
   } catch (error) {
     console.error("Error in updateStrategyLiveConfig:", error);
     throw error;

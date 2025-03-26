@@ -16,13 +16,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useLiveTrading = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [isActive, setIsActive] = useState(false); // Add isActive state
+  const [isActive, setIsActive] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   
   const dialogState = useStrategyDialogs();
-  // Provide the strategies array to useStrategyFiltering
   const filterState = useStrategyFiltering(strategies);
   
   useEffect(() => {
@@ -36,7 +35,6 @@ export const useLiveTrading = () => {
     fetchStrategies();
   }, [user]);
 
-  // Add handleTradingToggle function
   const handleTradingToggle = () => {
     setIsActive(prev => !prev);
     toast({
@@ -80,7 +78,6 @@ export const useLiveTrading = () => {
     
     try {
       if (dialogState.targetMode === 'live') {
-        // First check if this strategy already exists in the database
         if (user) {
           const { data: existingEntries, error: queryError } = await supabase
             .from('strategy_selections')
@@ -90,19 +87,15 @@ export const useLiveTrading = () => {
             
           if (queryError) throw queryError;
           
-          // If the strategy already exists, we'll update it later in handleBrokerSubmit
-          // Otherwise, we'll need to create a new entry
           if (!existingEntries || existingEntries.length === 0) {
             dialogState.setShowQuantityDialog(true);
           } else {
-            // Strategy exists, just open the quantity dialog to get new values
             dialogState.setShowQuantityDialog(true);
           }
         } else {
           dialogState.setShowQuantityDialog(true);
         }
       } else {
-        // Find the strategy to get its name before updating
         const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
         if (strategy) {
           await updateLiveMode(
@@ -168,56 +161,7 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      // First check if there's an existing record for this strategy and broker combination
-      let existingRowId = "";
-      
-      if (dialogState.targetRowId) {
-        // If we already have a row ID (from toggling an existing strategy)
-        existingRowId = dialogState.targetRowId;
-        console.log("Using provided row ID:", existingRowId);
-      } else if (dialogState.targetUniqueId) {
-        // Extract the parts to find the record
-        const [strategyId, existingBrokerName, existingUsername] = dialogState.targetUniqueId.split('-');
-        
-        console.log("Looking for record with:", {
-          strategy_id: dialogState.targetStrategyId,
-          selected_broker: existingBrokerName,
-          broker_username: existingUsername
-        });
-        
-        const { data: matchingRows, error: fetchError } = await supabase
-          .from('strategy_selections')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('strategy_id', dialogState.targetStrategyId)
-          .eq('selected_broker', existingBrokerName);
-          
-        if (fetchError) {
-          console.error("Error fetching strategy by uniqueId:", fetchError);
-        } else if (matchingRows && matchingRows.length > 0) {
-          existingRowId = matchingRows[0].id;
-          console.log("Found matching row by broker name, ID:", existingRowId);
-        }
-      } else {
-        // Look for any existing record for this strategy
-        const { data: existingRecords, error: searchError } = await supabase
-          .from('strategy_selections')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('strategy_id', dialogState.targetStrategyId);
-          
-        if (searchError) {
-          console.error("Error searching for existing strategy records:", searchError);
-        } else if (existingRecords && existingRecords.length > 0) {
-          existingRowId = existingRecords[0].id;
-          console.log("Found existing record for strategy, ID:", existingRowId);
-        }
-      }
-      
-      console.log("Existing row ID determined as:", existingRowId || "none (will create new)");
-      
       try {
-        // Use the updateStrategyLiveConfig function which now correctly handles both cases
         await updateStrategyLiveConfig(
           user.id,
           dialogState.targetStrategyId,
@@ -229,7 +173,6 @@ export const useLiveTrading = () => {
           strategy.description || ""
         );
         
-        // Refresh strategies list
         const loadedStrategies = await loadUserStrategies(user.id);
         setStrategies(loadedStrategies);
         
@@ -271,7 +214,6 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
       
-      // Make sure we have the strategy name
       strategyName = strategyName || strategy.name;
       strategyDescription = strategyDescription || strategy.description || "";
       
@@ -413,10 +355,10 @@ export const useLiveTrading = () => {
 
   return {
     ...filterState,
-    strategies: filterState.filteredStrategies, // Pass the filtered array directly
+    strategies: filterState.filteredStrategies,
     ...dialogState,
-    isActive, // Include isActive state
-    handleTradingToggle, // Include handleTradingToggle function
+    isActive,
+    handleTradingToggle,
     handleToggleLiveMode,
     handleOpenQuantityDialog,
     confirmModeChange,
