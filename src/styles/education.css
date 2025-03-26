@@ -45,3 +45,26 @@
 .badge-unlock {
   animation: badgeUnlock 0.5s ease-out forwards;
 }
+
+/* Leaderboard animations */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.leaderboard-item {
+  animation: slideUp 0.5s ease-out forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+  opacity: 0;
+}
+
+/* Share button hover animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.share-pulse {
+  animation: pulse 1s ease-in-out infinite;
+}

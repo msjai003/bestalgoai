@@ -12,6 +12,7 @@ import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
+import { Leaderboard } from '@/components/education/Leaderboard';
 import { useEducation } from '@/hooks/useEducation';
 
 const Education = () => {
@@ -53,6 +54,9 @@ const Education = () => {
         
         {/* Progress tracker */}
         <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
+        
+        {/* Leaderboard */}
+        <Leaderboard />
         
         {/* Level tabs */}
         <section className="mb-8">

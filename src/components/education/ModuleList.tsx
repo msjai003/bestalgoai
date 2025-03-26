@@ -2,10 +2,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, CheckCircle, Lock } from 'lucide-react';
+import { BookOpen, CheckCircle, Lock, Share } from 'lucide-react';
 import { useEducation } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
 import { Level } from '@/hooks/useEducation';
+import { useToast } from '@/hooks/use-toast';
 
 interface ModuleListProps {
   level: Level;
@@ -15,7 +16,33 @@ interface ModuleListProps {
 
 export const ModuleList = ({ level, currentModule, completedModules }: ModuleListProps) => {
   const { selectModule } = useEducation();
+  const { toast } = useToast();
   const modules = educationData[level];
+  
+  const handleShare = (moduleTitle: string) => {
+    const shareText = `I'm learning about "${moduleTitle}" in the Trading Academy! Join me to master trading from basics to pro.`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join me in Trading Academy',
+        text: shareText,
+        url: window.location.href,
+      }).catch(() => {
+        copyToClipboard(shareText);
+      });
+    } else {
+      copyToClipboard(shareText);
+    }
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Share text copied!",
+        description: "Share text copied to clipboard. Paste it to share with friends!",
+      });
+    });
+  };
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -47,7 +74,17 @@ export const ModuleList = ({ level, currentModule, completedModules }: ModuleLis
                   <h4 className="font-medium">Module {index + 1}</h4>
                 </div>
                 {isCompleted && (
-                  <span className="text-xs bg-cyan/20 text-cyan px-2 py-1 rounded-full">Completed</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs bg-cyan/20 text-cyan px-2 py-1 rounded-full">Completed</span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 p-1"
+                      onClick={() => handleShare(module.title)}
+                    >
+                      <Share className="h-3 w-3 text-gray-400 hover:text-cyan" />
+                    </Button>
+                  </div>
                 )}
               </div>
               <h3 className="text-lg font-semibold mb-2">{module.title}</h3>
