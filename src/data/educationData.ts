@@ -121,7 +121,7 @@ export const educationData: Record<string, Module[]> = {
           }
         ]
       }
-    },
+    }
     // Additional modules would be added here - for brevity, I've included just two examples per level
     // In a real implementation, all 15 modules would be defined for each level
   ],

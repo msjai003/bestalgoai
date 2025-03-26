@@ -13,7 +13,7 @@ import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
 import { Leaderboard } from '@/components/education/Leaderboard';
-import { useEducation } from '@/hooks/useEducation';
+import { useEducation, Level } from '@/hooks/useEducation';
 
 const Education = () => {
   const { 
@@ -25,6 +25,11 @@ const Education = () => {
     startQuiz,
     progress
   } = useEducation();
+  
+  // Create a handler to safely cast the string to Level type
+  const handleLevelChange = (value: string) => {
+    setCurrentLevel(value as Level);
+  };
   
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
@@ -60,7 +65,7 @@ const Education = () => {
         
         {/* Level tabs */}
         <section className="mb-8">
-          <Tabs defaultValue={currentLevel} onValueChange={setCurrentLevel} className="w-full">
+          <Tabs defaultValue={currentLevel} onValueChange={handleLevelChange} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="basics" className="flex gap-2 items-center">
                 <BookOpen className="h-4 w-4" />
