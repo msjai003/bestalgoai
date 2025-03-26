@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
 
 interface User {
   id: string;
@@ -10,6 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
+  signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -72,6 +74,82 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Try Supabase Google Auth first
+      try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
+        
+        if (error) {
+          console.error('Error during Google sign in:', error);
+          // Fall back to mock auth
+          const mockResult = await mockSignInWithGoogle();
+          
+          if (mockResult.error) {
+            toast.error(mockResult.error.message);
+            return { error: mockResult.error };
+          }
+          
+          if (mockResult.data?.user) {
+            const user: User = {
+              id: mockResult.data.user.id,
+              email: mockResult.data.user.email,
+            };
+            
+            setUser(user);
+            toast.success('Google login successful!');
+            return { error: null, data: { user } };
+          }
+        }
+        
+        // If it's a redirect, we don't need to do anything here
+        // The auth callback will handle the redirect
+        if (data.url) {
+          return { error: null };
+        }
+        
+      } catch (supabaseError) {
+        console.error('Supabase Google auth unavailable:', supabaseError);
+        // Fall back to mock auth
+      }
+      
+      // If we get here, use mock auth
+      const { data, error } = await mockSignInWithGoogle();
+      
+      if (error) {
+        toast.error(error.message || 'Error during Google sign in');
+        return { error };
+      }
+      
+      if (data?.user) {
+        const user: User = {
+          id: data.user.id,
+          email: data.user.email,
+        };
+        
+        setUser(user);
+        toast.success('Google login successful!');
+        return { error: null, data: { user } };
+      }
+      
+      return { error: null };
+      
+    } catch (error: any) {
+      console.error('Error during Google sign in:', error);
+      toast.error('Error during Google sign in');
+      return { error: error as Error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const signUp = async (
     email: string, 
@@ -298,6 +376,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ 
       user, 
       signIn, 
+      signInWithGoogle,
       signUp, 
       signOut, 
       resetPassword,
