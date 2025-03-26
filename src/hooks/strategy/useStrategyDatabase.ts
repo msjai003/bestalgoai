@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -23,7 +24,13 @@ export const loadUserStrategies = async (userId: string) => {
       brokerUsername: selection.broker_username,
       tradeType: selection.trade_type,
       uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
-      rowId: selection.id
+      rowId: selection.id,
+      // Add default performance object since it's required by the Strategy type
+      performance: {
+        winRate: "N/A",
+        avgProfit: "N/A",
+        drawdown: "N/A"
+      }
     }));
   } catch (error) {
     console.error("Error loading user strategies:", error);
@@ -49,8 +56,8 @@ export const updateStrategyLiveConfig = async (
           quantity: quantity,
           selected_broker: selectedBroker,
           broker_username: brokerUsername,
-          trade_type: tradeType,
-          updated_at: new Date()
+          trade_type: tradeType
+          // Removed updated_at as it's automatically handled by the database
         },
         { onConflict: 'user_id, strategy_id' }
       )
