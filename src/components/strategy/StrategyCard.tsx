@@ -141,13 +141,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           </div>
           
-          <Button 
-            className="w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300"
-            onClick={handleViewFullStrategy}
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            View Full Strategy
-          </Button>
+          <div className="flex justify-center">
+            <Button 
+              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300"
+              onClick={handleViewFullStrategy}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              View Full Strategy
+            </Button>
+          </div>
           
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
