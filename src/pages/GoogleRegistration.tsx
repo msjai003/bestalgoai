@@ -91,9 +91,7 @@ const GoogleRegistration = () => {
             email: formData.email,
             mobile_number: formData.mobile,
             trading_experience: formData.tradingExperience
-          })
-          .onConflict('id')
-          .merge();
+          });
           
         if (profileError) {
           console.error('Error creating profile for Google user:', profileError);

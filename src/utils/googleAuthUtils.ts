@@ -25,7 +25,7 @@ export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUser
       return null;
     }
     
-    return data;
+    return data as GoogleUserDetails | null;
   } catch (error) {
     console.error('Exception fetching Google user details:', error);
     return null;
@@ -69,17 +69,41 @@ export const saveGoogleUserDetails = async (
   }
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    // First check if the record already exists
+    const { data: existing } = await supabase
       .from('google_user_details')
-      .upsert({
-        id: userId,
-        ...googleData,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-    
-    if (error) {
-      console.error('Error saving Google user details:', error);
-      return false;
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase
+        .from('google_user_details')
+        .update({
+          ...googleData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+        
+      if (error) {
+        console.error('Error updating Google user details:', error);
+        return false;
+      }
+    } else {
+      // Insert new record
+      const { error } = await supabase
+        .from('google_user_details')
+        .insert({
+          id: userId,
+          ...googleData,
+          updated_at: new Date().toISOString()
+        });
+        
+      if (error) {
+        console.error('Error inserting Google user details:', error);
+        return false;
+      }
     }
     
     return true;
