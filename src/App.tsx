@@ -39,6 +39,7 @@ import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
 import PriceAdminPage from "./pages/PriceAdminPage";
 import ColorTest from "./pages/ColorTest";
+import Education from "./pages/Education";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
+      <Route path="/education" element={<Education />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={

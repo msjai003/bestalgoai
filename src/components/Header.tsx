@@ -1,155 +1,125 @@
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Menu, LogOut, User, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
 
-const EXTERNAL_BLOG_URL = 'https://infocapinfo.blogspot.com/';
-
-const Header: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+const Header = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const location = useLocation();
   
-  const handleLogout = () => {
-    // Navigate to the logout page instead of calling signOut directly
-    navigate('/logout');
-  };
-
-  const handleSignIn = () => {
-    navigate('/auth');
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
   
-  // External blog link handler
-  const handleBlogClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.open(EXTERNAL_BLOG_URL, '_blank', 'noopener,noreferrer');
-  };
+  const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Education', href: '/education' },
+    { name: 'About', href: '/about' },
+    { name: 'Blog', href: '/blog' },
+  ];
   
+  const isActive = (path: string) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-lg border-b border-gray-800/50">
-      <div className="container flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center">
-          <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
-          <span className="text-cyan text-xl ml-2 font-semibold">BestAlgo.ai</span>
-        </Link>
-
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            to="/"
-            className="text-cyan hover:text-cyan/80 transition-colors font-medium"
-          >
-            Home
+    <header className="relative z-10 bg-charcoalSecondary border-b border-white/5">
+      <nav className="container mx-auto px-4 flex items-center justify-between py-3">
+        <div className="flex items-center">
+          <Link to="/" className="flex items-center">
+            <i className="fa-solid fa-chart-line text-cyan text-xl"></i>
+            <span className="ml-2 text-white font-semibold text-lg">BestAlgo.ai</span>
           </Link>
-          <Link
-            to="/about"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
-          >
-            About
-          </Link>
-          <Link
-            to="/pricing"
-            className="text-gray-300 hover:text-cyan transition-colors font-medium"
-          >
-            Pricing
-          </Link>
+          
+          <div className="hidden md:ml-10 md:flex md:space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? 'text-cyan'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex items-center">
           {user ? (
-            <>
+            <Link to="/dashboard">
+              <Button variant="gradient" className="hidden md:block">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/auth">
+              <Button variant="gradient" className="hidden md:block">
+                Sign In
+              </Button>
+            </Link>
+          )}
+          
+          <button
+            className="md:hidden text-gray-400 hover:text-white"
+            onClick={toggleMobileMenu}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </nav>
+      
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
+          <div className="container mx-auto px-4 py-3 space-y-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(item.href)
+                    ? 'text-cyan bg-charcoalPrimary/40'
+                    : 'text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+            {user ? (
               <Link
                 to="/dashboard"
-                className="text-gray-300 hover:text-cyan transition-colors font-medium"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 Dashboard
               </Link>
-              <Button 
-                variant="ghost" 
-                className="text-gray-300 hover:text-cyan font-medium" 
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <Button
-              className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary font-semibold px-4 py-2 rounded-lg transition-colors"
-              onClick={handleSignIn}
-            >
-              Sign In
-            </Button>
-          )}
-        </nav>
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="bg-charcoalPrimary border-l border-gray-700">
-            <SheetHeader className="space-y-2.5">
-              <SheetTitle className="text-cyan">Menu</SheetTitle>
-              <SheetDescription className="text-charcoalTextSecondary">
-                Navigate through the application
-              </SheetDescription>
-            </SheetHeader>
-            <div className="grid gap-4 py-4">
+            ) : (
               <Link
-                to="/"
-                className="text-cyan hover:text-cyan/80 transition-colors block py-2 font-medium"
+                to="/auth"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                Home
+                Sign In
               </Link>
-              <Link
-                to="/about"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
-              >
-                About
-              </Link>
-              <Link
-                to="/pricing"
-                className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
-              >
-                Pricing
-              </Link>
-              
-              {user ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="text-gray-300 hover:text-cyan transition-colors block py-2 font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    className="text-gray-300 hover:text-cyan justify-start p-2 font-medium" 
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary px-4 py-2 rounded-lg block w-full text-center mt-2 transition-colors font-semibold"
-                  onClick={handleSignIn}
-                >
-                  Sign In
-                </Button>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };
