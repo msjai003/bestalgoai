@@ -1,9 +1,11 @@
 
-import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Broker } from "@/types/broker";
 import { BrokerCredentials } from "@/types/broker";
+import { Button } from "@/components/ui/button";
 
 interface CredentialsFormProps {
   selectedBroker: Broker | null;
@@ -11,6 +13,7 @@ interface CredentialsFormProps {
   setCredentials: (credentials: BrokerCredentials) => void;
   showApiFields: boolean;
   onBack: () => void;
+  isConnected?: boolean;
 }
 
 export const CredentialsForm = ({
@@ -19,10 +22,36 @@ export const CredentialsForm = ({
   setCredentials,
   showApiFields,
   onBack,
+  isConnected = false,
 }: CredentialsFormProps) => {
   // Helper function to update a specific credential
   const updateCredential = (field: keyof BrokerCredentials, value: string) => {
     setCredentials({ ...credentials, [field]: value });
+  };
+
+  // State to track visibility of sensitive fields
+  const [fieldVisibility, setFieldVisibility] = useState({
+    password: false,
+    apiKey: false,
+    secretKey: false,
+    twoFactorSecret: false,
+    sessionId: false,
+  });
+
+  // Toggle field visibility
+  const toggleFieldVisibility = (field: string) => {
+    setFieldVisibility({
+      ...fieldVisibility,
+      [field]: !fieldVisibility[field as keyof typeof fieldVisibility],
+    });
+  };
+
+  // Mask sensitive data
+  const maskValue = (value: string) => {
+    if (!value) return "";
+    return value.length > 8 
+      ? `${value.substring(0, 2)}${"X".repeat(value.length - 4)}${value.substring(value.length - 2)}`
+      : "X".repeat(value.length);
   };
 
   return (
@@ -31,7 +60,9 @@ export const CredentialsForm = ({
         <button onClick={onBack} className="mr-3 p-2 rounded-full hover:bg-gray-800">
           <ChevronLeft className="w-5 h-5 text-gray-300" />
         </button>
-        <h1 className="text-2xl font-bold">Broker Credentials</h1>
+        <h1 className="text-2xl font-bold">
+          {isConnected ? "Broker Credentials" : "Enter Broker Credentials"}
+        </h1>
       </div>
 
       {selectedBroker && (
@@ -53,6 +84,15 @@ export const CredentialsForm = ({
               <p>{selectedBroker.fees}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {isConnected && (
+        <div className="mb-6 p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
+          <p className="text-green-400 flex items-center">
+            <Shield className="w-4 h-4 mr-2" />
+            Broker already connected. You can view or edit your credentials.
+          </p>
         </div>
       )}
 
@@ -79,28 +119,60 @@ export const CredentialsForm = ({
           <Label htmlFor="password" className="text-gray-300 flex items-center gap-2">
             <Lock className="w-4 h-4" /> Password
           </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your broker password"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.password}
-            onChange={(e) => updateCredential('password', e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={fieldVisibility.password ? "text" : "password"}
+              placeholder="Enter your broker password"
+              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+              value={credentials.password}
+              onChange={(e) => updateCredential('password', e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => toggleFieldVisibility('password')}
+            >
+              {fieldVisibility.password ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle password visibility</span>
+            </Button>
+          </div>
         </div>
 
         <div>
           <Label htmlFor="sessionId" className="text-gray-300 flex items-center gap-2">
             <Hash className="w-4 h-4" /> Session ID
           </Label>
-          <Input
-            id="sessionId"
-            type="text"
-            placeholder="Enter your session ID"
-            className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-            value={credentials.sessionId}
-            onChange={(e) => updateCredential('sessionId', e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              id="sessionId"
+              type={fieldVisibility.sessionId ? "text" : "password"}
+              placeholder="Enter your session ID"
+              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+              value={credentials.sessionId}
+              onChange={(e) => updateCredential('sessionId', e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => toggleFieldVisibility('sessionId')}
+            >
+              {fieldVisibility.sessionId ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle session ID visibility</span>
+            </Button>
+          </div>
         </div>
 
         {showApiFields && (
@@ -109,14 +181,30 @@ export const CredentialsForm = ({
               <Label htmlFor="apiKey" className="text-gray-300 flex items-center gap-2">
                 <Key className="w-4 h-4" /> API Key
               </Label>
-              <Input
-                id="apiKey"
-                type="text"
-                placeholder="Enter your API key"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                value={credentials.apiKey}
-                onChange={(e) => updateCredential('apiKey', e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="apiKey"
+                  type={fieldVisibility.apiKey ? "text" : "password"}
+                  placeholder="Enter your API key"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                  value={credentials.apiKey}
+                  onChange={(e) => updateCredential('apiKey', e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 h-8 w-8 p-0"
+                  onClick={() => toggleFieldVisibility('apiKey')}
+                >
+                  {fieldVisibility.apiKey ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Toggle API key visibility</span>
+                </Button>
+              </div>
             </div>
 
             {/* Show Secret Key only for brokers that require it */}
@@ -125,14 +213,30 @@ export const CredentialsForm = ({
                 <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
                   <FileKey className="w-4 h-4" /> Secret Key
                 </Label>
-                <Input
-                  id="secretKey"
-                  type="password"
-                  placeholder="Enter your secret key"
-                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                  value={credentials.secretKey}
-                  onChange={(e) => updateCredential('secretKey', e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="secretKey"
+                    type={fieldVisibility.secretKey ? "text" : "password"}
+                    placeholder="Enter your secret key"
+                    className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                    value={credentials.secretKey}
+                    onChange={(e) => updateCredential('secretKey', e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1 h-8 w-8 p-0"
+                    onClick={() => toggleFieldVisibility('secretKey')}
+                  >
+                    {fieldVisibility.secretKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">Toggle secret key visibility</span>
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -140,14 +244,30 @@ export const CredentialsForm = ({
               <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
                 <Shield className="w-4 h-4" /> 2FA Secret
               </Label>
-              <Input
-                id="twoFactorSecret"
-                type="password"
-                placeholder="Enter your 2FA secret"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
-                value={credentials.twoFactorSecret}
-                onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="twoFactorSecret"
+                  type={fieldVisibility.twoFactorSecret ? "text" : "password"}
+                  placeholder="Enter your 2FA secret"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                  value={credentials.twoFactorSecret}
+                  onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 h-8 w-8 p-0"
+                  onClick={() => toggleFieldVisibility('twoFactorSecret')}
+                >
+                  {fieldVisibility.twoFactorSecret ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Toggle 2FA secret visibility</span>
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -160,7 +280,7 @@ export const CredentialsForm = ({
           <div>
             <h3 className="font-bold text-white text-sm">YOUR SECURITY IS OUR PRIORITY</h3>
             <p className="text-xs text-gray-300 mt-1">
-              Your credentials are <span className="font-medium text-pink-300">never stored</span> on our servers and are securely encrypted using bank-level encryption.
+              Your credentials are <span className="font-medium text-pink-300">securely encrypted</span> using bank-level encryption.
             </p>
           </div>
         </div>

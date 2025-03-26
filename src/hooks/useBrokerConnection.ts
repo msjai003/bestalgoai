@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ConnectionStep, BrokerCredentials, BrokerPermissions } from "@/types/broker";
@@ -27,6 +27,58 @@ export const useBrokerConnection = (selectedBroker: any) => {
   });
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load existing broker credentials if available
+  useEffect(() => {
+    const loadBrokerCredentials = async () => {
+      if (!user || !selectedBroker) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('broker_credentials')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('broker_id', selectedBroker.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching broker credentials:", error);
+          toast.error("Failed to load broker details");
+          setIsLoading(false);
+          return;
+        }
+
+        if (data) {
+          // Broker is already connected
+          setIsConnected(data.status === 'connected');
+          
+          // Populate credentials with existing data
+          setCredentials({
+            username: data.username || "",
+            password: data.password || "",
+            apiKey: data.api_key || "",
+            secretKey: data.secret_key || "",
+            accessToken: data.accesstoken || "",
+            twoFactorSecret: data.two_factor_secret || "",
+            twoFactorCode: "",
+            sessionId: data.session_id || ""
+          });
+        }
+      } catch (error) {
+        console.error("Exception fetching broker credentials:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBrokerCredentials();
+  }, [user, selectedBroker]);
 
   const handleCredentialsSubmit = async () => {
     if (!credentials.username) {
@@ -39,9 +91,55 @@ export const useBrokerConnection = (selectedBroker: any) => {
       return;
     }
 
+    // If we're editing existing credentials, update them directly
+    if (isConnected) {
+      await updateBrokerCredentials();
+      return;
+    }
+
     // Move to settings without generating an access token
     setConnectionStep("settings");
     toast.success("Credentials accepted");
+  };
+
+  const updateBrokerCredentials = async () => {
+    if (!user || !selectedBroker) {
+      toast.error("User or broker information missing");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('broker_credentials')
+        .update({
+          username: credentials.username,
+          password: credentials.password,
+          api_key: credentials.apiKey,
+          secret_key: credentials.secretKey,
+          two_factor_secret: credentials.twoFactorSecret,
+          session_id: credentials.sessionId,
+          updated_at: new Date()
+        })
+        .eq('user_id', user.id)
+        .eq('broker_id', selectedBroker.id);
+
+      if (error) {
+        console.error("Error updating broker credentials:", error);
+        toast.error("Failed to update broker credentials");
+        setIsSubmitting(false);
+        return;
+      }
+
+      toast.success("Broker credentials updated successfully");
+      navigate('/settings');
+    } catch (error) {
+      console.error("Exception updating broker credentials:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSettingsSubmit = async () => {
@@ -122,6 +220,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
     handleSettingsSubmit,
     handleComplete,
     handleBack,
-    isSubmitting
+    isSubmitting,
+    isConnected,
+    isLoading
   };
 };

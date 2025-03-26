@@ -9,6 +9,7 @@ import { ConnectionStepActions } from "@/components/broker-integration/Connectio
 import { BrokerFunctions } from "@/components/broker-integration/BrokerFunctions";
 import { useBrokerConnection } from "@/hooks/useBrokerConnection";
 import { brokers, accountTypes } from "@/components/broker-integration/BrokerData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
@@ -39,7 +40,9 @@ const BrokerCredentials = () => {
     handleSettingsSubmit,
     handleComplete,
     handleBack,
-    isSubmitting
+    isSubmitting,
+    isConnected,
+    isLoading
   } = useBrokerConnection(selectedBroker);
 
   if (!selectedBroker) {
@@ -47,6 +50,17 @@ const BrokerCredentials = () => {
   }
 
   const renderCurrentStep = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      );
+    }
+    
     switch (connectionStep) {
       case "credentials":
         return (
@@ -57,6 +71,7 @@ const BrokerCredentials = () => {
               setCredentials={setCredentials}
               showApiFields={showApiFields}
               onBack={handleBack}
+              isConnected={isConnected}
             />
             
             {selectedBroker && (
@@ -96,11 +111,27 @@ const BrokerCredentials = () => {
     }
   };
 
+  // Customize button text based on connection status
+  const getActionButtonText = () => {
+    if (isConnected) {
+      return "Update Credentials";
+    }
+    
+    switch (connectionStep) {
+      case "credentials":
+        return "Continue";
+      case "settings":
+        return "Connect Broker";
+      default:
+        return "Continue";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
       <BrokerHeader 
         onBack={handleBack} 
-        title="Connect Your Broker" 
+        title={isConnected ? "Edit Broker Connection" : "Connect Your Broker"} 
       />
 
       <main className="pt-20 px-4 pb-24">
@@ -108,12 +139,23 @@ const BrokerCredentials = () => {
       </main>
 
       <section className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
-        <ConnectionStepActions 
-          connectionStep={connectionStep}
-          onSubmit={handleStepSubmit}
-          onBack={handleBack}
-          isSubmitting={isSubmitting}
-        />
+        <div className="flex flex-col gap-3">
+          <button
+            className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleStepSubmit}
+            disabled={isSubmitting || isLoading}
+          >
+            {isSubmitting ? "Processing..." : getActionButtonText()}
+          </button>
+          
+          <button
+            className="w-full h-12 border border-charcoalSecondary bg-transparent text-charcoalTextPrimary rounded-xl font-semibold"
+            onClick={handleBack}
+            disabled={isSubmitting || isLoading}
+          >
+            Cancel
+          </button>
+        </div>
       </section>
 
       <SuccessDialog
