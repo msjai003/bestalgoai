@@ -70,6 +70,18 @@ export const educationData: Record<string, Module[]> = {
             question: 'Which market deals with company ownership shares?',
             options: ['Bond market', 'Stock market', 'Forex market', 'Commodity market'],
             correctAnswer: 1
+          },
+          {
+            id: 'q4',
+            question: 'What does liquidity in a market refer to?',
+            options: ['The amount of water traders drink', 'How quickly assets can be bought or sold without affecting price', 'The cash reserves of a company', 'The volatility of the market'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'Which of these is NOT a factor that affects market prices?',
+            options: ['Supply and demand', 'Economic indicators', 'Company earnings', 'The trader\'s zodiac sign'],
+            correctAnswer: 3
           }
         ]
       }
@@ -118,11 +130,83 @@ export const educationData: Record<string, Module[]> = {
             question: 'What do stock indices measure?',
             options: ['Individual stock performance', 'Company profits', 'Performance of a group of stocks', 'Trading volume'],
             correctAnswer: 2
+          },
+          {
+            id: 'q4',
+            question: 'What is the purpose of a limit order?',
+            options: ['To buy or sell at the current market price', 'To buy or sell at a specified price or better', 'To automatically sell if a stock drops below a certain price', 'To limit the number of shares you can trade'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'Which term describes the difference between the bid and ask price?',
+            options: ['Margin', 'Spread', 'Commission', 'Dividend'],
+            correctAnswer: 1
+          }
+        ]
+      }
+    },
+    {
+      id: 'module3',
+      title: 'Fundamental Analysis Basics',
+      description: 'Learn how to analyze company fundamentals for investing',
+      estimatedTime: 25,
+      flashcards: [
+        {
+          id: 'card1',
+          title: 'Fundamental Analysis',
+          question: 'What is fundamental analysis and how is it used in trading?',
+          answer: 'Fundamental analysis evaluates a security by examining related economic, financial, and other qualitative/quantitative factors. Traders use it to determine if a security is undervalued or overvalued by analyzing company financials, industry conditions, and economic indicators.'
+        },
+        {
+          id: 'card2',
+          title: 'Financial Statements',
+          question: 'What are the three main financial statements used in fundamental analysis?',
+          answer: 'The three main statements are: 1) Income Statement (shows revenue, expenses, and profit), 2) Balance Sheet (shows assets, liabilities, and equity), and 3) Cash Flow Statement (shows cash moving in and out of the business).'
+        },
+        {
+          id: 'card3',
+          title: 'Key Ratios',
+          question: 'What are some important financial ratios used in fundamental analysis?',
+          answer: 'Key ratios include: P/E Ratio (price to earnings), EPS (earnings per share), P/B Ratio (price to book), ROE (return on equity), Current Ratio (liquidity), and Debt-to-Equity Ratio (leverage). These help compare companies and assess financial health.'
+        }
+      ],
+      quiz: {
+        questions: [
+          {
+            id: 'q1',
+            question: 'What does a P/E ratio measure?',
+            options: ['Price to equity', 'Price to earnings', 'Profit to expense', 'Potential to earnings'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q2',
+            question: 'Which financial statement shows if a company is profitable?',
+            options: ['Balance Sheet', 'Cash Flow Statement', 'Income Statement', 'Annual Report'],
+            correctAnswer: 2
+          },
+          {
+            id: 'q3',
+            question: 'What does a high debt-to-equity ratio indicate?',
+            options: ['Strong financial position', 'High profitability', 'Low risk', 'Higher financial leverage and risk'],
+            correctAnswer: 3
+          },
+          {
+            id: 'q4',
+            question: 'Which is NOT considered in fundamental analysis?',
+            options: ['Management quality', 'Market sentiment', 'Chart patterns', 'Competitive advantage'],
+            correctAnswer: 2
+          },
+          {
+            id: 'q5',
+            question: 'What is EPS?',
+            options: ['Equity Per Share', 'Earnings Per Strategy', 'Earnings Per Share', 'Estimated Price Sensitivity'],
+            correctAnswer: 2
           }
         ]
       }
     }
-    // Additional modules would be added here - for brevity, I've included just two examples per level
+    // Additional modules would be added here - for brevity, I've included just three examples for basics level
     // In a real implementation, all 15 modules would be defined for each level
   ],
   intermediate: [
@@ -170,6 +254,18 @@ export const educationData: Record<string, Module[]> = {
             question: 'Which pattern typically signals a trend reversal?',
             options: ['Flag', 'Pennant', 'Head and Shoulders', 'Triangle'],
             correctAnswer: 2
+          },
+          {
+            id: 'q4',
+            question: 'What do Bollinger Bands measure?',
+            options: ['Trend direction', 'Volatility', 'Volume', 'Momentum'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'Which is a lagging indicator?',
+            options: ['RSI', 'Moving Average', 'Volume', 'Stochastic Oscillator'],
+            correctAnswer: 1
           }
         ]
       }
@@ -218,10 +314,83 @@ export const educationData: Record<string, Module[]> = {
             question: 'Which indicator is commonly used for volatility-based stops?',
             options: ['RSI', 'MACD', 'ATR (Average True Range)', 'Stochastic Oscillator'],
             correctAnswer: 2
+          },
+          {
+            id: 'q4',
+            question: 'What is the purpose of diversification?',
+            options: ['To increase potential profits', 'To reduce overall risk', 'To simplify trading', 'To increase trading volume'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'What is drawdown?',
+            options: ['A trading strategy', 'The closing of a position', 'The decline in account value from a peak', 'A psychological state during trading'],
+            correctAnswer: 2
+          }
+        ]
+      }
+    },
+    {
+      id: 'module3',
+      title: 'Swing Trading Strategies',
+      description: 'Learn effective swing trading techniques for medium-term profits',
+      estimatedTime: 22,
+      flashcards: [
+        {
+          id: 'card1',
+          title: 'Swing Trading Basics',
+          question: 'What is swing trading and how does it differ from day trading?',
+          answer: 'Swing trading is a style that attempts to capture gains over a period of several days to weeks. Unlike day trading where positions are closed daily, swing traders hold positions overnight and look to profit from "swings" in price momentum over medium timeframes.'
+        },
+        {
+          id: 'card2',
+          title: 'Swing Trading Setups',
+          question: 'What are common swing trading setups?',
+          answer: 'Common setups include: Pullbacks to moving averages, breakouts from consolidation patterns, momentum reversals, gap fills, and support/resistance bounces. These setups often combine technical analysis with confirmation indicators.'
+        },
+        {
+          id: 'card3',
+          title: 'Timeframes',
+          question: 'What timeframes are commonly used in swing trading?',
+          answer: 'Swing traders typically use daily charts for their primary analysis, but may also incorporate weekly charts for trend direction and 4-hour or hourly charts for entry timing. This multi-timeframe approach helps identify high-probability trading opportunities.'
+        }
+      ],
+      quiz: {
+        questions: [
+          {
+            id: 'q1',
+            question: 'What is the typical holding period for swing trades?',
+            options: ['Minutes to hours', 'Days to weeks', 'Months to years', 'Seconds to minutes'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q2',
+            question: 'Which is most important for swing trading?',
+            options: ['High-frequency trading algorithms', 'Ultra-fast execution', 'Trend identification', 'Penny stock selection'],
+            correctAnswer: 2
+          },
+          {
+            id: 'q3',
+            question: 'What is a key advantage of swing trading over day trading?',
+            options: ['No overnight risk', 'Less time commitment', 'More frequent trades', 'Lower capital requirements'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q4',
+            question: 'Which pattern is commonly used in swing trading?',
+            options: ['Scalping pattern', 'Flag pattern', 'Algorithmic pattern', 'Frequency pattern'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'What does "buying the dip" refer to in swing trading?',
+            options: ['Purchasing stocks at their highest point', 'Buying when prices temporarily decline in an uptrend', 'Investing in falling markets', 'Buying food dips for trading sessions'],
+            correctAnswer: 1
           }
         ]
       }
     }
+    // Additional intermediate modules would be added here
   ],
   pro: [
     {
@@ -267,6 +436,18 @@ export const educationData: Record<string, Module[]> = {
             id: 'q3',
             question: 'What is backtesting?',
             options: ['Testing hardware components', 'Testing strategies on historical data', 'Manual paper trading', 'Testing network connectivity'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q4',
+            question: 'What is the primary challenge in algorithmic trading?',
+            options: ['Slow execution', 'Strategy development and validation', 'Lack of historical data', 'Too few trading opportunities'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'Which of these is a common algorithmic trading infrastructure component?',
+            options: ['Social media management', 'Data feeds and APIs', 'Customer relationship management', 'Physical trading floor'],
             correctAnswer: 1
           }
         ]
@@ -316,9 +497,82 @@ export const educationData: Record<string, Module[]> = {
             question: 'What should you do before deploying an algorithm to live trading?',
             options: ['Skip testing to beat competitors', 'Paper trading/forward testing', 'Maximize leverage', 'Eliminate all risk controls'],
             correctAnswer: 1
+          },
+          {
+            id: 'q4',
+            question: 'What is a common metric to evaluate algorithmic trading strategies?',
+            options: ['Social media mentions', 'Sharpe ratio', 'Number of trades per second', 'Strategy age'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q5',
+            question: 'Which is NOT a common issue in algorithmic trading?',
+            options: ['Network latency', 'Execution slippage', 'Over-optimization', 'Excessive human intervention'],
+            correctAnswer: 3
+          }
+        ]
+      }
+    },
+    {
+      id: 'module3',
+      title: 'Machine Learning in Trading',
+      description: 'Apply machine learning techniques to develop advanced trading strategies',
+      estimatedTime: 40,
+      flashcards: [
+        {
+          id: 'card1',
+          title: 'ML in Trading',
+          question: 'How is machine learning applied to trading?',
+          answer: 'Machine learning in trading uses algorithms to find patterns in data and make predictions or decisions without explicit programming. Applications include price prediction, pattern recognition, sentiment analysis, portfolio optimization, risk management, and trade execution optimization.'
+        },
+        {
+          id: 'card2',
+          title: 'Common ML Algorithms',
+          question: 'What are common machine learning algorithms used in trading?',
+          answer: 'Common algorithms include: Linear/Logistic Regression, Decision Trees, Random Forests, Support Vector Machines, Neural Networks (including Deep Learning), Reinforcement Learning, and Clustering algorithms. Each has strengths for different types of market analysis.'
+        },
+        {
+          id: 'card3',
+          title: 'Feature Engineering',
+          question: 'What is feature engineering and why is it important for ML trading models?',
+          answer: 'Feature engineering is the process of transforming raw data into meaningful inputs for ML models. It\'s crucial because the quality of features significantly impacts model performance. In trading, it includes creating technical indicators, transforming price data, and incorporating fundamental or alternative data.'
+        }
+      ],
+      quiz: {
+        questions: [
+          {
+            id: 'q1',
+            question: 'Which type of ML algorithm learns through trial and error?',
+            options: ['Supervised learning', 'Unsupervised learning', 'Reinforcement learning', 'Transfer learning'],
+            correctAnswer: 2
+          },
+          {
+            id: 'q2',
+            question: 'What is the biggest challenge in applying ML to markets?',
+            options: ['Computing power', 'Non-stationarity of financial data', 'Lack of historical data', 'Programming difficulty'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q3',
+            question: 'What is overfitting in the context of ML trading models?',
+            options: ['When a model performs well in training but poorly in live trading', 'When a strategy trades too frequently', 'When a model uses too little data', 'When a model is too simple'],
+            correctAnswer: 0
+          },
+          {
+            id: 'q4',
+            question: 'Which data type is NOT commonly used in ML trading models?',
+            options: ['Price data', 'Volume data', 'Social media sentiment', 'Trader\'s horoscope'],
+            correctAnswer: 3
+          },
+          {
+            id: 'q5',
+            question: 'What is a neural network in machine learning?',
+            options: ['A computer network for traders', 'An algorithm inspired by the human brain', 'A network of trading computers', 'A social network for algorithms'],
+            correctAnswer: 1
           }
         ]
       }
     }
+    // Additional pro modules would be added here
   ]
 };

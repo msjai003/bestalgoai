@@ -13,7 +13,9 @@ import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
 import { Leaderboard } from '@/components/education/Leaderboard';
+import { QuizModal } from '@/components/education/QuizModal';
 import { useEducation, Level } from '@/hooks/useEducation';
+import { educationData } from '@/data/educationData';
 
 const Education = () => {
   const { 
@@ -26,9 +28,20 @@ const Education = () => {
     progress
   } = useEducation();
   
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  
   // Create a handler to safely cast the string to Level type
   const handleLevelChange = (value: string) => {
     setCurrentLevel(value as Level);
+  };
+  
+  // Get current module data for the quiz
+  const currentModuleData = educationData[currentLevel]?.find(m => m.id === currentModule);
+  
+  // Handle quiz start
+  const handleStartQuiz = () => {
+    startQuiz();
+    setQuizModalOpen(true);
   };
   
   return (
@@ -153,7 +166,11 @@ const Education = () => {
         <section className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Current Study Material</h2>
-            <Button variant="outline" className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10" onClick={startQuiz}>
+            <Button 
+              variant="outline" 
+              className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10" 
+              onClick={handleStartQuiz}
+            >
               Take Quiz <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
           </div>
@@ -161,6 +178,15 @@ const Education = () => {
           <FlashCard />
         </section>
       </main>
+      
+      {currentModuleData && (
+        <QuizModal
+          open={quizModalOpen}
+          onOpenChange={setQuizModalOpen}
+          quiz={currentModuleData.quiz}
+          moduleTitle={currentModuleData.title}
+        />
+      )}
       
       <Footer />
       <BottomNav />
