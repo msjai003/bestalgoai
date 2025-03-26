@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
@@ -7,7 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, GraduationCap, Trophy, CheckCircle, Clock, ChevronRight, Brain, Lightbulb, Infinity } from 'lucide-react';
+import { 
+  BookOpen, 
+  GraduationCap, 
+  Trophy, 
+  CheckCircle, 
+  Clock, 
+  ChevronRight, 
+  Brain, 
+  Lightbulb, 
+  Infinity, 
+  ArrowRight,
+  Award
+} from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
@@ -25,10 +37,16 @@ const Education = () => {
     completedModules,
     earnedBadges,
     startQuiz,
-    progress
+    progress,
+    getStats,
+    autoLaunchQuiz,
+    setAutoLaunchQuiz
   } = useEducation();
   
   const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [activeQuizModule, setActiveQuizModule] = useState<string>(currentModule);
+  
+  const stats = getStats();
   
   // Create a handler to safely cast the string to Level type
   const handleLevelChange = (value: string) => {
@@ -36,13 +54,22 @@ const Education = () => {
   };
   
   // Get current module data for the quiz
-  const currentModuleData = educationData[currentLevel]?.find(m => m.id === currentModule);
+  const currentModuleData = educationData[currentLevel]?.find(m => m.id === activeQuizModule);
   
-  // Handle quiz start
-  const handleStartQuiz = () => {
+  // Handle quiz launch
+  const handleLaunchQuiz = (moduleId: string) => {
+    setActiveQuizModule(moduleId);
     startQuiz();
     setQuizModalOpen(true);
   };
+  
+  // Check if there's an auto-launch quiz
+  useEffect(() => {
+    if (autoLaunchQuiz) {
+      setActiveQuizModule(autoLaunchQuiz);
+      setQuizModalOpen(true);
+    }
+  }, [autoLaunchQuiz]);
   
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
@@ -67,6 +94,31 @@ const Education = () => {
             <p className="text-gray-300 mb-4 text-sm md:text-base">
               Interactive flashcards, quizzes, and personalized learning paths to help you become an expert trader
             </p>
+            
+            {/* Stats summary */}
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+                <CheckCircle className="text-cyan h-4 w-4 mr-2" />
+                <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
+              </div>
+              
+              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+                <Trophy className="text-cyan h-4 w-4 mr-2" />
+                <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
+              </div>
+              
+              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+                <Award className="text-cyan h-4 w-4 mr-2" />
+                <span className="text-sm">{stats.badgesEarned} Badges</span>
+              </div>
+              
+              {stats.averageScore > 0 && (
+                <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+                  <Brain className="text-cyan h-4 w-4 mr-2" />
+                  <span className="text-sm">{stats.averageScore}% Score</span>
+                </div>
+              )}
+            </div>
           </div>
         </section>
         
@@ -113,7 +165,12 @@ const Education = () => {
                 <LevelBadges level="basics" earnedBadges={earnedBadges} />
               </div>
               
-              <ModuleList level="basics" currentModule={currentModule} completedModules={completedModules.basics} />
+              <ModuleList 
+                level="basics" 
+                currentModule={currentModule} 
+                completedModules={completedModules.basics}
+                onLaunchQuiz={handleLaunchQuiz}
+              />
             </TabsContent>
             
             <TabsContent value="intermediate">
@@ -135,7 +192,12 @@ const Education = () => {
                 <LevelBadges level="intermediate" earnedBadges={earnedBadges} />
               </div>
               
-              <ModuleList level="intermediate" currentModule={currentModule} completedModules={completedModules.intermediate} />
+              <ModuleList 
+                level="intermediate" 
+                currentModule={currentModule} 
+                completedModules={completedModules.intermediate}
+                onLaunchQuiz={handleLaunchQuiz}
+              />
             </TabsContent>
             
             <TabsContent value="pro">
@@ -157,7 +219,12 @@ const Education = () => {
                 <LevelBadges level="pro" earnedBadges={earnedBadges} />
               </div>
               
-              <ModuleList level="pro" currentModule={currentModule} completedModules={completedModules.pro} />
+              <ModuleList 
+                level="pro" 
+                currentModule={currentModule} 
+                completedModules={completedModules.pro}
+                onLaunchQuiz={handleLaunchQuiz}
+              />
             </TabsContent>
           </Tabs>
         </section>
@@ -169,7 +236,7 @@ const Education = () => {
             <Button 
               variant="outline" 
               className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10" 
-              onClick={handleStartQuiz}
+              onClick={() => handleLaunchQuiz(currentModule)}
             >
               Take Quiz <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
@@ -185,6 +252,8 @@ const Education = () => {
           onOpenChange={setQuizModalOpen}
           quiz={currentModuleData.quiz}
           moduleTitle={currentModuleData.title}
+          moduleId={activeQuizModule}
+          autoLaunch={!!autoLaunchQuiz}
         />
       )}
       

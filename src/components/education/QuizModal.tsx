@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -7,28 +7,82 @@ import { Label } from '@/components/ui/label';
 import { Quiz } from '@/data/educationData';
 import { useEducation } from '@/hooks/useEducation';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface QuizModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   quiz: Quiz;
   moduleTitle: string;
+  moduleId: string;
+  autoLaunch?: boolean;
 }
 
-export const QuizModal = ({ open, onOpenChange, quiz, moduleTitle }: QuizModalProps) => {
-  const { submitQuizAnswer } = useEducation();
+export const QuizModal = ({ 
+  open, 
+  onOpenChange, 
+  quiz, 
+  moduleTitle, 
+  moduleId,
+  autoLaunch = false 
+}: QuizModalProps) => {
+  const { submitQuizAnswer, markModuleViewed } = useEducation();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
   
   const totalQuestions = quiz.questions.length;
   const currentQuestionData = quiz.questions[currentQuestion];
   const isLastQuestion = currentQuestion === totalQuestions - 1;
   
+  // Start timer when quiz opens
+  useEffect(() => {
+    if (open && !startTime) {
+      setStartTime(Date.now());
+      
+      // Mark the module as viewed when the quiz starts
+      markModuleViewed(moduleId);
+    }
+    
+    if (!open) {
+      // Reset state when modal closes
+      setCurrentQuestion(0);
+      setSelectedAnswer(null);
+      setIsAnswered(false);
+      setCorrectAnswers(0);
+      setShowResults(false);
+      setTimeSpent(0);
+      setStartTime(null);
+    }
+  }, [open, moduleId, markModuleViewed, startTime]);
+  
+  // Update time spent every second
+  useEffect(() => {
+    let timer: any;
+    
+    if (open && startTime && !showResults) {
+      timer = setInterval(() => {
+        setTimeSpent(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [open, startTime, showResults]);
+  
   const handleNext = () => {
     if (isLastQuestion && isAnswered) {
+      // Calculate total time spent
+      if (startTime) {
+        const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
+        setTimeSpent(totalSeconds);
+      }
+      
       // Show final results
       setShowResults(true);
     } else if (isAnswered) {
@@ -50,30 +104,34 @@ export const QuizModal = ({ open, onOpenChange, quiz, moduleTitle }: QuizModalPr
     }
   };
   
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+  
   const handleFinishQuiz = () => {
     const isPassed = correctAnswers / totalQuestions >= 0.7; // 70% passing threshold
-    submitQuizAnswer(isPassed);
+    submitQuizAnswer(moduleId, isPassed, correctAnswers, totalQuestions, timeSpent);
     onOpenChange(false);
-    // Reset state for next time
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setCorrectAnswers(0);
-    setShowResults(false);
   };
   
   const handleClose = () => {
-    onOpenChange(false);
-    // Reset state for next time
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setCorrectAnswers(0);
-    setShowResults(false);
+    // Only allow closing if the quiz is not completed yet
+    if (!showResults) {
+      onOpenChange(false);
+    }
+  };
+  
+  const getScoreColor = (score: number): string => {
+    const percentage = score / totalQuestions;
+    if (percentage >= 0.8) return 'text-green-500';
+    if (percentage >= 0.7) return 'text-cyan';
+    return 'text-red-500';
   };
   
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={showResults ? () => {} : onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl">{moduleTitle} Quiz</DialogTitle>
@@ -83,8 +141,13 @@ export const QuizModal = ({ open, onOpenChange, quiz, moduleTitle }: QuizModalPr
           <>
             <div className="flex justify-between text-sm text-gray-400 mb-2">
               <span>Question {currentQuestion + 1} of {totalQuestions}</span>
-              <span>{correctAnswers} correct so far</span>
+              <span>{correctAnswers} correct so far • {formatTime(timeSpent)}</span>
             </div>
+            
+            <Progress 
+              value={(currentQuestion / totalQuestions) * 100} 
+              className="h-1 mb-4" 
+            />
             
             <div className="premium-card p-4 mb-4">
               <h3 className="text-lg mb-4">{currentQuestionData?.question}</h3>
@@ -164,13 +227,16 @@ export const QuizModal = ({ open, onOpenChange, quiz, moduleTitle }: QuizModalPr
                 ' and passed the quiz!' : 
                 '. You need 70% to pass.'}
             </p>
-            <div className="w-full h-4 bg-gray-700 rounded-full mb-6">
+            <div className="w-full bg-gray-700 rounded-full h-4 mb-2">
               <div 
                 className={`h-4 rounded-full ${
                   correctAnswers / totalQuestions >= 0.7 ? 'bg-green-500' : 'bg-red-500'
                 }`}
                 style={{ width: `${(correctAnswers / totalQuestions) * 100}%` }}
               ></div>
+            </div>
+            <div className="text-sm text-gray-400 mb-6">
+              Time spent: {formatTime(timeSpent)}
             </div>
             <Button 
               onClick={handleFinishQuiz} 
