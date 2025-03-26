@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
           
           // Fetch Google user details if available
-          fetchGoogleUserDetails();
+          fetchUserGoogleDetails();
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
           
           // Fetch Google user details when auth state changes
-          fetchGoogleUserDetails();
+          fetchUserGoogleDetails();
           
           // If this is a Google sign-in, save the user details to our table
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchGoogleUserDetails = async () => {
+  const fetchUserGoogleDetails = async () => {
     if (!user) return;
     
     try {
@@ -150,6 +150,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Exception fetching Google user details:', error);
     }
+  };
+
+  // Fix the conflict with the name fetchGoogleUserDetails by renaming the context method
+  const fetchGoogleUserDetails = async () => {
+    await fetchUserGoogleDetails();
   };
 
   const signInWithGoogle = async () => {
@@ -220,7 +225,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Google login successful!');
         
         // After successful login, fetch Google user details
-        await fetchGoogleUserDetails();
+        await fetchUserGoogleDetails();
         
         return { error: null, data: { user } };
       }

@@ -83,21 +83,49 @@ const GoogleRegistration = () => {
     try {
       // Update user profile with the additional information
       if (user) {
-        const { error: profileError } = await supabase
+        // First check if a profile already exists for this user
+        const { data: existingProfile } = await supabase
           .from('user_profiles')
-          .insert({
-            id: user.id,
-            full_name: formData.fullName,
-            email: formData.email,
-            mobile_number: formData.mobile,
-            trading_experience: formData.tradingExperience
-          });
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
           
-        if (profileError) {
-          console.error('Error creating profile for Google user:', profileError);
-          setErrorMessage(profileError.message);
-          setIsLoading(false);
-          return;
+        if (existingProfile) {
+          // Update existing profile
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({
+              full_name: formData.fullName,
+              email: formData.email,
+              mobile_number: formData.mobile,
+              trading_experience: formData.tradingExperience
+            })
+            .eq('id', user.id);
+            
+          if (updateError) {
+            console.error('Error updating profile for Google user:', updateError);
+            setErrorMessage(updateError.message);
+            setIsLoading(false);
+            return;
+          }
+        } else {
+          // Insert new profile
+          const { error: insertError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              full_name: formData.fullName,
+              email: formData.email,
+              mobile_number: formData.mobile,
+              trading_experience: formData.tradingExperience
+            });
+            
+          if (insertError) {
+            console.error('Error creating profile for Google user:', insertError);
+            setErrorMessage(insertError.message);
+            setIsLoading(false);
+            return;
+          }
         }
         
         toast.success('Profile created successfully!');
