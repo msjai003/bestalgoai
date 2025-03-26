@@ -39,17 +39,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
       return;
     }
 
-    // Auto-generate an access token from username and password
-    // This keeps the access token concept in the backend without exposing it in UI
-    const generatedToken = `${credentials.username}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    
-    // Update the accessToken in the credentials state
-    setCredentials(prev => ({
-      ...prev,
-      accessToken: generatedToken
-    }));
-
-    // Move to settings
+    // Move to settings without generating an access token
     setConnectionStep("settings");
     toast.success("Credentials accepted");
   };
@@ -75,10 +65,10 @@ export const useBrokerConnection = (selectedBroker: any) => {
           user_id: user.id,
           broker_id: selectedBroker.id,
           broker_name: selectedBroker.name,
-          // Store all credential fields correctly
+          // Store all credential fields correctly, but leave accesstoken empty
           username: credentials.username,
           password: credentials.password,
-          accesstoken: credentials.accessToken,
+          // No value for accesstoken means it will be NULL
           api_key: credentials.apiKey,
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
