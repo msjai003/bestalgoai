@@ -1,7 +1,18 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export const fetchGoogleUserDetails = async (userId: string) => {
+export interface GoogleUserDetails {
+  id: string;
+  email: string;
+  google_id?: string;
+  picture_url?: string;
+  given_name?: string;
+  family_name?: string;
+  locale?: string;
+  verified_email?: boolean;
+}
+
+export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUserDetails | null> => {
   try {
     const { data, error } = await supabase
       .from('google_user_details')
@@ -31,7 +42,7 @@ export const isGoogleUser = async (userId: string): Promise<boolean> => {
   }
 };
 
-export const getGoogleDisplayName = (googleDetails: any): string => {
+export const getGoogleDisplayName = (googleDetails: GoogleUserDetails | null): string => {
   if (!googleDetails) return '';
   
   if (googleDetails.given_name && googleDetails.family_name) {
@@ -43,4 +54,37 @@ export const getGoogleDisplayName = (googleDetails: any): string => {
   }
   
   return 'Google User';
+};
+
+export const saveGoogleUserDetails = async (
+  userId: string, 
+  googleData: {
+    email: string;
+    google_id?: string;
+    picture_url?: string;
+    given_name?: string;
+    family_name?: string;
+    locale?: string;
+    verified_email?: boolean;
+  }
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('google_user_details')
+      .upsert({
+        id: userId,
+        ...googleData,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    
+    if (error) {
+      console.error('Error saving Google user details:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception saving Google user details:', error);
+    return false;
+  }
 };
