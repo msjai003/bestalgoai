@@ -182,9 +182,9 @@ const Auth = () => {
             {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
 
-          <div className="flex items-center my-4">
+          <div className="flex items-center my-4 px-2">
             <Separator className="flex-grow bg-gray-700" />
-            <span className="px-3 text-gray-400 text-sm">OR</span>
+            <span className="px-4 text-gray-400 text-sm">OR</span>
             <Separator className="flex-grow bg-gray-700" />
           </div>
 
