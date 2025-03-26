@@ -166,7 +166,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           // Store all credential fields correctly, but leave accesstoken empty
           username: credentials.username,
           password: credentials.password,
-          // No value for accesstoken means it will be NULL
+          accesstoken: "valid", // Set default value "valid" for access token
           api_key: credentials.apiKey,
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
