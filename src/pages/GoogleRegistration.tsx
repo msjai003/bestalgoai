@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,8 +34,8 @@ const GoogleRegistration = () => {
       
       setFormData(prev => ({
         ...prev,
-        fullName: fullName,
-        email: googleUserDetails.email || '',
+        fullName: fullName || prev.fullName,
+        email: googleUserDetails.email || prev.email,
       }));
     }
   }, [googleUserDetails]);

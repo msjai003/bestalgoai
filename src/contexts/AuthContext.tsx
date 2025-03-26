@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Fix the conflict with the name fetchGoogleUserDetails by renaming the context method
+  // Fix the conflict with the name fetchGoogleUserDetails by using a different implementation name
   const fetchGoogleUserDetails = async () => {
     await fetchUserGoogleDetails();
   };
