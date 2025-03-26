@@ -120,7 +120,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
           session_id: credentials.sessionId,
-          updated_at: new Date()
+          updated_at: new Date().toISOString() // Fix: Convert Date to ISO string
         })
         .eq('user_id', user.id)
         .eq('broker_id', selectedBroker.id);
