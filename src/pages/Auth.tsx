@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -40,7 +39,6 @@ const Auth = () => {
       const { error } = await signIn(email, password);
       
       if (error) {
-        // Improved error message handling
         if (error.message.includes("Invalid login")) {
           setErrorMessage('Invalid email or password. Please try again.');
         } else if (error.message.includes("Email not confirmed")) {
@@ -49,7 +47,6 @@ const Auth = () => {
           setErrorMessage(error.message || 'An error occurred during login');
         }
       } else {
-        // Success handled by AuthContext's toast notification
         navigate('/dashboard');
       }
     } catch (error: any) {
@@ -71,7 +68,6 @@ const Auth = () => {
         console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
       } else {
-        // Success handled by AuthContext's toast notification
         navigate('/dashboard');
       }
     } catch (error: any) {
@@ -135,7 +131,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (errorMessage) setErrorMessage(null); // Clear error on input change
+                  if (errorMessage) setErrorMessage(null);
                 }}
                 placeholder="your@email.com"
                 className="bg-charcoalSecondary/50 border-gray-700 text-white h-12"
@@ -156,7 +152,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    if (errorMessage) setErrorMessage(null); // Clear error on input change
+                    if (errorMessage) setErrorMessage(null);
                   }}
                   placeholder="••••••••"
                   className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pr-10"
@@ -182,10 +178,14 @@ const Auth = () => {
             {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
 
-          <div className="flex items-center my-4 px-2">
-            <Separator className="flex-grow bg-gray-700" />
-            <span className="px-4 text-gray-400 text-sm">OR</span>
-            <Separator className="flex-grow bg-gray-700" />
+          <div className="flex items-center justify-center my-4">
+            <div className="flex-grow flex items-center max-w-[40%]">
+              <Separator className="w-full bg-gray-700" />
+            </div>
+            <span className="px-3 text-gray-400 text-sm mx-2">OR</span>
+            <div className="flex-grow flex items-center max-w-[40%]">
+              <Separator className="w-full bg-gray-700" />
+            </div>
           </div>
 
           <Button
