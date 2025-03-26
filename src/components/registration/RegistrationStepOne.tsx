@@ -9,13 +9,34 @@ interface RegistrationStepOneProps {
     fullName: string;
     email: string;
     mobile: string;
+    [key: string]: string;
   };
   handleChange: (field: string, value: string) => void;
+  googleData?: {
+    fullName?: string;
+    email?: string;
+  }
 }
 
-const RegistrationStepOne: React.FC<RegistrationStepOneProps> = ({ formData, handleChange }) => {
+const RegistrationStepOne: React.FC<RegistrationStepOneProps> = ({ 
+  formData, 
+  handleChange,
+  googleData
+}) => {
+  // If we have Google data, use it to pre-fill the form
+  React.useEffect(() => {
+    if (googleData) {
+      if (googleData.fullName && !formData.fullName) {
+        handleChange('fullName', googleData.fullName);
+      }
+      if (googleData.email && !formData.email) {
+        handleChange('email', googleData.email);
+      }
+    }
+  }, [googleData, formData.fullName, formData.email, handleChange]);
+
   return (
-    <div className="space-y-4">
+    <>
       <div>
         <Label htmlFor="fullName" className="text-gray-300 mb-2 block">Full Name <span className="text-charcoalDanger">*</span></Label>
         <div className="relative">
@@ -23,9 +44,9 @@ const RegistrationStepOne: React.FC<RegistrationStepOneProps> = ({ formData, han
           <Input
             id="fullName"
             type="text"
-            placeholder="Enter your name"
             value={formData.fullName}
             onChange={(e) => handleChange('fullName', e.target.value)}
+            placeholder="Enter your full name"
             className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
             required
           />
@@ -39,15 +60,15 @@ const RegistrationStepOne: React.FC<RegistrationStepOneProps> = ({ formData, han
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email address"
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
+            placeholder="Enter your email address"
             className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
             required
           />
         </div>
       </div>
-      
+
       <div>
         <Label htmlFor="mobile" className="text-gray-300 mb-2 block">Mobile Number <span className="text-charcoalDanger">*</span></Label>
         <div className="relative">
@@ -55,15 +76,15 @@ const RegistrationStepOne: React.FC<RegistrationStepOneProps> = ({ formData, han
           <Input
             id="mobile"
             type="tel"
-            placeholder="Enter your 10 digit mobile number"
             value={formData.mobile}
             onChange={(e) => handleChange('mobile', e.target.value)}
+            placeholder="Enter your 10 digit mobile number"
             className="bg-charcoalSecondary/50 border-gray-700 text-white h-12 pl-10"
             required
           />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

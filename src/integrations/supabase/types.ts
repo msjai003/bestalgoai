@@ -177,6 +177,45 @@ export type Database = {
         }
         Relationships: []
       }
+      google_user_details: {
+        Row: {
+          created_at: string | null
+          email: string
+          family_name: string | null
+          given_name: string | null
+          google_id: string | null
+          id: string
+          locale: string | null
+          picture_url: string | null
+          updated_at: string | null
+          verified_email: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          family_name?: string | null
+          given_name?: string | null
+          google_id?: string | null
+          id: string
+          locale?: string | null
+          picture_url?: string | null
+          updated_at?: string | null
+          verified_email?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          family_name?: string | null
+          given_name?: string | null
+          google_id?: string | null
+          id?: string
+          locale?: string | null
+          picture_url?: string | null
+          updated_at?: string | null
+          verified_email?: boolean | null
+        }
+        Relationships: []
+      }
       plan_details: {
         Row: {
           id: string

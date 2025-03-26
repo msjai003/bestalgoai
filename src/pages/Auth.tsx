@@ -16,7 +16,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signInWithGoogle, user } = useAuth();
+  const { signIn, signInWithGoogle, user, googleUserDetails } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

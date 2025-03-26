@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,8 +9,18 @@ interface User {
   email: string;
 }
 
+interface GoogleUserDetails {
+  google_id?: string;
+  picture_url?: string;
+  given_name?: string;
+  family_name?: string;
+  locale?: string;
+  verified_email?: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
+  googleUserDetails: GoogleUserDetails | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
@@ -17,6 +28,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   isLoading: boolean;
+  fetchGoogleUserDetails: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +39,7 @@ let logoutToastShown = false;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [googleUserDetails, setGoogleUserDetails] = useState<GoogleUserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Reset the toast flag when the component mounts
@@ -46,6 +59,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             id: data.session.user.id,
             email: data.session.user.email || '',
           });
+          
+          // Fetch Google user details if available
+          fetchGoogleUserDetails();
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -63,8 +79,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             id: session.user.id,
             email: session.user.email || '',
           });
+          
+          // Fetch Google user details when auth state changes
+          fetchGoogleUserDetails();
         } else {
           setUser(null);
+          setGoogleUserDetails(null);
         }
         setIsLoading(false);
       }
@@ -75,6 +95,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  const fetchGoogleUserDetails = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('google_user_details')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching Google user details:', error);
+        return;
+      }
+      
+      if (data) {
+        setGoogleUserDetails(data);
+      }
+    } catch (error) {
+      console.error('Exception fetching Google user details:', error);
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
@@ -84,7 +127,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/auth/callback`
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
           }
         });
         
@@ -137,6 +184,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(user);
         toast.success('Google login successful!');
+        
+        // After successful login, fetch Google user details
+        await fetchGoogleUserDetails();
+        
         return { error: null, data: { user } };
       }
       
@@ -375,13 +426,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{ 
       user, 
+      googleUserDetails,
       signIn, 
       signInWithGoogle,
       signUp, 
       signOut, 
       resetPassword,
       updatePassword,
-      isLoading 
+      isLoading,
+      fetchGoogleUserDetails
     }}>
       {children}
     </AuthContext.Provider>
