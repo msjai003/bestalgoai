@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
-import { GoogleUserDetails, fetchGoogleUserDetails, saveGoogleUserDetails } from '@/utils/googleAuthUtils';
+import { GoogleUserDetails, fetchGoogleUserDetails as fetchGoogleUserDetailsUtil, saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 
 interface User {
   id: string;
@@ -138,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       console.log('Fetching Google user details for user:', user.id);
-      const data = await fetchGoogleUserDetails(user.id);
+      const data = await fetchGoogleUserDetailsUtil(user.id);
       
       if (data) {
         console.log('Google user details fetched:', data);
