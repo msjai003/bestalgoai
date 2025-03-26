@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -162,16 +163,35 @@ export const useLiveTrading = () => {
       if (!strategy) throw new Error("Strategy not found");
       
       try {
-        await updateStrategyLiveConfig(
-          user.id,
-          dialogState.targetStrategyId,
-          dialogState.pendingQuantity,
-          brokerName,
-          brokerUsername,
-          "live trade",
-          strategy.name,
-          strategy.description || ""
-        );
+        // Check if we're updating an existing record for this broker
+        if (dialogState.targetUniqueId) {
+          const [strategyId, brokerName, username] = dialogState.targetUniqueId.split('-');
+          console.log("Updating existing strategy with uniqueId:", dialogState.targetUniqueId);
+          
+          // We're updating an existing broker configuration
+          await updateStrategyLiveConfig(
+            user.id,
+            dialogState.targetStrategyId,
+            dialogState.pendingQuantity,
+            brokerName,
+            brokerUsername || username,
+            "live trade",  // Explicitly set to live trade
+            strategy.name,
+            strategy.description || ""
+          );
+        } else {
+          // Creating a new broker configuration
+          await updateStrategyLiveConfig(
+            user.id,
+            dialogState.targetStrategyId,
+            dialogState.pendingQuantity,
+            brokerName,
+            brokerUsername,
+            "live trade",  // Explicitly set to live trade
+            strategy.name,
+            strategy.description || ""
+          );
+        }
         
         const loadedStrategies = await loadUserStrategies(user.id);
         setStrategies(loadedStrategies);
