@@ -277,7 +277,9 @@ export const useEducation = () => {
         });
         
         // Check if any badges should be unlocked
-        checkBadgeUnlocks(currentLevel, prev => prev[currentLevel] + 1);
+        // This is the line with the error - we need to pass the current level and the new completed count directly
+        const newCompletedCount = completedModules[currentLevel] + 1;
+        checkBadgeUnlocks(currentLevel, newCompletedCount);
         
         // Get the next module ID
         const currentModules = educationData[currentLevel];
@@ -475,3 +477,4 @@ export const useEducation = () => {
     setAutoLaunchQuiz
   };
 };
+
