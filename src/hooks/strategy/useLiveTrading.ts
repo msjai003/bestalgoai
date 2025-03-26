@@ -103,16 +103,22 @@ export const useLiveTrading = () => {
           dialogState.setShowQuantityDialog(true);
         }
       } else {
-        await updateLiveMode(
-          dialogState.targetStrategyId, 
-          false, 
-          dialogState.targetUniqueId, 
-          dialogState.targetRowId
-        );
-        toast({
-          title: "Success",
-          description: "Strategy switched to paper trading mode",
-        });
+        // Find the strategy to get its name before updating
+        const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
+        if (strategy) {
+          await updateLiveMode(
+            dialogState.targetStrategyId, 
+            false, 
+            dialogState.targetUniqueId, 
+            dialogState.targetRowId,
+            strategy.name,
+            strategy.description || ""
+          );
+          toast({
+            title: "Success",
+            description: "Strategy switched to paper trading mode",
+          });
+        }
         dialogState.resetDialogState();
       }
     } catch (error) {
@@ -179,20 +185,16 @@ export const useLiveTrading = () => {
         // Update existing record instead of creating a new one
         console.log("Found existing record, updating to live trading mode:", existingRecords[0].id);
         
-        const { error: updateError } = await supabase
-          .from('strategy_selections')
-          .update({
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            broker_username: brokerUsername,
-            trade_type: "live trade"
-          })
-          .eq('id', existingRecords[0].id);
-          
-        if (updateError) {
-          console.error("Error updating existing strategy to live mode:", updateError);
-          throw updateError;
-        }
+        await updateStrategyLiveConfig(
+          user.id,
+          dialogState.targetStrategyId,
+          dialogState.pendingQuantity,
+          brokerName,
+          brokerUsername,
+          "live trade",
+          strategy.name, // Pass the strategy name
+          strategy.description || "" // Pass the strategy description
+        );
       } else {
         // Create a new record only if one doesn't exist yet
         console.log("Creating new strategy selection for live trading:", {
@@ -204,23 +206,16 @@ export const useLiveTrading = () => {
           trade_type: "live trade"
         });
         
-        const { error: insertError } = await supabase
-          .from('strategy_selections')
-          .insert({
-            user_id: user.id,
-            strategy_id: dialogState.targetStrategyId,
-            strategy_name: strategy.name,
-            strategy_description: strategy.description || "",
-            quantity: dialogState.pendingQuantity,
-            selected_broker: brokerName,
-            broker_username: brokerUsername,
-            trade_type: "live trade"
-          });
-            
-        if (insertError) {
-          console.error("Database insert error:", insertError);
-          throw insertError;
-        }
+        await saveStrategyConfiguration(
+          user.id,
+          dialogState.targetStrategyId,
+          strategy.name,
+          strategy.description || "",
+          dialogState.pendingQuantity,
+          brokerName,
+          brokerUsername,
+          "live trade"
+        );
       }
       
       const loadedStrategies = await loadUserStrategies(user.id);
@@ -250,13 +245,19 @@ export const useLiveTrading = () => {
     id: number, 
     isLive: boolean, 
     uniqueId?: string, 
-    rowId?: string
+    rowId?: string,
+    strategyName: string = "",
+    strategyDescription: string = ""
   ) => {
     if (!user) return;
     
     try {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
+      
+      // Make sure we have the strategy name
+      strategyName = strategyName || strategy.name;
+      strategyDescription = strategyDescription || strategy.description || "";
       
       if (!isLive) {
         console.log("Updating specific strategy to paper trading mode:", {

@@ -44,9 +44,31 @@ export const updateStrategyLiveConfig = async (
   quantity: number,
   selectedBroker: string,
   brokerUsername: string,
-  tradeType: string
+  tradeType: string,
+  strategyName: string = "",  // Added strategyName parameter with default value
+  strategyDescription: string = "" // Added strategyDescription parameter with default value
 ) => {
   try {
+    // If strategyName is empty, try to fetch it from existing record
+    if (!strategyName || !strategyDescription) {
+      const { data: existingStrategy, error: fetchError } = await supabase
+        .from('strategy_selections')
+        .select('strategy_name, strategy_description')
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId)
+        .maybeSingle();
+
+      if (!fetchError && existingStrategy) {
+        strategyName = strategyName || existingStrategy.strategy_name;
+        strategyDescription = strategyDescription || existingStrategy.strategy_description || "";
+      }
+    }
+
+    // If still no name, use a default
+    if (!strategyName) {
+      strategyName = `Strategy ${strategyId}`;
+    }
+
     const { data, error } = await supabase
       .from('strategy_selections')
       .upsert(
@@ -56,8 +78,10 @@ export const updateStrategyLiveConfig = async (
           quantity: quantity,
           selected_broker: selectedBroker,
           broker_username: brokerUsername,
-          trade_type: tradeType
-          // Removed updated_at as it's automatically handled by the database
+          trade_type: tradeType,
+          strategy_name: strategyName,         // Added required field
+          strategy_description: strategyDescription  // Added optional field
+          // paid_status will use the default from the database
         },
         { onConflict: 'user_id, strategy_id' }
       )
