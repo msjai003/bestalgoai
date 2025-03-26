@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -60,19 +62,26 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     setErrorMessage(null);
     setIsGoogleLoading(true);
-
+    
     try {
+      toast.info("Initiating Google login...");
+      console.log("Starting Google login process");
+      
       const { error } = await signInWithGoogle();
       
       if (error) {
         console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
+        toast.error(error.message || 'Error signing in with Google');
       } else {
-        navigate('/dashboard');
+        toast.success('Google login initiated');
+        // Note: The redirect is handled by Supabase - we may not reach this point
+        console.log('Google login successful, awaiting redirect');
       }
     } catch (error: any) {
       console.error('Google login error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      toast.error(error.message || 'An unexpected error occurred');
     } finally {
       setIsGoogleLoading(false);
     }
