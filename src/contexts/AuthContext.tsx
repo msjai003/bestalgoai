@@ -10,7 +10,6 @@ interface User {
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: User | null } }>;
-  signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { fullName: string, mobileNumber: string, tradingExperience: string, profilePictureUrl?: string | null }) => Promise<{ error: Error | null, data?: { user: User | null } }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -211,37 +210,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/auth/callback',
-        }
-      });
-
-      if (error) {
-        console.error('Error during Google sign in:', error);
-        toast.error(error.message);
-        return { error };
-      }
-      
-      // No need to set user state here as the auth state change listener will handle it
-      // after redirect back to the app
-      
-      // No success toast here as the user will be redirected away
-      return { error: null };
-    } catch (error: any) {
-      console.error('Error during Google sign in:', error);
-      toast.error('Error during Google sign in');
-      return { error: error as Error };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const signOut = async () => {
     try {
       setIsLoading(true);
@@ -330,7 +298,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ 
       user, 
       signIn, 
-      signInWithGoogle,
       signUp, 
       signOut, 
       resetPassword,
