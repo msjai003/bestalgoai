@@ -179,11 +179,11 @@ const Auth = () => {
           </Button>
 
           <div className="flex items-center justify-center my-4">
-            <div className="flex-grow flex items-center max-w-[40%]">
+            <div className="flex-grow flex-shrink-0 max-w-[35%]">
               <Separator className="w-full bg-gray-700" />
             </div>
-            <span className="px-3 text-gray-400 text-sm mx-2">OR</span>
-            <div className="flex-grow flex items-center max-w-[40%]">
+            <span className="px-3 text-gray-400 text-sm flex-shrink-0">OR</span>
+            <div className="flex-grow flex-shrink-0 max-w-[35%]">
               <Separator className="w-full bg-gray-700" />
             </div>
           </div>
