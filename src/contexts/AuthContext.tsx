@@ -3,19 +3,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { GoogleUserDetails, fetchGoogleUserDetails, saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 
 interface User {
   id: string;
   email: string;
-}
-
-interface GoogleUserDetails {
-  google_id?: string;
-  picture_url?: string;
-  given_name?: string;
-  family_name?: string;
-  locale?: string;
-  verified_email?: boolean;
 }
 
 interface AuthContextType {
@@ -74,6 +66,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
         if (session?.user) {
           setUser({
             id: session.user.id,
@@ -82,6 +76,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           // Fetch Google user details when auth state changes
           fetchGoogleUserDetails();
+          
+          // If this is a Google sign-in, save the user details to our table
+          if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
+            console.log('Google sign-in detected, saving user details');
+            handleGoogleSignIn(session.user);
+          }
         } else {
           setUser(null);
           setGoogleUserDetails(null);
@@ -95,23 +95,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // New function to handle Google sign-in
+  const handleGoogleSignIn = async (user: any) => {
+    try {
+      if (!user || !user.id) return;
+      
+      console.log('Handling Google sign-in for user:', user.id);
+      
+      // Extract Google data from user metadata
+      const googleData = {
+        email: user.email || '',
+        google_id: user.user_metadata?.sub,
+        picture_url: user.user_metadata?.picture,
+        given_name: user.user_metadata?.given_name,
+        family_name: user.user_metadata?.family_name,
+        locale: user.user_metadata?.locale,
+        verified_email: user.user_metadata?.email_verified
+      };
+      
+      console.log('Saving Google user data:', googleData);
+      
+      // Save the Google user details
+      const success = await saveGoogleUserDetails(user.id, googleData);
+      
+      if (success) {
+        console.log('Google user details saved successfully');
+        // Update local state with the Google user details
+        setGoogleUserDetails({
+          id: user.id,
+          ...googleData
+        });
+      } else {
+        console.error('Failed to save Google user details');
+      }
+    } catch (error) {
+      console.error('Error handling Google sign-in:', error);
+    }
+  };
+
   const fetchGoogleUserDetails = async () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('google_user_details')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching Google user details:', error);
-        return;
-      }
+      console.log('Fetching Google user details for user:', user.id);
+      const data = await fetchGoogleUserDetails(user.id);
       
       if (data) {
+        console.log('Google user details fetched:', data);
         setGoogleUserDetails(data);
+      } else {
+        console.log('No Google user details found for user:', user.id);
+        setGoogleUserDetails(null);
       }
     } catch (error) {
       console.error('Exception fetching Google user details:', error);

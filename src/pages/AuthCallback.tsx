@@ -73,8 +73,29 @@ const AuthCallback = () => {
                 verified_email: user.user_metadata.email_verified
               };
               
+              console.log('Saving Google user details with data:', googleData);
+              
               // Save Google user data to our google_user_details table
-              await saveGoogleUserDetails(user.id, googleData);
+              const saveSuccess = await saveGoogleUserDetails(user.id, googleData);
+              
+              if (saveSuccess) {
+                console.log('Google user details saved successfully');
+              } else {
+                console.error('Failed to save Google user details');
+              }
+              
+              // Check if we need to complete registration (if user profile doesn't exist)
+              const { data: profileData } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', user.id)
+                .maybeSingle();
+                
+              if (!profileData) {
+                console.log('User profile not found, redirecting to complete registration');
+                navigate('/google-registration');
+                return;
+              }
             }
             
             // Check if this is a password reset flow
