@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,20 @@ export const useBrokerConnection = (selectedBroker: any) => {
       return;
     }
 
+    // For API-based brokers, check additional fields
+    if (selectedBroker?.apiRequired) {
+      if (!credentials.apiKey) {
+        toast.error("Please enter your API key");
+        return;
+      }
+      
+      // Special check for brokers requiring secret key (like Zerodha)
+      if (selectedBroker?.requiresSecretKey && !credentials.secretKey) {
+        toast.error("Please enter your Secret key");
+        return;
+      }
+    }
+
     // Auto-generate an access token from username and password
     // This keeps the access token concept in the backend without exposing it in UI
     const generatedToken = `${credentials.username}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
@@ -74,9 +89,13 @@ export const useBrokerConnection = (selectedBroker: any) => {
           user_id: user.id,
           broker_id: selectedBroker.id,
           broker_name: selectedBroker.name,
-          // Store username and password as required by the schema
+          // Store all credentials as required by the schema
           username: credentials.username,
           password: credentials.password,
+          api_key: credentials.apiKey,
+          secret_key: credentials.secretKey,
+          two_factor_secret: credentials.twoFactorSecret,
+          session_id: credentials.sessionId,
           // Store the access token (auto-generated or provided)
           accesstoken: credentials.accessToken,
           status: 'connected'

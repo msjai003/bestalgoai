@@ -106,7 +106,7 @@ export const CredentialsForm = ({
               <Input
                 id={field.field_name}
                 type={field.is_secret ? "password" : field.field_type}
-                placeholder={field.placeholder}
+                placeholder={field.placeholder || `Enter your ${field.display_name.toLowerCase()}`}
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
                 value={(credentials as any)[field.field_name] || ''}
                 onChange={(e) => handleCredentialChange(field, e.target.value)}

@@ -1,3 +1,4 @@
+
 export interface Broker {
   id: number;
   name: string;
@@ -6,7 +7,7 @@ export interface Broker {
   supportedAssets: string[];
   fees: string;
   apiRequired: boolean;
-  requiresSecretKey?: boolean; // New field to mark brokers that need secret key
+  requiresSecretKey?: boolean; // Field to mark brokers that need secret key
 }
 
 export interface BrokerCredentials {
