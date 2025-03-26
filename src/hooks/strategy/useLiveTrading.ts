@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -169,22 +168,56 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === dialogState.targetStrategyId);
       if (!strategy) throw new Error("Strategy not found");
       
-      // First check if there's an existing record for this strategy
-      const { data: existingRecords, error: searchError } = await supabase
-        .from('strategy_selections')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('strategy_id', dialogState.targetStrategyId);
+      // First check if there's an existing record for this strategy and broker combination
+      let existingRowId = "";
+      
+      if (dialogState.targetRowId) {
+        // If we already have a row ID (from toggling an existing strategy)
+        existingRowId = dialogState.targetRowId;
+        console.log("Using provided row ID:", existingRowId);
+      } else if (dialogState.targetUniqueId) {
+        // Extract the parts to find the record
+        const [strategyId, existingBrokerName, existingUsername] = dialogState.targetUniqueId.split('-');
         
-      if (searchError) {
-        console.error("Error searching for existing strategy records:", searchError);
-        throw searchError;
+        console.log("Looking for record with:", {
+          strategy_id: dialogState.targetStrategyId,
+          selected_broker: existingBrokerName,
+          broker_username: existingUsername
+        });
+        
+        const { data: matchingRows, error: fetchError } = await supabase
+          .from('strategy_selections')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('strategy_id', dialogState.targetStrategyId)
+          .eq('selected_broker', existingBrokerName);
+          
+        if (fetchError) {
+          console.error("Error fetching strategy by uniqueId:", fetchError);
+        } else if (matchingRows && matchingRows.length > 0) {
+          existingRowId = matchingRows[0].id;
+          console.log("Found matching row by broker name, ID:", existingRowId);
+        }
+      } else {
+        // Look for any existing record for this strategy
+        const { data: existingRecords, error: searchError } = await supabase
+          .from('strategy_selections')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('strategy_id', dialogState.targetStrategyId);
+          
+        if (searchError) {
+          console.error("Error searching for existing strategy records:", searchError);
+        } else if (existingRecords && existingRecords.length > 0) {
+          existingRowId = existingRecords[0].id;
+          console.log("Found existing record for strategy, ID:", existingRowId);
+        }
       }
       
-      if (existingRecords && existingRecords.length > 0) {
-        // Update existing record instead of creating a new one
-        console.log("Found existing record, updating to live trading mode:", existingRecords[0].id);
-        
+      console.log("Existing row ID determined as:", existingRowId || "none (will create new)");
+      
+      try {
+        // Use the updateStrategyLiveConfig function which now correctly handles both cases
         await updateStrategyLiveConfig(
           user.id,
           dialogState.targetStrategyId,
@@ -192,41 +225,24 @@ export const useLiveTrading = () => {
           brokerName,
           brokerUsername,
           "live trade",
-          strategy.name, // Pass the strategy name
-          strategy.description || "" // Pass the strategy description
-        );
-      } else {
-        // Create a new record only if one doesn't exist yet
-        console.log("Creating new strategy selection for live trading:", {
-          user_id: user.id,
-          strategy_id: dialogState.targetStrategyId,
-          quantity: dialogState.pendingQuantity,
-          broker_name: brokerName,
-          broker_username: brokerUsername,
-          trade_type: "live trade"
-        });
-        
-        await saveStrategyConfiguration(
-          user.id,
-          dialogState.targetStrategyId,
           strategy.name,
-          strategy.description || "",
-          dialogState.pendingQuantity,
-          brokerName,
-          brokerUsername,
-          "live trade"
+          strategy.description || ""
         );
+        
+        // Refresh strategies list
+        const loadedStrategies = await loadUserStrategies(user.id);
+        setStrategies(loadedStrategies);
+        
+        toast({
+          title: "Live Trading Enabled",
+          description: `Strategy "${strategy.name}" is now trading live with ${brokerName}`,
+        });
+      } catch (error) {
+        console.error("Error updating strategy configuration:", error);
+        throw new Error("Failed to update strategy configuration");
       }
-      
-      const loadedStrategies = await loadUserStrategies(user.id);
-      setStrategies(loadedStrategies);
-      
-      toast({
-        title: "Live Trading Enabled",
-        description: `Strategy "${strategy.name}" is now trading live with ${brokerName}`,
-      });
     } catch (error) {
-      console.error("Error saving strategy configuration:", error);
+      console.error("Error in handleBrokerSubmit:", error);
       toast({
         title: "Error",
         description: "Failed to save strategy configuration",

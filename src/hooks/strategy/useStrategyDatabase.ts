@@ -69,23 +69,60 @@ export const updateStrategyLiveConfig = async (
       strategyName = `Strategy ${strategyId}`;
     }
 
-    const { data, error } = await supabase
+    // Check if record exists
+    const { data: existingRecord, error: checkError } = await supabase
       .from('strategy_selections')
-      .upsert(
-        {
+      .select('id')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking for existing record:", checkError);
+      throw checkError;
+    }
+
+    let data;
+    let error;
+
+    if (existingRecord) {
+      // Update existing record
+      console.log("Updating existing strategy record:", existingRecord.id);
+      const result = await supabase
+        .from('strategy_selections')
+        .update({
+          quantity: quantity,
+          selected_broker: selectedBroker,
+          broker_username: brokerUsername,
+          trade_type: tradeType,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        })
+        .eq('id', existingRecord.id)
+        .select();
+      
+      data = result.data;
+      error = result.error;
+    } else {
+      // Insert new record
+      console.log("Creating new strategy selection record");
+      const result = await supabase
+        .from('strategy_selections')
+        .insert({
           user_id: userId,
           strategy_id: strategyId,
           quantity: quantity,
           selected_broker: selectedBroker,
           broker_username: brokerUsername,
           trade_type: tradeType,
-          strategy_name: strategyName,         // Added required field
-          strategy_description: strategyDescription  // Added optional field
-          // paid_status will use the default from the database
-        },
-        { onConflict: 'user_id, strategy_id' }
-      )
-      .select();
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        })
+        .select();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
       console.error("Error updating strategy live config:", error);
