@@ -6,6 +6,7 @@ import { Features } from '@/components/Features';
 import { CTA } from '@/components/CTA';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
+import { LevelsPreview } from '@/components/education/LevelsPreview';
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
       <main>
         <Hero />
         <div className="max-w-7xl mx-auto px-4">
+          <LevelsPreview />
           <Features />
           <CTA />
         </div>
