@@ -252,8 +252,8 @@ const QuickActionButton = ({
   icon: React.ReactNode;
   fullWidth?: boolean;
 }) => (
-  <div className={`flex items-center bg-charcoalSecondary rounded-xl p-4 border border-gray-700/30 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-cyan/5 hover:border-cyan/20 ${fullWidth ? 'py-4' : ''}`}>
-    <div className="mr-3 flex items-center justify-center">
+  <div className={`flex items-center bg-charcoalSecondary rounded-lg p-4 border border-gray-700/40 shadow-md transition-all hover:bg-charcoalSecondary/80 hover:border-cyan/30 hover:shadow-lg hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
+    <div className="mr-3 flex items-center justify-center bg-charcoalPrimary/30 p-2 rounded-md">
       {icon}
     </div>
     <span className="text-gray-200 font-medium">{label}</span>

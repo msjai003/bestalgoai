@@ -6,27 +6,28 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:translate-y-[1px] btn-hover-effect",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] duration-200",
   {
     variants: {
       variant: {
-        default: "bg-cyan text-charcoalPrimary hover:bg-cyan/90 hover:shadow-[0_0_10px_rgba(0,188,212,0.5)]",
+        default: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
         destructive:
-          "bg-charcoalDanger text-white hover:bg-charcoalDanger/90 hover:shadow-[0_0_10px_rgba(244,67,54,0.5)]",
+          "bg-charcoalDanger text-white shadow-md hover:bg-charcoalDanger/90 hover:shadow-charcoalDanger/20 hover:shadow-lg",
         outline:
-          "border border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground hover:border-cyan/50",
+          "border border-gray-700 bg-transparent text-foreground hover:bg-accent/10 hover:text-cyan hover:border-cyan/40 shadow-sm",
         secondary:
-          "bg-charcoalSecondary text-charcoalTextPrimary border border-white/10 hover:bg-charcoalSecondary/80 hover:border-cyan/20",
-        ghost: "hover:bg-charcoalSecondary hover:text-charcoalTextPrimary",
+          "bg-charcoalSecondary text-white border border-white/10 shadow-md hover:bg-charcoalSecondary/90 hover:border-cyan/20 hover:shadow-lg",
+        ghost: "hover:bg-gray-800/40 hover:text-white",
         link: "text-cyan underline-offset-4 hover:underline",
-        cyan: "bg-cyan text-charcoalPrimary hover:bg-cyan/90 hover:shadow-[0_0_10px_rgba(0,188,212,0.5)]",
-        gradient: "bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:from-cyan/90 hover:to-cyan/70 hover:shadow-[0_0_15px_rgba(0,188,212,0.4)]",
+        cyan: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
+        gradient: "bg-gradient-to-r from-cyan to-cyan/90 text-charcoalPrimary shadow-md hover:shadow-cyan/20 hover:shadow-lg hover:from-cyan hover:to-cyan/80",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        sm: "h-9 rounded-md px-3 text-xs",
+        lg: "h-11 rounded-md px-8 text-base",
+        xl: "h-12 rounded-md px-10 text-base",
+        icon: "h-10 w-10 rounded-md",
       },
     },
     defaultVariants: {

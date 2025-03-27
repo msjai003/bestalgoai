@@ -69,7 +69,7 @@ const FeedbackForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-[#FF00D4] focus:ring-1 focus:ring-[#FF00D4]/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -81,7 +81,7 @@ const FeedbackForm: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter your 10 digit mobile number"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-[#FF00D4] focus:ring-1 focus:ring-[#FF00D4]/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -93,7 +93,7 @@ const FeedbackForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-[#FF00D4] focus:ring-1 focus:ring-[#FF00D4]/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -104,17 +104,19 @@ const FeedbackForm: React.FC = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share your thoughts with us..."
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-[#FF00D4] focus:ring-1 focus:ring-[#FF00D4]/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
             rows={5}
           />
         </div>
         
         <Button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 gradient-button p-6 rounded-xl group hover:animate-micro-glow"
+          variant="gradient"
+          size="lg"
+          className="w-full flex items-center justify-center gap-2 py-6 rounded-lg shadow-md hover:shadow-cyan/20"
         >
-          <Send className="w-5 h-5 group-hover:animate-micro-bounce" />
-          <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white after:scale-x-0 after:origin-right after:transition-transform group-hover:after:scale-x-100 group-hover:after:origin-left">Sign Up</span>
+          <Send className="w-5 h-5" />
+          Sign Up
         </Button>
       </form>
     </div>
