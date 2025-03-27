@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
@@ -31,7 +32,6 @@ type QuizResults = {
 
 export const useEducation = () => {
   const { toast } = useToast();
-  
   const [currentLevel, setCurrentLevel] = useState<Level>(() => {
     const savedLevel = localStorage.getItem('education_currentLevel');
     return (savedLevel as Level) || 'basics';
@@ -69,6 +69,7 @@ export const useEducation = () => {
       return JSON.parse(savedBadges);
     }
     
+    // Initialize badges
     return [
       {
         id: 'basics-starter',
@@ -157,6 +158,7 @@ export const useEducation = () => {
     };
   });
 
+  // Calculate overall progress
   const progress = {
     overall: Math.round(((completedModules.basics + completedModules.intermediate + completedModules.pro) / 45) * 100),
     basics: Math.round((completedModules.basics / 15) * 100),
@@ -164,8 +166,10 @@ export const useEducation = () => {
     pro: Math.round((completedModules.pro / 15) * 100)
   };
 
+  // Filter earned badges
   const earnedBadges = badges.filter(badge => badge.unlocked);
   
+  // Save user progress whenever it changes
   useEffect(() => {
     localStorage.setItem('education_currentLevel', currentLevel);
     localStorage.setItem('education_currentModule', currentModule);
@@ -186,14 +190,16 @@ export const useEducation = () => {
     badges
   ]);
 
+  // Handle module selection
   const selectModule = (moduleId: string) => {
     setCurrentModule(moduleId);
     const savedCard = localStorage.getItem(`education_card_${moduleId}`);
     setCurrentCard(savedCard ? parseInt(savedCard, 10) : 0);
   };
 
+  // Mark module as viewed
   const markModuleViewed = (moduleId: string) => {
-    if (moduleViews[moduleId]) return;
+    if (moduleViews[moduleId]) return; // Already viewed
     
     setModuleViews(prev => ({
       ...prev,
@@ -201,12 +207,14 @@ export const useEducation = () => {
     }));
   };
 
+  // Flip to next card
   const nextCard = () => {
     const moduleData = educationData[currentLevel].find(m => m.id === currentModule);
     
     if (moduleData && currentCard < moduleData.flashcards.length - 1) {
       setCurrentCard(prev => prev + 1);
     } else if (moduleData) {
+      // Last card reached, prompt to take quiz
       setAutoLaunchQuiz(currentModule);
       
       toast({
@@ -216,16 +224,19 @@ export const useEducation = () => {
     }
   };
 
+  // Flip to previous card
   const prevCard = () => {
     if (currentCard > 0) {
       setCurrentCard(prev => prev - 1);
     }
   };
 
+  // Start the quiz for current module
   const startQuiz = () => {
     setQuizActive(true);
   };
 
+  // Submit quiz answer
   const submitQuizAnswer = (
     moduleId: string, 
     isPassed: boolean, 
@@ -233,6 +244,7 @@ export const useEducation = () => {
     totalQuestions: number, 
     timeSpent: number
   ) => {
+    // Record quiz results
     setQuizResults(prev => ({
       ...prev,
       [moduleId]: {
@@ -246,12 +258,15 @@ export const useEducation = () => {
     }));
     
     if (isPassed) {
+      // Mark module as completed if not already
       if (!moduleProgress[moduleId]) {
+        // Update module progress
         setModuleProgress(prev => ({
           ...prev,
           [moduleId]: true
         }));
         
+        // Update completed modules count
         setCompletedModules(prev => {
           const updatedLevel = {
             ...prev,
@@ -261,15 +276,20 @@ export const useEducation = () => {
           return updatedLevel;
         });
         
+        // Check if any badges should be unlocked
+        // This is the line with the error - we need to pass the current level and the new completed count directly
         const newCompletedCount = completedModules[currentLevel] + 1;
         checkBadgeUnlocks(currentLevel, newCompletedCount);
         
+        // Get the next module ID
         const currentModules = educationData[currentLevel];
         const currentIndex = currentModules.findIndex(m => m.id === moduleId);
         
         if (currentIndex < currentModules.length - 1) {
+          // There is a next module in this level
           const nextModuleId = currentModules[currentIndex + 1].id;
           
+          // Auto-select next module
           setTimeout(() => {
             selectModule(nextModuleId);
             
@@ -279,6 +299,7 @@ export const useEducation = () => {
             });
           }, 1000);
         } else if (currentLevel === 'basics') {
+          // Completed all basics, move to intermediate
           setTimeout(() => {
             setCurrentLevel('intermediate');
             selectModule('module1');
@@ -289,6 +310,7 @@ export const useEducation = () => {
             });
           }, 1000);
         } else if (currentLevel === 'intermediate') {
+          // Completed all intermediate, move to pro
           setTimeout(() => {
             setCurrentLevel('pro');
             selectModule('module1');
@@ -299,6 +321,7 @@ export const useEducation = () => {
             });
           }, 1000);
         } else {
+          // Completed everything!
           toast({
             title: "Congratulations! 🎉",
             description: "You've completed all modules in the Trading Academy!",
@@ -322,10 +345,13 @@ export const useEducation = () => {
     setAutoLaunchQuiz(null);
   };
 
+  // Check if any badges should be unlocked
   const checkBadgeUnlocks = (level: Level, completedCount: number) => {
     const newBadges = [...badges];
+    const completed = completedCount;
     
-    if (completedCount === 1) {
+    // First module completion badge
+    if (completed === 1) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-starter`
       );
@@ -339,7 +365,8 @@ export const useEducation = () => {
       }
     }
     
-    if (completedCount === 8) {
+    // Half-way badge
+    if (completed === 8) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-half`
       );
@@ -353,7 +380,8 @@ export const useEducation = () => {
       }
     }
     
-    if (completedCount === 15) {
+    // All modules completed badge
+    if (completed === 15) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-complete`
       );
@@ -370,12 +398,14 @@ export const useEducation = () => {
     setBadges(newBadges);
   };
 
+  // Get module status - locked, active, completed
   const getModuleStatus = (moduleId: string, index: number) => {
     const isCompleted = moduleProgress[moduleId] || false;
     const currentModules = educationData[currentLevel];
     const previousModuleId = index > 0 ? currentModules[index - 1].id : null;
     const isPreviousCompleted = previousModuleId ? moduleProgress[previousModuleId] || false : true;
     
+    // First module is always unlocked, others require previous module completion
     const isLocked = index > 0 && !isPreviousCompleted;
     const isActive = moduleId === currentModule;
     
@@ -385,7 +415,8 @@ export const useEducation = () => {
       isActive
     };
   };
-
+  
+  // Get quiz statistics and overall performance
   const getStats = () => {
     const totalModules = Object.keys(educationData).reduce(
       (sum, level) => sum + educationData[level as Level].length, 
@@ -446,3 +477,4 @@ export const useEducation = () => {
     setAutoLaunchQuiz
   };
 };
+
