@@ -17,7 +17,19 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { Loader, ChevronRight, TrendingUp, Lock, Play, Building, Shield } from "lucide-react";
+import { 
+  Loader, 
+  ChevronRight, 
+  TrendingUp, 
+  Lock, 
+  Play, 
+  Building, 
+  Shield, 
+  GraduationCap, 
+  BarChart3, 
+  Star, 
+  Users
+} from "lucide-react";
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -170,20 +182,48 @@ const Dashboard = () => {
         </section>
 
         <section id="quick-actions" className="px-4 mt-6">
-          <div className="grid grid-cols-4 gap-3">
+          <h2 className="text-lg font-bold text-white mb-3">Quick Access</h2>
+          
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/strategy-selection" className="block">
-              <QuickActionButton icon="fa-chart-line" label="Strategies" />
+              <QuickActionButton 
+                icon="fa-chart-line" 
+                label="Strategies" 
+                lucideIcon={<TrendingUp className="text-[#00BCD4] h-5 w-5" />}
+              />
             </Link>
-            <QuickActionButton icon="fa-magnifying-glass-chart" label="Analysis" />
-            <Link to="/subscription" className="block">
-              <QuickActionButton icon="fa-star" label="Premium" />
-            </Link>
-            <Link to="/community" className="block">
-              <QuickActionButton icon="fa-users" label="Community" />
+            <Link to="/education" className="block">
+              <QuickActionButton 
+                icon="fa-graduation-cap" 
+                label="Levels" 
+                lucideIcon={<GraduationCap className="text-[#00BCD4] h-5 w-5" />}
+              />
             </Link>
           </div>
           
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <QuickActionButton 
+              icon="fa-magnifying-glass-chart" 
+              label="Analysis" 
+              lucideIcon={<BarChart3 className="text-[#00BCD4] h-5 w-5" />}
+            />
+            <Link to="/subscription" className="block">
+              <QuickActionButton 
+                icon="fa-star" 
+                label="Premium" 
+                lucideIcon={<Star className="text-[#00BCD4] h-5 w-5" />}
+              />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <Link to="/community" className="block">
+              <QuickActionButton 
+                icon="fa-users" 
+                label="Community" 
+                lucideIcon={<Users className="text-[#00BCD4] h-5 w-5" />}
+              />
+            </Link>
             <Link to="/broker-integration" className="block">
               <QuickActionButton 
                 icon="fa-building" 
@@ -191,11 +231,15 @@ const Dashboard = () => {
                 lucideIcon={<Building className="text-[#00BCD4] h-5 w-5" />}
               />
             </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-3">
             <Link to="/risk-management" className="block">
               <QuickActionButton 
                 icon="fa-shield" 
-                label="Risk" 
+                label="Risk Management" 
                 lucideIcon={<Shield className="text-[#00BCD4] h-5 w-5" />}
+                fullWidth
               />
             </Link>
           </div>
@@ -209,13 +253,15 @@ const Dashboard = () => {
 const QuickActionButton = ({ 
   icon, 
   label, 
-  lucideIcon 
+  lucideIcon,
+  fullWidth = false
 }: { 
   icon: string; 
   label: string;
   lucideIcon?: React.ReactNode;
+  fullWidth?: boolean;
 }) => (
-  <div className="flex flex-col items-center bg-charcoalSecondary rounded-xl p-3 border border-gray-700/30 shadow-lg hover:bg-gray-800/60 transition-all hover:-translate-y-0.5 hover:shadow-cyan/5">
+  <div className={`flex flex-col items-center bg-charcoalSecondary rounded-xl p-3 border border-gray-700/30 shadow-lg hover:bg-gray-800/60 transition-all hover:-translate-y-0.5 hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
     <div className="mb-1 w-8 h-8 flex items-center justify-center">
       {lucideIcon || <i className={`fa-solid ${icon} text-[#00BCD4] text-xl`}></i>}
     </div>
