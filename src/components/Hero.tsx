@@ -53,7 +53,8 @@ export const Hero = () => {
           </p>
           <Button 
             variant="gradient"
-            className="w-full sm:w-auto sm:px-8 py-5 rounded-xl font-semibold shadow-lg hover:animate-micro-glow"
+            size="lg"
+            className="w-full sm:w-auto sm:px-6 rounded-lg font-semibold shadow-lg hover:animate-micro-glow"
             onClick={handleStartTrading}
           >
             Start Trading Now

@@ -13,8 +13,8 @@ export const CTA = () => {
           <p className="text-charcoalTextSecondary mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
           <Button 
             variant="gradient" 
-            size="xl"
-            className="w-full py-7 rounded-lg font-semibold shadow-lg"
+            size="lg"
+            className="w-full md:w-auto md:px-6 rounded-lg font-semibold shadow-lg"
           >
             Get Started Free
           </Button>
