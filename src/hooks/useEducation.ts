@@ -277,7 +277,7 @@ export const useEducation = () => {
         });
         
         // Check if any badges should be unlocked
-        // Fixed: Directly pass the new completedCount value
+        // This is the line with the error - we need to pass the current level and the new completed count directly
         const newCompletedCount = completedModules[currentLevel] + 1;
         checkBadgeUnlocks(currentLevel, newCompletedCount);
         
@@ -348,9 +348,10 @@ export const useEducation = () => {
   // Check if any badges should be unlocked
   const checkBadgeUnlocks = (level: Level, completedCount: number) => {
     const newBadges = [...badges];
+    const completed = completedCount;
     
     // First module completion badge
-    if (completedCount === 1) {
+    if (completed === 1) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-starter`
       );
@@ -365,7 +366,7 @@ export const useEducation = () => {
     }
     
     // Half-way badge
-    if (completedCount === 8) {
+    if (completed === 8) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-half`
       );
@@ -380,7 +381,7 @@ export const useEducation = () => {
     }
     
     // All modules completed badge
-    if (completedCount === 15) {
+    if (completed === 15) {
       const badgeToUnlock = newBadges.find(
         badge => badge.level === level && badge.id === `${level}-complete`
       );
@@ -476,3 +477,4 @@ export const useEducation = () => {
     setAutoLaunchQuiz
   };
 };
+
