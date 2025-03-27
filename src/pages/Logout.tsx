@@ -25,10 +25,13 @@ const Logout = () => {
   }, [navigate, signOut]);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF00D4] mx-auto mb-4"></div>
-        <h1 className="text-xl font-medium">Logging out...</h1>
+    <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center text-white">
+      <div className="text-center premium-card p-8 shadow-xl backdrop-blur-md">
+        <div className="relative mx-auto mb-6 w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-cyan/20 animate-pulse"></div>
+          <div className="absolute inset-0 rounded-full border-t-4 border-cyan animate-spin"></div>
+        </div>
+        <h1 className="text-xl font-medium gradient-text mb-2">Logging out...</h1>
         <p className="text-gray-400 mt-2">Please wait while we sign you out.</p>
       </div>
     </div>
