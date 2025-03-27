@@ -187,31 +187,27 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/strategy-selection" className="block">
               <QuickActionButton 
-                icon="fa-chart-line" 
                 label="Strategies" 
-                lucideIcon={<TrendingUp className="text-[#00BCD4] h-5 w-5" />}
+                icon={<TrendingUp className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
             <Link to="/education" className="block">
               <QuickActionButton 
-                icon="fa-graduation-cap" 
                 label="Levels" 
-                lucideIcon={<GraduationCap className="text-[#00BCD4] h-5 w-5" />}
+                icon={<GraduationCap className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
           </div>
           
           <div className="grid grid-cols-2 gap-3 mb-3">
             <QuickActionButton 
-              icon="fa-magnifying-glass-chart" 
               label="Analysis" 
-              lucideIcon={<BarChart3 className="text-[#00BCD4] h-5 w-5" />}
+              icon={<BarChart3 className="h-6 w-6 text-[#00BCD4]" />}
             />
             <Link to="/subscription" className="block">
               <QuickActionButton 
-                icon="fa-star" 
                 label="Premium" 
-                lucideIcon={<Star className="text-[#00BCD4] h-5 w-5" />}
+                icon={<Star className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
           </div>
@@ -219,16 +215,14 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/community" className="block">
               <QuickActionButton 
-                icon="fa-users" 
                 label="Community" 
-                lucideIcon={<Users className="text-[#00BCD4] h-5 w-5" />}
+                icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
             <Link to="/broker-integration" className="block">
               <QuickActionButton 
-                icon="fa-building" 
                 label="Brokers" 
-                lucideIcon={<Building className="text-[#00BCD4] h-5 w-5" />}
+                icon={<Building className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
           </div>
@@ -236,9 +230,8 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 gap-3">
             <Link to="/risk-management" className="block">
               <QuickActionButton 
-                icon="fa-shield" 
                 label="Risk Management" 
-                lucideIcon={<Shield className="text-[#00BCD4] h-5 w-5" />}
+                icon={<Shield className="h-6 w-6 text-[#00BCD4]" />}
                 fullWidth
               />
             </Link>
@@ -251,21 +244,19 @@ const Dashboard = () => {
 };
 
 const QuickActionButton = ({ 
-  icon, 
   label, 
-  lucideIcon,
+  icon,
   fullWidth = false
 }: { 
-  icon: string; 
   label: string;
-  lucideIcon?: React.ReactNode;
+  icon: React.ReactNode;
   fullWidth?: boolean;
 }) => (
-  <div className={`flex flex-col items-center bg-charcoalSecondary rounded-xl p-3 border border-gray-700/30 shadow-lg hover:bg-gray-800/60 transition-all hover:-translate-y-0.5 hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
-    <div className="mb-1 w-8 h-8 flex items-center justify-center">
-      {lucideIcon || <i className={`fa-solid ${icon} text-[#00BCD4] text-xl`}></i>}
+  <div className={`flex items-center bg-charcoalSecondary rounded-xl p-4 border border-gray-700/30 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-cyan/5 hover:border-cyan/20 ${fullWidth ? 'py-4' : ''}`}>
+    <div className="mr-3 flex items-center justify-center">
+      {icon}
     </div>
-    <span className="text-gray-300 text-xs font-medium">{label}</span>
+    <span className="text-gray-200 font-medium">{label}</span>
   </div>
 );
 
