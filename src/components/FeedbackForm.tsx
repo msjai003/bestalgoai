@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -113,7 +112,7 @@ const FeedbackForm: React.FC = () => {
           type="submit"
           variant="gradient"
           size="lg"
-          className="w-full flex items-center justify-center gap-2 py-6 rounded-lg shadow-md hover:shadow-cyan/20"
+          className="w-full flex items-center justify-center gap-2 rounded-lg shadow-md hover:shadow-cyan/20"
         >
           <Send className="w-5 h-5" />
           Sign Up

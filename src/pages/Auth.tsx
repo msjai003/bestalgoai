@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -182,7 +181,8 @@ const Auth = () => {
             type="submit"
             disabled={isLoading}
             variant="gradient"
-            className="w-full py-6 rounded-xl shadow-lg"
+            size="lg"
+            className="w-full rounded-xl shadow-lg"
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
@@ -202,7 +202,8 @@ const Auth = () => {
             variant="outline"
             disabled={isGoogleLoading}
             onClick={handleGoogleLogin}
-            className="w-full py-6 rounded-xl bg-transparent border border-gray-600 hover:bg-gray-800 text-white"
+            size="lg"
+            className="w-full rounded-xl bg-transparent border border-gray-600 hover:bg-gray-800 text-white"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

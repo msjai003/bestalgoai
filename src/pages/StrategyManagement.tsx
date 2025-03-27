@@ -22,7 +22,6 @@ import { Strategy } from '@/hooks/strategy/types';
 
 type FilterOption = "all" | "intraday" | "btst" | "positional";
 
-// Extend the imported Strategy type for local usage
 interface ExtendedStrategy extends Omit<Strategy, 'id'> {
   id: number | string;
   isCustom: boolean;
@@ -40,16 +39,13 @@ const StrategyManagement = () => {
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all");
   const [hasPremium, setHasPremium] = useState(false);
   
-  // Trading mode confirmation state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   
-  // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<{id: number | string, name: string} | null>(null);
 
-  // For filter mode - cast the wishlistedStrategies to Strategy[] for useStrategyFiltering
   const { selectedMode, handleModeChange, filteredStrategies } = useStrategyFiltering(
     wishlistedStrategies.map(s => ({
       ...s,
@@ -57,7 +53,6 @@ const StrategyManagement = () => {
     })) as Strategy[]
   );
 
-  // Check if user has premium subscription
   useEffect(() => {
     const checkPremiumStatus = async () => {
       if (!user) return;
@@ -82,7 +77,6 @@ const StrategyManagement = () => {
     checkPremiumStatus();
   }, [user]);
 
-  // Check if any specific strategies have been paid for
   useEffect(() => {
     const checkPaidStrategies = async () => {
       if (!user) return;
@@ -116,20 +110,16 @@ const StrategyManagement = () => {
 
   useEffect(() => {
     const fetchStrategies = async () => {
-      // Get strategies from localStorage first
       const storedStrategies = localStorage.getItem('wishlistedStrategies');
       let localStrategies: ExtendedStrategy[] = [];
       
       if (storedStrategies) {
         try {
-          // Parse and ensure the strategies have the required properties
           const parsedStrategies = JSON.parse(storedStrategies);
           localStrategies = parsedStrategies.map((strategy: any) => ({
             ...strategy,
-            // Ensure required properties exist
             quantity: strategy.quantity || 0,
             id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id,
-            // Add other required properties if missing
             isWishlisted: strategy.isWishlisted ?? true,
             isLive: strategy.isLive ?? false,
           }));
@@ -138,7 +128,6 @@ const StrategyManagement = () => {
         }
       }
 
-      // If user is logged in, fetch strategies from Supabase
       if (user) {
         try {
           const { data, error } = await supabase
@@ -148,15 +137,14 @@ const StrategyManagement = () => {
             
           if (error) throw error;
           
-          // Convert Supabase data to match the Strategy type
           const supabaseStrategies: ExtendedStrategy[] = data.map(strategy => ({
             id: strategy.id,
             name: strategy.name,
             description: strategy.description || "",
             isCustom: true,
-            isLive: false, // Default to paper trading
+            isLive: false,
             isWishlisted: true,
-            quantity: 0, // Add required property
+            quantity: 0,
             legs: strategy.legs,
             createdBy: strategy.created_by || user.email,
             performance: typeof strategy.performance === 'object' && strategy.performance !== null
@@ -175,11 +163,8 @@ const StrategyManagement = () => {
                 }
           }));
           
-          // Merge strategies from Supabase with local strategies
-          // (avoiding duplicates by name)
           const supabaseStrategyNames = supabaseStrategies.map(s => s.name.toLowerCase());
           
-          // Fix: Ensure we're handling string arrays correctly
           const filteredLocalStrategies = localStrategies.filter(
             s => !s.isCustom || !supabaseStrategyNames.includes(s.name.toLowerCase())
           );
@@ -200,14 +185,12 @@ const StrategyManagement = () => {
   const filterStrategies = (strategies: ExtendedStrategy[]) => {
     let filteredStrats = strategies;
     
-    // Category filter
     if (selectedFilter !== "all") {
       filteredStrats = filteredStrats.filter(strategy => 
         strategy.category === selectedFilter
       );
     }
     
-    // Trading mode filter
     if (selectedMode !== "all") {
       filteredStrats = filteredStrats.filter(strategy => 
         (selectedMode === "live" && strategy.isLive) || 
@@ -237,7 +220,6 @@ const StrategyManagement = () => {
   const confirmDeleteStrategy = async () => {
     if (!strategyToDelete) return;
     
-    // Updated to handle string IDs properly
     const isStringId = typeof strategyToDelete.id === 'string';
     const hasHyphen = isStringId && (strategyToDelete.id as string).includes('-');
     
@@ -287,10 +269,8 @@ const StrategyManagement = () => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
-    // For premium strategies that haven't been paid for
     const isPremium = typeof id === 'number' && id > 1;
     if (isPremium && !hasPremium && !strategy.isPaid) {
-      // Redirect to pricing page with strategy context
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
       navigate('/pricing');
@@ -353,7 +333,6 @@ const StrategyManagement = () => {
     <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
       <main className="pt-16 pb-24 px-4 flex-grow">
-        {/* Header section with glass effect */}
         <div className="premium-card p-5 mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/20 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
           <div className="relative z-10">

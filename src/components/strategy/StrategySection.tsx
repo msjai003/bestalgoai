@@ -80,6 +80,7 @@ export const StrategySection = ({
               <Button 
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
+                size="sm"
                 className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
               >
                 <Plus className="h-4 w-4 mr-1 text-green-500" />
