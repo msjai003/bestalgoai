@@ -146,26 +146,32 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
                 </div>
               )}
               
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Button 
                   variant={isActive ? "default" : isLocked ? "secondary" : "outline"}
-                  className={isLocked ? 'opacity-50 cursor-not-allowed' : ''}
+                  size="sm"
+                  className={cn(
+                    "w-full", 
+                    isLocked ? 'opacity-50 cursor-not-allowed' : ''
+                  )}
                   onClick={() => !isLocked && selectModule(module.id)}
                   disabled={isLocked}
                 >
-                  {isActive ? 'Continue Learning' : isLocked ? 'Locked' : isCompleted ? 'Review Material' : 'Start Learning'}
+                  {isActive ? 'Continue' : isLocked ? 'Locked' : isCompleted ? 'Review' : 'Start'}
                 </Button>
                 
                 <Button 
                   variant={isCompleted ? "outline" : "secondary"}
+                  size="sm"
                   className={cn(
+                    "w-full",
                     isLocked || (!isCompleted && !isActive) ? 'opacity-50 cursor-not-allowed' : '',
                     quizResult?.passed ? 'border-green-500 text-green-500 hover:bg-green-500/10' : ''
                   )}
                   onClick={() => !isLocked && onLaunchQuiz(module.id)}
                   disabled={isLocked || (!isCompleted && !isActive)}
                 >
-                  {quizResult?.passed ? 'Retake Quiz' : quizResult ? 'Try Quiz Again' : 'Take Quiz'}
+                  {quizResult?.passed ? 'Retake Quiz' : quizResult ? 'Try Again' : 'Take Quiz'}
                 </Button>
               </div>
             </CardContent>

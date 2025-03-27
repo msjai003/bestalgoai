@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,7 +49,7 @@ const FeedbackForm: React.FC = () => {
   };
 
   return (
-    <div className="premium-card p-6 backdrop-blur-lg shadow-2xl border border-gray-700/50">
+    <div className="premium-card p-5 sm:p-6 backdrop-blur-lg shadow-2xl border border-gray-700/50">
       <h2 className="text-xl font-semibold mb-4">
         <span className="gradient-text">Sign Up</span> for Updates
       </h2>
@@ -68,7 +69,7 @@ const FeedbackForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-2 sm:p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -80,7 +81,7 @@ const FeedbackForm: React.FC = () => {
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="Enter your 10 digit mobile number"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-2 sm:p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -92,7 +93,7 @@ const FeedbackForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-2 sm:p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
           />
         </div>
         
@@ -103,18 +104,18 @@ const FeedbackForm: React.FC = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share your thoughts with us..."
-            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
-            rows={5}
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg p-2 sm:p-3 focus:border-cyan focus:ring-1 focus:ring-cyan/30 focus:outline-none transition-all duration-300"
+            rows={4}
           />
         </div>
         
         <Button
           type="submit"
           variant="gradient"
-          size="lg"
+          size="md"
           className="w-full flex items-center justify-center gap-2 rounded-lg shadow-md hover:shadow-cyan/20"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4" />
           Sign Up
         </Button>
       </form>

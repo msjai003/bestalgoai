@@ -7,14 +7,14 @@ export const CTA = () => {
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-5"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
       
-      <div className="glass-card p-8 relative z-10 border-cyan/20">
+      <div className="glass-card p-6 sm:p-8 relative z-10 border-cyan/20">
         <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
           <p className="text-charcoalTextSecondary mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
           <Button 
             variant="gradient" 
-            size="lg"
-            className="w-full md:w-auto md:px-6 rounded-lg font-semibold shadow-lg"
+            size="md"
+            className="w-full sm:w-auto sm:px-6 rounded-lg font-semibold shadow-lg"
           >
             Get Started Free
           </Button>
