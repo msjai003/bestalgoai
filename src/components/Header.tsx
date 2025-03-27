@@ -19,6 +19,7 @@ const Header = () => {
     { name: 'Pricing', href: '/pricing' },
     { name: 'Education', href: '/education' },
     { name: 'About', href: '/about' },
+    { name: 'Blog', href: '/blog' },
   ];
   
   const isActive = (path: string) => {
