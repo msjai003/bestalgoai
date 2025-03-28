@@ -102,7 +102,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
                         flex items-center justify-center cursor-pointer active:scale-95`}
-                      title={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
                         <LockIcon size={18} />
@@ -131,7 +133,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
-              This premium strategy requires a subscription. <span onClick={toggleLiveMode} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
             </p>
           )}
 
