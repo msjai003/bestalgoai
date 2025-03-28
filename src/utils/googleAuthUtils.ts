@@ -33,6 +33,8 @@ export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUser
 };
 
 export const isGoogleUser = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+  
   try {
     const googleDetails = await fetchGoogleUserDetails(userId);
     return !!googleDetails;
@@ -53,7 +55,7 @@ export const getGoogleDisplayName = (googleDetails: GoogleUserDetails | null): s
     return googleDetails.given_name;
   }
   
-  return 'Google User';
+  return googleDetails.email || 'Google User';
 };
 
 export const saveGoogleUserDetails = async (
@@ -68,23 +70,31 @@ export const saveGoogleUserDetails = async (
     verified_email?: boolean;
   }
 ): Promise<boolean> => {
+  if (!userId || !googleData.email) {
+    console.error('Missing required user data for saving Google details');
+    return false;
+  }
+  
   try {
     // Process potentially malformed data from Google metadata
-    const processField = (field: any) => {
+    const processField = (field: any): string | null => {
+      if (!field) return null;
       if (field && typeof field === 'object' && field._type === 'undefined') {
         return null;
       }
-      return field;
+      if (typeof field === 'string') return field;
+      if (field && typeof field === 'object' && field.value) return field.value;
+      return null;
     };
 
     const cleanedData = {
       email: googleData.email,
-      google_id: googleData.google_id,
-      picture_url: googleData.picture_url,
+      google_id: googleData.google_id || null,
+      picture_url: googleData.picture_url || null,
       given_name: processField(googleData.given_name),
       family_name: processField(googleData.family_name),
       locale: processField(googleData.locale),
-      verified_email: googleData.verified_email
+      verified_email: googleData.verified_email || false
     };
     
     // First check if the record already exists

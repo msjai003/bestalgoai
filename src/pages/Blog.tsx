@@ -1,31 +1,50 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ExternalLink, Loader2 } from 'lucide-react';
 
 const EXTERNAL_BLOG_URL = 'https://infocapinfo.blogspot.com/';
 
 const BlogPage = () => {
+  const [isRedirecting, setIsRedirecting] = useState(true);
+  
   useEffect(() => {
-    // Redirect to the external blog URL as soon as the component mounts
-    window.location.href = EXTERNAL_BLOG_URL;
+    // Start a timer to track redirection
+    const redirectTimer = setTimeout(() => {
+      window.location.href = EXTERNAL_BLOG_URL;
+    }, 2000);
+    
+    // Cleanup the timer if component unmounts
+    return () => clearTimeout(redirectTimer);
   }, []);
 
-  // Return a loading indicator while redirecting
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-xl">Redirecting to our blog...</p>
-        <p className="mt-4 text-gray-400">
-          If you are not redirected automatically, please{' '}
+    <div className="min-h-screen bg-charcoalPrimary text-white flex items-center justify-center p-4">
+      <div className="text-center max-w-md bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl">
+        <Loader2 className="h-12 w-12 animate-spin text-[#FF00D4] mx-auto mb-4" />
+        <h1 className="text-2xl font-bold mb-4">Redirecting to Blog</h1>
+        <p className="text-gray-400 mb-6">
+          You're being redirected to our official blog. Please wait...
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a 
             href={EXTERNAL_BLOG_URL} 
-            className="text-[#FF00D4] hover:underline"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan to-purple-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
             target="_blank"
             rel="noopener noreferrer"
           >
-            click here
+            <ExternalLink className="h-4 w-4" />
+            Go to Blog Now
           </a>
-        </p>
+          
+          <Link 
+            to="/"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-charcoalPrimary border border-gray-700 rounded-lg text-gray-300 font-medium hover:bg-charcoalPrimary/80 transition-colors"
+          >
+            Return to Home
+          </Link>
+        </div>
       </div>
     </div>
   );
