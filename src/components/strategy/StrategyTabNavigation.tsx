@@ -19,29 +19,29 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
         <Button 
           variant={selectedTab === "predefined" ? "cyan" : "ghost"}
           className={cn(
-            "py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
+            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
             selectedTab === "predefined" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("predefined")}
-          size="default"
+          size="sm"
         >
-          <Zap className="h-4 w-4 mr-2" />
+          <Zap className="h-3 w-3 mr-1.5" />
           Predefined Strategies
         </Button>
         <Button 
           variant={selectedTab === "custom" ? "cyan" : "ghost"}
           className={cn(
-            "py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
+            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
             selectedTab === "custom" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("custom")}
-          size="default"
+          size="sm"
         >
-          <Code className="h-4 w-4 mr-2" />
+          <Code className="h-3 w-3 mr-1.5" />
           Custom Strategy
         </Button>
       </div>
