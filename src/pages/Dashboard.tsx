@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +27,8 @@ import {
   GraduationCap, 
   BarChart3, 
   Star, 
-  Users
+  Users,
+  FileBarChart
 } from "lucide-react";
 
 const mockPerformanceData = [
@@ -200,10 +200,12 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <QuickActionButton 
-              label="Analysis" 
-              icon={<BarChart3 className="h-6 w-6 text-[#00BCD4]" />}
-            />
+            <Link to="/backtest-report" className="block">
+              <QuickActionButton 
+                label="Backtest" 
+                icon={<FileBarChart className="h-6 w-6 text-[#00BCD4]" />}
+              />
+            </Link>
             <Link to="/subscription" className="block">
               <QuickActionButton 
                 label="Premium" 

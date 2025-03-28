@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -94,6 +93,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/backtest" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/backtest-report" element={
         <ProtectedRoute>
           <BacktestReport />
         </ProtectedRoute>
