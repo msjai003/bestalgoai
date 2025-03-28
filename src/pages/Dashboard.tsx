@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -191,10 +190,10 @@ const Dashboard = () => {
                 icon={<TrendingUp className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
-            <Link to="/education" className="block">
+            <Link to="/community" className="block">
               <QuickActionButton 
-                label="Levels" 
-                icon={<GraduationCap className="h-6 w-6 text-[#00BCD4]" />}
+                label="Community" 
+                icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
           </div>
@@ -213,26 +212,16 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <Link to="/community" className="block">
-              <QuickActionButton 
-                label="Community" 
-                icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
-              />
-            </Link>
             <Link to="/broker-integration" className="block">
               <QuickActionButton 
                 label="Brokers" 
                 icon={<Building className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3">
             <Link to="/risk-management" className="block">
               <QuickActionButton 
                 label="Risk Management" 
                 icon={<Shield className="h-6 w-6 text-[#00BCD4]" />}
-                fullWidth
               />
             </Link>
           </div>
