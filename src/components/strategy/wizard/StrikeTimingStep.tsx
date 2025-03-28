@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StrikeTimingStepProps {
   leg: StrategyLeg;
@@ -20,12 +21,6 @@ export const StrikeTimingStep = ({
     setIsPremiumSelected(criteria === "premium");
     updateLeg({ strikeCriteria: criteria });
   };
-
-  const strikeLevels: { value: string; display: string }[] = [
-    { value: "ATM", display: "ATM" },
-    ...[...Array(10)].map((_, i) => ({ value: `ITM${i+1}`, display: `ITM ${i+1}` })),
-    ...[...Array(10)].map((_, i) => ({ value: `OTM${i+1}`, display: `OTM ${i+1}` }))
-  ];
 
   return (
     <div className="space-y-6">
@@ -51,39 +46,48 @@ export const StrikeTimingStep = ({
 
       {!isPremiumSelected ? (
         <div>
-          <Label className="text-gray-300 block mb-2">Select Strike Level</Label>
-          <div className="grid grid-cols-5 gap-2">
-            {strikeLevels.slice(0, 10).map((level) => (
-              <Button
-                key={level.value}
-                variant={leg.strikeLevel === level.value ? "cyan" : "outline"}
-                className={`${
-                  leg.strikeLevel === level.value 
-                    ? "" 
-                    : "bg-gray-700 border-gray-600 text-white"
-                } text-xs h-10`}
-                onClick={() => updateLeg({ strikeLevel: level.value as any })}
+          <Label htmlFor="strikeLevel" className="text-gray-300 block mb-2">Select Strike Level</Label>
+          <Select
+            value={leg.strikeLevel}
+            onValueChange={(value) => updateLeg({ strikeLevel: value as any })}
+          >
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+              <SelectValue placeholder="Select strike level" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px]">
+              {/* ATM option */}
+              <SelectItem 
+                value="ATM" 
+                className="bg-cyan/10 text-white font-bold border-y border-cyan/30 my-1 py-2"
               >
-                {level.display}
-              </Button>
-            ))}
-          </div>
-          <div className="grid grid-cols-5 gap-2 mt-2">
-            {strikeLevels.slice(10, 20).map((level) => (
-              <Button
-                key={level.value}
-                variant={leg.strikeLevel === level.value ? "cyan" : "outline"}
-                className={`${
-                  leg.strikeLevel === level.value 
-                    ? "" 
-                    : "bg-gray-700 border-gray-600 text-white"
-                } text-xs h-10`}
-                onClick={() => updateLeg({ strikeLevel: level.value as any })}
-              >
-                {level.display}
-              </Button>
-            ))}
-          </div>
+                ATM
+              </SelectItem>
+              
+              {/* ITM options */}
+              <SelectItem value="ITM1" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 1</SelectItem>
+              <SelectItem value="ITM2" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 2</SelectItem>
+              <SelectItem value="ITM3" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 3</SelectItem>
+              <SelectItem value="ITM4" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 4</SelectItem>
+              <SelectItem value="ITM5" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 5</SelectItem>
+              <SelectItem value="ITM6" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 6</SelectItem>
+              <SelectItem value="ITM7" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 7</SelectItem>
+              <SelectItem value="ITM8" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 8</SelectItem>
+              <SelectItem value="ITM9" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 9</SelectItem>
+              <SelectItem value="ITM10" className="text-green-400 hover:bg-gray-700 hover:text-green-300 font-medium">ITM 10</SelectItem>
+              
+              {/* OTM options */}
+              <SelectItem value="OTM1" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 1</SelectItem>
+              <SelectItem value="OTM2" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 2</SelectItem>
+              <SelectItem value="OTM3" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 3</SelectItem>
+              <SelectItem value="OTM4" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 4</SelectItem>
+              <SelectItem value="OTM5" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 5</SelectItem>
+              <SelectItem value="OTM6" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 6</SelectItem>
+              <SelectItem value="OTM7" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 7</SelectItem>
+              <SelectItem value="OTM8" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 8</SelectItem>
+              <SelectItem value="OTM9" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 9</SelectItem>
+              <SelectItem value="OTM10" className="text-red-400 hover:bg-gray-700 hover:text-red-300 font-medium">OTM 10</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       ) : (
         <div>
