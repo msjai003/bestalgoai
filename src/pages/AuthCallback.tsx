@@ -8,6 +8,7 @@ import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -51,6 +52,7 @@ const AuthCallback = () => {
             if (sessionError) {
               console.error('Error setting session from callback:', sessionError);
               setError('Failed to authenticate session. Please try again.');
+              setIsProcessing(false);
               return;
             }
             
@@ -67,8 +69,8 @@ const AuthCallback = () => {
                 email: user.email || '',
                 google_id: user.user_metadata.sub,
                 picture_url: user.user_metadata.picture,
-                given_name: user.user_metadata.given_name,
-                family_name: user.user_metadata.family_name,
+                given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
+                family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
                 locale: user.user_metadata.locale,
                 verified_email: user.user_metadata.email_verified
               };
@@ -92,9 +94,24 @@ const AuthCallback = () => {
                 .maybeSingle();
                 
               if (!profileData) {
-                console.log('User profile not found, redirecting to complete registration');
-                navigate('/google-registration');
-                return;
+                console.log('User profile not found, creating basic profile...');
+                
+                // Create a basic profile for the Google user
+                const { error: profileError } = await supabase
+                  .from('user_profiles')
+                  .insert({
+                    id: user.id,
+                    full_name: googleData.given_name + ' ' + (googleData.family_name || ''),
+                    email: googleData.email,
+                    trading_experience: 'beginner',
+                    profile_picture: googleData.picture_url
+                  });
+                  
+                if (profileError) {
+                  console.error('Error creating profile for Google user:', profileError);
+                } else {
+                  console.log('Basic profile created for Google user');
+                }
               }
             }
             
@@ -110,6 +127,7 @@ const AuthCallback = () => {
           } catch (err) {
             console.error('Exception setting session in callback:', err);
             setError('Authentication failed. Please try again.');
+            setIsProcessing(false);
           }
         } else {
           // No tokens found but we're on the callback page
@@ -119,6 +137,7 @@ const AuthCallback = () => {
           if (error) {
             console.error('Auth callback error:', error, errorDescription);
             setError(errorDescription || 'Authentication failed');
+            setIsProcessing(false);
           } else {
             // No tokens and no error - just redirect to auth page
             navigate('/auth');
@@ -127,6 +146,7 @@ const AuthCallback = () => {
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('An unexpected error occurred. Please try again.');
+        setIsProcessing(false);
       }
     };
 

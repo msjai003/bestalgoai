@@ -62,13 +62,31 @@ export const saveGoogleUserDetails = async (
     email: string;
     google_id?: string;
     picture_url?: string;
-    given_name?: string;
-    family_name?: string;
-    locale?: string;
+    given_name?: string | { _type: string; value: string };
+    family_name?: string | { _type: string; value: string };
+    locale?: string | { _type: string; value: string };
     verified_email?: boolean;
   }
 ): Promise<boolean> => {
   try {
+    // Process potentially malformed data from Google metadata
+    const processField = (field: any) => {
+      if (field && typeof field === 'object' && field._type === 'undefined') {
+        return null;
+      }
+      return field;
+    };
+
+    const cleanedData = {
+      email: googleData.email,
+      google_id: googleData.google_id,
+      picture_url: googleData.picture_url,
+      given_name: processField(googleData.given_name),
+      family_name: processField(googleData.family_name),
+      locale: processField(googleData.locale),
+      verified_email: googleData.verified_email
+    };
+    
     // First check if the record already exists
     const { data: existing } = await supabase
       .from('google_user_details')
@@ -81,7 +99,7 @@ export const saveGoogleUserDetails = async (
       const { error } = await supabase
         .from('google_user_details')
         .update({
-          ...googleData,
+          ...cleanedData,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -96,7 +114,7 @@ export const saveGoogleUserDetails = async (
         .from('google_user_details')
         .insert({
           id: userId,
-          ...googleData,
+          ...cleanedData,
           updated_at: new Date().toISOString()
         });
         
