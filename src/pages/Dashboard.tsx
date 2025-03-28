@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -220,8 +221,9 @@ const Dashboard = () => {
             </Link>
             <Link to="/risk-management" className="block">
               <QuickActionButton 
-                label="Risk Management" 
+                label="Risk" 
                 icon={<Shield className="h-6 w-6 text-[#00BCD4]" />}
+                customLabel={<span className="text-xs sm:text-sm">Risk Management</span>}
               />
             </Link>
           </div>
@@ -235,17 +237,19 @@ const Dashboard = () => {
 const QuickActionButton = ({ 
   label, 
   icon,
-  fullWidth = false
+  fullWidth = false,
+  customLabel = null
 }: { 
   label: string;
   icon: React.ReactNode;
   fullWidth?: boolean;
+  customLabel?: React.ReactNode;
 }) => (
   <div className={`flex items-center bg-charcoalSecondary rounded-lg p-4 border border-gray-700/40 shadow-md transition-all hover:bg-charcoalSecondary/80 hover:border-cyan/30 hover:shadow-lg hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
     <div className="mr-3 flex items-center justify-center bg-charcoalPrimary/30 p-2 rounded-md">
       {icon}
     </div>
-    <span className="text-gray-200 font-medium">{label}</span>
+    {customLabel ? customLabel : <span className="text-gray-200 font-medium">{label}</span>}
   </div>
 );
 
