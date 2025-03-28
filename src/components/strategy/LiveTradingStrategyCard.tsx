@@ -127,7 +127,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             variant="outline"
             size="sm"
             onClick={onViewDetails}
-            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 flex-1 glass-card"
+            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 glass-card"
           >
             View Details
             <ChevronRight className="ml-1 h-4 w-4" />
