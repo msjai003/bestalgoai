@@ -252,7 +252,12 @@
 .pink-button,
 .pink-element,
 .from-\[#FF00D4\],
-.to-\[#FF00D4\]\/80 {
+.to-\[#FF00D4\]\/80,
+.border-pink-500,
+.border-\[#FF00D4\],
+.border-pink-400,
+.border-pink-300 {
   @apply bg-cyan !important;
   @apply text-charcoalPrimary !important;
+  @apply border-cyan/20 !important;
 }

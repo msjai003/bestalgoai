@@ -267,7 +267,7 @@ const StrategyBuilder = () => {
         </div>
 
         <section className="space-y-4 mb-6">
-          <div className="bg-charcoalSecondary/30 rounded-xl p-5 border border-gray-700/50 shadow-lg">
+          <div className="bg-charcoalSecondary/30 rounded-xl p-5 border border-cyan/20 shadow-lg">
             <div className="space-y-6">
               {renderStepContent()}
             </div>

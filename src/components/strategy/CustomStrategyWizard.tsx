@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
@@ -307,7 +308,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   };
 
   return (
-    <div className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-gray-700">
+    <div className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-cyan/20">
       <h3 className="text-lg font-medium text-white mb-4">Custom Strategy Configuration</h3>
       
       <WizardStepIndicator currentStep={currentStep} />
