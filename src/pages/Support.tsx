@@ -96,7 +96,7 @@ const SupportPage = () => {
           <FeedbackList />
         </section>
 
-        <section className="px-4 py-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#FF00D4]/20">
+        <section className="px-4 py-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-800">
           <h2 className="text-xl font-bold mb-4">Email Support</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -137,7 +137,7 @@ const SupportPage = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 bg-[#FF00D4] hover:bg-[#FF00D4]/90 text-white p-6 rounded-xl"
+              className="w-full flex items-center justify-center gap-2 bg-cyan hover:bg-cyan/90 text-charcoalPrimary p-6 rounded-xl"
             >
               <Mail className="w-5 h-5" />
               <span>{isSubmitting ? "Sending..." : "Send Email"}</span>
