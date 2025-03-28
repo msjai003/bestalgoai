@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
@@ -235,7 +234,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     
     if (user) {
       try {
-        // Convert StrategyLeg[] to a JSON-compatible format
         const legsAsJson = JSON.parse(JSON.stringify(formData.legs));
         
         const { data, error } = await supabase.from('custom_strategies').insert({
@@ -244,7 +242,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
           legs: legsAsJson,
           is_active: true,
-          created_by: userName || user.email // Include user's name or default to email
+          created_by: userName || user.email
         }).select();
         
         if (error) throw error;
@@ -283,7 +281,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         isLive: mode === 'real',
         isWishlisted: true,
         legs: formData.legs,
-        createdBy: "Guest User", // Default for non-logged in users
+        createdBy: "Guest User",
         performance: {
           winRate: "N/A",
           avgProfit: "N/A",

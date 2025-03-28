@@ -39,7 +39,7 @@ export const ConnectionStepActions = ({
     <div className="flex flex-col gap-3">
       <Button
         variant="gradient"
-        size="default"
+        size="sm"
         className="w-full rounded-xl font-semibold bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg transition-all duration-300"
         onClick={onSubmit}
         disabled={isSubmitting}
@@ -62,7 +62,7 @@ export const ConnectionStepActions = ({
       </Button>
       <Button
         variant="outline"
-        size="default"
+        size="sm"
         className="w-full border border-gray-700 bg-charcoalSecondary text-white rounded-xl font-semibold hover:border-cyan/30 transition-all duration-300"
         onClick={onBack}
         disabled={isSubmitting}

@@ -25,6 +25,7 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("predefined")}
+          size="sm"
         >
           <Zap className="h-4 w-4 mr-2" />
           Predefined Strategies
@@ -38,6 +39,7 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("custom")}
+          size="sm"
         >
           <Code className="h-4 w-4 mr-2" />
           Custom Strategy
