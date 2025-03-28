@@ -27,7 +27,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
-  const toggleWishlist = () => {
+  const toggleWishlist = (e: React.MouseEvent) => {
+    // Prevent event propagation
+    e.stopPropagation();
+    
     // Only allow toggle if authenticated
     if (!isAuthenticated) {
       navigate('/auth');
@@ -36,7 +39,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
-  const toggleLiveMode = () => {
+  const toggleLiveMode = (e: React.MouseEvent) => {
+    // Prevent event propagation
+    e.stopPropagation();
+    
     if (!isAuthenticated) {
       navigate('/auth');
       return;
@@ -91,11 +97,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer active:scale-95`}
+                    <div 
                       onClick={toggleLiveMode}
+                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
+                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
+                        flex items-center justify-center cursor-pointer active:scale-95`}
                       title={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
@@ -103,7 +109,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       ) : (
                         strategy.isLive ? <StopCircleIcon size={18} /> : <PlayIcon size={18} />
                       )}
-                    </Button>
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     {!canAccess ? (
