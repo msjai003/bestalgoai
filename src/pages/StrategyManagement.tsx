@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -353,7 +354,6 @@ const StrategyManagement = () => {
               <Button 
                 variant="gradient"
                 size="sm"
-                className="ml-auto"
                 onClick={() => navigate('/strategy-selection')}
               >
                 <Plus className="mr-1 h-4 w-4" />
@@ -541,7 +541,8 @@ const StrategyManagement = () => {
               <Button 
                 onClick={() => navigate('/strategy-builder')}
                 variant="gradient"
-                className="w-full"
+                size="sm"
+                className="mx-auto"
               >
                 <Plus className="mr-1 h-4 w-4" />
                 Create New Strategy

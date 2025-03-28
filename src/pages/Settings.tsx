@@ -191,7 +191,7 @@ const Settings = () => {
 
         <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-gray-800">
           <Button 
-            className="w-full flex items-center justify-center gap-2 py-6 bg-charcoalDanger/90 hover:bg-charcoalDanger rounded-lg font-medium shadow-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-6 bg-cyan hover:bg-cyan/90 rounded-lg font-medium shadow-lg transition-colors text-charcoalPrimary"
             onClick={() => navigate('/logout')}
           >
             <LogOut className="w-5 h-5" />
