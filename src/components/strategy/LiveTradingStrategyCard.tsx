@@ -20,6 +20,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  // This ensures the click doesn't propagate to parent elements
+  const handleToggleLiveMode = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleLiveMode();
+  };
+
+  const handleEditQuantity = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEditQuantity();
+  };
+
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
@@ -65,7 +78,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 variant="ghost" 
                 size="sm" 
                 className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50"
-                onClick={onEditQuantity}
+                onClick={handleEditQuantity}
               >
                 <Settings className="w-4 h-4" />
               </Button>
@@ -117,11 +130,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <span className="text-sm text-gray-400">
               {strategy.isLive ? "Live" : "Paper"}
             </span>
-            <Switch
-              checked={strategy.isLive}
-              onCheckedChange={onToggleLiveMode}
-              className={`${strategy.isLive ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-600'}`}
-            />
+            <div 
+              className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none ${strategy.isLive ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-600'}`}
+              onClick={handleToggleLiveMode}
+              role="button"
+              tabIndex={0}
+            >
+              <span 
+                className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${strategy.isLive ? 'translate-x-6' : 'translate-x-1'}`} 
+              />
+            </div>
           </div>
           <Button
             variant="outline"
