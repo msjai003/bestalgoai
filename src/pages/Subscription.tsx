@@ -10,6 +10,7 @@ import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 
+// Fallback plans in case of database connection issues
 const fallbackPlans = [
   {
     name: "Basic",
@@ -64,8 +65,10 @@ const Subscription = () => {
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Fetch pricing plans from Supabase using the new price_admin table
   const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePriceAdmin();
   
+  // Use plans from database if available, otherwise use fallback plans
   const plans = dbPlans.length > 0 
     ? dbPlans.map(plan => ({
         name: plan.plan_name,
@@ -76,6 +79,7 @@ const Subscription = () => {
       }))
     : fallbackPlans;
   
+  // Fetch user's plan details when component mounts
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (!user) return;
@@ -121,6 +125,7 @@ const Subscription = () => {
     }
 
     try {
+      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -143,6 +148,7 @@ const Subscription = () => {
           variant: "default",
         });
         
+        // Refresh the page to show the updated plan
         window.location.reload();
       }
     } catch (error) {
@@ -155,13 +161,16 @@ const Subscription = () => {
     }
   };
 
+  // Helper to format the expiration date
   const formatExpirationDate = () => {
     if (!userPlan) return "";
     
     const selectedDate = new Date(userPlan.selected_at);
+    // Add 30 days to the selected date (mock expiration)
     const expirationDate = new Date(selectedDate);
     expirationDate.setDate(expirationDate.getDate() + 30);
     
+    // Format as "MMM DD, YYYY"
     return expirationDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -176,7 +185,6 @@ const Subscription = () => {
           <Button
             onClick={() => navigate('/dashboard')}
             className="p-2"
-            size="sm"
           >
             <i className="fa-solid fa-arrow-left text-textSecondary"></i>
           </Button>
@@ -190,105 +198,98 @@ const Subscription = () => {
       <main className="pt-20 px-4 pb-24">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
-            <Loader className="h-7 w-7 animate-spin text-accentPink" />
+            <Loader className="h-8 w-8 animate-spin text-accentPink" />
           </div>
         ) : userPlan ? (
-          <section className="mb-6">
-            <div className="bg-gradient-to-br from-accentPink/10 to-accentPurple/10 rounded-2xl p-4 border border-accentPink/20 shadow-lg">
-              <div className="flex justify-between items-start mb-2">
+          <section className="mb-8">
+            <div className="bg-gradient-to-br from-accentPink/10 to-accentPurple/10 rounded-2xl p-6 border border-accentPink/20 shadow-lg">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h2 className="text-accentPink font-bold text-base">{userPlan.plan_name} Plan</h2>
-                  <p className="text-textSecondary text-xs">Valid until {formatExpirationDate()}</p>
+                  <h2 className="text-accentPink font-bold text-xl">{userPlan.plan_name} Plan</h2>
+                  <p className="text-textSecondary text-sm">Valid until {formatExpirationDate()}</p>
                 </div>
-                <span className="bg-accentPink/20 text-accentPink px-2 py-0.5 rounded-full text-xs">Active</span>
+                <span className="bg-accentPink/20 text-accentPink px-3 py-1 rounded-full text-sm">Active</span>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-lg font-bold">{userPlan.plan_price}<span className="text-xs text-textSecondary">/month</span></p>
+                <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-textSecondary">/month</span></p>
                 <Button 
                   className="bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
                   onClick={() => navigate('/pricing')}
-                  size="sm"
                 >
-                  <span className="text-xs">Upgrade Plan</span>
+                  Upgrade Plan
                 </Button>
               </div>
             </div>
           </section>
         ) : (
-          <section className="mb-6">
-            <div className="bg-surfaceBg rounded-2xl p-4 border border-gray-700 shadow-lg">
-              <p className="text-center text-textSecondary mb-3 text-sm">You don't have an active subscription plan.</p>
-              <div className="flex justify-center">
-                <Button 
-                  className="bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90 px-4"
-                  onClick={() => navigate('/pricing')}
-                  size="sm"
-                >
-                  <span className="text-xs">Choose a Plan</span>
-                </Button>
-              </div>
+          <section className="mb-8">
+            <div className="bg-surfaceBg rounded-2xl p-6 border border-gray-700 shadow-lg">
+              <p className="text-center text-textSecondary mb-4">You don't have an active subscription plan.</p>
+              <Button 
+                className="w-full bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
+                onClick={() => navigate('/pricing')}
+              >
+                Choose a Plan
+              </Button>
             </div>
           </section>
         )}
 
         {plansLoading ? (
-          <div className="flex justify-center py-6">
+          <div className="flex justify-center py-8">
             <Loader className="h-6 w-6 animate-spin text-accentPink" />
           </div>
         ) : plansError ? (
-          <div className="bg-danger/20 border border-danger rounded-xl p-3 mb-6">
-            <p className="text-center text-textPrimary text-sm">
+          <div className="bg-danger/20 border border-danger rounded-xl p-4 mb-8">
+            <p className="text-center text-textPrimary">
               {plansError}. Using default pricing.
             </p>
           </div>
         ) : (
-          <section className="mb-6">
-            <h2 className="text-base font-semibold mb-2">Available Plans</h2>
-            <div className="space-y-3">
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
+            <div className="space-y-4">
               {plans.map((plan) => (
                 <div 
                   key={plan.name}
                   className={cn(
-                    "rounded-xl p-3 border",
+                    "rounded-xl p-4 border",
                     plan.isPopular 
                       ? "bg-gradient-to-br from-accentPink/5 to-accentPurple/10 border-accentPink/20" 
                       : "bg-surfaceBg border-gray-700"
                   )}
                 >
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center mb-3">
                     <h3 className={cn(
-                      "font-bold text-sm",
+                      "font-bold",
                       plan.isPopular ? "text-accentPink" : ""
                     )}>{plan.name}</h3>
-                    <p className="text-base font-bold">
-                      {plan.price}<span className="text-xs text-textSecondary">{plan.period}</span>
+                    <p className="text-lg font-bold">
+                      {plan.price}<span className="text-sm text-textSecondary">{plan.period}</span>
                     </p>
                   </div>
-                  <ul className="text-xs text-textSecondary space-y-1 mb-3">
+                  <ul className="text-sm text-textSecondary space-y-2 mb-4">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
+                      <li key={index}>
                         <i className={cn(
-                          "fa-solid fa-check mr-2 mt-0.5",
+                          "fa-solid fa-check mr-2",
                           plan.isPopular ? "text-accentPink" : "text-success"
                         )}></i>
-                        <span>{feature}</span>
+                        {feature}
                       </li>
                     ))}
                   </ul>
-                  <div className="flex justify-center">
-                    <Button 
-                      className={cn(
-                        "px-4",
-                        plan.isPopular 
-                          ? "bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90" 
-                          : "border border-accentPink text-accentPink bg-transparent hover:bg-accentPink/10"
-                      )}
-                      onClick={() => handlePlanSelect(plan.name, plan.price)}
-                      size="sm"
-                    >
-                      <span className="text-xs">Select Plan</span>
-                    </Button>
-                  </div>
+                  <Button 
+                    className={cn(
+                      "w-full",
+                      plan.isPopular 
+                        ? "bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90" 
+                        : "border border-accentPink text-accentPink bg-transparent hover:bg-accentPink/10"
+                    )}
+                    onClick={() => handlePlanSelect(plan.name, plan.price)}
+                  >
+                    Select Plan
+                  </Button>
                 </div>
               ))}
             </div>
@@ -296,28 +297,25 @@ const Subscription = () => {
         )}
 
         <section>
-          <h2 className="text-base font-semibold mb-2">Payment Methods</h2>
-          <div className="bg-surfaceBg rounded-xl p-3 border border-gray-700">
-            <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold mb-4">Payment Methods</h2>
+          <div className="bg-surfaceBg rounded-xl p-4 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <i className="fa-regular fa-credit-card text-textSecondary mr-3"></i>
                 <div>
-                  <p className="font-medium text-sm">•••• 4242</p>
-                  <p className="text-xs text-textSecondary">Expires 08/25</p>
+                  <p className="font-medium">•••• 4242</p>
+                  <p className="text-sm text-textSecondary">Expires 08/25</p>
                 </div>
               </div>
-              <span className="bg-success/20 text-success px-2 py-0.5 rounded-full text-xs">Default</span>
+              <span className="bg-success/20 text-success px-2 py-1 rounded-full text-xs">Default</span>
             </div>
-            <div className="flex justify-center">
-              <Button 
-                variant="outline"
-                className="border-gray-700 text-textSecondary hover:bg-surfaceBg/80 px-4"
-                size="sm"
-              >
-                <i className="fa-solid fa-plus mr-2 text-xs"></i>
-                <span className="text-xs">Add Payment Method</span>
-              </Button>
-            </div>
+            <Button 
+              variant="outline"
+              className="w-full border-gray-700 text-textSecondary hover:bg-surfaceBg/80"
+            >
+              <i className="fa-solid fa-plus mr-2"></i>
+              Add Payment Method
+            </Button>
           </div>
         </section>
       </main>

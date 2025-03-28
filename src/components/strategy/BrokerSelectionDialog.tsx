@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -16,8 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
 
 interface BrokerSelectionDialogProps {
@@ -27,113 +29,148 @@ interface BrokerSelectionDialogProps {
   onCancel: () => void;
 }
 
+interface BrokerOption {
+  id: string;
+  broker_name: string;
+}
+
 export const BrokerSelectionDialog = ({
   open,
   onOpenChange,
   onConfirm,
   onCancel,
 }: BrokerSelectionDialogProps) => {
-  const [selectedBrokerId, setSelectedBrokerId] = useState<string>("");
-  const [selectedBrokerName, setSelectedBrokerName] = useState<string>("");
-  const [brokers, setBrokers] = useState<{ id: string; broker_name: string }[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedBroker, setSelectedBroker] = useState<string>("");
+  const [brokers, setBrokers] = useState<BrokerOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadBrokers = async () => {
+    const fetchBrokers = async () => {
       if (!user || !open) return;
       
-      setLoading(true);
+      setIsLoading(true);
       try {
-        const userBrokers = await fetchUserBrokers(user.id);
-        setBrokers(userBrokers);
+        console.log("Fetching brokers for user:", user.id);
+        
+        // Fetch only the brokers that the user has connected in Supabase
+        // This function now only returns brokers with status='connected'
+        const brokerData = await fetchUserBrokers(user.id);
+        console.log("Fetched connected brokers:", brokerData);
+        
+        setBrokers(brokerData || []);
         
         // Set default selection if brokers exist
-        if (userBrokers.length > 0) {
-          setSelectedBrokerId(userBrokers[0].id);
-          setSelectedBrokerName(userBrokers[0].broker_name);
+        if (brokerData && brokerData.length > 0) {
+          setSelectedBroker(brokerData[0].id);
+        } else {
+          setSelectedBroker("");
         }
       } catch (error) {
-        console.error("Error loading brokers:", error);
+        console.error('Error fetching brokers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load your connected brokers",
+          variant: "destructive"
+        });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
-    loadBrokers();
-  }, [user, open]);
-  
+    if (open) {
+      fetchBrokers();
+    }
+  }, [user, open, toast]);
+
   const handleConfirm = () => {
-    if (!selectedBrokerId) return;
-    onConfirm(selectedBrokerId, selectedBrokerName);
-  };
-  
-  const handleSelectChange = (value: string) => {
-    setSelectedBrokerId(value);
-    const broker = brokers.find(b => b.id === value);
-    if (broker) {
-      setSelectedBrokerName(broker.broker_name);
+    if (selectedBroker) {
+      const selectedBrokerObj = brokers.find(broker => broker.id === selectedBroker);
+      if (selectedBrokerObj) {
+        console.log("Confirming with broker name:", selectedBrokerObj.broker_name);
+        // Pass both ID and name to the parent component
+        onConfirm(selectedBroker, selectedBrokerObj.broker_name);
+      }
     }
   };
-  
+
+  const navigateToBrokerIntegration = () => {
+    onCancel();
+    // Navigate to broker integration page
+    navigate('/broker-integration');
+    toast({
+      title: "Action Required",
+      description: "Please connect a broker first to proceed with live trading",
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Select Broker</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Choose which broker to use for live trading
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="bg-gray-800 border-gray-700 text-white p-0 overflow-hidden max-w-md">
+        <div className="relative">
+          <DialogHeader className="p-6 pb-3">
+            <DialogTitle className="text-xl font-semibold text-center">Select Broker</DialogTitle>
+            <button
+              onClick={onCancel}
+              className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <DialogDescription className="text-gray-400 text-sm text-center mt-1">
+              Choose a connected broker to use with this strategy
+            </DialogDescription>
+          </DialogHeader>
+        </div>
         
-        {loading ? (
-          <div className="py-4 flex justify-center">
-            <Loader className="h-6 w-6 animate-spin text-cyan" />
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
-        ) : brokers.length > 0 ? (
-          <div className="py-4">
-            <Select value={selectedBrokerId} onValueChange={handleSelectChange}>
-              <SelectTrigger className="w-full bg-charcoalPrimary/70 border-gray-600 text-white">
-                <SelectValue placeholder="Select a broker" />
-              </SelectTrigger>
-              <SelectContent className="bg-charcoalSecondary border-gray-700 text-white">
-                {brokers.map((broker) => (
-                  <SelectItem 
-                    key={broker.id} 
-                    value={broker.id}
-                    className="text-white hover:bg-gray-700 cursor-pointer"
-                  >
-                    {broker.broker_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        ) : brokers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+            <p className="text-gray-300 mb-6">
+              You need to connect a broker before starting live trading.
+            </p>
+            <Button 
+              variant="default"
+              className={cn(
+                "bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md",
+                "transition-all duration-200"
+              )}
+              onClick={navigateToBrokerIntegration}
+            >
+              Connect a Broker
+            </Button>
           </div>
         ) : (
-          <div className="py-4">
-            <p className="text-center text-red-400">No connected brokers found</p>
-            <p className="text-center text-xs text-gray-400 mt-1">
-              Please connect a broker in your account settings first
-            </p>
+          <div className="p-6 pt-0">
+            <div className="mb-6">
+              <Select value={selectedBroker} onValueChange={setSelectedBroker}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white w-full">
+                  <SelectValue placeholder="Select a broker" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-700 border-gray-600 text-white">
+                  {brokers.map((broker) => (
+                    <SelectItem key={broker.id} value={broker.id} className="focus:bg-gray-600 text-white hover:bg-gray-600">
+                      {broker.broker_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 w-full py-6"
+              onClick={handleConfirm}
+              disabled={!selectedBroker}
+            >
+              Confirm Selection
+            </Button>
           </div>
         )}
-        
-        <DialogFooter className="flex gap-2 sm:justify-end">
-          <Button 
-            variant="secondary" 
-            className="text-gray-200"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-          <Button 
-            variant="cyan"
-            onClick={handleConfirm}
-            disabled={brokers.length === 0 || !selectedBrokerId}
-          >
-            Confirm Selection
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

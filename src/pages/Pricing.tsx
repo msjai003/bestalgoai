@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -204,87 +203,80 @@ const PricingPage = () => {
       <Header />
       <main className="pt-24 px-4">
         {selectedStrategyName && (
-          <section className="mb-6">
-            <div className="bg-gradient-to-r from-accentPink/20 to-accentPurple/20 rounded-xl p-3 border border-accentPink/30">
-              <h2 className="text-base font-medium mb-1">Unlock Premium Strategy</h2>
-              <p className="text-textSecondary text-sm">
+          <section className="mb-8">
+            <div className="bg-gradient-to-r from-accentPink/20 to-accentPurple/20 rounded-xl p-4 border border-accentPink/30">
+              <h2 className="text-lg font-medium mb-2">Unlock Premium Strategy</h2>
+              <p className="text-textSecondary">
                 Subscribe to unlock <span className="text-accentPink font-semibold">{selectedStrategyName}</span> and all other premium strategies.
               </p>
             </div>
           </section>
         )}
 
-        <section className="mb-8">
-          <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-accentPink to-accentPurple bg-clip-text text-transparent">
+        <section className="mb-12">
+          <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-accentPink to-accentPurple bg-clip-text text-transparent">
             Choose Your Trading Power
           </h1>
-          <p className="text-textSecondary text-sm">
+          <p className="text-textSecondary">
             Unlock advanced algo trading strategies with plans designed for every trader
           </p>
         </section>
 
         {plansLoading ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-12">
             <Loader className="h-8 w-8 animate-spin text-accentPink" />
           </div>
         ) : plansError ? (
-          <div className="bg-danger/20 border border-danger rounded-xl p-4 mb-6">
-            <p className="text-center text-textPrimary text-sm">
+          <div className="bg-danger/20 border border-danger rounded-xl p-4 mb-8">
+            <p className="text-center text-textPrimary">
               {plansError}. Using default pricing.
             </p>
           </div>
         ) : (
-          <section className="space-y-3 mb-8">
+          <section className="space-y-6 mb-12">
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-surfaceBg rounded-xl p-4 border ${plan.popular ? 'border-accentPink/30' : 'border-gray-700'} shadow-lg overflow-hidden`}
+                className={`relative bg-surfaceBg rounded-xl p-6 border ${plan.popular ? 'border-accentPink/30' : 'border-gray-700'} shadow-lg overflow-hidden`}
               >
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-accentPink text-xs px-2 py-0.5 rounded-bl-lg">
+                  <div className="absolute top-0 right-0 bg-accentPink text-xs px-3 py-1 rounded-bl-lg">
                     POPULAR
                   </div>
                 )}
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-base font-bold">{plan.name}</h3>
-                    <p className="text-textSecondary text-xs">{plan.description}</p>
+                    <h3 className="text-xl font-bold">{plan.name}</h3>
+                    <p className="text-textSecondary text-sm">{plan.description}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold">{plan.price}</div>
-                    <div className="text-xs text-textSecondary">{plan.period}</div>
+                    <div className="text-2xl font-bold">{plan.price}</div>
+                    <div className="text-sm text-textSecondary">{plan.period}</div>
                   </div>
                 </div>
-                <ul className="space-y-1 mb-3 text-xs">
+                <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
-                      <i className="fa-solid fa-check text-accentPink mr-2 text-xs"></i>
+                      <i className="fa-solid fa-check text-accentPink mr-2"></i>
                       {feature}
                     </li>
                   ))}
                 </ul>
-                <div className="flex justify-center">
-                  <Button 
-                    className={`${plan.popular 
-                      ? 'bg-gradient-to-r from-accentPink to-accentPurple' 
-                      : 'bg-surfaceBg border border-accentPink/50 hover:bg-accentPink/10'} 
-                      text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity px-4`}
-                    onClick={() => handlePlanSelection(plan.name, plan.price)}
-                    disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
-                    size="sm"
-                  >
-                    {isLoading === `${plan.name}-${plan.price}` ? (
-                      <>
-                        <Loader className="h-3 w-3 animate-spin mr-1" />
-                        <span className="text-xs">Processing...</span>
-                      </>
-                    ) : hasPremium ? 
-                      <span className="text-xs">Already Subscribed</span> : 
-                      selectedStrategyName ? 
-                      <span className="text-xs">Unlock {selectedStrategyName}</span> : 
-                      <span className="text-xs">Get Started</span>}
-                  </Button>
-                </div>
+                <Button 
+                  className={`w-full ${plan.popular 
+                    ? 'bg-gradient-to-r from-accentPink to-accentPurple' 
+                    : 'bg-surfaceBg border border-accentPink/50 hover:bg-accentPink/10'} 
+                    text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity`}
+                  onClick={() => handlePlanSelection(plan.name, plan.price)}
+                  disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
+                >
+                  {isLoading === `${plan.name}-${plan.price}` ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : hasPremium ? "Already Subscribed" : selectedStrategyName ? `Unlock ${selectedStrategyName}` : "Get Started"}
+                </Button>
               </div>
             ))}
           </section>
