@@ -250,7 +250,9 @@
 
 .pink-bg, 
 .pink-button,
-.pink-element {
+.pink-element,
+.from-\[#FF00D4\],
+.to-\[#FF00D4\]\/80 {
   @apply bg-cyan !important;
   @apply text-charcoalPrimary !important;
 }

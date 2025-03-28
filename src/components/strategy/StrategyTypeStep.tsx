@@ -52,7 +52,7 @@ export const StrategyTypeStep = ({
             <div className="bg-gradient-to-br from-charcoalPrimary/80 to-charcoalPrimary/50 p-2.5 rounded-lg mr-3 shadow-inner">
               <Code className="h-5 w-5 text-cyan" />
             </div>
-            <span className="font-medium">Predefined Strategies</span>
+            <span className="font-medium">Custom Strategies</span>
           </div>
           <div className="w-5 h-5 rounded-full border-2 border-charcoalPrimary flex items-center justify-center">
             {strategyType === "custom" && (

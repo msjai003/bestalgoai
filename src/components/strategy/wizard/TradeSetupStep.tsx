@@ -98,10 +98,10 @@ export const TradeSetupStep = ({
             {strategyTypeOptions.map((type) => (
               <Button
                 key={type.value}
-                variant={leg.strategyType === type.value ? "default" : "outline"}
+                variant={leg.strategyType === type.value ? "cyan" : "outline"}
                 className={`${
                   leg.strategyType === type.value
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    ? ""
                     : "bg-gray-700 border-gray-600 text-white"
                 }`}
                 onClick={() => updateLeg({ strategyType: type.value as any })}
@@ -160,10 +160,10 @@ export const TradeSetupStep = ({
               {underlyingOptions.map((type) => (
                 <Button
                   key={type.value}
-                  variant={leg.underlying === type.value ? "default" : "outline"}
+                  variant={leg.underlying === type.value ? "cyan" : "outline"}
                   className={`${
                     leg.underlying === type.value
-                      ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                      ? ""
                       : "bg-gray-700 border-gray-600 text-white"
                   }`}
                   onClick={() => updateLeg({ underlying: type.value as any })}
@@ -193,10 +193,10 @@ export const TradeSetupStep = ({
             {segmentOptions.map((segment) => (
               <Button
                 key={segment.value}
-                variant={leg.segment === segment.value ? "default" : "outline"}
+                variant={leg.segment === segment.value ? "cyan" : "outline"}
                 className={`${
                   leg.segment === segment.value
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    ? ""
                     : "bg-gray-700 border-gray-600 text-white"
                 }`}
                 onClick={() => updateLeg({ segment: segment.value as any })}
@@ -226,10 +226,10 @@ export const TradeSetupStep = ({
               {optionTypeOptions.map((type) => (
                 <Button
                   key={type.value}
-                  variant={leg.optionType === type.value ? "default" : "outline"}
+                  variant={leg.optionType === type.value ? "cyan" : "outline"}
                   className={`${
                     leg.optionType === type.value
-                      ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                      ? ""
                       : "bg-gray-700 border-gray-600 text-white"
                   }`}
                   onClick={() => updateLeg({ optionType: type.value as any })}
@@ -253,10 +253,10 @@ export const TradeSetupStep = ({
             {positionTypeOptions.map((type) => (
               <Button
                 key={type.value}
-                variant={leg.positionType === type.value ? "default" : "outline"}
+                variant={leg.positionType === type.value ? "cyan" : "outline"}
                 className={`${
                   leg.positionType === type.value
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    ? ""
                     : "bg-gray-700 border-gray-600 text-white"
                 }`}
                 onClick={() => updateLeg({ positionType: type.value as any })}
@@ -279,10 +279,10 @@ export const TradeSetupStep = ({
             {expiryTypeOptions.map((type) => (
               <Button
                 key={type.value}
-                variant={leg.expiryType === type.value ? "default" : "outline"}
+                variant={leg.expiryType === type.value ? "cyan" : "outline"}
                 className={`${
                   leg.expiryType === type.value
-                    ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                    ? ""
                     : "bg-gray-700 border-gray-600 text-white"
                 }`}
                 onClick={() => updateLeg({ expiryType: type.value as any })}
