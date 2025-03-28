@@ -3,6 +3,7 @@ import React from 'react';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
+import { CTA } from '@/components/CTA';
 
 const teamMembers = [
   {
@@ -67,9 +68,9 @@ const AboutPage = () => {
               {highlights.map((highlight) => (
                 <div 
                   key={highlight.id}
-                  className="bg-gradient-to-r from-[#FF00D4]/10 to-gray-800/50 rounded-xl p-6 border border-gray-700"
+                  className="bg-gradient-to-r from-cyan/10 to-gray-800/50 rounded-xl p-6 border border-gray-700"
                 >
-                  <i className={`fa-solid ${highlight.icon} text-[#FF00D4] text-2xl mb-3`}></i>
+                  <i className={`fa-solid ${highlight.icon} text-cyan text-2xl mb-3`}></i>
                   <h3 className="font-bold mb-2">{highlight.title}</h3>
                   <p className="text-sm text-gray-300">{highlight.description}</p>
                 </div>
@@ -93,12 +94,14 @@ const AboutPage = () => {
                 />
                 <div>
                   <h3 className="font-bold">{member.name}</h3>
-                  <p className="text-sm text-[#FF00D4]">{member.role}</p>
+                  <p className="text-sm text-cyan">{member.role}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
+        
+        <CTA />
       </main>
       <Footer />
       <BottomNav />
