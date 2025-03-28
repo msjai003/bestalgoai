@@ -1,5 +1,5 @@
 
-import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey, Eye, EyeOff, Package } from "lucide-react";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ interface CredentialsFormProps {
   showApiFields: boolean;
   onBack: () => void;
   isConnected?: boolean;
+  productType?: string;
+  setProductType?: (value: string) => void;
 }
 
 export const CredentialsForm = ({
@@ -23,6 +25,8 @@ export const CredentialsForm = ({
   showApiFields,
   onBack,
   isConnected = false,
+  productType = "qwedhidnqin213",
+  setProductType,
 }: CredentialsFormProps) => {
   // Helper function to update a specific credential
   const updateCredential = (field: keyof BrokerCredentials, value: string) => {
@@ -36,6 +40,7 @@ export const CredentialsForm = ({
     secretKey: false,
     twoFactorSecret: false,
     sessionId: false,
+    productType: false,
   });
 
   // Toggle field visibility
@@ -143,6 +148,41 @@ export const CredentialsForm = ({
               <span className="sr-only">Toggle password visibility</span>
             </Button>
           </div>
+        </div>
+
+        {/* Product Type Field */}
+        <div>
+          <Label htmlFor="productType" className="text-gray-300 flex items-center gap-2">
+            <Package className="w-4 h-4" /> Product Type
+          </Label>
+          <div className="relative">
+            <Input
+              id="productType"
+              type={fieldVisibility.productType ? "text" : "password"}
+              placeholder="Enter product type"
+              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+              value={productType}
+              onChange={(e) => setProductType && setProductType(e.target.value)}
+              readOnly={!setProductType}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => toggleFieldVisibility('productType')}
+            >
+              {fieldVisibility.productType ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle product type visibility</span>
+            </Button>
+          </div>
+          <p className="text-gray-400 text-xs mt-1">
+            Product type associated with this broker account.
+          </p>
         </div>
 
         <div>

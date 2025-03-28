@@ -1,3 +1,4 @@
+
 export interface Broker {
   id: number;
   name: string;
@@ -18,6 +19,7 @@ export interface BrokerCredentials {
   twoFactorSecret: string;
   twoFactorCode: string;
   sessionId: string;
+  productType?: string; // Add new field for product type
 }
 
 export interface BrokerPermissions {

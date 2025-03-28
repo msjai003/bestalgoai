@@ -29,6 +29,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [productType, setProductType] = useState("qwedhidnqin213"); // Add state for product type with default value
 
   // Load existing broker credentials if available
   useEffect(() => {
@@ -69,6 +70,11 @@ export const useBrokerConnection = (selectedBroker: any) => {
             twoFactorCode: "",
             sessionId: data.session_id || ""
           });
+          
+          // Set product type if available
+          if (data.product_type) {
+            setProductType(data.product_type);
+          }
         }
       } catch (error) {
         console.error("Exception fetching broker credentials:", error);
@@ -120,7 +126,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
           session_id: credentials.sessionId,
-          updated_at: new Date().toISOString() // Fix: Convert Date to ISO string
+          product_type: productType, // Include product type in update
+          updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
         .eq('broker_id', selectedBroker.id);
@@ -171,6 +178,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
           session_id: credentials.sessionId,
+          product_type: productType, // Include product type
           status: 'connected'
         });
 
@@ -222,6 +230,8 @@ export const useBrokerConnection = (selectedBroker: any) => {
     handleBack,
     isSubmitting,
     isConnected,
-    isLoading
+    isLoading,
+    productType,
+    setProductType // Export the product type state and setter
   };
 };

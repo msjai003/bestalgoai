@@ -42,7 +42,9 @@ const BrokerCredentials = () => {
     handleBack,
     isSubmitting,
     isConnected,
-    isLoading
+    isLoading,
+    productType,
+    setProductType
   } = useBrokerConnection(selectedBroker);
 
   if (!selectedBroker) {
@@ -72,6 +74,8 @@ const BrokerCredentials = () => {
               showApiFields={showApiFields}
               onBack={handleBack}
               isConnected={isConnected}
+              productType={productType}
+              setProductType={setProductType}
             />
             
             {selectedBroker && (
