@@ -46,7 +46,7 @@ const Notifications = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center">
-              <span className="bg-gradient-to-r from-[#FF00D4] to-purple-600 bg-clip-text text-transparent text-xl font-bold">BestAlgo</span>
+              <span className="bg-gradient-to-r from-cyan to-cyan bg-clip-text text-transparent text-xl font-bold">BestAlgo</span>
               <span className="text-xl font-bold">.ai</span>
             </div>
           </div>
@@ -71,13 +71,13 @@ const Notifications = () => {
           <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg border border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-pink-500" />
+                <Mail className="w-5 h-5 text-cyan" />
                 <span className="font-semibold">Email Notifications</span>
               </div>
               <Switch 
                 checked={emailEnabled} 
                 onCheckedChange={setEmailEnabled}
-                className="data-[state=checked]:bg-pink-600"
+                className="data-[state=checked]:bg-cyan"
               />
             </div>
             
@@ -88,7 +88,7 @@ const Notifications = () => {
                   checked={tradingAlerts}
                   onCheckedChange={(checked) => setTradingAlerts(checked as boolean)}
                   disabled={!emailEnabled}
-                  className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 border-gray-600"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan border-gray-600"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -97,7 +97,7 @@ const Notifications = () => {
                   checked={marketUpdates}
                   onCheckedChange={(checked) => setMarketUpdates(checked as boolean)}
                   disabled={!emailEnabled}
-                  className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 border-gray-600"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan border-gray-600"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -106,7 +106,7 @@ const Notifications = () => {
                   checked={accountActivity}
                   onCheckedChange={(checked) => setAccountActivity(checked as boolean)}
                   disabled={!emailEnabled}
-                  className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 border-gray-600"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan border-gray-600"
                 />
               </div>
             </div>
@@ -116,13 +116,13 @@ const Notifications = () => {
           <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg border border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-pink-500" />
+                <Bell className="w-5 h-5 text-cyan" />
                 <span className="font-semibold">Push Notifications</span>
               </div>
               <Switch 
                 checked={pushEnabled} 
                 onCheckedChange={setPushEnabled}
-                className="data-[state=checked]:bg-pink-600"
+                className="data-[state=checked]:bg-cyan"
               />
             </div>
             
@@ -133,7 +133,7 @@ const Notifications = () => {
                   checked={priceAlerts}
                   onCheckedChange={(checked) => setPriceAlerts(checked as boolean)}
                   disabled={!pushEnabled}
-                  className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 border-gray-600"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan border-gray-600"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ const Notifications = () => {
                   checked={strategyUpdates}
                   onCheckedChange={(checked) => setStrategyUpdates(checked as boolean)}
                   disabled={!pushEnabled}
-                  className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 border-gray-600"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan border-gray-600"
                 />
               </div>
             </div>
@@ -152,13 +152,13 @@ const Notifications = () => {
           <div className="bg-gray-800/50 rounded-xl p-4 shadow-lg border border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-pink-500" />
+                <Moon className="w-5 h-5 text-cyan" />
                 <span className="font-semibold">Quiet Hours</span>
               </div>
               <Switch 
                 checked={quietHoursEnabled} 
                 onCheckedChange={setQuietHoursEnabled}
-                className="data-[state=checked]:bg-pink-600"
+                className="data-[state=checked]:bg-cyan"
               />
             </div>
             
@@ -207,7 +207,7 @@ const Notifications = () => {
         
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 border-t border-gray-800 backdrop-blur-lg">
           <Button 
-            className="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-6 rounded-lg font-semibold hover:from-pink-700 hover:to-purple-700 transition-all"
+            className="w-full bg-gradient-to-r from-cyan to-cyan/80 py-6 rounded-lg font-semibold hover:from-cyan/90 hover:to-cyan/70 transition-all"
             onClick={handleSaveChanges}
           >
             Save Changes

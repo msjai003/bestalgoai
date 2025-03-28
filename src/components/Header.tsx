@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +28,7 @@ const Header = () => {
   };
 
   return (
+    
     <header className="relative z-10 bg-charcoalSecondary border-b border-white/5">
       <nav className="container mx-auto px-4 flex items-center justify-between py-3">
         <div className="flex items-center">

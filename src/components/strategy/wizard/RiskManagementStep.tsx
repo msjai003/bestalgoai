@@ -46,7 +46,7 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
                 id="reEntryOnSL"
                 checked={leg.reEntryOnSL}
                 onCheckedChange={(checked) => updateLeg({ reEntryOnSL: checked })}
-                className="data-[state=checked]:bg-[#FF00D4]"
+                className="data-[state=checked]:bg-cyan"
               />
             </div>
             
@@ -62,7 +62,7 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
                       variant={leg.reEntryOnSLCount === count ? "default" : "outline"}
                       className={`${
                         leg.reEntryOnSLCount === count
-                          ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                          ? "bg-gradient-to-r from-cyan to-cyan/80"
                           : "bg-gray-700 border-gray-600 text-white"
                       }`}
                       onClick={() => updateLeg({ reEntryOnSLCount: count })}
@@ -110,7 +110,7 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
                 id="reEntryOnTarget"
                 checked={leg.reEntryOnTarget}
                 onCheckedChange={(checked) => updateLeg({ reEntryOnTarget: checked })}
-                className="data-[state=checked]:bg-[#FF00D4]"
+                className="data-[state=checked]:bg-cyan"
               />
             </div>
             
@@ -126,7 +126,7 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
                       variant={leg.reEntryOnTargetCount === count ? "default" : "outline"}
                       className={`${
                         leg.reEntryOnTargetCount === count
-                          ? "bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80"
+                          ? "bg-gradient-to-r from-cyan to-cyan/80"
                           : "bg-gray-700 border-gray-600 text-white"
                       }`}
                       onClick={() => updateLeg({ reEntryOnTargetCount: count })}
@@ -151,7 +151,7 @@ export const RiskManagementStep = ({ leg, updateLeg }: RiskManagementStepProps) 
               id="trailingEnabled"
               checked={leg.trailingEnabled}
               onCheckedChange={(checked) => updateLeg({ trailingEnabled: checked })}
-              className="data-[state=checked]:bg-[#FF00D4]"
+              className="data-[state=checked]:bg-cyan"
             />
           </div>
           
