@@ -21,7 +21,7 @@ const BlogPage = () => {
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white flex items-center justify-center p-4">
       <div className="text-center max-w-md bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl">
-        <Loader2 className="h-12 w-12 animate-spin text-[#FF00D4] mx-auto mb-4" />
+        <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
         <h1 className="text-2xl font-bold mb-4">Redirecting to Blog</h1>
         <p className="text-gray-400 mb-6">
           You're being redirected to our official blog. Please wait...
@@ -30,7 +30,7 @@ const BlogPage = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a 
             href={EXTERNAL_BLOG_URL} 
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan to-purple-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan to-cyan/80 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
             target="_blank"
             rel="noopener noreferrer"
           >
