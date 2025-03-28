@@ -97,13 +97,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div 
+                    <Button
+                      variant="ghost" 
+                      size="icon"
                       onClick={toggleLiveMode}
                       className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
                         flex items-center justify-center cursor-pointer active:scale-95`}
-                      role="button"
-                      tabIndex={0}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
@@ -111,7 +111,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       ) : (
                         strategy.isLive ? <StopCircleIcon size={18} /> : <PlayIcon size={18} />
                       )}
-                    </div>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
                     {!canAccess ? (
@@ -150,7 +150,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           <div className="flex justify-center">
             <Button 
-              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300"
+              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300 cursor-pointer"
               onClick={handleViewFullStrategy}
             >
               <Eye className="mr-2 h-4 w-4" />

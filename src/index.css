@@ -276,3 +276,32 @@
 .bg-gradient-to-r.to-\[#FF00D4\] {
   @apply from-cyan to-cyan/80 !important;
 }
+
+/* Global styles for interactive elements */
+button, 
+[role="button"],
+.clickable,
+.interactive,
+*[class*="cursor-pointer"] {
+  cursor: pointer;
+}
+
+/* Ensure all play icons are clickable */
+svg[data-lucide="play"],
+svg[data-lucide="play-circle"],
+svg[data-lucide="stop-circle"],
+svg[data-lucide="power"],
+svg[data-lucide="settings"],
+svg[data-lucide="chevron-right"] {
+  cursor: pointer;
+}
+
+/* Enhanced touch target for interactive elements */
+.icon-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
