@@ -18,6 +18,7 @@ export const StrategyTypeStep = ({
       <div className="flex flex-col space-y-4">
         <Button
           variant={strategyType === "predefined" ? "gradient" : "outline"}
+          size="sm"
           className={`h-16 w-full rounded-xl flex items-center justify-between px-5 transition-all duration-300 ${
             strategyType === "predefined" 
               ? "shadow-lg shadow-cyan/10" 
@@ -39,6 +40,7 @@ export const StrategyTypeStep = ({
         </Button>
         <Button
           variant={strategyType === "custom" ? "gradient" : "outline"}
+          size="sm"
           className={`h-16 w-full rounded-xl flex items-center justify-between px-5 transition-all duration-300 ${
             strategyType === "custom" 
               ? "shadow-lg shadow-cyan/10" 

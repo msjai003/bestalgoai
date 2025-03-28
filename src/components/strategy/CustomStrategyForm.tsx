@@ -108,7 +108,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   name="underlyingFrom"
                   checked={formData.underlyingFrom === "cash"}
                   onChange={() => handleInputChange("underlyingFrom", "cash")}
-                  className="text-pink-500"
+                  className="text-cyan"
                 />
                 <Label htmlFor="cash" className="text-white">Cash</Label>
               </div>
@@ -119,7 +119,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   name="underlyingFrom"
                   checked={formData.underlyingFrom === "futures"}
                   onChange={() => handleInputChange("underlyingFrom", "futures")}
-                  className="text-pink-500"
+                  className="text-cyan"
                 />
                 <Label htmlFor="futures" className="text-white">Futures</Label>
               </div>
@@ -134,7 +134,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   id="futures-segment" 
                   checked={formData.segments.includes("futures")}
                   onCheckedChange={() => handleCheckboxChange("segments", "futures")}
-                  className="data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan"
                 />
                 <Label htmlFor="futures-segment" className="text-white">Futures</Label>
               </div>
@@ -143,7 +143,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   id="options-segment" 
                   checked={formData.segments.includes("options")}
                   onCheckedChange={() => handleCheckboxChange("segments", "options")}
-                  className="data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
+                  className="data-[state=checked]:bg-cyan data-[state=checked]:border-cyan"
                 />
                 <Label htmlFor="options-segment" className="text-white">Options</Label>
               </div>
@@ -179,7 +179,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   name="positionType"
                   checked={formData.positionType === "buy"}
                   onChange={() => handleInputChange("positionType", "buy")}
-                  className="text-pink-500"
+                  className="text-cyan"
                 />
                 <Label htmlFor="buy" className="text-white">Buy</Label>
               </div>
@@ -190,7 +190,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                   name="positionType"
                   checked={formData.positionType === "sell"}
                   onChange={() => handleInputChange("positionType", "sell")}
-                  className="text-pink-500"
+                  className="text-cyan"
                 />
                 <Label htmlFor="sell" className="text-white">Sell</Label>
               </div>
@@ -209,7 +209,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                       name="optionType"
                       checked={formData.optionType === "call"}
                       onChange={() => handleInputChange("optionType", "call")}
-                      className="text-pink-500"
+                      className="text-cyan"
                     />
                     <Label htmlFor="call" className="text-white">Call</Label>
                   </div>
@@ -220,7 +220,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
                       name="optionType"
                       checked={formData.optionType === "put"}
                       onChange={() => handleInputChange("optionType", "put")}
-                      className="text-pink-500"
+                      className="text-cyan"
                     />
                     <Label htmlFor="put" className="text-white">Put</Label>
                   </div>
@@ -380,7 +380,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
               id="trailing-enabled"
               checked={formData.trailingEnabled}
               onCheckedChange={(checked) => handleInputChange("trailingEnabled", checked)}
-              className="data-[state=checked]:bg-pink-500"
+              className="data-[state=checked]:bg-cyan"
             />
             <Label htmlFor="trailing-enabled" className="text-white">Enable Trailing Options</Label>
           </div>
@@ -425,6 +425,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className="w-full justify-start text-left font-normal bg-gray-700 border-gray-600 text-white"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
@@ -453,6 +454,7 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className="w-full justify-start text-left font-normal bg-gray-700 border-gray-600 text-white"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
@@ -481,7 +483,8 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
       <div className="pt-4">
         <Button 
           type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-white"
+          size="sm"
+          className="w-full h-10 bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-white"
         >
           Deploy Strategy
         </Button>
