@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 
-// Fallback plans in case of database connection issues
 const fallbackPlans = [
   {
     name: "Basic",
@@ -65,10 +63,8 @@ const Subscription = () => {
   const [userPlan, setUserPlan] = useState<PlanDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch pricing plans from Supabase using the new price_admin table
   const { plans: dbPlans, isLoading: plansLoading, error: plansError } = usePriceAdmin();
   
-  // Use plans from database if available, otherwise use fallback plans
   const plans = dbPlans.length > 0 
     ? dbPlans.map(plan => ({
         name: plan.plan_name,
@@ -79,7 +75,6 @@ const Subscription = () => {
       }))
     : fallbackPlans;
   
-  // Fetch user's plan details when component mounts
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (!user) return;
@@ -125,7 +120,6 @@ const Subscription = () => {
     }
 
     try {
-      // Insert plan selection into the database
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -148,7 +142,6 @@ const Subscription = () => {
           variant: "default",
         });
         
-        // Refresh the page to show the updated plan
         window.location.reload();
       }
     } catch (error) {
@@ -161,16 +154,13 @@ const Subscription = () => {
     }
   };
 
-  // Helper to format the expiration date
   const formatExpirationDate = () => {
     if (!userPlan) return "";
     
     const selectedDate = new Date(userPlan.selected_at);
-    // Add 30 days to the selected date (mock expiration)
     const expirationDate = new Date(selectedDate);
     expirationDate.setDate(expirationDate.getDate() + 30);
     
-    // Format as "MMM DD, YYYY"
     return expirationDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -202,19 +192,20 @@ const Subscription = () => {
           </div>
         ) : userPlan ? (
           <section className="mb-8">
-            <div className="bg-gradient-to-br from-accentPink/10 to-accentPurple/10 rounded-2xl p-6 border border-accentPink/20 shadow-lg">
-              <div className="flex justify-between items-start mb-4">
+            <div className="bg-gradient-to-br from-accentPink/10 to-accentPurple/10 rounded-2xl p-5 border border-accentPink/20 shadow-lg">
+              <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h2 className="text-accentPink font-bold text-xl">{userPlan.plan_name} Plan</h2>
-                  <p className="text-textSecondary text-sm">Valid until {formatExpirationDate()}</p>
+                  <h2 className="text-accentPink font-bold text-lg">{userPlan.plan_name} Plan</h2>
+                  <p className="text-textSecondary text-xs">Valid until {formatExpirationDate()}</p>
                 </div>
-                <span className="bg-accentPink/20 text-accentPink px-3 py-1 rounded-full text-sm">Active</span>
+                <span className="bg-accentPink/20 text-accentPink px-2 py-1 rounded-full text-xs">Active</span>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-2xl font-bold">{userPlan.plan_price}<span className="text-sm text-textSecondary">/month</span></p>
+                <p className="text-xl font-bold">{userPlan.plan_price}<span className="text-xs text-textSecondary">/month</span></p>
                 <Button 
                   className="bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
                   onClick={() => navigate('/pricing')}
+                  size="sm"
                 >
                   Upgrade Plan
                 </Button>
@@ -223,11 +214,12 @@ const Subscription = () => {
           </section>
         ) : (
           <section className="mb-8">
-            <div className="bg-surfaceBg rounded-2xl p-6 border border-gray-700 shadow-lg">
-              <p className="text-center text-textSecondary mb-4">You don't have an active subscription plan.</p>
+            <div className="bg-surfaceBg rounded-2xl p-5 border border-gray-700 shadow-lg">
+              <p className="text-center text-textSecondary mb-4 text-sm">You don't have an active subscription plan.</p>
               <Button 
                 className="w-full bg-accentPink text-textPrimary shadow-lg shadow-accentPink/20 hover:bg-accentPink/90"
                 onClick={() => navigate('/pricing')}
+                size="sm"
               >
                 Choose a Plan
               </Button>
@@ -247,8 +239,8 @@ const Subscription = () => {
           </div>
         ) : (
           <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
-            <div className="space-y-4">
+            <h2 className="text-lg font-semibold mb-3">Available Plans</h2>
+            <div className="space-y-3">
               {plans.map((plan) => (
                 <div 
                   key={plan.name}
@@ -259,16 +251,16 @@ const Subscription = () => {
                       : "bg-surfaceBg border-gray-700"
                   )}
                 >
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-center mb-2">
                     <h3 className={cn(
-                      "font-bold",
+                      "font-bold text-sm",
                       plan.isPopular ? "text-accentPink" : ""
                     )}>{plan.name}</h3>
-                    <p className="text-lg font-bold">
-                      {plan.price}<span className="text-sm text-textSecondary">{plan.period}</span>
+                    <p className="text-base font-bold">
+                      {plan.price}<span className="text-xs text-textSecondary">{plan.period}</span>
                     </p>
                   </div>
-                  <ul className="text-sm text-textSecondary space-y-2 mb-4">
+                  <ul className="text-xs text-textSecondary space-y-1 mb-3">
                     {plan.features.map((feature, index) => (
                       <li key={index}>
                         <i className={cn(
@@ -287,6 +279,7 @@ const Subscription = () => {
                         : "border border-accentPink text-accentPink bg-transparent hover:bg-accentPink/10"
                     )}
                     onClick={() => handlePlanSelect(plan.name, plan.price)}
+                    size="sm"
                   >
                     Select Plan
                   </Button>
@@ -297,14 +290,14 @@ const Subscription = () => {
         )}
 
         <section>
-          <h2 className="text-lg font-semibold mb-4">Payment Methods</h2>
+          <h2 className="text-lg font-semibold mb-3">Payment Methods</h2>
           <div className="bg-surfaceBg rounded-xl p-4 border border-gray-700">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 <i className="fa-regular fa-credit-card text-textSecondary mr-3"></i>
                 <div>
-                  <p className="font-medium">•••• 4242</p>
-                  <p className="text-sm text-textSecondary">Expires 08/25</p>
+                  <p className="font-medium text-sm">•••• 4242</p>
+                  <p className="text-xs text-textSecondary">Expires 08/25</p>
                 </div>
               </div>
               <span className="bg-success/20 text-success px-2 py-1 rounded-full text-xs">Default</span>
@@ -312,6 +305,7 @@ const Subscription = () => {
             <Button 
               variant="outline"
               className="w-full border-gray-700 text-textSecondary hover:bg-surfaceBg/80"
+              size="sm"
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add Payment Method

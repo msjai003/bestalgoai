@@ -233,28 +233,28 @@ const PricingPage = () => {
             </p>
           </div>
         ) : (
-          <section className="space-y-6 mb-12">
+          <section className="space-y-4 mb-12">
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-surfaceBg rounded-xl p-6 border ${plan.popular ? 'border-accentPink/30' : 'border-gray-700'} shadow-lg overflow-hidden`}
+                className={`relative bg-surfaceBg rounded-xl p-5 border ${plan.popular ? 'border-accentPink/30' : 'border-gray-700'} shadow-lg overflow-hidden`}
               >
                 {plan.popular && (
                   <div className="absolute top-0 right-0 bg-accentPink text-xs px-3 py-1 rounded-bl-lg">
                     POPULAR
                   </div>
                 )}
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
-                    <p className="text-textSecondary text-sm">{plan.description}</p>
+                    <h3 className="text-lg font-bold">{plan.name}</h3>
+                    <p className="text-textSecondary text-xs">{plan.description}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">{plan.price}</div>
-                    <div className="text-sm text-textSecondary">{plan.period}</div>
+                    <div className="text-xl font-bold">{plan.price}</div>
+                    <div className="text-xs text-textSecondary">{plan.period}</div>
                   </div>
                 </div>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-2 mb-4 text-sm">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
                       <i className="fa-solid fa-check text-accentPink mr-2"></i>
@@ -269,10 +269,11 @@ const PricingPage = () => {
                     text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity`}
                   onClick={() => handlePlanSelection(plan.name, plan.price)}
                   disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
+                  size="sm"
                 >
                   {isLoading === `${plan.name}-${plan.price}` ? (
                     <>
-                      <Loader className="h-4 w-4 animate-spin mr-2" />
+                      <Loader className="h-3 w-3 animate-spin mr-2" />
                       Processing...
                     </>
                   ) : hasPremium ? "Already Subscribed" : selectedStrategyName ? `Unlock ${selectedStrategyName}` : "Get Started"}
