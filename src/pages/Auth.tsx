@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { Loader2 } from '@/components/ui/loader';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -224,6 +225,15 @@ const Auth = () => {
           </div>
         </form>
       </div>
+
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-charcoalPrimary/70 z-50">
+          <div className="bg-charcoalSecondary p-6 rounded-xl border border-gray-700/50 shadow-xl">
+            <Loader2 className="h-10 w-10 animate-spin text-cyan mb-4 mx-auto" />
+            <p className="text-white text-center">Signing you in...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
