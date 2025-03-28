@@ -27,7 +27,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPremium = strategy.id > 1; // First strategy is free, others are premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
-  const toggleWishlist = () => {
+  const toggleWishlist = (e: React.MouseEvent) => {
+    // Prevent event propagation
+    e.stopPropagation();
+    
     // Only allow toggle if authenticated
     if (!isAuthenticated) {
       navigate('/auth');
@@ -36,7 +39,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
-  const toggleLiveMode = () => {
+  const toggleLiveMode = (e: React.MouseEvent) => {
+    // Prevent event propagation
+    e.stopPropagation();
+    
     if (!isAuthenticated) {
       navigate('/auth');
       return;
@@ -76,9 +82,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8`}
+                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer`}
                       onClick={toggleWishlist}
-                      disabled={!isAuthenticated}
                     >
                       <HeartIcon size={18} className={strategy.isWishlisted ? "fill-red-400" : ""} />
                     </Button>
@@ -92,19 +97,21 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8`}
+                    <div 
                       onClick={toggleLiveMode}
-                      disabled={!isAuthenticated}
+                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
+                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
+                        flex items-center justify-center cursor-pointer active:scale-95`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
                         <LockIcon size={18} />
                       ) : (
                         strategy.isLive ? <StopCircleIcon size={18} /> : <PlayIcon size={18} />
                       )}
-                    </Button>
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     {!canAccess ? (
@@ -126,7 +133,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
-              This premium strategy requires a subscription. <span onClick={toggleLiveMode} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
             </p>
           )}
 

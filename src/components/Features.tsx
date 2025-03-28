@@ -10,12 +10,6 @@ export const Features = () => {
       description: 'Advanced algorithms that adapt to market conditions in real-time'
     },
     {
-      id: 'feature-2',
-      icon: 'fa-solid fa-shield-halved',
-      title: 'SEBI Compliant',
-      description: 'Fully regulated and secure trading platform'
-    },
-    {
       id: 'feature-3',
       icon: 'fa-solid fa-gauge-high',
       title: 'Low Latency Execution',

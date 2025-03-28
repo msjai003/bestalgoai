@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +19,6 @@ const Header = () => {
     { name: 'Pricing', href: '/pricing' },
     { name: 'Education', href: '/education' },
     { name: 'About', href: '/about' },
-    { name: 'Blog', href: '/blog' },
   ];
   
   const isActive = (path: string) => {

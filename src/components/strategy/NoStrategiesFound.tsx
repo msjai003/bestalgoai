@@ -16,7 +16,8 @@ export const NoStrategiesFound: React.FC<NoStrategiesFoundProps> = ({ onAddStrat
         <Button
           onClick={onAddStrategies}
           variant="gradient"
-          className="w-full"
+          size="sm"
+          className="mx-auto"
         >
           <Plus className="mr-1 h-4 w-4" />
           Add Strategies

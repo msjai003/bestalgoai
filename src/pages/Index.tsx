@@ -15,7 +15,9 @@ const Index = () => {
         <Hero />
         <div className="max-w-7xl mx-auto px-4">
           <Features />
-          <CTA />
+          <div className="max-w-4xl mx-auto">
+            <CTA />
+          </div>
         </div>
       </main>
       <Footer />

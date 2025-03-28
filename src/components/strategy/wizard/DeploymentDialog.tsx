@@ -1,14 +1,8 @@
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { GaugeCircle, Rocket } from "lucide-react";
 
 interface DeploymentDialogProps {
   open: boolean;
@@ -21,54 +15,61 @@ export const DeploymentDialog = ({
   open,
   onOpenChange,
   onDeployStrategy,
-  strategyName,
+  strategyName
 }: DeploymentDialogProps) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-
-  const handleDeployStrategy = (mode: "paper" | "real") => {
-    if (!user) {
-      toast({
-        title: "Sign in Required",
-        description: "Your strategy will be saved locally. Sign in to fully save your strategies.",
-        duration: 5000,
-      });
-    }
-    
-    onDeployStrategy(mode);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto rounded-xl">
+      <DialogContent className="bg-charcoalPrimary text-white max-w-[90%] max-h-[90vh] border border-cyan/20">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Select Deployment Mode</DialogTitle>
-          <DialogDescription className="text-gray-300 mt-2">
-            Would you like to deploy in Paper Trade mode or Real Mode?
-          </DialogDescription>
+          <DialogTitle className="text-center text-lg font-semibold">Deploy Strategy</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <Button 
-            variant="outline" 
-            onClick={() => handleDeployStrategy("paper")}
-            className="h-24 w-full flex flex-col items-center justify-center bg-gray-700 border-gray-600 text-white hover:bg-gray-600 rounded-xl"
-          >
-            <span className="text-lg mb-1">📝</span>
-            <span className="text-base font-medium">Paper Trade</span>
-            <span className="text-xs text-gray-400 mt-1 text-center w-full px-3">Simulation Only</span>
-          </Button>
-          <Button 
-            onClick={() => handleDeployStrategy("real")}
-            className="h-24 w-full flex flex-col items-center justify-center bg-gradient-to-r from-pink-500/80 to-purple-500/80 text-white hover:from-pink-500/70 hover:to-purple-500/70 rounded-xl"
-          >
-            <span className="text-lg mb-1">💰</span>
-            <span className="text-base font-medium">Real Mode</span>
-            <span className="text-xs text-gray-200 mt-1 text-center w-full px-3">Live Execution</span>
-          </Button>
-        </div>
-        <div className="mt-4 p-4 bg-gray-700/50 rounded-lg text-gray-300 text-sm">
-          <p>{user ? "Your strategy will be saved to your account and can be accessed across devices." : "Sign in to save your strategies permanently and access them across devices."}</p>
-        </div>
+        
+        <ScrollArea className="mt-4 max-h-[60vh] pr-4">
+          <div className="space-y-4">
+            <div className="bg-charcoalSecondary/30 p-4 rounded-lg border border-cyan/10">
+              <h3 className="text-lg font-medium text-white mb-2">{strategyName}</h3>
+              <p className="text-gray-400 text-sm">
+                Select deployment mode for your strategy
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 mt-6">
+              <div 
+                className="bg-charcoalSecondary/30 p-4 rounded-lg border border-cyan/10 hover:border-cyan/30 transition-all cursor-pointer"
+                onClick={() => onDeployStrategy("paper")}
+              >
+                <div className="flex items-center">
+                  <div className="mr-4">
+                    <GaugeCircle size={36} className="text-cyan" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium mb-1">Paper Trading</h4>
+                    <p className="text-gray-400 text-sm">
+                      Test your strategy with virtual money. No real trades will be executed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                className="bg-charcoalSecondary/30 p-4 rounded-lg border border-cyan/10 hover:border-cyan/30 transition-all cursor-pointer"
+                onClick={() => onDeployStrategy("real")}
+              >
+                <div className="flex items-center">
+                  <div className="mr-4">
+                    <Rocket size={36} className="text-cyan" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium mb-1">Live Trading</h4>
+                    <p className="text-gray-400 text-sm">
+                      Execute real trades with your actual funds. Requires broker integration.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
