@@ -13,12 +13,12 @@ const Terms = () => {
         <div className="sticky top-16 z-40 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center space-x-3">
-              <Link to="/" className="text-pink-500">
+              <Link to="/" className="text-cyan">
                 <ArrowLeft size={18} />
               </Link>
               <h1 className="text-lg font-semibold">Legal Terms & Privacy</h1>
             </div>
-            <button className="text-pink-500">
+            <button className="text-cyan">
               <Bookmark size={18} />
             </button>
           </div>
@@ -34,11 +34,11 @@ const Terms = () => {
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-xs text-gray-400">Last Updated</span>
-                  <span className="text-sm text-pink-500">01/02/2025</span>
+                  <span className="text-sm text-cyan">01/02/2025</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2 text-xs text-gray-400">
-                <div className="text-pink-500">
+                <div className="text-cyan">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
@@ -51,7 +51,7 @@ const Terms = () => {
           <section id="terms-navigation" className="mb-6">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 shadow-lg">
-                <div className="text-pink-500 mb-2">
+                <div className="text-cyan mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
@@ -61,7 +61,7 @@ const Terms = () => {
                 <p className="text-xs text-gray-400">Account, usage & obligations</p>
               </div>
               <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 shadow-lg">
-                <div className="text-pink-500 mb-2">
+                <div className="text-cyan mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -75,7 +75,7 @@ const Terms = () => {
 
           <section id="terms-content" className="space-y-6">
             <div className="bg-gray-800/20 rounded-xl p-5 border border-gray-700/50">
-              <h2 className="text-xl font-bold mb-4 text-center text-pink-500">BestAlgo.ai – Legal Terms & Privacy Policy</h2>
+              <h2 className="text-xl font-bold mb-4 text-center text-cyan">BestAlgo.ai – Legal Terms & Privacy Policy</h2>
               <div className="space-y-2 mb-6">
                 <p className="text-sm text-gray-300">
                   <span className="font-semibold">Effective Date:</span> 06/03/2024
@@ -87,7 +87,7 @@ const Terms = () => {
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">1. Privacy Policy</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-cyan">1. Privacy Policy</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-4">
                     <p>At Infocap Securities Private Limited, we prioritize the privacy and security of our clients' personal information. We collect and use data solely for providing our financial services and ensure that all information is kept confidential. We do not share your personal details with third parties without your consent, except as required by law. By using our services, you agree to our privacy practices as outlined in this policy.</p>
                     
@@ -123,7 +123,7 @@ const Terms = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">2. Terms of Use</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-cyan">2. Terms of Use</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-4">
                     <div>
                       <h4 className="font-medium mb-1">1. Acceptance</h4>
@@ -163,11 +163,11 @@ const Terms = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-pink-500">3. Contact Information</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-cyan">3. Contact Information</h3>
                   <div className="text-sm leading-relaxed text-gray-300 space-y-2">
                     <p>For support or legal inquiries:</p>
-                    <p>📧 Email: <a href="mailto:enquiry@infocap.info" className="text-pink-500 hover:underline">enquiry@infocap.info</a></p>
-                    <p>📞 Phone: <a href="tel:+919600898633" className="text-pink-500 hover:underline">+91 9600 898 633</a></p>
+                    <p>📧 Email: <a href="mailto:enquiry@infocap.info" className="text-cyan hover:underline">enquiry@infocap.info</a></p>
+                    <p>📞 Phone: <a href="tel:+919600898633" className="text-cyan hover:underline">+91 9600 898 633</a></p>
                     <p>📍 Registered Office: Infocap Securities Private Limited, No.27/A, First Floor, Veerapathira Pillai Compound, APK Road, Villapuram, Madurai - 625012</p>
                     <p className="font-medium mt-4">By using BestAlgo.ai, you agree to these Legal Terms & Privacy Policy</p>
                   </div>

@@ -49,7 +49,7 @@ const FeedbackForm: React.FC = () => {
   };
 
   return (
-    <div className="premium-card p-5 sm:p-6 backdrop-blur-lg shadow-2xl border border-gray-700/50">
+    <div className="premium-card p-5 sm:p-6 backdrop-blur-lg shadow-2xl border border-cyan/10">
       <h2 className="text-xl font-semibold mb-4">
         <span className="gradient-text">Sign Up</span> for Updates
       </h2>
@@ -113,7 +113,7 @@ const FeedbackForm: React.FC = () => {
           type="submit"
           variant="gradient"
           size="md"
-          className="w-full flex items-center justify-center gap-2 rounded-lg shadow-md hover:shadow-cyan/20"
+          className="w-full flex items-center justify-center gap-2 rounded-lg shadow-md hover:shadow-cyan/20 hover:shadow-lg"
         >
           <Send className="w-4 h-4" />
           Sign Up
