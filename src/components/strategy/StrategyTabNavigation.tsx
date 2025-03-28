@@ -17,31 +17,29 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
     <div className="bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30">
       <div className="grid grid-cols-2 gap-2">
         <Button 
-          variant={selectedTab === "predefined" ? "cyan" : "ghost"}
+          variant={selectedTab === "predefined" ? "gradient" : "ghost"}
           className={cn(
-            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
+            "py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300",
             selectedTab === "predefined" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("predefined")}
-          size="sm"
         >
-          <Zap className="h-3 w-3 mr-1.5" />
+          <Zap className="h-4 w-4 mr-2" />
           Predefined Strategies
         </Button>
         <Button 
-          variant={selectedTab === "custom" ? "cyan" : "ghost"}
+          variant={selectedTab === "custom" ? "gradient" : "ghost"}
           className={cn(
-            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
+            "py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300",
             selectedTab === "custom" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
           )}
           onClick={() => onTabChange("custom")}
-          size="sm"
         >
-          <Code className="h-3 w-3 mr-1.5" />
+          <Code className="h-4 w-4 mr-2" />
           Custom Strategy
         </Button>
       </div>

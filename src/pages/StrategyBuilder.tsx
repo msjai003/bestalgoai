@@ -179,7 +179,6 @@ const StrategyBuilder = () => {
         <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setShowConfirmation(false)}
             className="w-full sm:w-auto bg-charcoalSecondary border-gray-600 text-white hover:bg-charcoalSecondary/70"
           >
@@ -187,7 +186,6 @@ const StrategyBuilder = () => {
           </Button>
           <Button
             onClick={handleConfirmStrategy}
-            size="sm"
             className="w-full sm:w-auto bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg"
           >
             <Rocket className="mr-2 h-4 w-4" />
@@ -267,7 +265,7 @@ const StrategyBuilder = () => {
         </div>
 
         <section className="space-y-4 mb-6">
-          <div className="bg-charcoalSecondary/30 rounded-xl p-5 border border-cyan/20 shadow-lg">
+          <div className="bg-charcoalSecondary/30 rounded-xl p-5 border border-gray-700/50 shadow-lg">
             <div className="space-y-6">
               {renderStepContent()}
             </div>

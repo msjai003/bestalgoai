@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -227,37 +228,4 @@
 .charcoal-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 188, 212, 0.2);
-}
-
-/* Adding specific style overrides for the Strategy Selection page */
-.strategy-option-button {
-  @apply bg-cyan text-charcoalPrimary font-medium rounded-xl;
-}
-
-/* Ensure all option type buttons use cyan instead of pink */
-.option-type-button, 
-.position-type-button,
-.expiry-type-button,
-.segment-button,
-.instrument-button {
-  @apply bg-cyan text-charcoalPrimary;
-}
-
-/* Override any pink backgrounds with cyan */
-.magenta-bg {
-  @apply bg-cyan !important;
-}
-
-.pink-bg, 
-.pink-button,
-.pink-element,
-.from-\[#FF00D4\],
-.to-\[#FF00D4\]\/80,
-.border-pink-500,
-.border-\[#FF00D4\],
-.border-pink-400,
-.border-pink-300 {
-  @apply bg-cyan !important;
-  @apply text-charcoalPrimary !important;
-  @apply border-cyan/20 !important;
 }

@@ -15,7 +15,7 @@ import { Star, User, Plus, Play, Trash2, ChevronRight, Eye } from 'lucide-react'
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyCategory } from "@/types/strategy";
-import { StrategyList } from '@/components/strategy/StrategyList';
+import { StrategyList } from "@/components/strategy/StrategyList";
 import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { TradingModeFilter } from '@/components/strategy/TradingModeFilter';
 import { useStrategyFiltering } from '@/hooks/strategy/useStrategyFiltering';

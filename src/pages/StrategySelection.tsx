@@ -52,13 +52,15 @@ const StrategySelection = () => {
       <TooltipProvider>
         <main className="pt-14 pb-16 flex-1 overflow-hidden">
           <section className="px-4 py-4 h-full flex flex-col">
-            <div className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalSecondary/90 p-5 mb-5 relative overflow-hidden rounded-2xl border border-cyan/20 shadow-xl">
+            {/* Header with enhanced styling */}
+            <div className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalSecondary/90 p-6 mb-6 relative overflow-hidden rounded-2xl border border-gray-700/30 shadow-xl">
+              {/* Glow effect */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-20 -mt-20 blur-3xl z-0"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-cyan/10 to-cyan/5 rounded-full -ml-16 -mb-16 blur-3xl z-0"></div>
               
               <div className="relative z-10">
-                <h1 className="text-xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">Strategy Selection</h1>
-                <p className="text-gray-400 text-xs">Choose from our optimized trading strategies or create your own custom approach</p>
+                <h1 className="text-2xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">Strategy Selection</h1>
+                <p className="text-gray-400 text-sm">Choose from our optimized trading strategies or create your own custom approach</p>
               </div>
             </div>
             

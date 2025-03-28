@@ -235,6 +235,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     
     if (user) {
       try {
+        // Convert StrategyLeg[] to a JSON-compatible format
         const legsAsJson = JSON.parse(JSON.stringify(formData.legs));
         
         const { data, error } = await supabase.from('custom_strategies').insert({
@@ -243,7 +244,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
           legs: legsAsJson,
           is_active: true,
-          created_by: userName || user.email
+          created_by: userName || user.email // Include user's name or default to email
         }).select();
         
         if (error) throw error;
@@ -282,7 +283,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         isLive: mode === 'real',
         isWishlisted: true,
         legs: formData.legs,
-        createdBy: "Guest User",
+        createdBy: "Guest User", // Default for non-logged in users
         performance: {
           winRate: "N/A",
           avgProfit: "N/A",
@@ -308,7 +309,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   };
 
   return (
-    <div className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-cyan/20">
+    <div className="space-y-6 bg-gray-800/30 rounded-xl p-4 border border-gray-700">
       <h3 className="text-lg font-medium text-white mb-4">Custom Strategy Configuration</h3>
       
       <WizardStepIndicator currentStep={currentStep} />

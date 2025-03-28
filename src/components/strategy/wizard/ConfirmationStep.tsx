@@ -108,7 +108,7 @@ export const ConfirmationStep = ({
             </Button>
             <Button 
               onClick={handleAddAnotherLeg}
-              className="flex-1 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-xl"
+              className="flex-1 bg-gradient-to-r from-[#FF00D4] to-[#FF00D4]/80 text-white rounded-xl"
             >
               <Check className="mr-2 h-4 w-4" /> Yes
             </Button>
@@ -142,7 +142,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
   if (isEditing) {
     return (
       <div 
-        className={`p-4 rounded-lg border border-cyan bg-gray-800/70`}
+        className={`p-4 rounded-lg border border-[#FF00D4] bg-gray-800/70`}
       >
         <div className="flex justify-between items-center mb-3">
           <h5 className="text-white font-medium">Editing Leg {index + 1}</h5>
@@ -215,7 +215,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
                   {/* ATM option */}
                   <SelectItem 
                     value="ATM" 
-                    className="bg-cyan/10 text-white font-bold border-y border-cyan/30 my-1 py-2"
+                    className="bg-[#FF00D4]/10 text-white font-bold border-y border-[#FF00D4]/30 my-1 py-2"
                   >
                     ATM
                   </SelectItem>
@@ -319,7 +319,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
     <div 
       className={`p-4 rounded-lg border ${
         isActive 
-          ? "border-cyan bg-gray-800/70" 
+          ? "border-[#FF00D4] bg-gray-800/70" 
           : "border-gray-700 bg-gray-800/30"
       }`}
     >
