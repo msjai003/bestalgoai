@@ -95,9 +95,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8`}
+                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer`}
                       onClick={toggleLiveMode}
-                      disabled={!isAuthenticated}
                     >
                       {!canAccess ? (
                         <LockIcon size={18} />
