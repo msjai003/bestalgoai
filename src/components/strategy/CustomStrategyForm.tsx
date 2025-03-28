@@ -172,28 +172,22 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
           <div>
             <Label className="text-gray-300 block mb-2">Position Type</Label>
             <div className="flex gap-4">
-              <div className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  id="buy" 
-                  name="positionType"
-                  checked={formData.positionType === "buy"}
-                  onChange={() => handleInputChange("positionType", "buy")}
-                  className="text-cyan"
-                />
-                <Label htmlFor="buy" className="text-white">Buy</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  id="sell" 
-                  name="positionType"
-                  checked={formData.positionType === "sell"}
-                  onChange={() => handleInputChange("positionType", "sell")}
-                  className="text-cyan"
-                />
-                <Label htmlFor="sell" className="text-white">Sell</Label>
-              </div>
+              <Button
+                type="button"
+                variant={formData.positionType === "buy" ? "cyan" : "outline"}
+                className={formData.positionType !== "buy" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                onClick={() => handleInputChange("positionType", "buy")}
+              >
+                Buy
+              </Button>
+              <Button
+                type="button"
+                variant={formData.positionType === "sell" ? "cyan" : "outline"}
+                className={formData.positionType !== "sell" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                onClick={() => handleInputChange("positionType", "sell")}
+              >
+                Sell
+              </Button>
             </div>
           </div>
 
@@ -202,84 +196,131 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
               <div>
                 <Label className="text-gray-300 block mb-2">Option Type</Label>
                 <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <input 
-                      type="radio" 
-                      id="call" 
-                      name="optionType"
-                      checked={formData.optionType === "call"}
-                      onChange={() => handleInputChange("optionType", "call")}
-                      className="text-cyan"
-                    />
-                    <Label htmlFor="call" className="text-white">Call</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input 
-                      type="radio" 
-                      id="put" 
-                      name="optionType"
-                      checked={formData.optionType === "put"}
-                      onChange={() => handleInputChange("optionType", "put")}
-                      className="text-cyan"
-                    />
-                    <Label htmlFor="put" className="text-white">Put</Label>
-                  </div>
+                  <Button
+                    type="button"
+                    variant={formData.optionType === "call" ? "cyan" : "outline"}
+                    className={formData.optionType !== "call" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("optionType", "call")}
+                  >
+                    Call
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.optionType === "put" ? "cyan" : "outline"}
+                    className={formData.optionType !== "put" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("optionType", "put")}
+                  >
+                    Put
+                  </Button>
                 </div>
               </div>
               
               <div>
                 <Label htmlFor="expiryType" className="text-gray-300">Expiry Type</Label>
-                <Select 
-                  value={formData.expiryType} 
-                  onValueChange={(value) => handleInputChange("expiryType", value)}
-                >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Select Expiry" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="nextWeekly">Next Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    type="button"
+                    variant={formData.expiryType === "weekly" ? "cyan" : "outline"}
+                    className={formData.expiryType !== "weekly" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("expiryType", "weekly")}
+                  >
+                    Weekly
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.expiryType === "nextWeekly" ? "cyan" : "outline"}
+                    className={formData.expiryType !== "nextWeekly" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("expiryType", "nextWeekly")}
+                  >
+                    Next Weekly
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.expiryType === "monthly" ? "cyan" : "outline"}
+                    className={formData.expiryType !== "monthly" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("expiryType", "monthly")}
+                  >
+                    Monthly
+                  </Button>
+                </div>
               </div>
               
               <div>
                 <Label htmlFor="strikeCriteria" className="text-gray-300">Strike Criteria</Label>
-                <Select 
-                  value={formData.strikeCriteria} 
-                  onValueChange={(value) => handleInputChange("strikeCriteria", value)}
-                >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Select Strike" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    <SelectItem value="ATM">ATM</SelectItem>
-                    <SelectItem value="ITM1">ITM1</SelectItem>
-                    <SelectItem value="ITM2">ITM2</SelectItem>
-                    <SelectItem value="OTM1">OTM1</SelectItem>
-                    <SelectItem value="OTM2">OTM2</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    type="button"
+                    variant={formData.strikeCriteria === "ATM" ? "cyan" : "outline"}
+                    className={formData.strikeCriteria !== "ATM" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("strikeCriteria", "ATM")}
+                  >
+                    ATM
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.strikeCriteria === "ITM1" ? "cyan" : "outline"}
+                    className={formData.strikeCriteria !== "ITM1" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("strikeCriteria", "ITM1")}
+                  >
+                    ITM1
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.strikeCriteria === "ITM2" ? "cyan" : "outline"}
+                    className={formData.strikeCriteria !== "ITM2" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("strikeCriteria", "ITM2")}
+                  >
+                    ITM2
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.strikeCriteria === "OTM1" ? "cyan" : "outline"}
+                    className={formData.strikeCriteria !== "OTM1" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("strikeCriteria", "OTM1")}
+                  >
+                    OTM1
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.strikeCriteria === "OTM2" ? "cyan" : "outline"}
+                    className={formData.strikeCriteria !== "OTM2" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                    onClick={() => handleInputChange("strikeCriteria", "OTM2")}
+                  >
+                    OTM2
+                  </Button>
+                </div>
               </div>
             </>
           )}
           
           <div>
             <Label htmlFor="strategyType" className="text-gray-300">Strategy Type</Label>
-            <Select 
-              value={formData.strategyType} 
-              onValueChange={(value) => handleInputChange("strategyType", value)}
-            >
-              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                <SelectValue placeholder="Select Strategy Type" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="intraday">Intraday</SelectItem>
-                <SelectItem value="btst">BTST</SelectItem>
-                <SelectItem value="positional">Positional</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant={formData.strategyType === "intraday" ? "cyan" : "outline"}
+                className={formData.strategyType !== "intraday" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                onClick={() => handleInputChange("strategyType", "intraday")}
+              >
+                Intraday
+              </Button>
+              <Button
+                type="button"
+                variant={formData.strategyType === "btst" ? "cyan" : "outline"}
+                className={formData.strategyType !== "btst" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                onClick={() => handleInputChange("strategyType", "btst")}
+              >
+                BTST
+              </Button>
+              <Button
+                type="button"
+                variant={formData.strategyType === "positional" ? "cyan" : "outline"}
+                className={formData.strategyType !== "positional" ? "bg-gray-700 border-gray-600 text-white" : ""}
+                onClick={() => handleInputChange("strategyType", "positional")}
+              >
+                Positional
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -483,8 +524,9 @@ export const CustomStrategyForm = ({ onSubmit }: CustomStrategyFormProps) => {
       <div className="pt-4">
         <Button 
           type="submit" 
+          variant="cyan"
           size="sm"
-          className="w-full h-10 bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-white"
+          className="w-full h-10"
         >
           Deploy Strategy
         </Button>
