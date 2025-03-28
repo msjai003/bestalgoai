@@ -17,8 +17,8 @@ export const StrategyTypeStep = ({
       <h3 className="text-lg font-semibold text-white mb-2">Choose Strategy Type</h3>
       <div className="flex flex-col space-y-4">
         <Button
-          variant={strategyType === "predefined" ? "gradient" : "outline"}
-          size="sm"
+          variant={strategyType === "predefined" ? "cyan" : "outline"}
+          size="lg"
           className={`h-16 w-full rounded-xl flex items-center justify-between px-5 transition-all duration-300 ${
             strategyType === "predefined" 
               ? "shadow-lg shadow-cyan/10" 
@@ -39,8 +39,8 @@ export const StrategyTypeStep = ({
           </div>
         </Button>
         <Button
-          variant={strategyType === "custom" ? "gradient" : "outline"}
-          size="sm"
+          variant={strategyType === "custom" ? "cyan" : "outline"}
+          size="lg"
           className={`h-16 w-full rounded-xl flex items-center justify-between px-5 transition-all duration-300 ${
             strategyType === "custom" 
               ? "shadow-lg shadow-cyan/10" 
@@ -52,7 +52,7 @@ export const StrategyTypeStep = ({
             <div className="bg-gradient-to-br from-charcoalPrimary/80 to-charcoalPrimary/50 p-2.5 rounded-lg mr-3 shadow-inner">
               <Code className="h-5 w-5 text-cyan" />
             </div>
-            <span className="font-medium">Custom Strategy</span>
+            <span className="font-medium">Predefined Strategies</span>
           </div>
           <div className="w-5 h-5 rounded-full border-2 border-charcoalPrimary flex items-center justify-center">
             {strategyType === "custom" && (
