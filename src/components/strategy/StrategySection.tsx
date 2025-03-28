@@ -59,7 +59,7 @@ export const StrategySection = ({
           <Button 
             variant="outline"
             size="sm"
-            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
+            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
             onClick={() => navigate(actionButtonPath)}
           >
             <Plus className="h-4 w-4 mr-1 text-green-500" />
@@ -81,7 +81,7 @@ export const StrategySection = ({
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
                 size="sm"
-                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500"
+                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
               >
                 <Plus className="h-4 w-4 mr-1 text-green-500" />
                 Browse Strategies
@@ -105,7 +105,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-pink-500 hover:text-pink-400"
+                        className="text-pink-500 hover:text-pink-400 cursor-pointer"
                         onClick={() => onDeleteStrategy(strategy.id)}
                         aria-label="Remove from wishlist"
                       >
@@ -122,7 +122,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")}
+                        className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")} cursor-pointer`}
                         onClick={() => isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? handlePremiumClick(strategy.id) : onToggleLiveMode(strategy.id)}
                         aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >

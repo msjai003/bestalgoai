@@ -64,7 +64,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50"
+                className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50 cursor-pointer"
                 onClick={onEditQuantity}
               >
                 <Settings className="w-4 h-4" />
@@ -120,14 +120,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <Switch
               checked={strategy.isLive}
               onCheckedChange={onToggleLiveMode}
-              className={`${strategy.isLive ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-600'}`}
+              className={`${strategy.isLive ? 'bg-gradient-to-r from-cyan to-cyan/80' : 'bg-gray-600'} cursor-pointer`}
             />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={onViewDetails}
-            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 glass-card"
+            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 glass-card cursor-pointer"
           >
             View Details
             <ChevronRight className="ml-1 h-4 w-4" />
