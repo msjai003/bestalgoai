@@ -119,19 +119,16 @@ export const StrategySection = ({
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")} cursor-pointer p-2`}
-                        onClick={() => isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? handlePremiumClick(strategy.id) : onToggleLiveMode(strategy.id)}
+                      <div 
+                        className={`inline-flex items-center justify-center h-8 w-8 rounded-md ${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400")} p-2 pointer-events-none`}
                         aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
                         {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
-                          <Lock className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                          <Lock className="h-4 w-4 pointer-events-none" />
                         ) : (
-                          <Play className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                          <Play className="h-4 w-4 pointer-events-none" />
                         )}
-                      </Button>
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent side="top">
                       {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
