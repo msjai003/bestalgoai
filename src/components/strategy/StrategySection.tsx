@@ -109,7 +109,7 @@ export const StrategySection = ({
                         onClick={() => onDeleteStrategy(strategy.id)}
                         aria-label="Remove from wishlist"
                       >
-                        <Trash2 className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
@@ -123,21 +123,21 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-yellow-500 p-2 cursor-pointer"
+                          className="text-yellow-500 hover:text-yellow-400 p-2 cursor-pointer"
                           onClick={() => handlePremiumClick(strategy.id)}
                           aria-label="Premium strategy"
                         >
-                          <Lock className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                          <Lock className="h-4 w-4" />
                         </Button>
                       ) : (
                         <Button
                           size="icon"
                           variant="ghost"
-                          className={`${strategy.isLive ? "text-green-500" : "text-gray-400"} p-2 cursor-pointer`}
+                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400" : "text-gray-400 hover:text-gray-300"} p-2 cursor-pointer`}
                           onClick={() => onToggleLiveMode(strategy.id)}
                           aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
                         >
-                          <Play className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                          <Play className="h-4 w-4" />
                         </Button>
                       )}
                     </TooltipTrigger>
