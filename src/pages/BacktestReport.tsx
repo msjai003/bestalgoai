@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,14 +41,26 @@ const saveFormSchema = z.object({
   strategyName: z.string().optional(),
   entryDate: z.string().optional(),
   entryTime: z.string().optional(),
-  entryPrice: z.union([z.string(), z.number()]).optional().transform(val => val === "" ? null : Number(val)),
-  quantity: z.union([z.string(), z.number()]).optional().transform(val => val === "" ? null : Number(val)),
+  entryPrice: z.union([
+    z.string().transform(val => val === "" ? null : Number(val)), 
+    z.number()
+  ]).nullable().optional(),
+  quantity: z.union([
+    z.string().transform(val => val === "" ? null : Number(val)), 
+    z.number()
+  ]).nullable().optional(),
   instrumentKind: z.string().optional(),
-  strikePrice: z.union([z.string(), z.number()]).optional().transform(val => val === "" ? null : Number(val)),
+  strikePrice: z.union([
+    z.string().transform(val => val === "" ? null : Number(val)), 
+    z.number()
+  ]).nullable().optional(),
   position: z.string().optional(),
   exitDate: z.string().optional(),
   exitTime: z.string().optional(),
-  exitPrice: z.union([z.string(), z.number()]).optional().transform(val => val === "" ? null : Number(val)),
+  exitPrice: z.union([
+    z.string().transform(val => val === "" ? null : Number(val)), 
+    z.number()
+  ]).nullable().optional(),
   expiryDate: z.string().optional(),
   remarks: z.string().optional(),
 });
@@ -91,14 +102,12 @@ const BacktestReport = () => {
     },
   });
 
-  // Function to calculate weekday from a date string
   const getWeekday = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   };
 
-  // Function to handle CSV file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -106,8 +115,6 @@ const BacktestReport = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        // For demo purposes, we'll set hardcoded values
-        // In a real app, you would parse the CSV and extract values
         const mockData: BacktestResult = {
           id: "temp-id",
           title: file.name.replace(".csv", ""),
@@ -149,18 +156,21 @@ const BacktestReport = () => {
   };
 
   const handleSaveBacktest = async (values: SaveFormValues) => {
-    // Calculate weekdays from dates
     const entryWeekday = values.entryDate ? getWeekday(values.entryDate) : "";
     const exitWeekday = values.exitDate ? getWeekday(values.exitDate) : "";
     
-    // Calculate P/L and P/L percentage if entry and exit prices are provided
     let pl = null;
     let plPercentage = null;
     
-    // Ensure all values used in calculations are numbers, not strings
-    const entryPrice = values.entryPrice ? Number(values.entryPrice) : null;
-    const exitPrice = values.exitPrice ? Number(values.exitPrice) : null;
-    const quantity = values.quantity ? Number(values.quantity) : null;
+    const entryPrice = values.entryPrice !== undefined && values.entryPrice !== null 
+      ? Number(values.entryPrice) 
+      : null;
+    const exitPrice = values.exitPrice !== undefined && values.exitPrice !== null 
+      ? Number(values.exitPrice) 
+      : null;
+    const quantity = values.quantity !== undefined && values.quantity !== null 
+      ? Number(values.quantity) 
+      : null;
     
     if (entryPrice && exitPrice && quantity) {
       const entryValue = entryPrice * quantity;
@@ -177,7 +187,6 @@ const BacktestReport = () => {
       }
     }
     
-    // Prepare the data for saving
     const backtestData = {
       title: values.title,
       description: values.description || null,
@@ -191,7 +200,9 @@ const BacktestReport = () => {
       entryPrice: entryPrice,
       quantity: quantity,
       instrumentKind: values.instrumentKind || null,
-      strikePrice: values.strikePrice ? Number(values.strikePrice) : null,
+      strikePrice: values.strikePrice !== undefined && values.strikePrice !== null 
+        ? Number(values.strikePrice) 
+        : null,
       position: values.position || null,
       exitDate: values.exitDate || null,
       exitWeekday: exitWeekday || null,
@@ -200,8 +211,8 @@ const BacktestReport = () => {
       pl: pl,
       plPercentage: plPercentage,
       expiryDate: values.expiryDate || null,
-      highestMtm: entryPrice ? entryPrice * 1.1 : null, // Mock data for demo
-      lowestMtm: entryPrice ? entryPrice * 0.9 : null, // Mock data for demo
+      highestMtm: entryPrice ? entryPrice * 1.1 : null,
+      lowestMtm: entryPrice ? entryPrice * 0.9 : null,
       remarks: values.remarks || null
     };
     
@@ -222,7 +233,6 @@ const BacktestReport = () => {
   const handleDeleteBacktest = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this backtest result?")) {
       await deleteBacktestResult(id);
-      // If the deleted result was the current one, clear the view
       if (currentBacktest && currentBacktest.id === id) {
         setCurrentBacktest(null);
         setFileUploaded(false);
@@ -241,7 +251,6 @@ const BacktestReport = () => {
         return;
       }
       
-      // Create header row
       const headers = [
         "Strategy Name", "Entry Date", "Entry Weekday", "Entry Time", "Entry Price", 
         "Quantity", "Instrument Kind", "Strike Price", "Position",
@@ -249,7 +258,6 @@ const BacktestReport = () => {
         "P/L", "P/L Percentage", "Expiry Date", "Highest MTM", "Lowest MTM", "Remarks"
       ].join(",");
       
-      // Create data row
       const data = [
         currentBacktest.strategyName || "",
         currentBacktest.entryDate || "",
@@ -272,10 +280,8 @@ const BacktestReport = () => {
         currentBacktest.remarks || ""
       ].join(",");
       
-      // Combine header and data
       const csv = headers + "\n" + data;
       
-      // Create blob and download
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -302,7 +308,7 @@ const BacktestReport = () => {
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
           <h1 className="text-charcoalTextPrimary text-lg font-medium">Backtest Report</h1>
-          <div className="w-8"></div> {/* Empty div for flex alignment */}
+          <div className="w-8"></div>
         </div>
       </header>
 
@@ -422,7 +428,6 @@ const BacktestReport = () => {
         )}
       </main>
       
-      {/* Save Dialog */}
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -665,7 +670,6 @@ const BacktestReport = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Load Saved Backtest Dialog */}
       <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>

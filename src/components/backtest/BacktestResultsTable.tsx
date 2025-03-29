@@ -33,11 +33,14 @@ export const BacktestResultsTable = ({ results }: BacktestResultsTableProps) => 
             <TableHead>Entry Time</TableHead>
             <TableHead>Entry Price</TableHead>
             <TableHead>Quantity</TableHead>
+            <TableHead>Instrument</TableHead>
+            <TableHead>Strike Price</TableHead>
             <TableHead>Position</TableHead>
             <TableHead>Exit Date</TableHead>
             <TableHead>Exit Price</TableHead>
             <TableHead>P/L</TableHead>
             <TableHead>P/L %</TableHead>
+            <TableHead>Expiry Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,6 +54,8 @@ export const BacktestResultsTable = ({ results }: BacktestResultsTableProps) => 
               <TableCell>{result.entryTime || 'N/A'}</TableCell>
               <TableCell>₹{result.entryPrice?.toFixed(2) || 'N/A'}</TableCell>
               <TableCell>{result.quantity || 'N/A'}</TableCell>
+              <TableCell>{result.instrumentKind || 'N/A'}</TableCell>
+              <TableCell>₹{result.strikePrice?.toFixed(2) || 'N/A'}</TableCell>
               <TableCell>{result.position || 'N/A'}</TableCell>
               <TableCell>
                 {result.exitDate ? new Date(result.exitDate).toLocaleDateString() : 'N/A'}
@@ -62,6 +67,9 @@ export const BacktestResultsTable = ({ results }: BacktestResultsTableProps) => 
               </TableCell>
               <TableCell className={result.plPercentage && result.plPercentage > 0 ? 'text-charcoalSuccess' : result.plPercentage && result.plPercentage < 0 ? 'text-charcoalDanger' : ''}>
                 {result.plPercentage ? `${result.plPercentage.toFixed(2)}%` : 'N/A'}
+              </TableCell>
+              <TableCell>
+                {result.expiryDate ? new Date(result.expiryDate).toLocaleDateString() : 'N/A'}
               </TableCell>
             </TableRow>
           ))}
