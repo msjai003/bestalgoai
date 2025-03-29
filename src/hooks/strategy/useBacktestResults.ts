@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface BacktestResult {
   id: string;
@@ -35,6 +36,7 @@ export interface BacktestResult {
 
 type SaveBacktestParams = Omit<BacktestResult, 'id' | 'createdAt'>;
 
+// Fallback to localStorage if user is not authenticated
 const STORAGE_KEY = 'backtest-results';
 
 export const useBacktestResults = () => {
@@ -48,6 +50,14 @@ export const useBacktestResults = () => {
     if (user) {
       fetchBacktestResults();
     } else {
+      // If no user is authenticated, try to get results from localStorage
+      try {
+        const storedResults = localStorage.getItem(STORAGE_KEY);
+        const parsedResults = storedResults ? JSON.parse(storedResults) : [];
+        setBacktestResults(parsedResults);
+      } catch (err) {
+        console.error("Error fetching local backtest results:", err);
+      }
       setLoading(false);
     }
   }, [user]);
@@ -58,16 +68,45 @@ export const useBacktestResults = () => {
     try {
       setLoading(true);
       
-      // Get results from localStorage
-      const storedResults = localStorage.getItem(STORAGE_KEY);
-      const parsedResults = storedResults ? JSON.parse(storedResults) : [];
+      // Fetch results from Supabase
+      const { data, error: fetchError } = await supabase
+        .from('backtest_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (fetchError) throw fetchError;
 
-      // Filter results for current user
-      const userResults = parsedResults.filter((result: BacktestResult) => 
-        result.id.includes(user.id)
-      );
+      // Map database fields to our interface
+      const mappedResults: BacktestResult[] = data.map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        strategyId: null,
+        startDate: item.entry_date || new Date().toISOString().split('T')[0],
+        endDate: item.exit_date || new Date().toISOString().split('T')[0],
+        strategyName: item.strategy_name,
+        entryDate: item.entry_date,
+        entryWeekday: item.entry_weekday,
+        entryTime: item.entry_time,
+        entryPrice: item.entry_price,
+        quantity: item.quantity,
+        instrumentKind: item.instrument_kind,
+        strikePrice: item.strike_price,
+        position: item.position,
+        exitDate: item.exit_date,
+        exitWeekday: item.exit_weekday,
+        exitTime: item.exit_time,
+        exitPrice: item.exit_price,
+        pl: item.pl,
+        plPercentage: item.pl_percentage,
+        expiryDate: item.expiry_date,
+        highestMtm: item.highest_mtm,
+        lowestMtm: item.lowest_mtm,
+        remarks: item.remarks,
+        createdAt: item.created_at
+      }));
 
-      setBacktestResults(userResults);
+      setBacktestResults(mappedResults);
     } catch (err) {
       console.error("Error fetching backtest results:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -83,31 +122,73 @@ export const useBacktestResults = () => {
 
   const saveBacktestResult = async (data: SaveBacktestParams) => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to save backtest results",
-        variant: "destructive",
-      });
-      return null;
+      // If no user, save to localStorage
+      try {
+        const newResult: BacktestResult = {
+          ...data,
+          id: uuidv4(),
+          createdAt: new Date().toISOString()
+        };
+
+        const storedResults = localStorage.getItem(STORAGE_KEY);
+        const existingResults = storedResults ? JSON.parse(storedResults) : [];
+        const updatedResults = [...existingResults, newResult];
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+        setBacktestResults(updatedResults);
+        
+        toast({
+          title: "Success",
+          description: "Backtest result saved locally (not logged in)",
+        });
+        
+        return newResult.id;
+      } catch (err) {
+        console.error("Error saving local backtest result:", err);
+        toast({
+          title: "Error",
+          description: "Failed to save backtest result locally",
+          variant: "destructive",
+        });
+        return null;
+      }
     }
 
     try {
-      // Create a new result with ID and timestamp
-      const newResult: BacktestResult = {
-        ...data,
-        id: `${user.id}-${uuidv4()}`,
-        createdAt: new Date().toISOString()
+      // Map our interface to database fields
+      const dbRecord = {
+        user_id: user.id,
+        title: data.title,
+        description: data.description,
+        strategy_name: data.strategyName,
+        entry_date: data.entryDate,
+        entry_weekday: data.entryWeekday,
+        entry_time: data.entryTime,
+        entry_price: data.entryPrice,
+        quantity: data.quantity,
+        instrument_kind: data.instrumentKind,
+        strike_price: data.strikePrice,
+        position: data.position,
+        exit_date: data.exitDate,
+        exit_weekday: data.exitWeekday,
+        exit_time: data.exitTime,
+        exit_price: data.exitPrice,
+        pl: data.pl,
+        pl_percentage: data.plPercentage,
+        expiry_date: data.expiryDate,
+        highest_mtm: data.highestMtm,
+        lowest_mtm: data.lowestMtm,
+        remarks: data.remarks
       };
 
-      // Get existing results
-      const storedResults = localStorage.getItem(STORAGE_KEY);
-      const existingResults = storedResults ? JSON.parse(storedResults) : [];
+      // Insert into Supabase
+      const { data: insertedData, error: insertError } = await supabase
+        .from('backtest_reports')
+        .insert(dbRecord)
+        .select('*')
+        .single();
       
-      // Add new result
-      const updatedResults = [...existingResults, newResult];
-      
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
@@ -117,7 +198,7 @@ export const useBacktestResults = () => {
       // Refresh the list
       fetchBacktestResults();
       
-      return newResult.id;
+      return insertedData.id;
     } catch (err) {
       console.error("Error saving backtest result:", err);
       toast({
@@ -130,22 +211,45 @@ export const useBacktestResults = () => {
   };
 
   const deleteBacktestResult = async (id: string) => {
-    if (!user) return false;
+    if (!user) {
+      // If no user, delete from localStorage
+      try {
+        const storedResults = localStorage.getItem(STORAGE_KEY);
+        if (!storedResults) return false;
+        
+        const existingResults = JSON.parse(storedResults);
+        const updatedResults = existingResults.filter(
+          (result: BacktestResult) => result.id !== id
+        );
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+        setBacktestResults(updatedResults);
+        
+        toast({
+          title: "Success",
+          description: "Backtest result deleted from local storage",
+        });
+        
+        return true;
+      } catch (err) {
+        console.error("Error deleting local backtest result:", err);
+        toast({
+          title: "Error",
+          description: "Failed to delete local backtest result",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
 
     try {
-      // Get existing results
-      const storedResults = localStorage.getItem(STORAGE_KEY);
-      if (!storedResults) return false;
+      // Delete from Supabase
+      const { error: deleteError } = await supabase
+        .from('backtest_reports')
+        .delete()
+        .eq('id', id);
       
-      const existingResults = JSON.parse(storedResults);
-      
-      // Filter out the result to delete
-      const updatedResults = existingResults.filter(
-        (result: BacktestResult) => result.id !== id
-      );
-      
-      // Save filtered results back to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
+      if (deleteError) throw deleteError;
 
       // Update local state
       setBacktestResults(prev => prev.filter(result => result.id !== id));
