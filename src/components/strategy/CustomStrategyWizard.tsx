@@ -7,6 +7,9 @@ import { WizardContent } from "./wizard/WizardContent";
 import { WizardControls } from "./wizard/WizardControls";
 import { StrategyDetailsDialog } from "./wizard/StrategyDetailsDialog";
 import { DeploymentDialog } from "./wizard/DeploymentDialog";
+import { TradingModeConfirmationDialog } from "./TradingModeConfirmationDialog";
+import { QuantityInputDialog } from "./QuantityInputDialog";
+import { BrokerSelectionDialog } from "./BrokerSelectionDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +59,10 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
   const [showStrategyDetails, setShowStrategyDetails] = useState(false);
   const [isDuplicateName, setIsDuplicateName] = useState(false);
   const [userName, setUserName] = useState<string>("");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
+  const [showBrokerDialog, setShowBrokerDialog] = useState(false);
+  const [quantity, setQuantity] = useState<number>(1);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -218,7 +225,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setShowStrategyDetails(true);
   };
 
-  const handleDeployStrategy = async (mode: "paper" | "real") => {
+  const handleDeployStrategy = (mode: "paper" | "real") => {
     if (isDuplicateName) {
       toast({
         title: "Duplicate Strategy Name",
@@ -230,23 +237,133 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     }
     
     setDeploymentMode(mode);
-    setShowStrategyDetails(false);
     setShowDeploymentDialog(false);
     
+    if (mode === "paper") {
+      // Paper trading mode - proceed directly
+      saveStrategyAndRedirect(mode);
+    } else {
+      // Live trading mode - follow the confirmation flow
+      setShowConfirmDialog(true);
+    }
+  };
+  
+  const handleConfirmLiveMode = () => {
+    setShowConfirmDialog(false);
+    setShowQuantityDialog(true);
+  };
+  
+  const handleCancelLiveMode = () => {
+    setShowConfirmDialog(false);
+    setDeploymentMode(null);
+  };
+  
+  const handleQuantitySubmit = (value: number) => {
+    setQuantity(value);
+    setShowQuantityDialog(false);
+    setShowBrokerDialog(true);
+  };
+  
+  const handleCancelQuantity = () => {
+    setShowQuantityDialog(false);
+    setDeploymentMode(null);
+  };
+  
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
+    setShowBrokerDialog(false);
+    
+    try {
+      if (user) {
+        const { data: brokerData, error: brokerError } = await supabase
+          .from('broker_credentials')
+          .select('username')
+          .eq('id', brokerId)
+          .single();
+          
+        if (brokerError) {
+          console.error("Error fetching broker username:", brokerError);
+          throw brokerError;
+        }
+        
+        const brokerUsername = brokerData?.username || "";
+        
+        // Save broker info with the strategy
+        saveStrategyAndRedirect("real", {
+          quantity,
+          brokerName,
+          brokerUsername
+        });
+      } else {
+        // Guest user - save to local storage
+        saveStrategyAndRedirect("real", {
+          quantity,
+          brokerName: brokerName
+        });
+      }
+    } catch (error) {
+      console.error("Error processing broker selection:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save broker information",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+  
+  const handleCancelBroker = () => {
+    setShowBrokerDialog(false);
+    setDeploymentMode(null);
+  };
+  
+  const saveStrategyAndRedirect = async (
+    mode: "paper" | "real", 
+    additionalInfo?: {
+      quantity?: number;
+      brokerName?: string;
+      brokerUsername?: string;
+    }
+  ) => {
     if (user) {
       try {
         const legsAsJson = JSON.parse(JSON.stringify(formData.legs));
         
-        const { data, error } = await supabase.from('custom_strategies').insert({
+        // Create a strategy configuration object
+        const strategyConfig = {
           user_id: user.id,
           name: strategyName,
           description: `Custom ${formData.legs[0].strategyType || 'intraday'} strategy with ${formData.legs.length} leg(s)`,
           legs: legsAsJson,
           is_active: true,
-          created_by: userName || user.email
-        }).select();
+          created_by: userName || user.email,
+          quantity: additionalInfo?.quantity,
+          selected_broker: additionalInfo?.brokerName,
+          broker_username: additionalInfo?.brokerUsername,
+          trade_type: mode === "real" ? "live trade" : "paper trade"
+        };
+        
+        const { data, error } = await supabase.from('custom_strategies').insert(strategyConfig).select();
         
         if (error) throw error;
+        
+        // If we're in live mode, also add to strategy_selections
+        if (mode === "real" && additionalInfo?.brokerName) {
+          const { error: selectionError } = await supabase.from('strategy_selections').insert({
+            user_id: user.id,
+            strategy_id: data[0].id,
+            strategy_name: strategyName,
+            strategy_description: strategyConfig.description,
+            quantity: additionalInfo.quantity || 1,
+            selected_broker: additionalInfo.brokerName,
+            broker_username: additionalInfo.brokerUsername || "",
+            trade_type: "live trade",
+            is_custom: true
+          });
+          
+          if (selectionError) {
+            console.error("Error adding to strategy selections:", selectionError);
+          }
+        }
         
         toast({
           title: "Strategy Created",
@@ -263,6 +380,7 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         });
       }
     } else {
+      // Save to local storage for guest users
       const storedWishlist = localStorage.getItem('wishlistedStrategies');
       let wishlistedStrategies: any[] = [];
       
@@ -283,6 +401,8 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         isWishlisted: true,
         legs: formData.legs,
         createdBy: "Guest User",
+        quantity: additionalInfo?.quantity || 1,
+        selectedBroker: additionalInfo?.brokerName || "",
         performance: {
           winRate: "N/A",
           avgProfit: "N/A",
@@ -348,6 +468,28 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         onOpenChange={setShowDeploymentDialog}
         onDeployStrategy={handleDeployStrategy}
         strategyName={strategyName}
+      />
+      
+      <TradingModeConfirmationDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        targetMode="live"
+        onConfirm={handleConfirmLiveMode}
+        onCancel={handleCancelLiveMode}
+      />
+      
+      <QuantityInputDialog
+        open={showQuantityDialog}
+        onOpenChange={setShowQuantityDialog}
+        onConfirm={handleQuantitySubmit}
+        onCancel={handleCancelQuantity}
+      />
+      
+      <BrokerSelectionDialog
+        open={showBrokerDialog}
+        onOpenChange={setShowBrokerDialog}
+        onConfirm={handleBrokerSubmit}
+        onCancel={handleCancelBroker}
       />
     </div>
   );
