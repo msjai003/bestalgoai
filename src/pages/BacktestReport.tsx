@@ -7,7 +7,8 @@ import {
   Save,
   Trash,
   ChevronLeft,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ArrowRight
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
@@ -330,36 +331,25 @@ const BacktestReport = () => {
         </div>
 
         {!fileUploaded ? (
-          <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-700 rounded-xl bg-charcoalSecondary/20 mt-8">
-            <Upload className="w-12 h-12 text-gray-500 mb-4" />
-            <h3 className="text-charcoalTextPrimary text-lg font-medium mb-2">Upload Backtest Data</h3>
-            <p className="text-charcoalTextSecondary text-sm text-center mb-6">
-              Upload a CSV file containing your trading data to generate a detailed backtest report
-            </p>
-            <input
-              type="file"
-              accept=".csv"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <div className="flex flex-col space-y-3 w-full items-center">
-              <Button onClick={triggerFileInput} className="flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Select CSV File
-              </Button>
+          <div className="mt-8">
+            <section>
+              <h2 className="text-xl font-semibold text-white mb-4">Zenflow Backtest Tools</h2>
               
-              {backtestResults.length > 0 && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setLoadDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Load Saved Backtest
-                </Button>
-              )}
-            </div>
+              <div className="space-y-4">
+                <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                      <FileSpreadsheet className="h-5 w-5 text-cyan" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium">Backtest Report</h3>
+                      <p className="text-sm text-charcoalTextSecondary">View and analyze Zenflow backtest data</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+                </Link>
+              </div>
+            </section>
           </div>
         ) : (
           <>
