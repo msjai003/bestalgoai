@@ -10,7 +10,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
-import { useBacktestResults, BacktestResult } from "@/hooks/strategy/useBacktestResults";
+import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
 import { BacktestResultsTable } from '@/components/backtest/BacktestResultsTable';
 import { BacktestDetailsView } from '@/components/backtest/BacktestDetailsView';
 import {
@@ -157,9 +157,14 @@ const BacktestReport = () => {
     let pl = null;
     let plPercentage = null;
     
-    if (values.entryPrice && values.exitPrice && values.quantity) {
-      const entryValue = values.entryPrice * values.quantity;
-      const exitValue = values.exitPrice * values.quantity;
+    // Ensure all values used in calculations are numbers, not strings
+    const entryPrice = values.entryPrice ? Number(values.entryPrice) : null;
+    const exitPrice = values.exitPrice ? Number(values.exitPrice) : null;
+    const quantity = values.quantity ? Number(values.quantity) : null;
+    
+    if (entryPrice && exitPrice && quantity) {
+      const entryValue = entryPrice * quantity;
+      const exitValue = exitPrice * quantity;
       
       if (values.position?.toUpperCase() === 'LONG') {
         pl = exitValue - entryValue;
@@ -183,20 +188,20 @@ const BacktestReport = () => {
       entryDate: values.entryDate || null,
       entryWeekday: entryWeekday || null,
       entryTime: values.entryTime || null,
-      entryPrice: values.entryPrice || null,
-      quantity: values.quantity || null,
+      entryPrice: entryPrice,
+      quantity: quantity,
       instrumentKind: values.instrumentKind || null,
-      strikePrice: values.strikePrice || null,
+      strikePrice: values.strikePrice ? Number(values.strikePrice) : null,
       position: values.position || null,
       exitDate: values.exitDate || null,
       exitWeekday: exitWeekday || null,
       exitTime: values.exitTime || null,
-      exitPrice: values.exitPrice || null,
+      exitPrice: exitPrice,
       pl: pl,
       plPercentage: plPercentage,
       expiryDate: values.expiryDate || null,
-      highestMtm: values.entryPrice ? values.entryPrice * 1.1 : null, // Mock data for demo
-      lowestMtm: values.entryPrice ? values.entryPrice * 0.9 : null, // Mock data for demo
+      highestMtm: entryPrice ? entryPrice * 1.1 : null, // Mock data for demo
+      lowestMtm: entryPrice ? entryPrice * 0.9 : null, // Mock data for demo
       remarks: values.remarks || null
     };
     
