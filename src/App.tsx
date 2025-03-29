@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +40,8 @@ import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
 import PriceAdminPage from "./pages/PriceAdminPage";
 import ColorTest from "./pages/ColorTest";
 import Education from "./pages/Education";
+import ZenflowBacktest from "./pages/ZenflowBacktest";
+import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +103,16 @@ function AppRoutes() {
       <Route path="/backtest-report" element={
         <ProtectedRoute>
           <BacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/zenflow-backtest" element={
+        <ProtectedRoute>
+          <ZenflowBacktest />
+        </ProtectedRoute>
+      } />
+      <Route path="/zenflow-backtest-report" element={
+        <ProtectedRoute>
+          <ZenflowBacktestReport />
         </ProtectedRoute>
       } />
       <Route path="/live-trading" element={

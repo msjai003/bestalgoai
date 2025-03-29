@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,8 @@ import {
   Download, 
   Save,
   Trash,
-  ChevronLeft
+  ChevronLeft,
+  FileSpreadsheet
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
@@ -163,7 +163,6 @@ const BacktestReport = () => {
     let pl = null;
     let plPercentage = null;
     
-    // Ensure values are properly converted to numbers
     const entryPrice = values.entryPrice !== undefined && values.entryPrice !== null 
       ? Number(values.entryPrice) 
       : null;
@@ -317,12 +316,15 @@ const BacktestReport = () => {
 
       <main className="pt-16 pb-20 px-4">
         <div className="bg-charcoalSecondary/50 p-1 rounded-xl mt-4 mb-6">
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-3 gap-1">
             <button className="bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary py-2 px-4 rounded-lg text-sm font-medium">
               Backtesting
             </button>
             <Link to="/strategy-builder" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
               Strategy Builder
+            </Link>
+            <Link to="/zenflow-backtest" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
+              Zenflow
             </Link>
           </div>
         </div>

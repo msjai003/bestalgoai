@@ -495,6 +495,72 @@ export type Database = {
         }
         Relationships: []
       }
+      Zenflow_backtest: {
+        Row: {
+          "Entry-Date": string | null
+          "Entry-Price": number | null
+          "Entry-Time": string | null
+          "Entry-Weekday": string | null
+          "Exit-Weekday": string | null
+          ExitDate: string | null
+          ExitPrice: number | null
+          ExitTime: string | null
+          ExpiryDate: string | null
+          "Highest MTM(Candle Close)": string | null
+          Index: number | null
+          "Instrument-Kind": string | null
+          "Lowest MTM(Candle Close)": string | null
+          "P/L": number | null
+          "P/L-Percentage": string | null
+          Position: string | null
+          Quantity: string | null
+          Remarks: string | null
+          StrikePrice: string | null
+        }
+        Insert: {
+          "Entry-Date"?: string | null
+          "Entry-Price"?: number | null
+          "Entry-Time"?: string | null
+          "Entry-Weekday"?: string | null
+          "Exit-Weekday"?: string | null
+          ExitDate?: string | null
+          ExitPrice?: number | null
+          ExitTime?: string | null
+          ExpiryDate?: string | null
+          "Highest MTM(Candle Close)"?: string | null
+          Index?: number | null
+          "Instrument-Kind"?: string | null
+          "Lowest MTM(Candle Close)"?: string | null
+          "P/L"?: number | null
+          "P/L-Percentage"?: string | null
+          Position?: string | null
+          Quantity?: string | null
+          Remarks?: string | null
+          StrikePrice?: string | null
+        }
+        Update: {
+          "Entry-Date"?: string | null
+          "Entry-Price"?: number | null
+          "Entry-Time"?: string | null
+          "Entry-Weekday"?: string | null
+          "Exit-Weekday"?: string | null
+          ExitDate?: string | null
+          ExitPrice?: number | null
+          ExitTime?: string | null
+          ExpiryDate?: string | null
+          "Highest MTM(Candle Close)"?: string | null
+          Index?: number | null
+          "Instrument-Kind"?: string | null
+          "Lowest MTM(Candle Close)"?: string | null
+          "P/L"?: number | null
+          "P/L-Percentage"?: string | null
+          Position?: string | null
+          Quantity?: string | null
+          Remarks?: string | null
+          StrikePrice?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
