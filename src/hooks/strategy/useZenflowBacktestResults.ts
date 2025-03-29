@@ -39,17 +39,25 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
+      console.log("Fetching Zenflow backtest results...");
+      
       // Fetch data from Supabase Zenflow_backtest table
       const { data, error } = await supabase
         .from('Zenflow_backtest')
         .select('*');
       
       if (error) {
+        console.error("Supabase error:", error);
         throw error;
       }
       
+      console.log("Zenflow backtest data received:", data);
+      
       if (data) {
         setZenflowResults(data);
+      } else {
+        console.log("No data received from Zenflow_backtest table");
+        setZenflowResults([]);
       }
     } catch (err) {
       console.error("Error fetching Zenflow backtest results:", err);

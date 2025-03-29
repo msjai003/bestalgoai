@@ -30,7 +30,12 @@ const ZenflowBacktestReport = () => {
   useEffect(() => {
     // Refresh data when component mounts
     fetchZenflowBacktestResults();
+    console.log("Component mounted, fetching data...");
   }, []);
+
+  useEffect(() => {
+    console.log("Current zenflow results:", zenflowResults);
+  }, [zenflowResults]);
 
   const handleRefresh = () => {
     fetchZenflowBacktestResults();
@@ -129,11 +134,28 @@ const ZenflowBacktestReport = () => {
           </div>
         ) : error ? (
           <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
-            <p className="text-charcoalDanger">Error loading data. Please try again.</p>
+            <p className="text-charcoalDanger">Error loading data: {error.message}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              className="mt-4"
+            >
+              Try Again
+            </Button>
           </div>
         ) : zenflowResults.length === 0 ? (
           <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
             <p className="text-charcoalTextSecondary">No Zenflow backtest data available.</p>
+            <p className="text-charcoalTextSecondary mt-2">Please make sure data is present in the Zenflow_backtest table.</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              className="mt-4"
+            >
+              Refresh Data
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-gray-700 bg-charcoalSecondary/30">
