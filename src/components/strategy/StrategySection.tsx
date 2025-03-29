@@ -119,16 +119,27 @@ export const StrategySection = ({
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div 
-                        className={`inline-flex items-center justify-center h-8 w-8 rounded-md ${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400")} p-2 pointer-events-none`}
-                        aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
-                      >
-                        {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
-                          <Lock className="h-4 w-4 pointer-events-none" />
-                        ) : (
-                          <Play className="h-4 w-4 pointer-events-none" />
-                        )}
-                      </div>
+                      {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-yellow-500 p-2 cursor-pointer"
+                          onClick={() => handlePremiumClick(strategy.id)}
+                          aria-label="Premium strategy"
+                        >
+                          <Lock className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                        </Button>
+                      ) : (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={`${strategy.isLive ? "text-green-500" : "text-gray-400"} p-2 cursor-pointer`}
+                          onClick={() => onToggleLiveMode(strategy.id)}
+                          aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
+                        >
+                          <Play className="h-4 w-4 cursor-pointer pointer-events-auto" />
+                        </Button>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent side="top">
                       {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
