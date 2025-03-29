@@ -140,6 +140,7 @@ export type Database = {
       }
       custom_strategies: {
         Row: {
+          broker_username: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -147,12 +148,17 @@ export type Database = {
           is_active: boolean | null
           legs: Json
           name: string
+          paid_status: string | null
           performance: Json | null
+          quantity: number | null
+          selected_broker: string | null
           strategy_type: string
+          trade_type: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          broker_username?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -160,12 +166,17 @@ export type Database = {
           is_active?: boolean | null
           legs: Json
           name: string
+          paid_status?: string | null
           performance?: Json | null
+          quantity?: number | null
+          selected_broker?: string | null
           strategy_type?: string
+          trade_type?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          broker_username?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -173,8 +184,12 @@ export type Database = {
           is_active?: boolean | null
           legs?: Json
           name?: string
+          paid_status?: string | null
           performance?: Json | null
+          quantity?: number | null
+          selected_broker?: string | null
           strategy_type?: string
+          trade_type?: string | null
           updated_at?: string | null
           user_id?: string
         }

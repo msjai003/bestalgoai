@@ -336,10 +336,11 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
           legs: legsAsJson,
           is_active: true,
           created_by: userName || user.email,
-          quantity: additionalInfo?.quantity,
-          selected_broker: additionalInfo?.brokerName,
-          broker_username: additionalInfo?.brokerUsername,
-          trade_type: mode === "real" ? "live trade" : "paper trade"
+          quantity: additionalInfo?.quantity || null,
+          selected_broker: additionalInfo?.brokerName || null,
+          broker_username: additionalInfo?.brokerUsername || null,
+          trade_type: mode === "real" ? "live trade" : "paper trade",
+          paid_status: "free"
         };
         
         const { data, error } = await supabase.from('custom_strategies').insert(strategyConfig).select();
