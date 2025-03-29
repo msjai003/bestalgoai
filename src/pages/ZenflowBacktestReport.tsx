@@ -158,7 +158,7 @@ const ZenflowBacktestReport = () => {
                     <TableCell className={`font-medium ${result["P/L"] && result["P/L"] > 0 ? 'text-green-500' : result["P/L"] && result["P/L"] < 0 ? 'text-red-500' : 'text-charcoalTextPrimary'}`}>
                       {result["P/L"] != null ? result["P/L"].toFixed(2) : "-"}
                     </TableCell>
-                    <TableCell className={`font-medium ${result["P/L-Percentage"] && parseFloat(result["P/L-Percentage"]) > 0 ? 'text-green-500' : result["P/L-Percentage"] && parseFloat(result["P/L-Percentage"]) < 0 ? 'text-red-500' : 'text-charcoalTextPrimary'}`}>
+                    <TableCell className={`font-medium ${result["P/L-Percentage"] && parseFloat(String(result["P/L-Percentage"])) > 0 ? 'text-green-500' : result["P/L-Percentage"] && parseFloat(String(result["P/L-Percentage"])) < 0 ? 'text-red-500' : 'text-charcoalTextPrimary'}`}>
                       {result["P/L-Percentage"] || "-"}
                     </TableCell>
                   </TableRow>

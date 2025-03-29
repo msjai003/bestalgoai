@@ -37,6 +37,7 @@ export const useZenflowBacktestResults = () => {
   const fetchZenflowBacktestResults = async () => {
     try {
       setLoading(true);
+      setError(null);
       
       // Fetch data from Supabase Zenflow_backtest table
       const { data, error } = await supabase
