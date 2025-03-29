@@ -103,15 +103,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       onClick={toggleLiveMode}
                       className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
-                        flex items-center justify-center cursor-pointer`}
+                        flex items-center justify-center pointer-events-none`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
-                        <LockIcon size={18} className="cursor-pointer pointer-events-auto" />
+                        <LockIcon size={18} className="pointer-events-none" />
                       ) : (
                         strategy.isLive ? 
-                          <StopCircleIcon size={18} className="cursor-pointer pointer-events-auto" /> : 
-                          <PlayIcon size={18} className="cursor-pointer pointer-events-auto" />
+                          <StopCircleIcon size={18} className="pointer-events-none" /> : 
+                          <PlayIcon size={18} className="pointer-events-none" />
                       )}
                     </Button>
                   </TooltipTrigger>
