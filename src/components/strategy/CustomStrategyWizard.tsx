@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { WizardStep, StrategyLeg, WizardFormData } from "@/types/strategy-wizard";
@@ -240,10 +239,8 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
     setShowDeploymentDialog(false);
     
     if (mode === "paper") {
-      // Paper trading mode - proceed directly
       saveStrategyAndRedirect(mode);
     } else {
-      // Live trading mode - follow the confirmation flow
       setShowConfirmDialog(true);
     }
   };
@@ -287,14 +284,12 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         
         const brokerUsername = brokerData?.username || "";
         
-        // Save broker info with the strategy
         saveStrategyAndRedirect("real", {
           quantity,
           brokerName,
           brokerUsername
         });
       } else {
-        // Guest user - save to local storage
         saveStrategyAndRedirect("real", {
           quantity,
           brokerName: brokerName
@@ -328,7 +323,8 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
       try {
         const legsAsJson = JSON.parse(JSON.stringify(formData.legs));
         
-        // Create a strategy configuration object
+        const numericStrategyId = Math.floor(Math.random() * 1000000) + 1000;
+        
         const strategyConfig = {
           user_id: user.id,
           name: strategyName,
@@ -347,28 +343,21 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         
         if (error) throw error;
         
-        // If we're in live mode, also add to strategy_selections
-        if (mode === "real" && additionalInfo?.brokerName && data && data.length > 0) {
-          // Generate a numeric ID for the strategy
-          // This is needed because 'strategy_id' in 'strategy_selections' must be a number
-          const numericStrategyId = Math.floor(Math.random() * 1000000) + 1;
-          
-          const { error: selectionError } = await supabase.from('strategy_selections').insert({
-            user_id: user.id,
-            strategy_id: numericStrategyId, // Using a numeric ID instead of UUID
-            strategy_name: strategyName,
-            strategy_description: strategyConfig.description,
-            quantity: additionalInfo.quantity || 1,
-            selected_broker: additionalInfo.brokerName,
-            broker_username: additionalInfo.brokerUsername || "",
-            trade_type: "live trade",
-            is_wishlisted: false,
-            paid_status: "free"
-          });
-          
-          if (selectionError) {
-            console.error("Error adding to strategy selections:", selectionError);
-          }
+        const { error: selectionError } = await supabase.from('strategy_selections').insert({
+          user_id: user.id,
+          strategy_id: numericStrategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyConfig.description,
+          quantity: additionalInfo?.quantity || 1,
+          selected_broker: additionalInfo?.brokerName || "",
+          broker_username: additionalInfo?.brokerUsername || "",
+          trade_type: mode === "real" ? "live trade" : "paper trade",
+          is_wishlisted: true,
+          paid_status: "free"
+        });
+        
+        if (selectionError) {
+          console.error("Error adding to strategy selections:", selectionError);
         }
         
         toast({
@@ -386,7 +375,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         });
       }
     } else {
-      // Save to local storage for guest users
       const storedWishlist = localStorage.getItem('wishlistedStrategies');
       let wishlistedStrategies: any[] = [];
       
