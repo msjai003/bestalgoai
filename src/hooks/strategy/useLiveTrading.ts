@@ -6,6 +6,7 @@ import { Strategy } from "./types";
 import { loadUserStrategies, updateStrategyLiveConfig } from "./useStrategyDatabase";
 import { useCustomStrategies } from "./useCustomStrategies";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useLiveTrading = () => {
   const navigate = useNavigate();

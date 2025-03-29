@@ -20,6 +20,7 @@ export interface Strategy {
   successRate?: string;
   isPremium?: boolean; // Whether this is a premium strategy
   isPaid?: boolean; // Whether the user has paid for this strategy
+  isCustom?: boolean; // Whether this is a custom strategy or predefined
 }
 
 export interface StrategySelection {

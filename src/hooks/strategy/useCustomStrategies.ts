@@ -40,12 +40,12 @@ export const useCustomStrategies = () => {
           rowId: strategy.id,
           uniqueId: `custom-${strategy.id}`,
           performance: {
-            winRate: typeof strategy.performance === 'object' && strategy.performance?.winRate ? 
-              String(strategy.performance.winRate) : "N/A",
-            avgProfit: typeof strategy.performance === 'object' && strategy.performance?.avgProfit ? 
-              String(strategy.performance.avgProfit) : "N/A",
-            drawdown: typeof strategy.performance === 'object' && strategy.performance?.drawdown ? 
-              String(strategy.performance.drawdown) : "N/A"
+            winRate: typeof strategy.performance === 'object' && strategy.performance ? 
+              String(strategy.performance.winRate || "N/A") : "N/A",
+            avgProfit: typeof strategy.performance === 'object' && strategy.performance ? 
+              String(strategy.performance.avgProfit || "N/A") : "N/A",
+            drawdown: typeof strategy.performance === 'object' && strategy.performance ? 
+              String(strategy.performance.drawdown || "N/A") : "N/A"
           }
         }));
 
