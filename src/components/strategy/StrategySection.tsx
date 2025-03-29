@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Trash2, Lock } from "lucide-react";
+import { Plus, Play, Trash2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StrategySectionProps {
@@ -117,24 +117,32 @@ export const StrategySection = ({
                     </TooltipContent>
                   </Tooltip>
                   
-                  {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="text-yellow-500 cursor-pointer p-2"
-                          onClick={() => handlePremiumClick(strategy.id)}
-                          aria-label="Premium strategy"
-                        >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "text-yellow-500" : (strategy.isLive ? "text-green-500" : "text-gray-400 hover:text-green-500")} cursor-pointer p-2`}
+                        onClick={() => isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? handlePremiumClick(strategy.id) : onToggleLiveMode(strategy.id)}
+                        aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
+                      >
+                        {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
                           <Lock className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
                         <p>Unlock this premium strategy</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
+                      ) : strategy.isLive ? (
+                        <p>Switch to paper trading</p>
+                      ) : (
+                        <p>Click to live trade</p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               

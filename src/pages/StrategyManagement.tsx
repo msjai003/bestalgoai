@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -428,6 +429,7 @@ const StrategyManagement = () => {
                           className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30`}
                           onClick={() => handleToggleLiveMode(strategy.id)}
                         >
+                          <Play className="mr-1 h-4 w-4" />
                           {strategy.isLive ? "Active" : "Inactive"}
                         </Button>
                       </div>
@@ -515,6 +517,7 @@ const StrategyManagement = () => {
                           className={`${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30`}
                           onClick={() => handleToggleLiveMode(strategy.id)}
                         >
+                          <Play className="mr-1 h-4 w-4" />
                           {strategy.isLive ? "Active" : "Inactive"}
                         </Button>
                       </div>
