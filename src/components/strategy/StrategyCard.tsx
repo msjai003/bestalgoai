@@ -102,9 +102,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-gray-300")} 
+                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-cyan")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
-                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50`}
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-sm`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
@@ -153,7 +153,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           <div className="flex justify-center">
             <Button 
-              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300 cursor-pointer"
+              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium 
+                hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 
+                transition-all duration-300 cursor-pointer"
               onClick={handleViewFullStrategy}
             >
               <Eye className="mr-2 h-4 w-4" />
