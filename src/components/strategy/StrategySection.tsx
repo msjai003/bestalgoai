@@ -102,7 +102,7 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => (
-            <div key={strategy.uniqueId || strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg">
+            <div key={strategy.uniqueId || strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg hover:shadow-cyan/5 hover:border-gray-600 transition-all duration-300">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-white">{strategy.name}</h3>
@@ -117,7 +117,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-red-500 hover:text-red-400 cursor-pointer p-2"
+                        className="text-red-500 hover:text-red-400 cursor-pointer p-2 transition-colors duration-300"
                         onClick={(e) => handleDeleteStrategy(strategy.id, e)}
                         aria-label="Remove from wishlist"
                       >
@@ -135,7 +135,7 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-yellow-500 hover:text-yellow-400 p-2 cursor-pointer"
+                          className="text-yellow-500 hover:text-yellow-400 p-2 cursor-pointer transition-colors duration-300"
                           onClick={(e) => handlePremiumClick(strategy.id, e)}
                           aria-label="Premium strategy"
                         >
@@ -145,7 +145,7 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400" : "text-gray-400 hover:text-gray-300"} p-2 cursor-pointer`}
+                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400" : "text-gray-400 hover:text-gray-300"} p-2 cursor-pointer transition-colors duration-300`}
                           onClick={(e) => handleToggleLiveMode(strategy.id, e)}
                           aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
                         >
