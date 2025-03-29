@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
@@ -111,13 +110,6 @@ const StrategyBuilder = () => {
     mode: "paper" | "real" | null;
   }) => {
     if (!mode) return;
-    
-    const strategyId = addStrategyToWishlist(
-      name, 
-      mode, 
-      formData,
-      true
-    );
     
     toast({
       title: "Strategy Deployed",

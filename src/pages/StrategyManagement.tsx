@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +54,100 @@ const StrategyManagement = () => {
   );
 
   useEffect(() => {
+    const fetchStrategies = async () => {
+      const storedStrategies = localStorage.getItem('wishlistedStrategies');
+      let localStrategies: ExtendedStrategy[] = [];
+      
+      if (storedStrategies) {
+        try {
+          const parsedStrategies = JSON.parse(storedStrategies);
+          localStrategies = parsedStrategies
+            .filter((strategy: any) => !strategy.isCustom)
+            .map((strategy: any) => ({
+              ...strategy,
+              quantity: strategy.quantity || 0,
+              id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id,
+              isWishlisted: strategy.isWishlisted ?? true,
+              isLive: strategy.isLive ?? false,
+            }));
+        } catch (error) {
+          console.error("Error parsing wishlisted strategies:", error);
+        }
+      }
+
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('custom_strategies')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+          
+          const customStrategies: ExtendedStrategy[] = data.map(strategy => ({
+            id: strategy.id,
+            name: strategy.name,
+            description: strategy.description || "",
+            isCustom: true,
+            isLive: strategy.trade_type === "live trade",
+            isWishlisted: true,
+            quantity: strategy.quantity || 0,
+            selectedBroker: strategy.selected_broker || "",
+            legs: strategy.legs,
+            createdBy: strategy.created_by || user.email,
+            performance: typeof strategy.performance === 'object' && strategy.performance !== null
+              ? {
+                  winRate: typeof strategy.performance === 'object' && 'winRate' in strategy.performance 
+                    ? String(strategy.performance.winRate) : "N/A",
+                  avgProfit: typeof strategy.performance === 'object' && 'avgProfit' in strategy.performance 
+                    ? String(strategy.performance.avgProfit) : "N/A",
+                  drawdown: typeof strategy.performance === 'object' && 'drawdown' in strategy.performance 
+                    ? String(strategy.performance.drawdown) : "N/A"
+                }
+              : {
+                  winRate: "N/A",
+                  avgProfit: "N/A",
+                  drawdown: "N/A"
+                }
+          }));
+          
+          const { data: predefinedData, error: predefinedError } = await supabase
+            .from('strategy_selections')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (predefinedError) throw predefinedError;
+          
+          const predefinedStrategies: ExtendedStrategy[] = predefinedData.map(strategy => ({
+            id: strategy.strategy_id,
+            name: strategy.strategy_name,
+            description: strategy.strategy_description || "",
+            isCustom: false,
+            isLive: strategy.trade_type === "live trade",
+            isWishlisted: strategy.is_wishlisted,
+            quantity: strategy.quantity || 0,
+            selectedBroker: strategy.selected_broker || "",
+            performance: {
+              winRate: "N/A",
+              avgProfit: "N/A",
+              drawdown: "N/A"
+            }
+          }));
+          
+          setWishlistedStrategies([...localStrategies, ...predefinedStrategies, ...customStrategies]);
+        } catch (error) {
+          console.error("Error fetching strategies from Supabase:", error);
+          setWishlistedStrategies(localStrategies);
+        }
+      } else {
+        setWishlistedStrategies(localStrategies);
+      }
+    };
+    
+    fetchStrategies();
+  }, [user]);
+
+  useEffect(() => {
     const checkPremiumStatus = async () => {
       if (!user) return;
       
@@ -109,80 +202,6 @@ const StrategyManagement = () => {
     }
   }, [wishlistedStrategies.length, user]);
 
-  useEffect(() => {
-    const fetchStrategies = async () => {
-      const storedStrategies = localStorage.getItem('wishlistedStrategies');
-      let localStrategies: ExtendedStrategy[] = [];
-      
-      if (storedStrategies) {
-        try {
-          const parsedStrategies = JSON.parse(storedStrategies);
-          localStrategies = parsedStrategies.map((strategy: any) => ({
-            ...strategy,
-            quantity: strategy.quantity || 0,
-            id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id,
-            isWishlisted: strategy.isWishlisted ?? true,
-            isLive: strategy.isLive ?? false,
-          }));
-        } catch (error) {
-          console.error("Error parsing wishlisted strategies:", error);
-        }
-      }
-
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('custom_strategies')
-            .select('*')
-            .eq('user_id', user.id);
-            
-          if (error) throw error;
-          
-          const supabaseStrategies: ExtendedStrategy[] = data.map(strategy => ({
-            id: strategy.id,
-            name: strategy.name,
-            description: strategy.description || "",
-            isCustom: true,
-            isLive: false,
-            isWishlisted: true,
-            quantity: 0,
-            legs: strategy.legs,
-            createdBy: strategy.created_by || user.email,
-            performance: typeof strategy.performance === 'object' && strategy.performance !== null
-              ? {
-                  winRate: typeof strategy.performance === 'object' && 'winRate' in strategy.performance 
-                    ? String(strategy.performance.winRate) : "N/A",
-                  avgProfit: typeof strategy.performance === 'object' && 'avgProfit' in strategy.performance 
-                    ? String(strategy.performance.avgProfit) : "N/A",
-                  drawdown: typeof strategy.performance === 'object' && 'drawdown' in strategy.performance 
-                    ? String(strategy.performance.drawdown) : "N/A"
-                }
-              : {
-                  winRate: "N/A",
-                  avgProfit: "N/A",
-                  drawdown: "N/A"
-                }
-          }));
-          
-          const supabaseStrategyNames = supabaseStrategies.map(s => s.name.toLowerCase());
-          
-          const filteredLocalStrategies = localStrategies.filter(
-            s => !s.isCustom || !supabaseStrategyNames.includes(s.name.toLowerCase())
-          );
-          
-          setWishlistedStrategies([...filteredLocalStrategies, ...supabaseStrategies]);
-        } catch (error) {
-          console.error("Error fetching strategies from Supabase:", error);
-          setWishlistedStrategies(localStrategies);
-        }
-      } else {
-        setWishlistedStrategies(localStrategies);
-      }
-    };
-    
-    fetchStrategies();
-  }, [user]);
-
   const filterStrategies = (strategies: ExtendedStrategy[]) => {
     let filteredStrats = strategies;
     
@@ -210,7 +229,7 @@ const StrategyManagement = () => {
     wishlistedStrategies.filter(strategy => strategy.isCustom)
   );
 
-  const handleDeleteStrategy = (id: number | string) => {
+  const handleDeleteStrategy = async (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
@@ -221,18 +240,25 @@ const StrategyManagement = () => {
   const confirmDeleteStrategy = async () => {
     if (!strategyToDelete) return;
     
-    const isStringId = typeof strategyToDelete.id === 'string';
-    const hasHyphen = isStringId && (strategyToDelete.id as string).includes('-');
-    
-    if (user && isStringId && hasHyphen) {
+    if (user) {
       try {
-        const { error } = await supabase
-          .from('custom_strategies')
-          .delete()
-          .eq('id', String(strategyToDelete.id))
-          .eq('user_id', user.id);
-          
-        if (error) throw error;
+        if (typeof strategyToDelete.id === 'string') {
+          const { error } = await supabase
+            .from('custom_strategies')
+            .delete()
+            .eq('id', strategyToDelete.id)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from('strategy_selections')
+            .delete()
+            .eq('strategy_id', strategyToDelete.id)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        }
       } catch (error) {
         console.error("Error deleting strategy from Supabase:", error);
         toast({
@@ -249,7 +275,16 @@ const StrategyManagement = () => {
     const updatedStrategies = wishlistedStrategies.filter(strategy => strategy.id !== strategyToDelete.id);
     setWishlistedStrategies(updatedStrategies);
     
-    localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
+    const storedStrategies = localStorage.getItem('wishlistedStrategies');
+    if (storedStrategies) {
+      try {
+        const parsedStrategies = JSON.parse(storedStrategies);
+        const updatedLocalStrategies = parsedStrategies.filter((s: any) => s.id !== strategyToDelete.id);
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedLocalStrategies));
+      } catch (error) {
+        console.error("Error updating local storage:", error);
+      }
+    }
     
     toast({
       title: "Strategy deleted",

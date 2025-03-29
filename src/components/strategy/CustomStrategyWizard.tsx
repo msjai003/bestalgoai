@@ -343,23 +343,6 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         
         if (error) throw error;
         
-        const { error: selectionError } = await supabase.from('strategy_selections').insert({
-          user_id: user.id,
-          strategy_id: numericStrategyId,
-          strategy_name: strategyName,
-          strategy_description: strategyConfig.description,
-          quantity: additionalInfo?.quantity || 1,
-          selected_broker: additionalInfo?.brokerName || "",
-          broker_username: additionalInfo?.brokerUsername || "",
-          trade_type: mode === "real" ? "live trade" : "paper trade",
-          is_wishlisted: true,
-          paid_status: "free"
-        });
-        
-        if (selectionError) {
-          console.error("Error adding to strategy selections:", selectionError);
-        }
-        
         toast({
           title: "Strategy Created",
           description: `${strategyName} has been saved and deployed in ${mode === 'paper' ? 'Paper Trading' : 'Real'} mode.`,
