@@ -26,28 +26,40 @@ export const useCustomStrategies = () => {
 
         if (error) throw error;
 
-        const formattedStrategies: Strategy[] = data.map(strategy => ({
-          id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),
-          name: strategy.name,
-          description: strategy.description || "",
-          isCustom: true,
-          isLive: strategy.trade_type === "live trade",
-          isWishlisted: true,
-          quantity: strategy.quantity || 0,
-          selectedBroker: strategy.selected_broker || "",
-          brokerUsername: strategy.broker_username || "",
-          tradeType: strategy.trade_type || "paper trade",
-          rowId: strategy.id,
-          uniqueId: `custom-${strategy.id}`,
-          performance: {
-            winRate: typeof strategy.performance === 'object' && strategy.performance ? 
-              String(strategy.performance.winRate || "N/A") : "N/A",
-            avgProfit: typeof strategy.performance === 'object' && strategy.performance ? 
-              String(strategy.performance.avgProfit || "N/A") : "N/A",
-            drawdown: typeof strategy.performance === 'object' && strategy.performance ? 
-              String(strategy.performance.drawdown || "N/A") : "N/A"
+        const formattedStrategies: Strategy[] = data.map(strategy => {
+          // Extract performance data safely with type checking
+          let winRate = "N/A";
+          let avgProfit = "N/A";
+          let drawdown = "N/A";
+          
+          if (strategy.performance && typeof strategy.performance === 'object' && !Array.isArray(strategy.performance)) {
+            // Now TypeScript knows performance is an object, not an array
+            const perf = strategy.performance as Record<string, any>;
+            winRate = perf.winRate ? String(perf.winRate) : "N/A";
+            avgProfit = perf.avgProfit ? String(perf.avgProfit) : "N/A";
+            drawdown = perf.drawdown ? String(perf.drawdown) : "N/A";
           }
-        }));
+          
+          return {
+            id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),
+            name: strategy.name,
+            description: strategy.description || "",
+            isCustom: true,
+            isLive: strategy.trade_type === "live trade",
+            isWishlisted: true,
+            quantity: strategy.quantity || 0,
+            selectedBroker: strategy.selected_broker || "",
+            brokerUsername: strategy.broker_username || "",
+            tradeType: strategy.trade_type || "paper trade",
+            rowId: strategy.id,
+            uniqueId: `custom-${strategy.id}`,
+            performance: {
+              winRate,
+              avgProfit,
+              drawdown
+            }
+          };
+        });
 
         setCustomStrategies(formattedStrategies);
         setLoading(false);
