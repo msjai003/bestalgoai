@@ -347,17 +347,22 @@ export const CustomStrategyWizard = ({ onSubmit }: CustomStrategyWizardProps) =>
         if (error) throw error;
         
         // If we're in live mode, also add to strategy_selections
-        if (mode === "real" && additionalInfo?.brokerName) {
+        if (mode === "real" && additionalInfo?.brokerName && data && data.length > 0) {
+          // Generate a numeric ID for the strategy
+          // This is needed because 'strategy_id' in 'strategy_selections' must be a number
+          const numericStrategyId = Math.floor(Math.random() * 1000000) + 1;
+          
           const { error: selectionError } = await supabase.from('strategy_selections').insert({
             user_id: user.id,
-            strategy_id: data[0].id,
+            strategy_id: numericStrategyId, // Using a numeric ID instead of UUID
             strategy_name: strategyName,
             strategy_description: strategyConfig.description,
             quantity: additionalInfo.quantity || 1,
             selected_broker: additionalInfo.brokerName,
             broker_username: additionalInfo.brokerUsername || "",
             trade_type: "live trade",
-            is_custom: true
+            is_wishlisted: false,
+            paid_status: "free"
           });
           
           if (selectionError) {
