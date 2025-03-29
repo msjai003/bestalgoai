@@ -67,7 +67,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50 cursor-pointer"
                 onClick={onEditQuantity}
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-4 h-4 cursor-pointer" />
               </Button>
             </div>
           </div>
@@ -123,7 +123,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               onClick={onToggleLiveMode}
               className={`min-w-[75px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
             >
-              <Power className="h-3.5 w-3.5" />
+              <Power className="h-3.5 w-3.5 cursor-pointer" />
               {strategy.isLive ? "On" : "Off"}
             </Button>
           </div>
@@ -134,7 +134,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 glass-card cursor-pointer"
           >
             View Details
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ChevronRight className="ml-1 h-4 w-4 cursor-pointer" />
           </Button>
         </div>
       </div>

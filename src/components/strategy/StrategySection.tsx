@@ -99,17 +99,17 @@ export const StrategySection = ({
                     <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center space-x-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-pink-500 hover:text-pink-400 cursor-pointer p-2"
+                        className="text-red-500 hover:text-red-400 cursor-pointer p-2"
                         onClick={() => onDeleteStrategy(strategy.id)}
                         aria-label="Remove from wishlist"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 cursor-pointer" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
@@ -127,9 +127,9 @@ export const StrategySection = ({
                         aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
                         {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
-                          <Lock className="h-4 w-4" />
+                          <Lock className="h-4 w-4 cursor-pointer" />
                         ) : (
-                          <Play className="h-4 w-4" />
+                          <Play className="h-4 w-4 cursor-pointer" />
                         )}
                       </Button>
                     </TooltipTrigger>

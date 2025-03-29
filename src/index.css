@@ -292,7 +292,8 @@ svg[data-lucide="play-circle"],
 svg[data-lucide="stop-circle"],
 svg[data-lucide="power"],
 svg[data-lucide="settings"],
-svg[data-lucide="chevron-right"] {
+svg[data-lucide="chevron-right"],
+svg[data-lucide="lock"] {
   cursor: pointer;
 }
 
