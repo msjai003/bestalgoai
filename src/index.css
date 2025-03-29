@@ -306,3 +306,13 @@ svg[data-lucide="lock"] {
   justify-content: center;
   cursor: pointer;
 }
+
+/* Allow SVG icon elements to receive pointer events */
+svg.cursor-pointer {
+  pointer-events: auto;
+}
+
+/* When hovering over SVG icons, ensure the cursor changes to pointer */
+svg:hover {
+  cursor: pointer;
+}

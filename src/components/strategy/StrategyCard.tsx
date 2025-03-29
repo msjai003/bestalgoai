@@ -85,7 +85,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer`}
                       onClick={toggleWishlist}
                     >
-                      <HeartIcon size={18} className={strategy.isWishlisted ? "fill-red-400" : ""} />
+                      <HeartIcon size={18} className={`${strategy.isWishlisted ? "fill-red-400" : ""} cursor-pointer`} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -107,9 +107,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
-                        <LockIcon size={18} className="cursor-pointer" />
+                        <LockIcon size={18} className="cursor-pointer pointer-events-auto" />
                       ) : (
-                        strategy.isLive ? <StopCircleIcon size={18} className="cursor-pointer" /> : <PlayIcon size={18} className="cursor-pointer" />
+                        strategy.isLive ? 
+                          <StopCircleIcon size={18} className="cursor-pointer pointer-events-auto" /> : 
+                          <PlayIcon size={18} className="cursor-pointer pointer-events-auto" />
                       )}
                     </Button>
                   </TooltipTrigger>
@@ -153,7 +155,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300 cursor-pointer"
               onClick={handleViewFullStrategy}
             >
-              <Eye className="mr-2 h-4 w-4" />
+              <Eye className="mr-2 h-4 w-4 cursor-pointer" />
               View Full Strategy
             </Button>
           </div>

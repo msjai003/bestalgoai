@@ -62,7 +62,7 @@ export const StrategySection = ({
             className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1 text-green-500" />
+            <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer" />
             {actionButtonText}
           </Button>
         )}
@@ -83,7 +83,7 @@ export const StrategySection = ({
                 size="sm"
                 className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
               >
-                <Plus className="h-4 w-4 mr-1 text-green-500" />
+                <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer" />
                 Browse Strategies
               </Button>
             )}
@@ -109,7 +109,7 @@ export const StrategySection = ({
                         onClick={() => onDeleteStrategy(strategy.id)}
                         aria-label="Remove from wishlist"
                       >
-                        <Trash2 className="h-4 w-4 cursor-pointer" />
+                        <Trash2 className="h-4 w-4 cursor-pointer pointer-events-auto" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
@@ -127,9 +127,9 @@ export const StrategySection = ({
                         aria-label={isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? "Premium strategy" : (strategy.isLive ? "Switch to paper trading" : "Switch to live trading")}
                       >
                         {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
-                          <Lock className="h-4 w-4 cursor-pointer" />
+                          <Lock className="h-4 w-4 cursor-pointer pointer-events-auto" />
                         ) : (
-                          <Play className="h-4 w-4 cursor-pointer" />
+                          <Play className="h-4 w-4 cursor-pointer pointer-events-auto" />
                         )}
                       </Button>
                     </TooltipTrigger>
