@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -85,7 +84,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer`}
                       onClick={toggleWishlist}
                     >
-                      <HeartIcon size={18} className={`${strategy.isWishlisted ? "fill-red-400" : ""} cursor-pointer`} />
+                      <HeartIcon size={18} className={`${strategy.isWishlisted ? "fill-red-400" : ""} cursor-pointer pointer-events-auto`} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -155,7 +154,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 transition-all duration-300 cursor-pointer"
               onClick={handleViewFullStrategy}
             >
-              <Eye className="mr-2 h-4 w-4 cursor-pointer" />
+              <Eye className="mr-2 h-4 w-4 cursor-pointer pointer-events-auto" />
               View Full Strategy
             </Button>
           </div>

@@ -62,7 +62,7 @@ export const StrategySection = ({
             className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer" />
+            <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer pointer-events-auto" />
             {actionButtonText}
           </Button>
         )}
@@ -83,7 +83,7 @@ export const StrategySection = ({
                 size="sm"
                 className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
               >
-                <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer" />
+                <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer pointer-events-auto" />
                 Browse Strategies
               </Button>
             )}

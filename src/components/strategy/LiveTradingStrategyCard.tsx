@@ -45,7 +45,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   <p className="text-gray-400 text-xs mb-1">Success Rate</p>
                   <div className="flex items-center">
                     <p className="text-white text-lg font-semibold">{strategy.successRate || strategy.performance?.winRate || "N/A"}</p>
-                    <BarChart2 className="w-4 h-4 text-gray-400 ml-1" />
+                    <BarChart2 className="w-4 h-4 text-gray-400 ml-1 cursor-pointer pointer-events-auto" />
                   </div>
                 </div>
               </TooltipTrigger>
