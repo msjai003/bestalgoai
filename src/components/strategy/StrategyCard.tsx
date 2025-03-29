@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,10 +27,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
   const toggleWishlist = (e: React.MouseEvent) => {
-    // Prevent event propagation
     e.stopPropagation();
     
-    // Only allow toggle if authenticated
     if (!isAuthenticated) {
       navigate('/auth');
       return;
@@ -40,7 +37,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const toggleLiveMode = (e: React.MouseEvent) => {
-    // Prevent event propagation
     e.stopPropagation();
     
     if (!isAuthenticated) {
@@ -59,7 +55,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const handleViewFullStrategy = (e: React.MouseEvent) => {
-    // Don't need to stop propagation here as this is the main card action
     navigate(`/strategy-details/${strategy.id}`);
   };
 
@@ -67,7 +62,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     <Card className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl border border-gray-700/50 shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10 hover:-translate-y-1">
       <CardContent className="p-0">
         <div className="p-5 relative">
-          {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/5 to-cyan/0 rounded-full -mr-16 -mt-16 blur-3xl"></div>
           
           <div className="flex justify-between items-start mb-4">
@@ -103,16 +97,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       size="icon"
                       onClick={toggleLiveMode}
                       className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-cyan")} 
-                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
+                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
                         flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-sm`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
-                        <LockIcon size={18} className="cursor-pointer" />
+                        <LockIcon size={20} className="cursor-pointer" />
                       ) : (
                         strategy.isLive ? 
-                          <StopCircleIcon size={18} className="cursor-pointer" /> : 
-                          <PlayIcon size={18} className="cursor-pointer" />
+                          <StopCircleIcon size={20} className="cursor-pointer" /> : 
+                          <PlayIcon size={24} className="cursor-pointer text-cyan animate-pulse-slow" />
                       )}
                     </Button>
                   </TooltipTrigger>
