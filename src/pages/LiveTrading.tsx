@@ -11,6 +11,7 @@ import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
+import { supabase } from '@/integrations/supabase/client';
 
 const LiveTrading = () => {
   const {
