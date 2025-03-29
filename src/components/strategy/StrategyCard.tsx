@@ -58,7 +58,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     onToggleLiveMode(strategy.id);
   };
 
-  const handleViewFullStrategy = () => {
+  const handleViewFullStrategy = (e: React.MouseEvent) => {
+    // Don't need to stop propagation here as this is the main card action
     navigate(`/strategy-details/${strategy.id}`);
   };
 

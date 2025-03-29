@@ -41,11 +41,23 @@ export const StrategySection = ({
     return strategy.isPaid === true;
   };
 
-  const handlePremiumClick = (strategyId: number | string) => {
+  const handlePremiumClick = (strategyId: number | string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from propagating
+    
     // Store the strategy ID in sessionStorage before redirecting
     sessionStorage.setItem('selectedStrategyId', strategyId.toString());
     sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
     navigate('/pricing');
+  };
+  
+  const handleToggleLiveMode = (strategyId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from propagating
+    onToggleLiveMode(strategyId);
+  };
+  
+  const handleDeleteStrategy = (strategyId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from propagating
+    onDeleteStrategy(strategyId);
   };
 
   return (
@@ -62,7 +74,7 @@ export const StrategySection = ({
             className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer pointer-events-auto" />
+            <Plus className="h-4 w-4 mr-1 text-green-500" />
             {actionButtonText}
           </Button>
         )}
@@ -83,7 +95,7 @@ export const StrategySection = ({
                 size="sm"
                 className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
               >
-                <Plus className="h-4 w-4 mr-1 text-green-500 cursor-pointer pointer-events-auto" />
+                <Plus className="h-4 w-4 mr-1 text-green-500" />
                 Browse Strategies
               </Button>
             )}
@@ -106,7 +118,7 @@ export const StrategySection = ({
                         size="icon" 
                         variant="ghost" 
                         className="text-red-500 hover:text-red-400 cursor-pointer p-2"
-                        onClick={() => onDeleteStrategy(strategy.id)}
+                        onClick={(e) => handleDeleteStrategy(strategy.id, e)}
                         aria-label="Remove from wishlist"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -124,7 +136,7 @@ export const StrategySection = ({
                           size="icon"
                           variant="ghost"
                           className="text-yellow-500 hover:text-yellow-400 p-2 cursor-pointer"
-                          onClick={() => handlePremiumClick(strategy.id)}
+                          onClick={(e) => handlePremiumClick(strategy.id, e)}
                           aria-label="Premium strategy"
                         >
                           <Lock className="h-4 w-4" />
@@ -134,7 +146,7 @@ export const StrategySection = ({
                           size="icon"
                           variant="ghost"
                           className={`${strategy.isLive ? "text-green-500 hover:text-green-400" : "text-gray-400 hover:text-gray-300"} p-2 cursor-pointer`}
-                          onClick={() => onToggleLiveMode(strategy.id)}
+                          onClick={(e) => handleToggleLiveMode(strategy.id, e)}
                           aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
                         >
                           <Play className="h-4 w-4" />
