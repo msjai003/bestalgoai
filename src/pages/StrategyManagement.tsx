@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -332,7 +333,13 @@ const StrategyManagement = () => {
         });
         
         if (newLiveStatus) {
-          navigate("/live-trading");
+          // Check if it's a custom strategy
+          const isCustomStrategy = strategy.isCustom;
+          
+          // Use a timeout to ensure state updates complete before navigation
+          setTimeout(() => {
+            navigate("/live-trading");
+          }, 100);
         }
         
         return { ...strategy, isLive: newLiveStatus };

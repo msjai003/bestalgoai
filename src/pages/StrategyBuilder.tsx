@@ -117,7 +117,11 @@ const StrategyBuilder = () => {
       duration: 5000,
     });
     
-    navigate("/strategy-management");
+    if (mode === "real") {
+      navigate("/live-trading");
+    } else {
+      navigate("/strategy-management");
+    }
   };
 
   const renderConfirmationDialog = () => (
