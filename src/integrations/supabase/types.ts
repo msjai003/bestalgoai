@@ -39,6 +39,59 @@ export type Database = {
         }
         Relationships: []
       }
+      backtest_results: {
+        Row: {
+          created_at: string
+          daily_performance: Json | null
+          description: string | null
+          end_date: string
+          id: string
+          metrics: Json
+          monthly_performance: Json | null
+          start_date: string
+          strategy_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_performance?: Json | null
+          description?: string | null
+          end_date: string
+          id?: string
+          metrics?: Json
+          monthly_performance?: Json | null
+          start_date: string
+          strategy_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_performance?: Json | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          metrics?: Json
+          monthly_performance?: Json | null
+          start_date?: string
+          strategy_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_results_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "custom_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       broker_credentials: {
         Row: {
           accesstoken: string | null

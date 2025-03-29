@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,9 @@ import {
   Download, 
   AlertTriangle, 
   ArrowUpRight,
-  ArrowDownRight 
+  ArrowDownRight,
+  Save,
+  Trash
 } from "lucide-react";
 import {
   Table,
@@ -33,11 +35,30 @@ import {
   ResponsiveContainer,
   Legend
 } from "recharts";
+import { useBacktestResults, BacktestResult } from "@/hooks/strategy/useBacktestResults";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent
-} from "@/components/ui/chart";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 // Type definitions for parsed CSV data
@@ -60,6 +81,11 @@ interface MetricsData {
   totalTrades: number;
 }
 
+const saveFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+});
+
 const BacktestReport = () => {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [dailyData, setDailyData] = useState<DailyData[]>([]);
@@ -77,6 +103,24 @@ const BacktestReport = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [currentBacktest, setCurrentBacktest] = useState<BacktestResult | null>(null);
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  
+  const { 
+    backtestResults, 
+    loading: resultsLoading, 
+    saveBacktestResult,
+    deleteBacktestResult 
+  } = useBacktestResults();
+  
+  const saveForm = useForm<z.infer<typeof saveFormSchema>>({
+    resolver: zodResolver(saveFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
 
   // Mock function to calculate metrics from CSV data
   const calculateMetrics = (data: any[]): MetricsData => {
@@ -135,6 +179,7 @@ const BacktestReport = () => {
         setMonthlyData(mockMonthlyData);
         setMetrics(calculateMetrics(mockDailyData));
         setFileUploaded(true);
+        setCurrentBacktest(null); // Clear currently loaded backtest
         toast.success("Backtest data loaded successfully");
       } catch (error) {
         console.error("Error parsing CSV:", error);
@@ -144,8 +189,121 @@ const BacktestReport = () => {
     reader.readAsText(file);
   };
 
+  const handleSaveBacktest = async (values: z.infer<typeof saveFormSchema>) => {
+    // Create a new date for the start date (30 days ago from today)
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    // Prepare the data for saving
+    const backtestData = {
+      title: values.title,
+      description: values.description || null,
+      strategyId: null, // No strategy linked in this demo
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      metrics: {
+        totalTrades: metrics.totalTrades,
+        winRate: metrics.winRatio,
+        avgProfit: metrics.avgProfitPerDay,
+        maxDrawdown: metrics.maxDrawdown,
+        sharpeRatio: metrics.sharpeRatio,
+        cagr: metrics.cagr,
+        calmerRatio: metrics.calmerRatio,
+        winningStreak: metrics.winningStreak,
+        lossStreak: metrics.lossStreak
+      },
+      dailyPerformance: dailyData,
+      monthlyPerformance: monthlyData
+    };
+    
+    const result = await saveBacktestResult(backtestData);
+    
+    if (result) {
+      setSaveDialogOpen(false);
+      saveForm.reset();
+    }
+  };
+
+  const loadBacktestResult = (result: BacktestResult) => {
+    setCurrentBacktest(result);
+    setDailyData(result.dailyPerformance);
+    setMonthlyData(result.monthlyPerformance);
+    setMetrics({
+      totalTrades: result.metrics.totalTrades,
+      winRatio: result.metrics.winRate,
+      avgProfitPerDay: result.metrics.avgProfit,
+      maxDrawdown: result.metrics.maxDrawdown,
+      sharpeRatio: result.metrics.sharpeRatio,
+      cagr: result.metrics.cagr,
+      calmerRatio: result.metrics.calmerRatio,
+      winningStreak: result.metrics.winningStreak,
+      lossStreak: result.metrics.lossStreak
+    });
+    setFileUploaded(true);
+    setLoadDialogOpen(false);
+  };
+
+  const handleDeleteBacktest = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this backtest result?")) {
+      await deleteBacktestResult(id);
+      // If the deleted result was the current one, clear the view
+      if (currentBacktest && currentBacktest.id === id) {
+        setCurrentBacktest(null);
+      }
+    }
+  };
+
   const triggerFileInput = () => {
     fileInputRef.current?.click();
+  };
+
+  const exportToCSV = () => {
+    try {
+      const metrics = {
+        "Metrics": "Values",
+        "Total Trades": currentBacktest?.metrics.totalTrades || metrics.totalTrades,
+        "Win Rate (%)": currentBacktest?.metrics.winRate || metrics.winRatio,
+        "Average Profit": currentBacktest?.metrics.avgProfit || metrics.avgProfitPerDay,
+        "Max Drawdown": currentBacktest?.metrics.maxDrawdown || metrics.maxDrawdown,
+        "Sharpe Ratio": currentBacktest?.metrics.sharpeRatio || metrics.sharpeRatio,
+        "CAGR (%)": currentBacktest?.metrics.cagr || metrics.cagr,
+        "Calmer Ratio": currentBacktest?.metrics.calmerRatio || metrics.calmerRatio,
+        "Winning Streak": currentBacktest?.metrics.winningStreak || metrics.winningStreak,
+        "Loss Streak": currentBacktest?.metrics.lossStreak || metrics.lossStreak,
+      };
+      
+      // Convert metrics to CSV
+      let metricsCSV = Object.entries(metrics)
+        .map(([key, value]) => `${key},${value}`)
+        .join('\n');
+      
+      // Convert daily data to CSV
+      const dailyHeaders = "Date,Profit,Trades,Win Rate\n";
+      const dailyRows = dailyData.map(d => 
+        `${d.date},${d.profit},${d.trades},${d.winRate}`
+      ).join('\n');
+      const dailyCSV = dailyHeaders + dailyRows;
+      
+      // Combine all into a single CSV
+      const combinedCSV = "METRICS\n" + metricsCSV + "\n\nDAILY PERFORMANCE\n" + dailyCSV;
+      
+      // Create blob and download
+      const blob = new Blob([combinedCSV], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `backtest-${currentBacktest?.title || 'report'}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Report exported successfully");
+    } catch (error) {
+      console.error("Error exporting report:", error);
+      toast.error("Failed to export report");
+    }
   };
 
   return (
@@ -188,14 +346,70 @@ const BacktestReport = () => {
               onChange={handleFileUpload}
               className="hidden"
             />
-            <Button onClick={triggerFileInput} className="flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              Select CSV File
-            </Button>
+            <div className="flex flex-col space-y-3 w-full items-center">
+              <Button onClick={triggerFileInput} className="flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Select CSV File
+              </Button>
+              
+              {backtestResults.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLoadDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Load Saved Backtest
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <>
             <section className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-white">
+                  {currentBacktest ? currentBacktest.title : "Current Backtest"}
+                </h2>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setSaveDialogOpen(true)}
+                    className="text-xs"
+                  >
+                    <Save className="w-3 h-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={exportToCSV}
+                    className="text-xs"
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    Export
+                  </Button>
+                  {currentBacktest && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleDeleteBacktest(currentBacktest.id)}
+                      className="text-xs text-red-500 hover:text-red-400"
+                    >
+                      <Trash className="w-3 h-3 mr-1" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {currentBacktest?.description && (
+                <p className="text-charcoalTextSecondary text-sm">
+                  {currentBacktest.description}
+                </p>
+              )}
+
               <div className="bg-charcoalSecondary/30 rounded-xl p-4 border border-gray-700 shadow-lg">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-charcoalSecondary/50 p-3 rounded-lg">
@@ -356,17 +570,127 @@ const BacktestReport = () => {
                   />
                 </div>
               </div>
-
-              <div className="mt-6 flex justify-center">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Export Report
-                </Button>
-              </div>
             </section>
           </>
         )}
       </main>
+      
+      {/* Save Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Backtest Result</DialogTitle>
+            <DialogDescription>
+              Save your backtest result to access it later.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...saveForm}>
+            <form onSubmit={saveForm.handleSubmit(handleSaveBacktest)} className="space-y-4">
+              <FormField
+                control={saveForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="NIFTY Options Strategy" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={saveForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Short description of this backtest..."
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button variant="outline" type="button" onClick={() => setSaveDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Save Backtest</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Load Saved Backtest Dialog */}
+      <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Load Saved Backtest</DialogTitle>
+            <DialogDescription>
+              Select a previously saved backtest result to load.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            {backtestResults.length === 0 ? (
+              <p className="text-center text-gray-400">No saved backtest results found.</p>
+            ) : (
+              backtestResults.map((result) => (
+                <div 
+                  key={result.id}
+                  className="p-3 bg-gray-800 rounded-lg border border-gray-700 hover:border-cyan/50 cursor-pointer transition-colors"
+                  onClick={() => loadBacktestResult(result)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-white">{result.title}</h4>
+                      <p className="text-xs text-gray-400">
+                        {new Date(result.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-400 hover:text-red-400"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBacktest(result.id);
+                      }}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {result.description && (
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                      {result.description}
+                    </p>
+                  )}
+                  <div className="flex space-x-4 mt-2 text-xs">
+                    <span className="text-cyan">Win Rate: {result.metrics.winRate}%</span>
+                    <span className="text-green-400">Trades: {result.metrics.totalTrades}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLoadDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <BottomNav />
     </div>
   );
