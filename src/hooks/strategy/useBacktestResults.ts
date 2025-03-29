@@ -11,29 +11,25 @@ export interface BacktestResult {
   strategyId: string | null;
   startDate: string;
   endDate: string;
-  metrics: {
-    totalTrades: number;
-    winRate: number;
-    avgProfit: number;
-    maxDrawdown: number;
-    sharpeRatio: number;
-    cagr: number;
-    calmerRatio: number;
-    winningStreak: number;
-    lossStreak: number;
-  };
-  dailyPerformance: Array<{
-    date: string;
-    profit: number;
-    trades: number;
-    winRate: number;
-  }>;
-  monthlyPerformance: Array<{
-    month: string;
-    profit: number;
-    trades: number;
-    winRate: number;
-  }>;
+  strategyName: string | null;
+  entryDate: string | null;
+  entryWeekday: string | null;
+  entryTime: string | null;
+  entryPrice: number | null;
+  quantity: number | null;
+  instrumentKind: string | null;
+  strikePrice: number | null;
+  position: string | null;
+  exitDate: string | null;
+  exitWeekday: string | null;
+  exitTime: string | null;
+  exitPrice: number | null;
+  pl: number | null;
+  plPercentage: number | null;
+  expiryDate: string | null;
+  highestMtm: number | null;
+  lowestMtm: number | null;
+  remarks: string | null;
   createdAt: string;
 }
 
@@ -72,11 +68,27 @@ export const useBacktestResults = () => {
         title: result.title,
         description: result.description,
         strategyId: result.strategy_id,
+        strategyName: result.strategy_name,
         startDate: result.start_date,
         endDate: result.end_date,
-        metrics: result.metrics as BacktestResult['metrics'],
-        dailyPerformance: result.daily_performance as BacktestResult['dailyPerformance'] || [],
-        monthlyPerformance: result.monthly_performance as BacktestResult['monthlyPerformance'] || [],
+        entryDate: result.entry_date,
+        entryWeekday: result.entry_weekday,
+        entryTime: result.entry_time,
+        entryPrice: result.entry_price,
+        quantity: result.quantity,
+        instrumentKind: result.instrument_kind,
+        strikePrice: result.strike_price,
+        position: result.position,
+        exitDate: result.exit_date,
+        exitWeekday: result.exit_weekday,
+        exitTime: result.exit_time,
+        exitPrice: result.exit_price,
+        pl: result.pl,
+        plPercentage: result.pl_percentage,
+        expiryDate: result.expiry_date,
+        highestMtm: result.highest_mtm,
+        lowestMtm: result.lowest_mtm,
+        remarks: result.remarks,
         createdAt: result.created_at
       }));
 
@@ -114,9 +126,25 @@ export const useBacktestResults = () => {
           description: data.description,
           start_date: data.startDate,
           end_date: data.endDate,
-          metrics: data.metrics,
-          daily_performance: data.dailyPerformance,
-          monthly_performance: data.monthlyPerformance
+          strategy_name: data.strategyName,
+          entry_date: data.entryDate,
+          entry_weekday: data.entryWeekday,
+          entry_time: data.entryTime,
+          entry_price: data.entryPrice,
+          quantity: data.quantity,
+          instrument_kind: data.instrumentKind,
+          strike_price: data.strikePrice,
+          position: data.position,
+          exit_date: data.exitDate,
+          exit_weekday: data.exitWeekday,
+          exit_time: data.exitTime,
+          exit_price: data.exitPrice,
+          pl: data.pl,
+          pl_percentage: data.plPercentage,
+          expiry_date: data.expiryDate,
+          highest_mtm: data.highestMtm,
+          lowest_mtm: data.lowestMtm,
+          remarks: data.remarks
         })
         .select()
         .single();

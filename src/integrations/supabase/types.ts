@@ -42,42 +42,90 @@ export type Database = {
       backtest_results: {
         Row: {
           created_at: string
-          daily_performance: Json | null
           description: string | null
           end_date: string
+          entry_date: string | null
+          entry_price: number | null
+          entry_time: string | null
+          entry_weekday: string | null
+          exit_date: string | null
+          exit_price: number | null
+          exit_time: string | null
+          exit_weekday: string | null
+          expiry_date: string | null
+          highest_mtm: number | null
           id: string
-          metrics: Json
-          monthly_performance: Json | null
+          instrument_kind: string | null
+          lowest_mtm: number | null
+          pl: number | null
+          pl_percentage: number | null
+          position: string | null
+          quantity: number | null
+          remarks: string | null
           start_date: string
           strategy_id: string | null
+          strategy_name: string | null
+          strike_price: number | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          daily_performance?: Json | null
           description?: string | null
           end_date: string
+          entry_date?: string | null
+          entry_price?: number | null
+          entry_time?: string | null
+          entry_weekday?: string | null
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          exit_weekday?: string | null
+          expiry_date?: string | null
+          highest_mtm?: number | null
           id?: string
-          metrics?: Json
-          monthly_performance?: Json | null
+          instrument_kind?: string | null
+          lowest_mtm?: number | null
+          pl?: number | null
+          pl_percentage?: number | null
+          position?: string | null
+          quantity?: number | null
+          remarks?: string | null
           start_date: string
           strategy_id?: string | null
+          strategy_name?: string | null
+          strike_price?: number | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          daily_performance?: Json | null
           description?: string | null
           end_date?: string
+          entry_date?: string | null
+          entry_price?: number | null
+          entry_time?: string | null
+          entry_weekday?: string | null
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          exit_weekday?: string | null
+          expiry_date?: string | null
+          highest_mtm?: number | null
           id?: string
-          metrics?: Json
-          monthly_performance?: Json | null
+          instrument_kind?: string | null
+          lowest_mtm?: number | null
+          pl?: number | null
+          pl_percentage?: number | null
+          position?: string | null
+          quantity?: number | null
+          remarks?: string | null
           start_date?: string
           strategy_id?: string | null
+          strategy_name?: string | null
+          strike_price?: number | null
           title?: string
           updated_at?: string
           user_id?: string
