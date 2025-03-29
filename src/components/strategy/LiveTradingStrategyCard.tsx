@@ -1,9 +1,8 @@
 
 import React from "react";
-import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
+import { BarChart2, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Strategy } from "@/hooks/strategy/types";
 
@@ -123,7 +122,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               onClick={onToggleLiveMode}
               className={`min-w-[75px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
             >
-              <Power className="h-3.5 w-3.5" />
               {strategy.isLive ? "On" : "Off"}
             </Button>
           </div>

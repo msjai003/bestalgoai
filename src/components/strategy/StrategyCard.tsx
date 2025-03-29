@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
+import { HeartIcon, LockIcon, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
@@ -37,25 +37,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       return;
     }
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
-  };
-
-  const toggleLiveMode = (e: React.MouseEvent) => {
-    // Prevent event propagation
-    e.stopPropagation();
-    
-    if (!isAuthenticated) {
-      navigate('/auth');
-      return;
-    }
-    
-    if (!canAccess) {
-      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
-      navigate('/pricing');
-      return;
-    }
-    
-    onToggleLiveMode(strategy.id);
   };
 
   const handleViewFullStrategy = () => {
@@ -94,36 +75,26 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 </Tooltip>
               </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost" 
-                      size="icon"
-                      onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-gray-400 hover:text-green-400")} 
-                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
-                        flex items-center justify-center cursor-pointer active:scale-95`}
-                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
-                    >
-                      {!canAccess ? (
+              {!canAccess && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost" 
+                        size="icon"
+                        className="text-yellow-500 transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
+                        flex items-center justify-center cursor-pointer active:scale-95"
+                        aria-label="Unlock this premium strategy"
+                      >
                         <LockIcon size={18} />
-                      ) : (
-                        strategy.isLive ? <StopCircleIcon size={18} /> : <PlayIcon size={18} />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {!canAccess ? (
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
                       <p>Unlock this premium strategy</p>
-                    ) : strategy.isLive ? (
-                      <p>Disable live trading</p>
-                    ) : (
-                      <p>Enable live trading</p>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
           
@@ -133,7 +104,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
-              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+              This premium strategy requires a subscription. <span className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
             </p>
           )}
 
