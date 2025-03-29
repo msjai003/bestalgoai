@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,9 +97,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-cyan")} 
+                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
-                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-sm`}
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
@@ -106,7 +107,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       ) : (
                         strategy.isLive ? 
                           <StopCircleIcon size={20} className="cursor-pointer" /> : 
-                          <PlayIcon size={24} className="cursor-pointer text-cyan animate-pulse-slow" />
+                          <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
                       )}
                     </Button>
                   </TooltipTrigger>
