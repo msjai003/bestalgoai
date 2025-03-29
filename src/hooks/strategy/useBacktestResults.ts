@@ -74,9 +74,9 @@ export const useBacktestResults = () => {
         strategyId: result.strategy_id,
         startDate: result.start_date,
         endDate: result.end_date,
-        metrics: result.metrics,
-        dailyPerformance: result.daily_performance || [],
-        monthlyPerformance: result.monthly_performance || [],
+        metrics: result.metrics as BacktestResult['metrics'],
+        dailyPerformance: result.daily_performance as BacktestResult['dailyPerformance'] || [],
+        monthlyPerformance: result.monthly_performance as BacktestResult['monthlyPerformance'] || [],
         createdAt: result.created_at
       }));
 

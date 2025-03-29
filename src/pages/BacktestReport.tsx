@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -259,7 +258,7 @@ const BacktestReport = () => {
 
   const exportToCSV = () => {
     try {
-      const metrics = {
+      const currentMetrics = {
         "Metrics": "Values",
         "Total Trades": currentBacktest?.metrics.totalTrades || metrics.totalTrades,
         "Win Rate (%)": currentBacktest?.metrics.winRate || metrics.winRatio,
@@ -273,7 +272,7 @@ const BacktestReport = () => {
       };
       
       // Convert metrics to CSV
-      let metricsCSV = Object.entries(metrics)
+      let metricsCSV = Object.entries(currentMetrics)
         .map(([key, value]) => `${key},${value}`)
         .join('\n');
       
