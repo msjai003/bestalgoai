@@ -282,8 +282,9 @@ button,
 [role="button"],
 .clickable,
 .interactive,
+.cursor-pointer,
 *[class*="cursor-pointer"] {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 /* Ensure all play icons are clickable */
@@ -293,8 +294,10 @@ svg[data-lucide="stop-circle"],
 svg[data-lucide="power"],
 svg[data-lucide="settings"],
 svg[data-lucide="chevron-right"],
-svg[data-lucide="lock"] {
-  cursor: pointer;
+svg[data-lucide="lock"],
+svg[data-lucide="heart"],
+svg[data-lucide="eye"] {
+  cursor: pointer !important;
 }
 
 /* Enhanced touch target for interactive elements */
@@ -304,15 +307,28 @@ svg[data-lucide="lock"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 /* Allow SVG icon elements to receive pointer events */
-svg.cursor-pointer {
-  pointer-events: auto;
+svg {
+  pointer-events: auto !important;
 }
 
 /* When hovering over SVG icons, ensure the cursor changes to pointer */
 svg:hover {
-  cursor: pointer;
+  cursor: pointer !important;
+}
+
+/* Add explicit cursor styles for strategy card action buttons */
+.strategy-card-action,
+.strategy-card-button,
+.strategy-action-button {
+  cursor: pointer !important;
+}
+
+/* Explicitly set pointer events for all Lucide icons */
+[data-lucide] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }

@@ -108,11 +108,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
-                        <LockIcon size={18} />
+                        <LockIcon size={18} className="cursor-pointer" />
                       ) : (
                         strategy.isLive ? 
-                          <StopCircleIcon size={18} /> : 
-                          <PlayIcon size={18} />
+                          <StopCircleIcon size={18} className="cursor-pointer" /> : 
+                          <PlayIcon size={18} className="cursor-pointer" />
                       )}
                     </Button>
                   </TooltipTrigger>
