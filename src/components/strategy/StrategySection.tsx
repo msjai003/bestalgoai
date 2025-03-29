@@ -71,10 +71,10 @@ export const StrategySection = ({
           <Button 
             variant="outline"
             size="sm"
-            className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
+            className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90 cursor-pointer transition-all duration-300"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1 text-green-500" />
+            <Plus className="h-4 w-4 mr-1 text-cyan" />
             {actionButtonText}
           </Button>
         )}
@@ -82,7 +82,7 @@ export const StrategySection = ({
       
       <div className="space-y-4">
         {strategies.length === 0 ? (
-          <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 flex flex-col items-center justify-center">
+          <div className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl p-6 border border-gray-700/50 flex flex-col items-center justify-center">
             <p className="text-gray-400 mb-4">
               {title === "Predefined Strategies" 
                 ? "Click \"Add Strategy\" to view strategies. Tap the ❤️ heart icon to add a strategy to your wishlist." 
@@ -93,19 +93,21 @@ export const StrategySection = ({
                 onClick={() => navigate(actionButtonPath)}
                 variant="outline"
                 size="sm"
-                className="bg-gray-600 hover:bg-gray-500 border border-gray-500 text-green-500 cursor-pointer"
+                className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90 cursor-pointer transition-all duration-300"
               >
-                <Plus className="h-4 w-4 mr-1 text-green-500" />
+                <Plus className="h-4 w-4 mr-1 text-cyan" />
                 Browse Strategies
               </Button>
             )}
           </div>
         ) : (
           strategies.map((strategy) => (
-            <div key={strategy.uniqueId || strategy.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 shadow-lg hover:shadow-cyan/5 hover:border-gray-600 transition-all duration-300">
+            <div key={strategy.uniqueId || strategy.id} className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl p-4 border border-gray-700/50 shadow-lg hover:shadow-cyan/10 hover:border-gray-600 transition-all duration-300 cursor-pointer"
+              onClick={() => navigate(`/strategy-details/${strategy.id}`)}
+            >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="font-semibold text-white">{strategy.name}</h3>
+                  <h3 className="font-semibold text-white hover:text-cyan transition-colors duration-300">{strategy.name}</h3>
                   {/* Show description only if it's not a premium strategy OR if it's a premium strategy that has been paid for */}
                   {(!isPremiumStrategy(strategy.id) || isPaidStrategy(strategy)) && strategy.description && (
                     <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
@@ -117,7 +119,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-red-500 hover:text-red-400 cursor-pointer p-2 transition-colors duration-300"
+                        className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer p-2 transition-colors duration-300"
                         onClick={(e) => handleDeleteStrategy(strategy.id, e)}
                         aria-label="Remove from wishlist"
                       >
@@ -135,7 +137,7 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-yellow-500 hover:text-yellow-400 p-2 cursor-pointer transition-colors duration-300"
+                          className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 cursor-pointer transition-colors duration-300"
                           onClick={(e) => handlePremiumClick(strategy.id, e)}
                           aria-label="Premium strategy"
                         >
@@ -145,7 +147,7 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400" : "text-gray-400 hover:text-gray-300"} p-2 cursor-pointer transition-colors duration-300`}
+                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400 hover:bg-green-500/10" : "text-gray-400 hover:text-gray-300 hover:bg-white/5"} p-2 cursor-pointer transition-colors duration-300`}
                           onClick={(e) => handleToggleLiveMode(strategy.id, e)}
                           aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
                         >
@@ -177,7 +179,7 @@ export const StrategySection = ({
                     )}
                   </div>
                   
-                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400')} px-2 py-1 rounded-md text-xs font-medium`}>
+                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-cyan/20 text-cyan')} px-2 py-1 rounded-md text-xs font-medium`}>
                     {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
                   </div>
                 </div>

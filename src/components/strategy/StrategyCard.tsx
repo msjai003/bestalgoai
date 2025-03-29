@@ -83,7 +83,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer`}
+                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 cursor-pointer hover:bg-gray-700/50`}
                       onClick={toggleWishlist}
                     >
                       <HeartIcon size={18} className={`${strategy.isWishlisted ? "fill-red-400" : ""}`} />
@@ -104,7 +104,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       onClick={toggleLiveMode}
                       className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-gray-300")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-8 w-8 
-                        flex items-center justify-center cursor-pointer`}
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
