@@ -1,16 +1,18 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import About from '@/pages/About';
 import Terms from '@/pages/Terms';
 import Blog from '@/pages/Blog';
-import Contact from '@/pages/Contact';
+// Commenting out missing page imports for now
+// import Contact from '@/pages/Contact';
 import Signup from '@/pages/Signup';
-import Login from '@/pages/Login';
+// import Login from '@/pages/Login';
 import AuthCallback from '@/pages/AuthCallback';
 import ForgotPassword from '@/pages/ForgotPassword';
 import Pricing from '@/pages/Pricing';
@@ -42,6 +44,7 @@ import Onboarding from '@/pages/Onboarding';
 import Logout from '@/pages/Logout';
 import NotFound from '@/pages/NotFound';
 import BacktestImport from '@/pages/BacktestImport';
+import Auth from '@/pages/Auth';
 
 const queryClient = new QueryClient();
 
@@ -55,9 +58,10 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/contact" element={<Contact />} />
+          {/* <Route path="/contact" element={<Contact />} */}
           <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          {/* <Route path="/login" element={<Login />} */}
+          <Route path="/auth" element={<Auth />} />
           <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/pricing" element={<Pricing />} />

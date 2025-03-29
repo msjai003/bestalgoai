@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { Upload, FileCsv, CheckCircle, AlertCircle, RefreshCw, ChevronLeft } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, RefreshCw, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { BottomNav } from '@/components/BottomNav';
 import { supabase } from '@/lib/supabase';
@@ -304,7 +303,7 @@ const BacktestImport = () => {
                 
                 {!fileName ? (
                   <>
-                    <FileCsv className="w-12 h-12 text-gray-500 mb-4" />
+                    <FileText className="w-12 h-12 text-gray-500 mb-4" />
                     <h3 className="text-charcoalTextPrimary text-lg font-medium mb-2">Select CSV File</h3>
                     <p className="text-charcoalTextSecondary text-sm text-center mb-6 max-w-md">
                       Upload a CSV file with columns for Strategy Name, Entry-Date, Entry-Price, etc.
@@ -321,7 +320,7 @@ const BacktestImport = () => {
                 ) : (
                   <>
                     <div className="flex items-center gap-3 mb-4 w-full max-w-md">
-                      <FileCsv className="w-8 h-8 text-cyan" />
+                      <FileText className="w-8 h-8 text-cyan" />
                       <div className="flex-1 overflow-hidden">
                         <p className="text-white font-medium truncate">{fileName}</p>
                         <p className="text-gray-400 text-sm">{csvData.length} records found</p>
