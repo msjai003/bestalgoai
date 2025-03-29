@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -162,6 +163,7 @@ const BacktestReport = () => {
     let pl = null;
     let plPercentage = null;
     
+    // Ensure values are properly converted to numbers
     const entryPrice = values.entryPrice !== undefined && values.entryPrice !== null 
       ? Number(values.entryPrice) 
       : null;
@@ -170,6 +172,9 @@ const BacktestReport = () => {
       : null;
     const quantity = values.quantity !== undefined && values.quantity !== null 
       ? Number(values.quantity) 
+      : null;
+    const strikePrice = values.strikePrice !== undefined && values.strikePrice !== null
+      ? Number(values.strikePrice)
       : null;
     
     if (entryPrice && exitPrice && quantity) {
@@ -200,9 +205,7 @@ const BacktestReport = () => {
       entryPrice: entryPrice,
       quantity: quantity,
       instrumentKind: values.instrumentKind || null,
-      strikePrice: values.strikePrice !== undefined && values.strikePrice !== null 
-        ? Number(values.strikePrice) 
-        : null,
+      strikePrice: strikePrice,
       position: values.position || null,
       exitDate: values.exitDate || null,
       exitWeekday: exitWeekday || null,

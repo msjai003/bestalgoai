@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
 
 export interface BacktestResult {
   id: string;
@@ -35,6 +35,8 @@ export interface BacktestResult {
 
 type SaveBacktestParams = Omit<BacktestResult, 'id' | 'createdAt'>;
 
+const STORAGE_KEY = 'backtest-results';
+
 export const useBacktestResults = () => {
   const [backtestResults, setBacktestResults] = useState<BacktestResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,44 +57,17 @@ export const useBacktestResults = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('backtest_results')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      
+      // Get results from localStorage
+      const storedResults = localStorage.getItem(STORAGE_KEY);
+      const parsedResults = storedResults ? JSON.parse(storedResults) : [];
 
-      if (error) throw error;
+      // Filter results for current user
+      const userResults = parsedResults.filter((result: BacktestResult) => 
+        result.id.includes(user.id)
+      );
 
-      const formattedResults: BacktestResult[] = data.map(result => ({
-        id: result.id,
-        title: result.title,
-        description: result.description,
-        strategyId: result.strategy_id,
-        strategyName: result.strategy_name,
-        startDate: result.start_date,
-        endDate: result.end_date,
-        entryDate: result.entry_date,
-        entryWeekday: result.entry_weekday,
-        entryTime: result.entry_time,
-        entryPrice: result.entry_price,
-        quantity: result.quantity,
-        instrumentKind: result.instrument_kind,
-        strikePrice: result.strike_price,
-        position: result.position,
-        exitDate: result.exit_date,
-        exitWeekday: result.exit_weekday,
-        exitTime: result.exit_time,
-        exitPrice: result.exit_price,
-        pl: result.pl,
-        plPercentage: result.pl_percentage,
-        expiryDate: result.expiry_date,
-        highestMtm: result.highest_mtm,
-        lowestMtm: result.lowest_mtm,
-        remarks: result.remarks,
-        createdAt: result.created_at
-      }));
-
-      setBacktestResults(formattedResults);
+      setBacktestResults(userResults);
     } catch (err) {
       console.error("Error fetching backtest results:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -117,39 +92,22 @@ export const useBacktestResults = () => {
     }
 
     try {
-      const { data: result, error } = await supabase
-        .from('backtest_results')
-        .insert({
-          user_id: user.id,
-          strategy_id: data.strategyId,
-          title: data.title,
-          description: data.description,
-          start_date: data.startDate,
-          end_date: data.endDate,
-          strategy_name: data.strategyName,
-          entry_date: data.entryDate,
-          entry_weekday: data.entryWeekday,
-          entry_time: data.entryTime,
-          entry_price: data.entryPrice,
-          quantity: data.quantity,
-          instrument_kind: data.instrumentKind,
-          strike_price: data.strikePrice,
-          position: data.position,
-          exit_date: data.exitDate,
-          exit_weekday: data.exitWeekday,
-          exit_time: data.exitTime,
-          exit_price: data.exitPrice,
-          pl: data.pl,
-          pl_percentage: data.plPercentage,
-          expiry_date: data.expiryDate,
-          highest_mtm: data.highestMtm,
-          lowest_mtm: data.lowestMtm,
-          remarks: data.remarks
-        })
-        .select()
-        .single();
+      // Create a new result with ID and timestamp
+      const newResult: BacktestResult = {
+        ...data,
+        id: `${user.id}-${uuidv4()}`,
+        createdAt: new Date().toISOString()
+      };
 
-      if (error) throw error;
+      // Get existing results
+      const storedResults = localStorage.getItem(STORAGE_KEY);
+      const existingResults = storedResults ? JSON.parse(storedResults) : [];
+      
+      // Add new result
+      const updatedResults = [...existingResults, newResult];
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
 
       toast({
         title: "Success",
@@ -159,7 +117,7 @@ export const useBacktestResults = () => {
       // Refresh the list
       fetchBacktestResults();
       
-      return result.id;
+      return newResult.id;
     } catch (err) {
       console.error("Error saving backtest result:", err);
       toast({
@@ -175,13 +133,19 @@ export const useBacktestResults = () => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('backtest_results')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      // Get existing results
+      const storedResults = localStorage.getItem(STORAGE_KEY);
+      if (!storedResults) return false;
+      
+      const existingResults = JSON.parse(storedResults);
+      
+      // Filter out the result to delete
+      const updatedResults = existingResults.filter(
+        (result: BacktestResult) => result.id !== id
+      );
+      
+      // Save filtered results back to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
 
       // Update local state
       setBacktestResults(prev => prev.filter(result => result.id !== id));
