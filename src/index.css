@@ -174,6 +174,20 @@
   animation: zenflow 3s infinite ease-in-out;
 }
 
+/* Add heart beat animation for wishlist icon */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
 /* Button Animations */
 .btn-hover-effect {
   @apply relative overflow-hidden transition-all duration-300;
@@ -320,6 +334,20 @@ svg[data-lucide="play-circle"]:hover {
   transform: scale(1.05);
 }
 
+/* Enhanced styling for heart icon */
+svg[data-lucide="heart"] {
+  cursor: pointer !important;
+  transition: all 0.3s ease;
+}
+
+svg[data-lucide="heart"].fill-red-400 {
+  filter: drop-shadow(0 0 3px rgba(244, 67, 54, 0.6));
+}
+
+svg[data-lucide="heart"]:hover {
+  transform: scale(1.1);
+}
+
 /* Enhanced styling for lock icon */
 svg[data-lucide="lock"] {
   cursor: pointer !important;
@@ -338,7 +366,6 @@ svg[data-lucide="stop-circle"],
 svg[data-lucide="power"],
 svg[data-lucide="settings"],
 svg[data-lucide="chevron-right"],
-svg[data-lucide="heart"],
 svg[data-lucide="eye"] {
   cursor: pointer !important;
 }
