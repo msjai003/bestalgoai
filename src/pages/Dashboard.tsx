@@ -191,25 +191,25 @@ const Dashboard = () => {
                 icon={<TrendingUp className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
-            <Link to="/wishlist" className="block">
-              <QuickActionButton 
-                label="Wishlist" 
-                icon={<Star className="h-6 w-6 text-[#00BCD4]" />}
-              />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/community" className="block">
               <QuickActionButton 
                 label="Community" 
                 icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/backtest-report" className="block">
               <QuickActionButton 
                 label="Backtest" 
                 icon={<FileBarChart className="h-6 w-6 text-[#00BCD4]" />}
+              />
+            </Link>
+            <Link to="/subscription" className="block">
+              <QuickActionButton 
+                label="Premium" 
+                icon={<Star className="h-6 w-6 text-[#00BCD4]" />}
               />
             </Link>
           </div>

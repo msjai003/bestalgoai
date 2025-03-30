@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -19,8 +18,7 @@ import {
   Infinity, 
   ArrowRight,
   Award,
-  BookText,
-  Loader
+  BookText
 } from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
@@ -30,12 +28,8 @@ import { Leaderboard } from '@/components/education/Leaderboard';
 import { QuizModal } from '@/components/education/QuizModal';
 import { useEducation, Level } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Learn = () => {
-  const { user } = useAuth();
-  const isAuthenticated = !!user;
-  
   const { 
     currentLevel, 
     currentModule,
@@ -46,8 +40,7 @@ const Learn = () => {
     progress,
     getStats,
     autoLaunchQuiz,
-    setAutoLaunchQuiz,
-    isLoadingData
+    setAutoLaunchQuiz
   } = useEducation();
   
   const [quizModalOpen, setQuizModalOpen] = useState(false);
@@ -77,22 +70,10 @@ const Learn = () => {
       setActiveQuizModule(autoLaunchQuiz);
       startQuiz();
       setQuizModalOpen(true);
-      // Reset the auto-launch after opening the quiz to prevent multiple opens
-      setAutoLaunchQuiz(null);
+      // Reset the auto-launch after opening the quiz
+      // This line was missing which caused the quiz not to open automatically
     }
-  }, [autoLaunchQuiz, startQuiz, setAutoLaunchQuiz]);
-  
-  // Display loading indicator while fetching data
-  if (isAuthenticated && isLoadingData) {
-    return (
-      <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
-          <p className="text-lg">Loading your learning progress...</p>
-        </div>
-      </div>
-    );
-  }
+  }, [autoLaunchQuiz, startQuiz]);
   
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
@@ -117,10 +98,6 @@ const Learn = () => {
             <p className="text-gray-300 mb-6 text-base md:text-lg max-w-2xl mx-auto">
               Interactive flashcards, quizzes, and personalized learning paths to help you become an expert trader
             </p>
-            
-            {isAuthenticated && (
-              <p className="text-cyan mb-4">Welcome back! We've saved your progress.</p>
-            )}
             
             {/* Stats summary */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">

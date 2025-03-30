@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Star } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -55,21 +54,6 @@ const Header = () => {
           >
             Dashboard
           </NavLink>
-
-          {user && (
-            <NavLink
-              to="/wishlist"
-              className={({ isActive }) =>
-                `px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-                  isActive
-                    ? 'bg-cyan/10 text-cyan'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`
-              }
-            >
-              <Star className="h-4 w-4" /> Wishlist
-            </NavLink>
-          )}
           
           <NavLink
             to="/learn"
@@ -136,22 +120,6 @@ const Header = () => {
           >
             Dashboard
           </NavLink>
-
-          {user && (
-            <NavLink
-              to="/wishlist"
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2 ${
-                  isActive
-                    ? 'bg-cyan/10 text-cyan'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`
-              }
-              onClick={closeMenu}
-            >
-              <Star className="h-4 w-4" /> Wishlist
-            </NavLink>
-          )}
           
           <NavLink
             to="/learn"

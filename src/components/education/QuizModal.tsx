@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Quiz } from '@/data/educationData';
 import { useEducation } from '@/hooks/useEducation';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface QuizModalProps {
@@ -34,7 +34,6 @@ export const QuizModal = ({
   const [showResults, setShowResults] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [questionTimer, setQuestionTimer] = useState(20); // Initialize 20 seconds countdown
   
   const totalQuestions = quiz.questions.length;
   const currentQuestionData = quiz.questions[currentQuestion];
@@ -44,7 +43,6 @@ export const QuizModal = ({
   useEffect(() => {
     if (open && !startTime) {
       setStartTime(Date.now());
-      setQuestionTimer(20); // Reset question timer
       
       // Mark the module as viewed when the quiz starts
       markModuleViewed(moduleId);
@@ -59,7 +57,6 @@ export const QuizModal = ({
       setShowResults(false);
       setTimeSpent(0);
       setStartTime(null);
-      setQuestionTimer(20);
     }
   }, [open, moduleId, markModuleViewed, startTime]);
   
@@ -78,47 +75,6 @@ export const QuizModal = ({
     };
   }, [open, startTime, showResults]);
   
-  // Countdown timer for questions
-  useEffect(() => {
-    let countdownTimer: any;
-    
-    if (open && !isAnswered && !showResults) {
-      countdownTimer = setInterval(() => {
-        setQuestionTimer((prevTime) => {
-          if (prevTime <= 1) {
-            // Time's up - auto submit with current selection
-            clearInterval(countdownTimer);
-            if (!isAnswered) {
-              handleAutoSubmit();
-            }
-            return 0;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-    }
-    
-    return () => {
-      if (countdownTimer) clearInterval(countdownTimer);
-    };
-  }, [open, isAnswered, showResults, currentQuestion]);
-  
-  // Reset timer when moving to next question
-  useEffect(() => {
-    if (!isAnswered) {
-      setQuestionTimer(20);
-    }
-  }, [currentQuestion]);
-  
-  const handleAutoSubmit = () => {
-    setIsAnswered(true);
-    
-    // Check if answer is correct
-    if (selectedAnswer !== null && selectedAnswer === currentQuestionData.correctAnswer) {
-      setCorrectAnswers((prev) => prev + 1);
-    }
-  };
-  
   const handleNext = () => {
     if (isLastQuestion && isAnswered) {
       // Calculate total time spent
@@ -134,7 +90,6 @@ export const QuizModal = ({
       setCurrentQuestion((prev) => prev + 1);
       setSelectedAnswer(null);
       setIsAnswered(false);
-      setQuestionTimer(20); // Reset timer for new question
     }
   };
   
@@ -175,13 +130,6 @@ export const QuizModal = ({
     return 'text-red-500';
   };
   
-  // Calculate timer color based on time remaining
-  const getTimerColor = (): string => {
-    if (questionTimer > 10) return 'text-cyan';
-    if (questionTimer > 5) return 'text-yellow-500';
-    return 'text-red-500 animate-pulse';
-  };
-  
   return (
     <Dialog open={open} onOpenChange={showResults ? () => {} : onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -193,13 +141,7 @@ export const QuizModal = ({
           <>
             <div className="flex justify-between text-sm text-gray-400 mb-2">
               <span>Question {currentQuestion + 1} of {totalQuestions}</span>
-              <div className="flex items-center">
-                <span className={`font-bold text-lg mr-2 ${getTimerColor()}`}>
-                  <Clock className="h-4 w-4 inline-block mr-1" />
-                  {questionTimer}s
-                </span>
-                <span className="hidden sm:inline">{correctAnswers} correct so far</span>
-              </div>
+              <span>{correctAnswers} correct so far • {formatTime(timeSpent)}</span>
             </div>
             
             <Progress 

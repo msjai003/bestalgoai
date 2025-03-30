@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export type Level = 'basics' | 'intermediate' | 'pro';
 export type ModuleProgress = { [key: string]: boolean };
@@ -34,9 +32,6 @@ type QuizResults = {
 
 export const useEducation = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const isAuthenticated = !!user;
-  
   const [currentLevel, setCurrentLevel] = useState<Level>(() => {
     const savedLevel = localStorage.getItem('education_currentLevel');
     return (savedLevel as Level) || 'basics';
@@ -162,8 +157,6 @@ export const useEducation = () => {
       pro: 0
     };
   });
-  
-  const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Calculate overall progress
   const progress = {
@@ -176,198 +169,25 @@ export const useEducation = () => {
   // Filter earned badges
   const earnedBadges = badges.filter(badge => badge.unlocked);
   
-  // Fetch user data from Supabase when authenticated
+  // Save user progress whenever it changes
   useEffect(() => {
-    const fetchUserEducationData = async () => {
-      if (!isAuthenticated) return;
-      
-      setIsLoadingData(true);
-      try {
-        // Fetch user education progress
-        const { data: progressData, error: progressError } = await supabase
-          .from('user_education_progress')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (progressError && progressError.code !== 'PGRST116') {
-          console.error('Error fetching user education progress:', progressError);
-        }
-        
-        if (progressData) {
-          // Update local state with database values
-          setCurrentLevel(progressData.current_level as Level);
-          setCurrentModule(progressData.current_module);
-          setCurrentCard(progressData.current_card);
-        } else if (isAuthenticated) {
-          // Create new progress record for authenticated user
-          const { error: insertError } = await supabase
-            .from('user_education_progress')
-            .insert({
-              user_id: user.id,
-              current_level: currentLevel,
-              current_module: currentModule,
-              current_card: currentCard
-            });
-          
-          if (insertError) {
-            console.error('Error creating user education progress:', insertError);
-          }
-        }
-        
-        // Fetch completed modules
-        const { data: completedData, error: completedError } = await supabase
-          .from('user_completed_modules')
-          .select('level, module_id')
-          .eq('user_id', user.id);
-        
-        if (completedError) {
-          console.error('Error fetching completed modules:', completedError);
-        }
-        
-        if (completedData && completedData.length > 0) {
-          // Count completed modules by level
-          const newCompletedModules = {
-            basics: completedData.filter(item => item.level === 'basics').length,
-            intermediate: completedData.filter(item => item.level === 'intermediate').length,
-            pro: completedData.filter(item => item.level === 'pro').length
-          };
-          
-          setCompletedModules(newCompletedModules);
-          
-          // Update module progress
-          const newModuleProgress: ModuleProgress = {};
-          completedData.forEach(item => {
-            newModuleProgress[item.module_id] = true;
-          });
-          
-          setModuleProgress(newModuleProgress);
-        }
-        
-        // Fetch module views
-        const { data: viewsData, error: viewsError } = await supabase
-          .from('user_module_views')
-          .select('module_id')
-          .eq('user_id', user.id);
-        
-        if (viewsError) {
-          console.error('Error fetching module views:', viewsError);
-        }
-        
-        if (viewsData && viewsData.length > 0) {
-          // Update module views
-          const newModuleViews: ModuleViews = {};
-          viewsData.forEach(item => {
-            newModuleViews[item.module_id] = true;
-          });
-          
-          setModuleViews(newModuleViews);
-        }
-        
-        // Fetch quiz results
-        const { data: quizData, error: quizError } = await supabase
-          .from('user_quiz_results')
-          .select('*')
-          .eq('user_id', user.id);
-        
-        if (quizError) {
-          console.error('Error fetching quiz results:', quizError);
-        }
-        
-        if (quizData && quizData.length > 0) {
-          // Update quiz results
-          const newQuizResults: QuizResults = {};
-          quizData.forEach(item => {
-            newQuizResults[item.module_id] = {
-              completed: true,
-              passed: item.passed,
-              score: item.score,
-              totalQuestions: item.total_questions,
-              timeSpent: item.time_spent,
-              completedAt: item.completed_at
-            };
-          });
-          
-          setQuizResults(newQuizResults);
-        }
-        
-        // Fetch earned badges
-        const { data: badgesData, error: badgesError } = await supabase
-          .from('user_earned_badges')
-          .select('badge_id')
-          .eq('user_id', user.id);
-        
-        if (badgesError) {
-          console.error('Error fetching earned badges:', badgesError);
-        }
-        
-        if (badgesData && badgesData.length > 0) {
-          // Update badges
-          const updatedBadges = badges.map(badge => {
-            if (badgesData.some(item => item.badge_id === badge.id)) {
-              return { ...badge, unlocked: true };
-            }
-            return badge;
-          });
-          
-          setBadges(updatedBadges);
-        }
-      } catch (error) {
-        console.error('Error fetching user education data:', error);
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-    
-    fetchUserEducationData();
-  }, [isAuthenticated, user]);
-  
-  // Save user progress to Supabase when it changes
-  useEffect(() => {
-    const saveUserProgress = async () => {
-      if (!isAuthenticated) {
-        // Save to localStorage for non-authenticated users
-        localStorage.setItem('education_currentLevel', currentLevel);
-        localStorage.setItem('education_currentModule', currentModule);
-        localStorage.setItem(`education_card_${currentModule}`, currentCard.toString());
-        localStorage.setItem('education_moduleProgress', JSON.stringify(moduleProgress));
-        localStorage.setItem('education_moduleViews', JSON.stringify(moduleViews));
-        localStorage.setItem('education_quizResults', JSON.stringify(quizResults));
-        localStorage.setItem('education_completedModules', JSON.stringify(completedModules));
-        localStorage.setItem('education_badges', JSON.stringify(badges));
-        return;
-      }
-      
-      try {
-        // Update user education progress
-        const { error: updateError } = await supabase
-          .from('user_education_progress')
-          .upsert({
-            user_id: user.id,
-            current_level: currentLevel,
-            current_module: currentModule,
-            current_card: currentCard
-          });
-        
-        if (updateError) {
-          console.error('Error updating user education progress:', updateError);
-        }
-      } catch (error) {
-        console.error('Error saving user progress:', error);
-      }
-    };
-    
-    // Don't save during initial data loading
-    if (!isLoadingData) {
-      saveUserProgress();
-    }
+    localStorage.setItem('education_currentLevel', currentLevel);
+    localStorage.setItem('education_currentModule', currentModule);
+    localStorage.setItem(`education_card_${currentModule}`, currentCard.toString());
+    localStorage.setItem('education_moduleProgress', JSON.stringify(moduleProgress));
+    localStorage.setItem('education_moduleViews', JSON.stringify(moduleViews));
+    localStorage.setItem('education_quizResults', JSON.stringify(quizResults));
+    localStorage.setItem('education_completedModules', JSON.stringify(completedModules));
+    localStorage.setItem('education_badges', JSON.stringify(badges));
   }, [
-    isAuthenticated, 
-    user, 
     currentLevel, 
     currentModule, 
-    currentCard,
-    isLoadingData
+    currentCard, 
+    moduleProgress, 
+    moduleViews,
+    quizResults,
+    completedModules, 
+    badges
   ]);
 
   // Handle module selection
@@ -378,27 +198,13 @@ export const useEducation = () => {
   };
 
   // Mark module as viewed
-  const markModuleViewed = async (moduleId: string) => {
+  const markModuleViewed = (moduleId: string) => {
     if (moduleViews[moduleId]) return; // Already viewed
     
     setModuleViews(prev => ({
       ...prev,
       [moduleId]: true
     }));
-    
-    if (isAuthenticated) {
-      try {
-        // Insert module view in database
-        await supabase
-          .from('user_module_views')
-          .insert({
-            user_id: user.id,
-            module_id: moduleId
-          });
-      } catch (error) {
-        console.error('Error marking module as viewed:', error);
-      }
-    }
   };
 
   // Flip to next card
@@ -431,7 +237,7 @@ export const useEducation = () => {
   };
 
   // Submit quiz answer
-  const submitQuizAnswer = async (
+  const submitQuizAnswer = (
     moduleId: string, 
     isPassed: boolean, 
     score: number, 
@@ -451,24 +257,6 @@ export const useEducation = () => {
       }
     }));
     
-    if (isAuthenticated) {
-      try {
-        // Save quiz result to database
-        await supabase
-          .from('user_quiz_results')
-          .insert({
-            user_id: user.id,
-            module_id: moduleId,
-            passed: isPassed,
-            score,
-            total_questions: totalQuestions,
-            time_spent: timeSpent
-          });
-      } catch (error) {
-        console.error('Error saving quiz result:', error);
-      }
-    }
-    
     if (isPassed) {
       // Mark module as completed if not already
       if (!moduleProgress[moduleId]) {
@@ -487,21 +275,6 @@ export const useEducation = () => {
           
           return updatedLevel;
         });
-        
-        // Save completed module to database if authenticated
-        if (isAuthenticated) {
-          try {
-            await supabase
-              .from('user_completed_modules')
-              .insert({
-                user_id: user.id,
-                level: currentLevel,
-                module_id: moduleId
-              });
-          } catch (error) {
-            console.error('Error saving completed module:', error);
-          }
-        }
         
         // Check if any badges should be unlocked
         // This is the line with the error - we need to pass the current level and the new completed count directly
@@ -574,11 +347,9 @@ export const useEducation = () => {
   };
 
   // Check if any badges should be unlocked
-  const checkBadgeUnlocks = async (level: Level, completedCount: number) => {
+  const checkBadgeUnlocks = (level: Level, completedCount: number) => {
     const newBadges = [...badges];
     const completed = completedCount;
-    let badgeUnlocked = false;
-    let unlockedBadgeId = '';
     
     // First module completion badge
     if (completed === 1) {
@@ -588,9 +359,6 @@ export const useEducation = () => {
       
       if (badgeToUnlock && !badgeToUnlock.unlocked) {
         badgeToUnlock.unlocked = true;
-        badgeUnlocked = true;
-        unlockedBadgeId = badgeToUnlock.id;
-        
         toast({
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
@@ -606,9 +374,6 @@ export const useEducation = () => {
       
       if (badgeToUnlock && !badgeToUnlock.unlocked) {
         badgeToUnlock.unlocked = true;
-        badgeUnlocked = true;
-        unlockedBadgeId = badgeToUnlock.id;
-        
         toast({
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
@@ -624,9 +389,6 @@ export const useEducation = () => {
       
       if (badgeToUnlock && !badgeToUnlock.unlocked) {
         badgeToUnlock.unlocked = true;
-        badgeUnlocked = true;
-        unlockedBadgeId = badgeToUnlock.id;
-        
         toast({
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
@@ -635,20 +397,6 @@ export const useEducation = () => {
     }
     
     setBadges(newBadges);
-    
-    // Save unlocked badge to database if authenticated
-    if (badgeUnlocked && isAuthenticated) {
-      try {
-        await supabase
-          .from('user_earned_badges')
-          .insert({
-            user_id: user.id,
-            badge_id: unlockedBadgeId
-          });
-      } catch (error) {
-        console.error('Error saving earned badge:', error);
-      }
-    }
   };
 
   // Get module status - locked, active, completed
@@ -727,7 +475,6 @@ export const useEducation = () => {
     quizResults,
     getStats,
     autoLaunchQuiz,
-    setAutoLaunchQuiz,
-    isLoadingData
+    setAutoLaunchQuiz
   };
 };

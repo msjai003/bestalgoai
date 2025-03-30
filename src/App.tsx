@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,7 +41,6 @@ import ColorTest from "./pages/ColorTest";
 import Learn from "./pages/Learn";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
-import Wishlist from "./pages/Wishlist";
 
 const queryClient = new QueryClient();
 
@@ -94,11 +92,6 @@ function AppRoutes() {
       <Route path="/strategy-management" element={
         <ProtectedRoute>
           <StrategyManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/wishlist" element={
-        <ProtectedRoute>
-          <Wishlist />
         </ProtectedRoute>
       } />
       <Route path="/backtest" element={
