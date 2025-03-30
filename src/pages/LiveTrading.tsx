@@ -12,7 +12,6 @@ import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus } from 'lucide-react';
 
 const LiveTrading = () => {
   const {
@@ -40,25 +39,22 @@ const LiveTrading = () => {
   } = useLiveTrading();
 
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
+    <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
-      <main className="relative pt-16 pb-20 z-10 px-4 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Live Trading</h1>
-            <p className="text-gray-400">Manage and control your active trading strategies</p>
-          </div>
+      <main className="pt-16 pb-24 px-4 flex-grow">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold text-white">Live Trading</h1>
           <Button 
             variant="outline" 
             size="sm"
-            className="mt-3 md:mt-0 border-cyan/20 text-cyan hover:bg-cyan/10 hover:text-cyan flex items-center"
+            className="border-[#2A2A2A] text-[#B0B0B0] hover:text-white"
             onClick={() => navigate('/strategy-selection')}
           >
-            <Plus className="mr-1 h-4 w-4" /> Add Strategy
+            Add Strategy
           </Button>
         </div>
 
-        <div className="mb-6 glass-card p-4 rounded-xl border border-white/5">
+        <div className="mb-6">
           <TradingModeFilter 
             selectedMode={selectedMode}
             onModeChange={handleModeChange}
@@ -66,23 +62,21 @@ const LiveTrading = () => {
         </div>
 
         {strategies.length > 0 ? (
-          <div className="space-y-4">
-            <StrategyList 
-              strategies={strategies}
-              onToggleLiveMode={handleToggleLiveMode}
-              onEditQuantity={handleOpenQuantityDialog}
-              onViewDetails={(id) => navigate(`/strategy-details/${id}`)}
-            />
-            
-            <TradingControls 
-              isActive={isActive}
-              onToggleTrading={handleTradingToggle}
-            />
-          </div>
+          <StrategyList 
+            strategies={strategies}
+            onToggleLiveMode={handleToggleLiveMode}
+            onEditQuantity={handleOpenQuantityDialog}
+            onViewDetails={(id) => navigate(`/strategy-details/${id}`)}
+          />
         ) : (
-          <div className="premium-card p-8 rounded-xl">
-            <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
-          </div>
+          <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
+        )}
+
+        {strategies.length > 0 && (
+          <TradingControls 
+            isActive={isActive}
+            onToggleTrading={handleTradingToggle}
+          />
         )}
       </main>
       <BottomNav />

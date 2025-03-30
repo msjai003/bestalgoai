@@ -1,7 +1,7 @@
 
-import React from "react";
+import React from 'react';
 import { Strategy } from "@/hooks/strategy/types";
-import { StrategyCard } from "./LiveTradingStrategyCard";
+import { StrategyCard } from "@/components/strategy/LiveTradingStrategyCard";
 
 interface StrategyListProps {
   strategies: Strategy[];
@@ -17,22 +17,16 @@ export const StrategyList: React.FC<StrategyListProps> = ({
   onViewDetails
 }) => {
   return (
-    <div className="grid grid-cols-1 gap-4">
-      {strategies.map((strategy) => (
-        <StrategyCard
-          key={strategy.id || strategy.uniqueId || strategy.rowId}
+    <section className="space-y-4 mb-6">
+      {strategies.map(strategy => (
+        <StrategyCard 
+          key={strategy.rowId || strategy.uniqueId || `strategy-${strategy.id}-${Date.now()}-${Math.random()}`}
           strategy={strategy}
-          onToggleLiveMode={() => 
-            onToggleLiveMode(
-              strategy.id || 0, 
-              strategy.uniqueId, 
-              strategy.rowId
-            )
-          }
-          onEditQuantity={() => onEditQuantity(strategy.id || 0)}
-          onViewDetails={() => onViewDetails(strategy.id || 0)}
+          onToggleLiveMode={() => onToggleLiveMode(strategy.id, strategy.uniqueId, strategy.rowId)}
+          onEditQuantity={() => onEditQuantity(strategy.id)}
+          onViewDetails={() => onViewDetails(strategy.id)}
         />
       ))}
-    </div>
+    </section>
   );
 };
