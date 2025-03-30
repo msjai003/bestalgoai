@@ -342,7 +342,6 @@ export const useEducation = () => {
     }
     
     setQuizActive(false);
-    // Important: Reset autoLaunchQuiz after the quiz is completed
     setAutoLaunchQuiz(null);
   };
 
@@ -478,3 +477,4 @@ export const useEducation = () => {
     setAutoLaunchQuiz
   };
 };
+
