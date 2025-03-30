@@ -64,9 +64,10 @@ const mockStrategies = [
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, googleUserDetails } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>('Trader');
   
   useEffect(() => {
     if (!user) {
@@ -77,6 +78,14 @@ const Dashboard = () => {
       });
       navigate('/auth');
     } else {
+      // Set user name from available sources
+      if (googleUserDetails && googleUserDetails.given_name) {
+        setUserName(googleUserDetails.given_name);
+      } else if (user.email) {
+        // Use the part before @ in email if no name is available
+        setUserName(user.email.split('@')[0]);
+      }
+      
       const checkPremium = async () => {
         try {
           const { data, error } = await supabase
@@ -96,7 +105,7 @@ const Dashboard = () => {
       };
       checkPremium();
     }
-  }, [user, navigate, toast]);
+  }, [user, navigate, toast, googleUserDetails]);
 
   const handlePremiumClick = () => {
     if (!hasPremium) {
@@ -125,7 +134,7 @@ const Dashboard = () => {
       <main className="relative pt-16 pb-20 z-10 px-4 max-w-7xl mx-auto">
         {/* Welcome Section */}
         <section className="mb-6">
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome back, {user.user_metadata?.name || 'Trader'}</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Welcome back, {userName}</h1>
           <p className="text-gray-400">Manage your strategies and track your portfolio performance</p>
         </section>
         
