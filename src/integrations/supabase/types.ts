@@ -432,6 +432,45 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_alerts: {
+        Row: {
+          alert_time: string | null
+          client_id: number | null
+          client_name: string | null
+          id: number
+          pnl: string | null
+          price: number | null
+          qty: number | null
+          side: string | null
+          status: string | null
+          symbol: string | null
+        }
+        Insert: {
+          alert_time?: string | null
+          client_id?: number | null
+          client_name?: string | null
+          id?: number
+          pnl?: string | null
+          price?: number | null
+          qty?: number | null
+          side?: string | null
+          status?: string | null
+          symbol?: string | null
+        }
+        Update: {
+          alert_time?: string | null
+          client_id?: number | null
+          client_name?: string | null
+          id?: number
+          pnl?: string | null
+          price?: number | null
+          qty?: number | null
+          side?: string | null
+          status?: string | null
+          symbol?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null
