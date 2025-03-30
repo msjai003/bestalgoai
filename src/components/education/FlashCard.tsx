@@ -89,11 +89,8 @@ export const FlashCard = () => {
       if (isLastCard) {
         console.log("Last card reached, setting auto-launch quiz for module:", currentModule);
         
-        // Auto-launch quiz after a short delay - use a shorter delay (500ms) to ensure it works reliably
-        setTimeout(() => {
-          console.log("Triggering auto-launch quiz now");
-          setAutoLaunchQuiz(currentModule);
-        }, 500);
+        // Auto-launch quiz immediately after the flip animation completes
+        setAutoLaunchQuiz(currentModule);
       }
     }, 300);
   };

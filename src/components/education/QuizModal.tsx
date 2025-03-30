@@ -179,7 +179,7 @@ export const QuizModal = ({
   const getTimerColor = (): string => {
     if (questionTimer > 10) return 'text-cyan';
     if (questionTimer > 5) return 'text-yellow-500';
-    return 'text-red-500';
+    return 'text-red-500 animate-pulse';
   };
   
   return (
