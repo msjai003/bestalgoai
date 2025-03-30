@@ -1,57 +1,5 @@
 
-/* Education Module Styling */
-.education-card {
-  @apply backdrop-blur-lg border border-cyan/20 shadow-lg rounded-xl bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/90;
-}
-
-.education-card-header {
-  @apply flex justify-between items-start mb-4;
-}
-
-.education-card-title {
-  @apply text-xl sm:text-2xl font-bold mb-2 text-white;
-}
-
-.education-card-description {
-  @apply text-gray-300 text-base;
-}
-
-.education-progress-bar {
-  @apply h-2 w-full bg-charcoalSecondary rounded-full overflow-hidden;
-}
-
-.education-progress-value {
-  @apply h-full bg-cyan rounded-full transition-all duration-300;
-}
-
-.education-badge {
-  @apply flex items-center justify-center w-10 h-10 rounded-full bg-cyan/20 text-cyan;
-}
-
-.flashcard {
-  @apply perspective-1000 h-full;
-}
-
-.flashcard-face {
-  @apply absolute inset-0 backface-hidden transition-all duration-500;
-}
-
-.flashcard-front {
-  @apply z-10;
-}
-
-.flashcard-back {
-  @apply rotate-y-180;
-}
-
-.flashcard.flipped .flashcard-front {
-  @apply rotate-y-180;
-}
-
-.flashcard.flipped .flashcard-back {
-  @apply rotate-y-0 z-20;
-}
-
+/* 3D flip card styles */
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -60,15 +8,83 @@
   backface-visibility: hidden;
 }
 
-.rotate-y-0 {
-  transform: rotateY(0deg);
-}
-
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
 
-/* Important for making flashcards work */
-.transform-style-3d {
-  transform-style: preserve-3d;
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 188, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 188, 212, 0.4);
+  }
+}
+
+.animated-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Progress bar animation */
+@keyframes fillProgress {
+  from { width: 0%; }
+  to { width: var(--progress-width); }
+}
+
+.animate-progress {
+  animation: fillProgress 1.5s ease-out forwards;
+}
+
+/* Badge unlock animation */
+@keyframes badgeUnlock {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.badge-unlock {
+  animation: badgeUnlock 0.5s ease-out forwards;
+}
+
+/* Leaderboard animations */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.leaderboard-item {
+  animation: slideUp 0.5s ease-out forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+  opacity: 0;
+}
+
+/* Share button hover animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.share-pulse {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Card flip animation */
+@keyframes flipIn {
+  from { opacity: 0; transform: rotateY(-80deg); }
+  to { opacity: 1; transform: rotateY(0); }
+}
+
+.flip-in {
+  animation: flipIn 0.5s ease-out forwards;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 188, 212, 0.15);
 }
