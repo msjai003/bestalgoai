@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,8 @@ import {
   BarChart3, 
   Star, 
   Users,
-  FileBarChart
+  FileBarChart,
+  ArrowUpRight
 } from "lucide-react";
 
 const mockPerformanceData = [
@@ -108,40 +110,57 @@ const Dashboard = () => {
 
   if (user === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary">
         <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-[#00BCD4] mx-auto mb-4" />
-          <p>Loading dashboard...</p>
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-charcoalPrimary">
       <Header />
-      <main className="relative pt-16 pb-20 z-10">
-        <section id="portfolio-overview" className="p-4">
-          <div className="bg-charcoalSecondary rounded-2xl p-6 shadow-lg border border-gray-800/60">
-            <div className="flex justify-between items-start mb-4">
+      <main className="relative pt-16 pb-20 z-10 px-4 max-w-7xl mx-auto">
+        {/* Welcome Section */}
+        <section className="mb-6">
+          <h1 className="text-2xl font-bold text-white mb-2">Welcome back, {user.user_metadata?.name || 'Trader'}</h1>
+          <p className="text-gray-400">Manage your strategies and track your portfolio performance</p>
+        </section>
+        
+        {/* Portfolio Overview Card */}
+        <section id="portfolio-overview" className="mb-6">
+          <Card className="premium-card overflow-hidden border-cyan/20">
+            <div className="flex justify-between items-center p-6 pb-0">
               <div>
-                <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
-                <p className="text-2xl font-bold text-white">₹12,45,678</p>
+                <h2 className="text-gray-400 text-sm uppercase tracking-wider font-medium">Portfolio Value</h2>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-bold text-white mt-1 font-mono">₹12,45,678</p>
+                  <span className="text-emerald-400 text-sm flex items-center">
+                    <ArrowUpRight className="h-3 w-3 mr-1" />2.3%
+                  </span>
+                </div>
               </div>
               <Link 
                 to="/subscription" 
-                className="text-[#00BCD4] bg-[#00BCD4]/10 px-3 py-1.5 rounded-lg text-sm hover:bg-[#00BCD4]/20 transition-colors border border-[#00BCD4]/20"
+                className="text-cyan bg-cyan/10 px-4 py-2 rounded-lg text-sm font-medium hover:bg-cyan/20 transition-colors border border-cyan/20 flex items-center"
               >
-                Upgrade
+                <Star className="w-4 h-4 mr-2" /> Upgrade
               </Link>
             </div>
             
-            <div className="h-36 my-6">
+            <div className="h-48 my-4 px-3">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={mockPerformanceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
-                  <XAxis dataKey="date" stroke="#888" />
-                  <YAxis stroke="#888" tickFormatter={(value) => `₹${value/100000}L`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="date" stroke="#888" axisLine={false} />
+                  <YAxis 
+                    stroke="#888" 
+                    tickFormatter={(value) => `₹${value/100000}L`} 
+                    axisLine={false}
+                    tickLine={false}
+                  />
                   <Tooltip 
                     formatter={(value) => [`₹${value}`, 'Value']}
                     contentStyle={{ 
@@ -168,67 +187,115 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
             
-            <div className="flex justify-between text-sm mt-4">
+            <div className="grid grid-cols-2 gap-4 px-6 py-4 bg-charcoalPrimary/30 border-t border-white/5">
               <div>
-                <p className="text-gray-400">Today's P&L</p>
-                <p className="text-emerald-400 font-medium">+₹24,500</p>
+                <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">Today's P&L</p>
+                <p className="text-emerald-400 font-mono font-medium text-xl">+₹24,500</p>
               </div>
               <div>
-                <p className="text-gray-400">Overall P&L</p>
-                <p className="text-emerald-400 font-medium">+₹1,45,500</p>
+                <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">Overall P&L</p>
+                <p className="text-emerald-400 font-mono font-medium text-xl">+₹1,45,500</p>
               </div>
             </div>
-          </div>
+          </Card>
         </section>
 
-        <section id="quick-actions" className="px-4 mt-6">
-          <h2 className="text-lg font-bold text-white mb-3">Quick Access</h2>
+        {/* Quick Access Section */}
+        <section id="quick-actions" className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold text-white">Quick Access</h2>
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
           
+          {/* First row */}
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/strategy-selection" className="block">
               <QuickActionButton 
                 label="Strategies" 
-                icon={<TrendingUp className="h-6 w-6 text-[#00BCD4]" />}
+                icon={<TrendingUp className="h-5 w-5 text-cyan" />}
               />
             </Link>
             <Link to="/community" className="block">
               <QuickActionButton 
                 label="Community" 
-                icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
+                icon={<Users className="h-5 w-5 text-cyan" />}
               />
             </Link>
           </div>
           
+          {/* Second row */}
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/backtest-report" className="block">
               <QuickActionButton 
                 label="Backtest" 
-                icon={<FileBarChart className="h-6 w-6 text-[#00BCD4]" />}
+                icon={<FileBarChart className="h-5 w-5 text-cyan" />}
               />
             </Link>
             <Link to="/subscription" className="block">
               <QuickActionButton 
                 label="Premium" 
-                icon={<Star className="h-6 w-6 text-[#00BCD4]" />}
+                icon={<Star className="h-5 w-5 text-cyan" />}
               />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          {/* Third row */}
+          <div className="grid grid-cols-2 gap-3">
             <Link to="/broker-integration" className="block">
               <QuickActionButton 
                 label="Brokers" 
-                icon={<Building className="h-6 w-6 text-[#00BCD4]" />}
+                icon={<Building className="h-5 w-5 text-cyan" />}
               />
             </Link>
             <Link to="/risk-management" className="block">
               <QuickActionButton 
-                label="Risk" 
-                icon={<Shield className="h-6 w-6 text-[#00BCD4]" />}
-                customLabel={<span className="text-xs sm:text-sm">Risk Management</span>}
+                label="Risk Management" 
+                icon={<Shield className="h-5 w-5 text-cyan" />}
               />
             </Link>
           </div>
+        </section>
+        
+        {/* Education Section */}
+        <section id="education" className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold text-white">Education</h2>
+            <Link to="/learn">
+              <Button variant="outline" size="sm" className="text-cyan border-cyan/20 hover:bg-cyan/10">
+                View All
+              </Button>
+            </Link>
+          </div>
+          
+          <Card className="premium-card overflow-hidden border-cyan/20">
+            <div className="p-5">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-white font-semibold text-lg mb-1">Trading Fundamentals</h3>
+                  <p className="text-gray-400 text-sm">Continue where you left off</p>
+                </div>
+                <div className="p-2 rounded-full bg-cyan/10">
+                  <GraduationCap className="h-6 w-6 text-cyan" />
+                </div>
+              </div>
+              
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-gray-300">Module Progress</p>
+                  <p className="text-gray-400 text-sm">3/7 completed</p>
+                </div>
+                <div className="h-2 bg-charcoalSecondary rounded-full overflow-hidden">
+                  <div className="h-full bg-cyan rounded-full" style={{ width: '42%' }}></div>
+                </div>
+              </div>
+              
+              <Button className="w-full mt-4">
+                Continue Learning
+              </Button>
+            </div>
+          </Card>
         </section>
       </main>
       <BottomNav />
@@ -239,19 +306,15 @@ const Dashboard = () => {
 const QuickActionButton = ({ 
   label, 
   icon,
-  fullWidth = false,
-  customLabel = null
 }: { 
   label: string;
   icon: React.ReactNode;
-  fullWidth?: boolean;
-  customLabel?: React.ReactNode;
 }) => (
-  <div className={`flex items-center bg-charcoalSecondary rounded-lg p-4 border border-gray-700/40 shadow-md transition-all hover:bg-charcoalSecondary/80 hover:border-cyan/30 hover:shadow-lg hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
-    <div className="mr-3 flex items-center justify-center bg-charcoalPrimary/30 p-2 rounded-md">
+  <div className="flex items-center h-full bg-charcoalSecondary rounded-xl p-4 border border-gray-700/40 shadow-md transition-all hover:bg-charcoalSecondary/80 hover:border-cyan/30 hover:shadow-lg hover:shadow-cyan/5">
+    <div className="mr-3 flex items-center justify-center bg-charcoalPrimary/50 p-2.5 rounded-lg">
       {icon}
     </div>
-    {customLabel ? customLabel : <span className="text-gray-200 font-medium">{label}</span>}
+    <span className="text-gray-200 font-medium">{label}</span>
   </div>
 );
 
