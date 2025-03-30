@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -67,10 +66,14 @@ const Learn = () => {
   // Check if there's an auto-launch quiz
   useEffect(() => {
     if (autoLaunchQuiz) {
+      console.log("Auto-launching quiz for module:", autoLaunchQuiz);
       setActiveQuizModule(autoLaunchQuiz);
+      startQuiz();
       setQuizModalOpen(true);
+      // Reset the auto-launch after opening the quiz
+      // This line was missing which caused the quiz not to open automatically
     }
-  }, [autoLaunchQuiz]);
+  }, [autoLaunchQuiz, startQuiz]);
   
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">

@@ -85,12 +85,13 @@ export const FlashCard = () => {
       nextCard();
       setIsAnimating(false);
       
-      // If this is the last card, suggest quiz
+      // If this is the last card, trigger auto-launch quiz
       if (isLastCard) {
+        console.log("Last card reached, setting auto-launch quiz for module:", currentModule);
         // Auto-launch quiz after a short delay
         setTimeout(() => {
           setAutoLaunchQuiz(currentModule);
-        }, 1500);
+        }, 800);
       }
     }, 300);
   };
