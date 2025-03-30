@@ -21,6 +21,7 @@ export const FlashCard = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [cardProgress, setCardProgress] = useState(0);
   const [studyStartTime, setStudyStartTime] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   
   // Get current module data
   const moduleData = educationData[currentLevel].find(m => m.id === currentModule);
@@ -52,7 +53,7 @@ export const FlashCard = () => {
   
   if (!moduleData || moduleData.flashcards.length === 0) {
     return (
-      <Card className="premium-card p-6 text-center">
+      <Card className="premium-card p-8 text-center">
         <p>No flashcards available for this module yet.</p>
       </Card>
     );
@@ -62,92 +63,118 @@ export const FlashCard = () => {
   const isLastCard = currentCard === moduleData.flashcards.length - 1;
   
   const handleFlip = () => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
     setIsFlipped(!isFlipped);
+    
+    // Reset animating state after animation completes
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
   };
   
   const handleNext = () => {
-    setIsFlipped(false);
-    nextCard();
+    if (isAnimating) return;
     
-    // If this is the last card, suggest quiz
-    if (isLastCard) {
-      // Auto-launch quiz after a short delay
-      setTimeout(() => {
-        setAutoLaunchQuiz(currentModule);
-      }, 1500);
-    }
+    setIsAnimating(true);
+    setIsFlipped(false);
+    
+    // Wait for flip animation to complete before changing card
+    setTimeout(() => {
+      nextCard();
+      setIsAnimating(false);
+      
+      // If this is the last card, suggest quiz
+      if (isLastCard) {
+        // Auto-launch quiz after a short delay
+        setTimeout(() => {
+          setAutoLaunchQuiz(currentModule);
+        }, 1500);
+      }
+    }, 300);
   };
   
   const handlePrev = () => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
     setIsFlipped(false);
-    prevCard();
+    
+    // Wait for flip animation to complete before changing card
+    setTimeout(() => {
+      prevCard();
+      setIsAnimating(false);
+    }, 300);
   };
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex justify-between items-center text-sm text-gray-400">
-        <div>
+        <div className="font-medium">
           Card {currentCard + 1} of {moduleData.flashcards.length}
         </div>
         <div className="flex items-center">
-          <Award className="h-4 w-4 text-cyan mr-1" />
+          <Award className="h-4 w-4 text-cyan mr-2 animate-pulse-slow" />
           <span className="hidden sm:inline">Complete all cards to unlock the quiz</span>
           <span className="sm:hidden">Complete all cards</span>
         </div>
       </div>
       
-      <Progress value={cardProgress} className="h-1 w-full" />
+      <Progress value={cardProgress} className="h-2 w-full bg-charcoalSecondary" />
       
-      <div className="h-[300px] md:h-[360px] relative">
+      <div className="h-[320px] md:h-[380px] relative">
         <div 
           className={`w-full h-full transform transition-all duration-500 perspective-1000 ${isFlipped ? 'rotate-y-180' : ''}`}
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Front of card */}
           <div 
-            className={`absolute inset-0 premium-card p-4 sm:p-6 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}
+            className={`absolute inset-0 premium-card p-6 sm:p-8 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}
             style={{ backfaceVisibility: 'hidden' }}
           >
             <div className="flex flex-col justify-between h-full">
               <div>
-                <div className="text-xs text-gray-400 mb-1">
+                <div className="text-xs text-cyan/80 mb-2 font-medium">
                   {currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1)} • Module {currentModule.replace('module', '')}
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">{currentFlashcard.title}</h3>
-                <div className="text-gray-300 text-sm sm:text-base">{currentFlashcard.question}</div>
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">{currentFlashcard.title}</h3>
+                <div className="text-gray-300 text-base sm:text-lg">{currentFlashcard.question}</div>
               </div>
               
-              <div className="flex flex-col gap-2 sm:gap-3 mt-4">
+              <div className="flex flex-col gap-3 sm:gap-4 mt-6">
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="lg"
                   onClick={handleFlip} 
                   className="w-full border-cyan/40 text-cyan hover:bg-cyan/10"
+                  disabled={isAnimating}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Flip to Answer
                 </Button>
                 
-                <div className="flex justify-between gap-2">
+                <div className="flex justify-between gap-3">
                   <Button 
                     variant="secondary" 
-                    size="sm"
+                    size="lg"
                     onClick={handlePrev} 
-                    disabled={currentCard === 0}
+                    disabled={currentCard === 0 || isAnimating}
                     className="flex-1"
                   >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    <ArrowLeft className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Previous</span>
                     <span className="sm:hidden">Prev</span>
                   </Button>
                   <Button 
-                    size="sm"
+                    size="lg"
                     onClick={handleNext} 
+                    disabled={isAnimating}
                     className="flex-1"
                   >
                     {isLastCard ? <span className="hidden sm:inline">Complete</span> : <span className="hidden sm:inline">Next</span>}
                     {isLastCard ? <span className="sm:hidden">Done</span> : <span className="sm:hidden">Next</span>}
-                    <ArrowRight className="ml-1 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -156,47 +183,49 @@ export const FlashCard = () => {
           
           {/* Back of card */}
           <div 
-            className={`absolute inset-0 premium-card p-4 sm:p-6 backface-hidden rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 premium-card p-6 sm:p-8 backface-hidden rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <div className="flex flex-col justify-between h-full">
               <div>
-                <div className="text-xs text-gray-400 mb-1">Answer</div>
-                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">{currentFlashcard.title}</h3>
-                <div className="text-gray-300 text-sm sm:text-base">{currentFlashcard.answer}</div>
+                <div className="text-xs text-cyan/80 mb-2 font-medium">Answer</div>
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">{currentFlashcard.title}</h3>
+                <div className="text-gray-300 text-base sm:text-lg">{currentFlashcard.answer}</div>
               </div>
               
-              <div className="flex flex-col gap-2 sm:gap-3 mt-4">
+              <div className="flex flex-col gap-3 sm:gap-4 mt-6">
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="lg"
                   onClick={handleFlip} 
                   className="w-full border-cyan/40 text-cyan hover:bg-cyan/10"
+                  disabled={isAnimating}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Flip to Question
                 </Button>
                 
-                <div className="flex justify-between gap-2">
+                <div className="flex justify-between gap-3">
                   <Button 
                     variant="secondary" 
-                    size="sm"
+                    size="lg"
                     onClick={handlePrev} 
-                    disabled={currentCard === 0}
+                    disabled={currentCard === 0 || isAnimating}
                     className="flex-1"
                   >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    <ArrowLeft className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Previous</span>
                     <span className="sm:hidden">Prev</span>
                   </Button>
                   <Button 
-                    size="sm"
+                    size="lg"
                     onClick={handleNext} 
+                    disabled={isAnimating}
                     className="flex-1"
                   >
                     {isLastCard ? <span className="hidden sm:inline">Complete</span> : <span className="hidden sm:inline">Next</span>}
                     {isLastCard ? <span className="sm:hidden">Done</span> : <span className="sm:hidden">Next</span>}
-                    <ArrowRight className="ml-1 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -204,12 +233,15 @@ export const FlashCard = () => {
           </div>
         </div>
         
-        <div className="flex justify-center mt-4">
-          <div className="flex gap-1">
+        <div className="flex justify-center mt-6">
+          <div className="flex gap-1.5">
             {moduleData.flashcards.map((_, index) => (
               <div 
                 key={index}
-                className={`h-1 w-3 sm:w-4 rounded-full ${index === currentCard ? 'bg-cyan' : 'bg-gray-700'}`}
+                className={`h-1.5 w-4 sm:w-5 rounded-full transition-colors duration-300 ${
+                  index === currentCard ? 'bg-cyan' : 
+                  index < currentCard ? 'bg-cyan/30' : 'bg-gray-700'
+                }`}
               ></div>
             ))}
           </div>

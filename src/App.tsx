@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,7 +38,7 @@ import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
 import PriceAdminPage from "./pages/PriceAdminPage";
 import ColorTest from "./pages/ColorTest";
-import Education from "./pages/Education";
+import Learn from "./pages/Learn";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 
@@ -62,7 +61,7 @@ function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
-      <Route path="/education" element={<Education />} />
+      <Route path="/learn" element={<Learn />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={

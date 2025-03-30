@@ -18,7 +18,8 @@ import {
   Lightbulb, 
   Infinity, 
   ArrowRight,
-  Award
+  Award,
+  BookText
 } from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
@@ -29,7 +30,7 @@ import { QuizModal } from '@/components/education/QuizModal';
 import { useEducation, Level } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
 
-const Education = () => {
+const Learn = () => {
   const { 
     currentLevel, 
     currentModule,
@@ -75,47 +76,47 @@ const Education = () => {
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
       <Header />
       
-      <main className="container mx-auto px-4 pb-20">
+      <main className="container mx-auto px-4 py-8 pb-24">
         {/* Hero section */}
-        <section className="relative py-8 md:py-12 mb-6">
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
+        <section className="relative py-10 md:py-14 mb-8 glass-card">
+          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-10 rounded-xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5 rounded-xl"></div>
           
-          <div className="relative z-10 text-center max-w-3xl mx-auto">
-            <div className="flex items-center justify-center mb-3">
-              <GraduationCap className="text-cyan mr-2 h-7 w-7" />
-              <h2 className="text-cyan text-xl font-bold">Trading Academy</h2>
+          <div className="relative z-10 text-center max-w-3xl mx-auto px-6">
+            <div className="flex items-center justify-center mb-4">
+              <BookText className="text-cyan mr-2 h-8 w-8" />
+              <h2 className="text-cyan text-2xl font-bold">Trading Academy</h2>
             </div>
             
-            <h1 className="text-2xl md:text-3xl font-bold mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
               <span className="text-cyan">Master Trading</span> from Basics to Pro
             </h1>
             
-            <p className="text-gray-300 mb-4 text-sm md:text-base">
+            <p className="text-gray-300 mb-6 text-base md:text-lg max-w-2xl mx-auto">
               Interactive flashcards, quizzes, and personalized learning paths to help you become an expert trader
             </p>
             
             {/* Stats summary */}
-            <div className="flex flex-wrap justify-center gap-4 mt-6">
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
-                <CheckCircle className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              <div className="premium-card rounded-lg px-5 py-3 flex items-center">
+                <CheckCircle className="text-cyan h-5 w-5 mr-3" />
+                <span className="text-base">{stats.completedCount}/{stats.totalModules} Modules</span>
               </div>
               
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
-                <Trophy className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
+              <div className="premium-card rounded-lg px-5 py-3 flex items-center">
+                <Trophy className="text-cyan h-5 w-5 mr-3" />
+                <span className="text-base">{stats.quizzesTaken} Quizzes</span>
               </div>
               
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
-                <Award className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.badgesEarned} Badges</span>
+              <div className="premium-card rounded-lg px-5 py-3 flex items-center">
+                <Award className="text-cyan h-5 w-5 mr-3" />
+                <span className="text-base">{stats.badgesEarned} Badges</span>
               </div>
               
               {stats.averageScore > 0 && (
-                <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
-                  <Brain className="text-cyan h-4 w-4 mr-2" />
-                  <span className="text-sm">{stats.averageScore}% Score</span>
+                <div className="premium-card rounded-lg px-5 py-3 flex items-center">
+                  <Brain className="text-cyan h-5 w-5 mr-3" />
+                  <span className="text-base">{stats.averageScore}% Score</span>
                 </div>
               )}
             </div>
@@ -126,41 +127,45 @@ const Education = () => {
         <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
         
         {/* Leaderboard */}
-        <Leaderboard />
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold mb-4">Top Learners</h2>
+          <Leaderboard />
+        </section>
         
         {/* Level tabs */}
-        <section className="mb-8">
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold mb-4">Learning Paths</h2>
           <Tabs defaultValue={currentLevel} onValueChange={handleLevelChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="basics" className="flex gap-2 items-center">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="basics" className="flex gap-2 items-center py-3">
                 <BookOpen className="h-4 w-4" />
                 <span>Basics</span>
               </TabsTrigger>
-              <TabsTrigger value="intermediate" className="flex gap-2 items-center">
+              <TabsTrigger value="intermediate" className="flex gap-2 items-center py-3">
                 <Brain className="h-4 w-4" />
                 <span>Intermediate</span>
               </TabsTrigger>
-              <TabsTrigger value="pro" className="flex gap-2 items-center">
+              <TabsTrigger value="pro" className="flex gap-2 items-center py-3">
                 <Infinity className="h-4 w-4" />
                 <span>Pro</span>
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="basics">
-              <div className="premium-card p-4 md:p-6 mb-6">
-                <div className="flex items-center mb-3">
-                  <BookOpen className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Trading Basics</h2>
+              <div className="premium-card p-6 md:p-8 mb-8">
+                <div className="flex items-center mb-4">
+                  <BookOpen className="h-6 w-6 text-cyan mr-3" />
+                  <h2 className="text-xl md:text-2xl font-bold">Trading Basics</h2>
                 </div>
-                <p className="text-gray-300 text-sm mb-4">
+                <p className="text-gray-300 text-base mb-6">
                   Master the fundamentals of trading, market mechanics, and essential terminology. Perfect for beginners.
                 </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                <div className="flex items-center text-base text-gray-300 mb-3">
+                  <CheckCircle className="h-5 w-5 text-cyan mr-2" />
                   <span>{completedModules.basics} of 15 modules completed</span>
                 </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.basics / 15) * 100}%` }}></div>
+                <div className="w-full bg-charcoalPrimary rounded-full h-2.5 mb-6">
+                  <div className="bg-cyan h-2.5 rounded-full transition-all duration-500" style={{ width: `${(completedModules.basics / 15) * 100}%` }}></div>
                 </div>
                 <LevelBadges level="basics" earnedBadges={earnedBadges} />
               </div>
@@ -174,20 +179,20 @@ const Education = () => {
             </TabsContent>
             
             <TabsContent value="intermediate">
-              <div className="premium-card p-4 md:p-6 mb-6">
-                <div className="flex items-center mb-3">
-                  <Brain className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Intermediate Trading</h2>
+              <div className="premium-card p-6 md:p-8 mb-8">
+                <div className="flex items-center mb-4">
+                  <Brain className="h-6 w-6 text-cyan mr-3" />
+                  <h2 className="text-xl md:text-2xl font-bold">Intermediate Trading</h2>
                 </div>
-                <p className="text-gray-300 text-sm mb-4">
+                <p className="text-gray-300 text-base mb-6">
                   Advanced trading strategies, technical analysis, and risk management techniques.
                 </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                <div className="flex items-center text-base text-gray-300 mb-3">
+                  <CheckCircle className="h-5 w-5 text-cyan mr-2" />
                   <span>{completedModules.intermediate} of 15 modules completed</span>
                 </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.intermediate / 15) * 100}%` }}></div>
+                <div className="w-full bg-charcoalPrimary rounded-full h-2.5 mb-6">
+                  <div className="bg-cyan h-2.5 rounded-full transition-all duration-500" style={{ width: `${(completedModules.intermediate / 15) * 100}%` }}></div>
                 </div>
                 <LevelBadges level="intermediate" earnedBadges={earnedBadges} />
               </div>
@@ -201,20 +206,20 @@ const Education = () => {
             </TabsContent>
             
             <TabsContent value="pro">
-              <div className="premium-card p-4 md:p-6 mb-6">
-                <div className="flex items-center mb-3">
-                  <Infinity className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Professional Algo Trading</h2>
+              <div className="premium-card p-6 md:p-8 mb-8">
+                <div className="flex items-center mb-4">
+                  <Infinity className="h-6 w-6 text-cyan mr-3" />
+                  <h2 className="text-xl md:text-2xl font-bold">Professional Algo Trading</h2>
                 </div>
-                <p className="text-gray-300 text-sm mb-4">
+                <p className="text-gray-300 text-base mb-6">
                   Algorithmic trading, quantitative analysis, and automated strategy development and optimization.
                 </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                <div className="flex items-center text-base text-gray-300 mb-3">
+                  <CheckCircle className="h-5 w-5 text-cyan mr-2" />
                   <span>{completedModules.pro} of 15 modules completed</span>
                 </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.pro / 15) * 100}%` }}></div>
+                <div className="w-full bg-charcoalPrimary rounded-full h-2.5 mb-6">
+                  <div className="bg-cyan h-2.5 rounded-full transition-all duration-500" style={{ width: `${(completedModules.pro / 15) * 100}%` }}></div>
                 </div>
                 <LevelBadges level="pro" earnedBadges={earnedBadges} />
               </div>
@@ -230,15 +235,16 @@ const Education = () => {
         </section>
         
         {/* Current flashcard */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Current Study Material</h2>
+        <section className="mb-14">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Current Study Material</h2>
             <Button 
               variant="outline" 
-              className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10" 
+              size="sm"
+              className="border-cyan/40 text-cyan hover:bg-cyan/10" 
               onClick={() => handleLaunchQuiz(currentModule)}
             >
-              Take Quiz <ChevronRight className="ml-1 h-3 w-3" />
+              Take Quiz <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
           
@@ -263,4 +269,4 @@ const Education = () => {
   );
 };
 
-export default Education;
+export default Learn;

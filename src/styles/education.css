@@ -68,3 +68,23 @@
 .share-pulse {
   animation: pulse 1s ease-in-out infinite;
 }
+
+/* Card flip animation */
+@keyframes flipIn {
+  from { opacity: 0; transform: rotateY(-80deg); }
+  to { opacity: 1; transform: rotateY(0); }
+}
+
+.flip-in {
+  animation: flipIn 0.5s ease-out forwards;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 188, 212, 0.15);
+}
