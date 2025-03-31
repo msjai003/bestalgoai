@@ -41,6 +41,7 @@ interface CustomDotProps {
   value: number;
   index: number;
   dataKey: string;
+  stroke?: string;
 }
 
 const CustomizedDot = (props: CustomDotProps) => {
@@ -264,30 +265,13 @@ const Dashboard = () => {
                   />
                   <YAxis 
                     stroke="#888" 
-                    tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`}
+                    tickFormatter={(value: number) => `₹${(value/100000).toFixed(1)}L`}
                     axisLine={{ strokeWidth: 1, stroke: '#444' }}
                     tickLine={{ stroke: '#444' }}
                     domain={['dataMin - 50000', 'dataMax + 50000']}
                   />
                   <Tooltip 
-                    formatter={(value: number) => [
-                      `₹${new Intl.NumberFormat('en-IN').format(value)}`,
-                      'Value'
-                    ]}
-                    contentStyle={{ 
-                      backgroundColor: '#1F1F1F', 
-                      borderColor: '#333',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                    }}
-                    labelStyle={{
-                      color: '#CCC'
-                    }}
-                    itemStyle={{
-                      color: '#4CAF50'
-                    }}
-                    animationDuration={300}
-                    animationEasing="ease-out"
+                    content={<CustomTooltip />}
                   />
                   <Line 
                     type="monotone" 
@@ -305,8 +289,8 @@ const Dashboard = () => {
                       fill: '#00BCD4',
                       className: "animate-ping-slow"
                     }}
+                    connectNulls={true}
                   />
-                  <Tooltip content={<CustomTooltip />} />
                 </LineChart>
               </ResponsiveContainer>
               
