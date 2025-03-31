@@ -77,13 +77,13 @@ const generateEnhancedData = (baseData: any[]) => {
 const mockPerformanceData = [
   { date: '1/5', value: 1200000, trend: 'up' },
   { date: '2/5', value: 1300000, trend: 'up' },
-  { date: '3/5', value: 1250000, trend: 'down' },
-  { date: '4/5', value: 1200000, trend: 'down' },
-  { date: '5/5', value: 1180000, trend: 'down' },
-  { date: '6/5', value: 1230000, trend: 'up' },
-  { date: '7/5', value: 1280000, trend: 'up' },
+  { date: '3/5', value: 1280000, trend: 'down' }, // Small drawdown (only 20K instead of 50K)
+  { date: '4/5', value: 1250000, trend: 'down' }, // Second red dot with smaller drawdown
+  { date: '5/5', value: 1280000, trend: 'up' }, // Changed to up trend
+  { date: '6/5', value: 1330000, trend: 'up' },
+  { date: '7/5', value: 1380000, trend: 'up' },
   { date: '8/5', value: 1350000, trend: 'up' },
-  { date: '9/5', value: 1320000, trend: 'down' },
+  { date: '9/5', value: 1320000, trend: 'up' }, // Changed from down to up
   { date: '10/5', value: 1380000, trend: 'up' },
 ];
 
