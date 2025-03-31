@@ -83,8 +83,8 @@ const mockPerformanceData = [
   { date: '5/5', value: 1280000, trend: 'up' }, 
   { date: '6/5', value: 1330000, trend: 'up' },
   { date: '7/5', value: 1380000, trend: 'up' },
-  { date: '8/5', value: 1350000, trend: 'up' },
-  { date: '9/5', value: 1320000, trend: 'up' }, 
+  { date: '8/5', value: 1350000, trend: 'down' }, // Changed to down (red)
+  { date: '9/5', value: 1320000, trend: 'down' }, // Changed to down (red)
   { date: '10/5', value: 1380000, trend: 'up' },
 ];
 

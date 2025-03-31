@@ -38,12 +38,10 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 
 // A wrapper for the Line component that adds colored segments
 const ColoredSegmentLine: React.FC<LineProps> = (props) => {
-  return (
-    <Line
-      {...props}
-      stroke="#777" // Default connecting line color
-    />
-  );
+  return React.createElement(Line, {
+    ...props,
+    stroke: "#777" // Default connecting line color
+  });
 };
 
 export default ColoredSegmentLine;
