@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { useEducation } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
-import { ArrowLeft, ArrowRight, RefreshCw, Award } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RefreshCw, Award, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 export const FlashCard = () => {
@@ -52,9 +51,9 @@ export const FlashCard = () => {
   
   if (!moduleData || moduleData.flashcards.length === 0) {
     return (
-      <Card className="premium-card p-6 text-center">
+      <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 text-center">
         <p>No flashcards available for this module yet.</p>
-      </Card>
+      </div>
     );
   }
   
@@ -96,7 +95,7 @@ export const FlashCard = () => {
         </div>
       </div>
       
-      <Progress value={cardProgress} className="h-1 w-full" />
+      <Progress value={cardProgress} className="h-1 w-full bg-charcoalPrimary" />
       
       <div className="h-[300px] md:h-[360px] relative">
         <div 
@@ -105,7 +104,7 @@ export const FlashCard = () => {
         >
           {/* Front of card */}
           <div 
-            className={`absolute inset-0 premium-card p-4 sm:p-6 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}
+            className={`absolute inset-0 bg-charcoalSecondary rounded-xl p-5 border border-gray-800/40 backface-hidden ${isFlipped ? 'opacity-0' : 'opacity-100'}`}
             style={{ backfaceVisibility: 'hidden' }}
           >
             <div className="flex flex-col justify-between h-full">
@@ -143,7 +142,7 @@ export const FlashCard = () => {
                   <Button 
                     size="sm"
                     onClick={handleNext} 
-                    className="flex-1"
+                    className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
                   >
                     {isLastCard ? <span className="hidden sm:inline">Complete</span> : <span className="hidden sm:inline">Next</span>}
                     {isLastCard ? <span className="sm:hidden">Done</span> : <span className="sm:hidden">Next</span>}
@@ -156,7 +155,7 @@ export const FlashCard = () => {
           
           {/* Back of card */}
           <div 
-            className={`absolute inset-0 premium-card p-4 sm:p-6 backface-hidden rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 bg-charcoalSecondary rounded-xl p-5 border border-gray-800/40 backface-hidden rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <div className="flex flex-col justify-between h-full">
@@ -191,8 +190,8 @@ export const FlashCard = () => {
                   </Button>
                   <Button 
                     size="sm"
-                    onClick={handleNext} 
-                    className="flex-1"
+                    onClick={handleNext}
+                    className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
                   >
                     {isLastCard ? <span className="hidden sm:inline">Complete</span> : <span className="hidden sm:inline">Next</span>}
                     {isLastCard ? <span className="sm:hidden">Done</span> : <span className="sm:hidden">Next</span>}

@@ -68,3 +68,43 @@
 .share-pulse {
   animation: pulse 1s ease-in-out infinite;
 }
+
+/* Module item hover effect */
+.module-item {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.module-item:hover {
+  border-color: rgba(0, 188, 212, 0.4);
+  background-color: rgba(0, 188, 212, 0.05);
+  transform: translateY(-2px);
+}
+
+.module-item.current {
+  border-color: rgba(0, 188, 212, 0.6);
+  background-color: rgba(0, 188, 212, 0.1);
+}
+
+/* Button hover animations */
+.btn-cyan {
+  background-color: #00BCD4;
+  color: #121212;
+  transition: all 0.3s ease;
+}
+
+.btn-cyan:hover {
+  background-color: rgba(0, 188, 212, 0.9);
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.4);
+}
+
+/* Card styles */
+.dark-card {
+  background-color: #1F1F1F;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.dark-card:hover {
+  border-color: rgba(0, 188, 212, 0.3);
+}

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,8 @@ import {
   BarChart3, 
   Star, 
   Users,
-  FileBarChart
+  FileBarChart,
+  Heart
 } from "lucide-react";
 
 const mockPerformanceData = [
@@ -108,29 +110,29 @@ const Dashboard = () => {
 
   if (user === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-[#00BCD4] mx-auto mb-4" />
-          <p>Loading dashboard...</p>
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="bg-charcoalPrimary min-h-screen">
       <Header />
-      <main className="relative pt-16 pb-20 z-10">
-        <section id="portfolio-overview" className="p-4">
-          <div className="bg-charcoalSecondary rounded-2xl p-6 shadow-lg border border-gray-800/60">
-            <div className="flex justify-between items-start mb-4">
+      <main className="pt-16 pb-20 px-4">
+        <section id="portfolio-overview" className="mt-4">
+          <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
                 <p className="text-2xl font-bold text-white">₹12,45,678</p>
               </div>
               <Link 
                 to="/subscription" 
-                className="text-[#00BCD4] bg-[#00BCD4]/10 px-3 py-1.5 rounded-lg text-sm hover:bg-[#00BCD4]/20 transition-colors border border-[#00BCD4]/20"
+                className="text-cyan bg-cyan/10 px-3 py-1.5 rounded-lg text-sm hover:bg-cyan/20 transition-colors border border-cyan/20"
               >
                 Upgrade
               </Link>
@@ -145,7 +147,7 @@ const Dashboard = () => {
                   <Tooltip 
                     formatter={(value) => [`₹${value}`, 'Value']}
                     contentStyle={{ 
-                      backgroundColor: 'rgba(17, 17, 17, 0.8)', 
+                      backgroundColor: '#1F1F1F', 
                       borderColor: '#333',
                       borderRadius: '0.5rem',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
@@ -181,78 +183,121 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <section id="quick-actions" className="px-4 mt-6">
-          <h2 className="text-lg font-bold text-white mb-3">Quick Access</h2>
+        <section className="mt-6">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-lg font-bold text-white">Quick Access</h2>
+          </div>
           
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/strategy-selection" className="block">
-              <QuickActionButton 
-                label="Strategies" 
-                icon={<TrendingUp className="h-6 w-6 text-[#00BCD4]" />}
-              />
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <TrendingUp className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Strategies</span>
+              </div>
             </Link>
-            <Link to="/community" className="block">
-              <QuickActionButton 
-                label="Community" 
-                icon={<Users className="h-6 w-6 text-[#00BCD4]" />}
-              />
+            
+            <Link to="/strategy-management" className="block">
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <Heart className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Wishlist</span>
+              </div>
             </Link>
           </div>
           
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/backtest-report" className="block">
-              <QuickActionButton 
-                label="Backtest" 
-                icon={<FileBarChart className="h-6 w-6 text-[#00BCD4]" />}
-              />
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <FileBarChart className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Backtest</span>
+              </div>
             </Link>
-            <Link to="/subscription" className="block">
-              <QuickActionButton 
-                label="Premium" 
-                icon={<Star className="h-6 w-6 text-[#00BCD4]" />}
-              />
+            
+            <Link to="/live-trading" className="block">
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <Play className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Trading</span>
+              </div>
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link to="/broker-integration" className="block">
-              <QuickActionButton 
-                label="Brokers" 
-                icon={<Building className="h-6 w-6 text-[#00BCD4]" />}
-              />
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <Building className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Brokers</span>
+              </div>
             </Link>
-            <Link to="/risk-management" className="block">
-              <QuickActionButton 
-                label="Risk" 
-                icon={<Shield className="h-6 w-6 text-[#00BCD4]" />}
-                customLabel={<span className="text-xs sm:text-sm">Risk Management</span>}
-              />
+            
+            <Link to="/education" className="block">
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+                <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+                  <GraduationCap className="h-5 w-5 text-cyan" />
+                </div>
+                <span className="text-gray-200">Education</span>
+              </div>
             </Link>
           </div>
+        </section>
+        
+        <section className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-white">Your Strategies</h2>
+            <Link to="/strategy-selection" className="flex items-center text-cyan text-sm">
+              See all <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          
+          {mockStrategies.map((strategy) => (
+            <Link 
+              key={strategy.id} 
+              to={`/strategy-details/${strategy.id}`} 
+              className="block mb-3"
+              onClick={strategy.isPremium && !hasPremium ? (e) => {
+                e.preventDefault();
+                handlePremiumClick();
+              } : undefined}
+            >
+              <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-white">{strategy.name}</h3>
+                  {strategy.isPremium && !hasPremium && (
+                    <span className="bg-amber-900/30 border border-amber-500/30 text-amber-500 text-xs px-2 py-1 rounded-md flex items-center">
+                      <Lock className="h-3 w-3 mr-1" /> Premium
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 text-sm">{strategy.description}</p>
+                <div className="flex justify-between items-center mt-3">
+                  <div className="flex space-x-3">
+                    <div className="text-xs">
+                      <div className="text-gray-500 mb-1">Success Rate</div>
+                      <div className="text-cyan font-medium">N/A</div>
+                    </div>
+                    <div className="text-xs">
+                      <div className="text-gray-500 mb-1">Avg. Profit</div>
+                      <div className="text-green-400 font-medium">N/A</div>
+                    </div>
+                  </div>
+                  <span className="text-cyan text-xs">View Details</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </section>
       </main>
       <BottomNav />
     </div>
   );
 };
-
-const QuickActionButton = ({ 
-  label, 
-  icon,
-  fullWidth = false,
-  customLabel = null
-}: { 
-  label: string;
-  icon: React.ReactNode;
-  fullWidth?: boolean;
-  customLabel?: React.ReactNode;
-}) => (
-  <div className={`flex items-center bg-charcoalSecondary rounded-lg p-4 border border-gray-700/40 shadow-md transition-all hover:bg-charcoalSecondary/80 hover:border-cyan/30 hover:shadow-lg hover:shadow-cyan/5 ${fullWidth ? 'py-4' : ''}`}>
-    <div className="mr-3 flex items-center justify-center bg-charcoalPrimary/30 p-2 rounded-md">
-      {icon}
-    </div>
-    {customLabel ? customLabel : <span className="text-gray-200 font-medium">{label}</span>}
-  </div>
-);
 
 export default Dashboard;

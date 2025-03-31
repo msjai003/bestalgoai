@@ -1,11 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
@@ -16,9 +14,10 @@ import {
   ChevronRight, 
   Brain, 
   Lightbulb, 
-  Infinity, 
+  Infinity,
   ArrowRight,
-  Award
+  Award,
+  Play
 } from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
@@ -72,48 +71,45 @@ const Education = () => {
   }, [autoLaunchQuiz]);
   
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
+    <div className="min-h-screen bg-charcoalPrimary text-white">
       <Header />
       
-      <main className="container mx-auto px-4 pb-20">
+      <main className="pt-16 pb-20 px-4">
         {/* Hero section */}
-        <section className="relative py-8 md:py-12 mb-6">
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 to-cyan/5"></div>
-          
-          <div className="relative z-10 text-center max-w-3xl mx-auto">
-            <div className="flex items-center justify-center mb-3">
-              <GraduationCap className="text-cyan mr-2 h-7 w-7" />
+        <section className="py-8 mb-6">
+          <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-6">
+            <div className="flex items-center mb-3">
+              <GraduationCap className="text-cyan mr-2 h-6 w-6" />
               <h2 className="text-cyan text-xl font-bold">Trading Academy</h2>
             </div>
             
-            <h1 className="text-2xl md:text-3xl font-bold mb-3">
+            <h1 className="text-2xl font-bold mb-3">
               <span className="text-cyan">Master Trading</span> from Basics to Pro
             </h1>
             
-            <p className="text-gray-300 mb-4 text-sm md:text-base">
-              Interactive flashcards, quizzes, and personalized learning paths to help you become an expert trader
+            <p className="text-gray-300 mb-4">
+              Interactive flashcards, quizzes, and personalized learning paths
             </p>
             
             {/* Stats summary */}
-            <div className="flex flex-wrap justify-center gap-4 mt-6">
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+            <div className="flex flex-wrap gap-4 mt-5">
+              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
                 <CheckCircle className="text-cyan h-4 w-4 mr-2" />
                 <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
               </div>
               
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
                 <Trophy className="text-cyan h-4 w-4 mr-2" />
                 <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
               </div>
               
-              <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
                 <Award className="text-cyan h-4 w-4 mr-2" />
                 <span className="text-sm">{stats.badgesEarned} Badges</span>
               </div>
               
               {stats.averageScore > 0 && (
-                <div className="bg-charcoalSecondary/50 rounded-lg px-4 py-2 flex items-center">
+                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
                   <Brain className="text-cyan h-4 w-4 mr-2" />
                   <span className="text-sm">{stats.averageScore}% Score</span>
                 </div>
@@ -125,35 +121,32 @@ const Education = () => {
         {/* Progress tracker */}
         <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
         
-        {/* Leaderboard */}
-        <Leaderboard />
-        
         {/* Level tabs */}
         <section className="mb-8">
           <Tabs defaultValue={currentLevel} onValueChange={handleLevelChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="basics" className="flex gap-2 items-center">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
+              <TabsTrigger value="basics" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
                 <BookOpen className="h-4 w-4" />
                 <span>Basics</span>
               </TabsTrigger>
-              <TabsTrigger value="intermediate" className="flex gap-2 items-center">
+              <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
                 <Brain className="h-4 w-4" />
                 <span>Intermediate</span>
               </TabsTrigger>
-              <TabsTrigger value="pro" className="flex gap-2 items-center">
+              <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
                 <Infinity className="h-4 w-4" />
                 <span>Pro</span>
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="basics">
-              <div className="premium-card p-4 md:p-6 mb-6">
+              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
                 <div className="flex items-center mb-3">
                   <BookOpen className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Trading Basics</h2>
+                  <h2 className="text-lg font-bold">Trading Basics</h2>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
-                  Master the fundamentals of trading, market mechanics, and essential terminology. Perfect for beginners.
+                  Master the fundamentals of trading, market mechanics, and essential terminology.
                 </p>
                 <div className="flex items-center text-sm text-gray-300 mb-2">
                   <CheckCircle className="h-4 w-4 text-cyan mr-1" />
@@ -174,10 +167,10 @@ const Education = () => {
             </TabsContent>
             
             <TabsContent value="intermediate">
-              <div className="premium-card p-4 md:p-6 mb-6">
+              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
                 <div className="flex items-center mb-3">
                   <Brain className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Intermediate Trading</h2>
+                  <h2 className="text-lg font-bold">Intermediate Trading</h2>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
                   Advanced trading strategies, technical analysis, and risk management techniques.
@@ -201,13 +194,13 @@ const Education = () => {
             </TabsContent>
             
             <TabsContent value="pro">
-              <div className="premium-card p-4 md:p-6 mb-6">
+              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
                 <div className="flex items-center mb-3">
                   <Infinity className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg md:text-xl font-bold">Professional Algo Trading</h2>
+                  <h2 className="text-lg font-bold">Professional Algo Trading</h2>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
-                  Algorithmic trading, quantitative analysis, and automated strategy development and optimization.
+                  Algorithmic trading, quantitative analysis, and automated strategy development.
                 </p>
                 <div className="flex items-center text-sm text-gray-300 mb-2">
                   <CheckCircle className="h-4 w-4 text-cyan mr-1" />
@@ -234,11 +227,11 @@ const Education = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Current Study Material</h2>
             <Button 
-              variant="outline" 
-              className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10" 
+              className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 text-xs flex items-center" 
+              size="sm" 
               onClick={() => handleLaunchQuiz(currentModule)}
             >
-              Take Quiz <ChevronRight className="ml-1 h-3 w-3" />
+              <Play className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
             </Button>
           </div>
           
@@ -257,7 +250,6 @@ const Education = () => {
         />
       )}
       
-      <Footer />
       <BottomNav />
     </div>
   );

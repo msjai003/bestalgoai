@@ -261,6 +261,45 @@ export type Database = {
         }
         Relationships: []
       }
+      pnl_logs: {
+        Row: {
+          client_name: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          pnl: number | null
+          price: number | null
+          qty: number | null
+          side: string | null
+          strategy_id: number | null
+          symbol: string | null
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          pnl?: number | null
+          price?: number | null
+          qty?: number | null
+          side?: string | null
+          strategy_id?: number | null
+          symbol?: string | null
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          pnl?: number | null
+          price?: number | null
+          qty?: number | null
+          side?: string | null
+          strategy_id?: number | null
+          symbol?: string | null
+        }
+        Relationships: []
+      }
       predefined_strategies: {
         Row: {
           description: string
@@ -471,6 +510,102 @@ export type Database = {
         }
         Relationships: []
       }
+      user_completed_modules: {
+        Row: {
+          completed_at: string | null
+          id: string
+          level: string
+          module_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          level: string
+          module_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          level?: string
+          module_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_earned_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_education_progress: {
+        Row: {
+          created_at: string | null
+          current_card: number
+          current_level: string
+          current_module: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_card?: number
+          current_level?: string
+          current_module?: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_card?: number
+          current_level?: string
+          current_module?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_module_views: {
+        Row: {
+          id: string
+          module_id: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          module_id: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          module_id?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null
@@ -501,6 +636,39 @@ export type Database = {
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_quiz_results: {
+        Row: {
+          completed_at: string | null
+          id: string
+          module_id: string
+          passed: boolean
+          score: number
+          time_spent: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          module_id: string
+          passed?: boolean
+          score: number
+          time_spent: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          module_id?: string
+          passed?: boolean
+          score?: number
+          time_spent?: number
+          total_questions?: number
+          user_id?: string
         }
         Relationships: []
       }

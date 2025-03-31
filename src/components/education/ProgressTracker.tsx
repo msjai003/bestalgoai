@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Award, Trophy, Star } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { Badge as BadgeType } from '@/hooks/useEducation';
 
 interface ProgressTrackerProps {
@@ -17,8 +16,8 @@ interface ProgressTrackerProps {
 
 export const ProgressTracker = ({ progress, earnedBadges }: ProgressTrackerProps) => {
   return (
-    <section className="mb-8">
-      <div className="premium-card p-6">
+    <section className="mb-6">
+      <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-4 flex-1">
             <div className="flex items-center justify-between">
@@ -28,8 +27,8 @@ export const ProgressTracker = ({ progress, earnedBadges }: ProgressTrackerProps
             
             <div className="w-full bg-charcoalPrimary rounded-full h-3">
               <div 
-                className="bg-gradient-to-r from-cyan to-cyan/80 h-3 rounded-full"
-                style={{ width: `${progress.overall}%` }}
+                className="bg-cyan h-3 rounded-full animate-progress"
+                style={{ width: `${progress.overall}%`, '--progress-width': `${progress.overall}%` } as React.CSSProperties}
               ></div>
             </div>
             
@@ -66,11 +65,11 @@ export const ProgressTracker = ({ progress, earnedBadges }: ProgressTrackerProps
             </div>
           </div>
           
-          <div className="border-t md:border-t-0 md:border-l border-white/10 pl-0 md:pl-6 pt-4 md:pt-0 flex-shrink-0">
+          <div className="border-t md:border-t-0 md:border-l border-gray-700/40 pl-0 md:pl-6 pt-4 md:pt-0 flex-shrink-0">
             <div className="flex items-center mb-2">
               <Trophy className="h-4 w-4 text-cyan mr-2" />
               <h4 className="font-medium">Earned Badges</h4>
-              <Badge variant="outline" className="ml-2">{earnedBadges.length}/9</Badge>
+              <Badge variant="outline" className="ml-2 border-gray-700/40">{earnedBadges.length}/9</Badge>
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -78,7 +77,7 @@ export const ProgressTracker = ({ progress, earnedBadges }: ProgressTrackerProps
                 earnedBadges.slice(0, 5).map(badge => (
                   <div 
                     key={badge.id} 
-                    className="w-8 h-8 flex items-center justify-center bg-cyan/10 rounded-full border border-cyan/30"
+                    className="w-8 h-8 flex items-center justify-center bg-cyan/10 rounded-full border border-cyan/30 badge-unlock"
                     title={badge.name}
                   >
                     <span className="text-lg">{badge.image}</span>
