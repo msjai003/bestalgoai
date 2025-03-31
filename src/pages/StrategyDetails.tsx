@@ -207,35 +207,35 @@ const StrategyDetails = () => {
                     Key Metrics
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-800/30 rounded-lg p-4 hover:shadow-lg hover:border-blue-700/40 transition-all duration-300">
+                    <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Win Rate
                       </p>
-                      <p className="text-blue-300 font-semibold text-xl">
+                      <p className="text-cyan font-semibold text-xl">
                         {strategy.performance.winRate}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-900/20 to-green-800/10 border border-green-800/30 rounded-lg p-4 hover:shadow-lg hover:border-green-700/40 transition-all duration-300">
+                    <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Average Return
                       </p>
-                      <p className="text-green-300 font-semibold text-xl">
+                      <p className="text-cyan font-semibold text-xl">
                         {strategy.performance.avgProfit}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-red-900/20 to-red-800/10 border border-red-800/30 rounded-lg p-4 hover:shadow-lg hover:border-red-700/40 transition-all duration-300">
+                    <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Max Drawdown
                       </p>
-                      <p className="text-red-300 font-semibold text-xl">
+                      <p className="text-cyan font-semibold text-xl">
                         {strategy.performance.drawdown}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-800/30 rounded-lg p-4 hover:shadow-lg hover:border-purple-700/40 transition-all duration-300">
+                    <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
                       <p className="text-gray-400 mb-1 text-sm">
                         Risk Score
                       </p>
-                      <p className="text-purple-300 font-semibold text-xl">
+                      <p className="text-cyan font-semibold text-xl">
                         {strategy.parameters.find(p => p.name === "Risk Score")?.value || "N/A"}
                       </p>
                     </div>
@@ -256,11 +256,11 @@ const StrategyDetails = () => {
                   </div>
                 </div>
 
-                <ScrollArea className="h-48 bg-gradient-to-br from-gray-800/80 to-gray-800/40 rounded-lg p-5 border border-gray-700/50 mb-8">
+                <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
                   {showAdvanced ? (
                     <div className="space-y-4">
                       <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                      <div className="p-3 bg-gray-900/50 rounded border border-gray-700/70">
+                      <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
                         <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
                         <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
                           <li>Moving Average Crossover (EMA 9/21)</li>
@@ -268,7 +268,7 @@ const StrategyDetails = () => {
                           <li>Volume Profile Analysis</li>
                         </ul>
                       </div>
-                      <div className="p-3 bg-gray-900/50 rounded border border-gray-700/70">
+                      <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
                         <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
                         <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
                           <li>EMA 9 crosses above EMA 21</li>
@@ -314,14 +314,14 @@ const StrategyDetails = () => {
                 </div>
               </>
             ) : (
-              <div className="text-center py-12 bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-xl border border-gray-700/50">
-                <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70 animate-pulse-slow" />
-                <h3 className="text-xl font-semibold mb-2 text-gradient-to-r from-amber-200 to-amber-400">Premium Strategy</h3>
+              <div className="text-center py-12 bg-charcoalSecondary/40 rounded-xl border border-gray-700/50">
+                <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70 animate-pulse" />
+                <h3 className="text-xl font-semibold mb-2 text-white">Premium Strategy</h3>
                 <p className="text-gray-400 mb-8 max-w-md mx-auto">
                   <span className="font-medium text-cyan">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
                 </p>
                 <Button 
-                  className="bg-gradient-to-r from-cyan to-blue-500 hover:from-cyan/90 hover:to-blue-500/90 text-charcoalPrimary px-8 py-6 rounded-lg shadow-lg font-medium text-base"
+                  className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-8 py-6 rounded-lg shadow-lg font-medium text-base"
                   onClick={handleUpgrade}
                 >
                   Unlock {strategy.name}
