@@ -17,7 +17,8 @@ import {
   Infinity,
   ArrowRight,
   Award,
-  Play
+  Play,
+  LogIn
 } from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
@@ -27,6 +28,8 @@ import { Leaderboard } from '@/components/education/Leaderboard';
 import { QuizModal } from '@/components/education/QuizModal';
 import { useEducation, Level } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Education = () => {
   const { 
@@ -42,6 +45,7 @@ const Education = () => {
     setAutoLaunchQuiz
   } = useEducation();
   
+  const { user } = useAuth();
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [activeQuizModule, setActiveQuizModule] = useState<string>(currentModule);
   
@@ -78,9 +82,20 @@ const Education = () => {
         {/* Hero section */}
         <section className="py-8 mb-6">
           <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-6">
-            <div className="flex items-center mb-3">
-              <GraduationCap className="text-cyan mr-2 h-6 w-6" />
-              <h2 className="text-cyan text-xl font-bold">Trading Academy</h2>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <GraduationCap className="text-cyan mr-2 h-6 w-6" />
+                <h2 className="text-cyan text-xl font-bold">Trading Academy</h2>
+              </div>
+              
+              {!user && (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="border-cyan/30 text-cyan hover:bg-cyan/10">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
             
             <h1 className="text-2xl font-bold mb-3">
@@ -91,35 +106,51 @@ const Education = () => {
               Interactive flashcards, quizzes, and personalized learning paths
             </p>
             
-            {/* Stats summary */}
-            <div className="flex flex-wrap gap-4 mt-5">
-              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                <CheckCircle className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
-              </div>
-              
-              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                <Trophy className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
-              </div>
-              
-              <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                <Award className="text-cyan h-4 w-4 mr-2" />
-                <span className="text-sm">{stats.badgesEarned} Badges</span>
-              </div>
-              
-              {stats.averageScore > 0 && (
+            {user ? (
+              /* Stats summary for logged in users */
+              <div className="flex flex-wrap gap-4 mt-5">
                 <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                  <Brain className="text-cyan h-4 w-4 mr-2" />
-                  <span className="text-sm">{stats.averageScore}% Score</span>
+                  <CheckCircle className="text-cyan h-4 w-4 mr-2" />
+                  <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
                 </div>
-              )}
-            </div>
+                
+                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
+                  <Trophy className="text-cyan h-4 w-4 mr-2" />
+                  <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
+                </div>
+                
+                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
+                  <Award className="text-cyan h-4 w-4 mr-2" />
+                  <span className="text-sm">{stats.badgesEarned} Badges</span>
+                </div>
+                
+                {stats.averageScore > 0 && (
+                  <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
+                    <Brain className="text-cyan h-4 w-4 mr-2" />
+                    <span className="text-sm">{stats.averageScore}% Score</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Call to action for non-logged in users */
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link to="/auth?signup=true">
+                  <Button className="bg-cyan text-charcoalPrimary hover:bg-cyan/90">
+                    Create Free Account
+                  </Button>
+                </Link>
+                <Button variant="outline" className="border-white/20">
+                  Explore Modules
+                </Button>
+              </div>
+            )}
           </div>
         </section>
         
-        {/* Progress tracker */}
-        <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
+        {/* Progress tracker - only show if logged in */}
+        {user && (
+          <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
+        )}
         
         {/* Level tabs */}
         <section className="mb-8">
@@ -222,21 +253,26 @@ const Education = () => {
           </Tabs>
         </section>
         
-        {/* Current flashcard */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Current Study Material</h2>
-            <Button 
-              className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 text-xs flex items-center" 
-              size="sm" 
-              onClick={() => handleLaunchQuiz(currentModule)}
-            >
-              <Play className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
-            </Button>
-          </div>
-          
-          <FlashCard />
-        </section>
+        {/* Current flashcard - if logged in */}
+        {user && (
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Current Study Material</h2>
+              <Button 
+                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 text-xs flex items-center" 
+                size="sm" 
+                onClick={() => handleLaunchQuiz(currentModule)}
+              >
+                <Play className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
+              </Button>
+            </div>
+            
+            <FlashCard />
+          </section>
+        )}
+        
+        {/* Leaderboard section - show for all users */}
+        <Leaderboard showSignupPrompt={!user} />
       </main>
       
       {currentModuleData && (

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Users, Award, Share } from 'lucide-react';
+import { Users, Award, Share, BookOpen, Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LevelBadges } from './LevelBadges';
@@ -62,7 +62,11 @@ const topUsers: LeaderboardUser[] = [
   }
 ];
 
-export const Leaderboard = () => {
+interface LeaderboardProps {
+  showSignupPrompt?: boolean;
+}
+
+export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
   const handleInviteFriends = () => {
     const inviteText = "Join me on Trading Academy to learn trading from basics to pro! Check it out:";
     
@@ -98,6 +102,25 @@ export const Leaderboard = () => {
       </div>
       
       <div className="premium-card p-4 md:p-6">
+        {showSignupPrompt && (
+          <div className="bg-gradient-to-r from-cyan/20 to-cyan/10 p-4 rounded-lg mb-6 border border-cyan/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold mb-1">Join our learning community</h3>
+                <p className="text-sm text-gray-300">Track your progress, earn badges and compete with other traders</p>
+              </div>
+              <Link to="/auth">
+                <Button 
+                  className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary" 
+                  size="sm"
+                >
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-3">
           {topUsers.map((user, index) => (
             <div key={user.id} className="flex flex-col bg-charcoalSecondary/60 rounded-xl p-4 border border-cyan/10 hover:border-cyan/30 transition-colors">
