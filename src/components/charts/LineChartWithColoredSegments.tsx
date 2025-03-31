@@ -36,7 +36,7 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 };
 
 // A wrapper for the Line component that adds colored segments
-const ColoredSegmentLine = (props: LineProps) => {
+const ColoredSegmentLine: React.FC<LineProps> = (props) => {
   return (
     <Line
       {...props}
