@@ -34,7 +34,16 @@ import {
   Heart
 } from "lucide-react";
 
-const CustomizedDot = (props: any) => {
+interface CustomDotProps {
+  cx: number;
+  cy: number;
+  payload: any;
+  value: number;
+  index: number;
+  dataKey: string;
+}
+
+const CustomizedDot = (props: CustomDotProps) => {
   const { cx, cy, stroke, payload, value, index, dataKey } = props;
   const animationDelay = index * 0.2; // Stagger animation
   const dotColor = payload.trend === "up" ? "#4CAF50" : "#F44336";
@@ -55,7 +64,7 @@ const CustomizedDot = (props: any) => {
   );
 };
 
-const generateEnhancedData = (baseData) => {
+const generateEnhancedData = (baseData: any[]) => {
   // Create a copy to avoid mutating the original
   return baseData.map(item => ({
     ...item,
@@ -97,9 +106,7 @@ const mockStrategies = [
   }
 ];
 
-const CustomizedCurve = (props) => {
-  const { points, dataKey } = props;
-  
+const SegmentedLine = ({ points }: { points: any[] }) => {
   return (
     <g>
       {points.map((point, index) => {
@@ -123,6 +130,25 @@ const CustomizedCurve = (props) => {
         );
       })}
     </g>
+  );
+};
+
+const CustomTooltip = (props: any) => {
+  const { active, payload, label } = props;
+  
+  if (!active || !payload || !payload.length) {
+    return null;
+  }
+
+  const value = payload[0].value;
+  const trend = payload[0].payload.trend;
+  const color = trend === 'up' ? '#4CAF50' : '#F44336';
+
+  return (
+    <div className="bg-charcoalSecondary p-2 border border-gray-800 rounded-lg shadow-lg">
+      <p className="text-gray-300 mb-1">{label}</p>
+      <p style={{ color }}>₹{new Intl.NumberFormat('en-IN').format(value)}</p>
+    </div>
   );
 };
 
@@ -227,6 +253,7 @@ const Dashboard = () => {
                 <LineChart 
                   data={animatedData} 
                   key={animationKey}
+                  margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
                   <XAxis 
@@ -237,13 +264,13 @@ const Dashboard = () => {
                   />
                   <YAxis 
                     stroke="#888" 
-                    tickFormatter={(value) => `₹${value/100000}L`}
+                    tickFormatter={(value) => `₹${(value/100000).toFixed(1)}L`}
                     axisLine={{ strokeWidth: 1, stroke: '#444' }}
                     tickLine={{ stroke: '#444' }}
                     domain={['dataMin - 50000', 'dataMax + 50000']}
                   />
                   <Tooltip 
-                    formatter={(value) => [
+                    formatter={(value: number) => [
                       `₹${new Intl.NumberFormat('en-IN').format(value)}`,
                       'Value'
                     ]}
@@ -256,9 +283,9 @@ const Dashboard = () => {
                     labelStyle={{
                       color: '#CCC'
                     }}
-                    itemStyle={({ color }) => ({
-                      color: color
-                    })}
+                    itemStyle={{
+                      color: '#4CAF50'
+                    }}
                     animationDuration={300}
                     animationEasing="ease-out"
                   />
@@ -268,7 +295,9 @@ const Dashboard = () => {
                     stroke="transparent"
                     strokeWidth={2}
                     dot={<CustomizedDot />}
-                    shape={<CustomizedCurve />}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
                     activeDot={{ 
                       stroke: '#00BCD4', 
                       strokeWidth: 2, 
@@ -276,12 +305,35 @@ const Dashboard = () => {
                       fill: '#00BCD4',
                       className: "animate-ping-slow"
                     }}
-                    isAnimationActive={true}
-                    animationDuration={1500}
-                    animationEasing="ease-in-out"
                   />
+                  <Tooltip content={<CustomTooltip />} />
                 </LineChart>
               </ResponsiveContainer>
+              
+              <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <g className="recharts-layer recharts-line-dots">
+                  {animatedData.map((entry, index) => {
+                    if (index === animatedData.length - 1) return null;
+                    
+                    if (index === 0) return null;
+                    
+                    const prevEntry = animatedData[index - 1];
+                    const color = entry.trend === 'up' ? '#4CAF50' : '#F44336';
+                    
+                    return (
+                      <line
+                        key={`line-${index}`}
+                        className="animate-draw"
+                        style={{ 
+                          animation: `drawLine 1.5s ease-in-out ${index * 0.1}s forwards`,
+                          strokeDasharray: "40",
+                          strokeDashoffset: "40"
+                        }}
+                      />
+                    );
+                  })}
+                </g>
+              </svg>
             </div>
             
             <div className="flex justify-between text-sm mt-4">
