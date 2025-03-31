@@ -108,33 +108,6 @@ const mockStrategies = [
   }
 ];
 
-const SegmentedLine = ({ points }: { points: any[] }) => {
-  return (
-    <g>
-      {points.map((point, index) => {
-        if (index === points.length - 1) return null;
-        
-        const nextPoint = points[index + 1];
-        const trend = point.payload.trend;
-        const color = trend === 'up' ? '#4CAF50' : '#F44336';
-        
-        return (
-          <line
-            key={`line-${index}`}
-            x1={point.x}
-            y1={point.y}
-            x2={nextPoint.x}
-            y2={nextPoint.y}
-            stroke={color}
-            strokeWidth={2}
-            className="recharts-curve recharts-line-curve"
-          />
-        );
-      })}
-    </g>
-  );
-};
-
 const CustomTooltip = (props: any) => {
   const { active, payload, label } = props;
   
@@ -279,7 +252,7 @@ const Dashboard = () => {
                     dataKey="value" 
                     stroke="transparent"
                     strokeWidth={2}
-                    dot={<CustomizedDot />}
+                    dot={<CustomizedDot cx={0} cy={0} payload={{}} value={0} index={0} dataKey="value" />}
                     isAnimationActive={true}
                     animationDuration={1500}
                     animationEasing="ease-in-out"
