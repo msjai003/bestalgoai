@@ -54,9 +54,9 @@ const CustomizedDot = (props: CustomDotProps) => {
     <circle
       cx={cx}
       cy={cy}
-      r={4}
+      r={3} // Reduced dot size from 4 to 3
       stroke={dotColor}
-      strokeWidth={2}
+      strokeWidth={1.5} // Also reduced stroke width for better appearance
       fill="#121212"
       style={{
         animation: `pulseDot 2s infinite ${animationDelay}s`
@@ -250,16 +250,23 @@ const Dashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="transparent"
-                    strokeWidth={2}
-                    dot={<CustomizedDot cx={0} cy={0} payload={{}} value={0} index={0} dataKey="value" />}
+                    stroke="#777" // Default connecting line color
+                    strokeWidth={1.5} // Thinner line to match the reduced dot size
+                    dot={(props) => <CustomizedDot 
+                      cx={props.cx} 
+                      cy={props.cy} 
+                      payload={props.payload} 
+                      value={props.value} 
+                      index={props.index} 
+                      dataKey={props.dataKey} 
+                    />}
                     isAnimationActive={true}
                     animationDuration={1500}
                     animationEasing="ease-in-out"
                     activeDot={{ 
                       stroke: '#00BCD4', 
                       strokeWidth: 2, 
-                      r: 6, 
+                      r: 5, // Also reduced active dot size
                       fill: '#00BCD4',
                       className: "animate-ping-slow"
                     }}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Line, LineProps, LineChart } from 'recharts';
+import { Line, LineProps } from 'recharts';
 
 interface ColoredLineSegmentProps {
   points: { x: number; y: number; payload: { trend: string } }[];
@@ -36,12 +36,11 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 };
 
 // A wrapper for the Line component that adds colored segments
-export const ColoredSegmentLine: React.FC<LineProps> = (props) => {
-  // Fixed: Use React.FC<LineProps> to ensure type compatibility
+const ColoredSegmentLine = (props: LineProps) => {
   return (
     <Line
       {...props}
-      stroke="none" // Make the main line invisible
+      stroke="#777" // Default connecting line color
     />
   );
 };
