@@ -33,6 +33,7 @@ import {
   FileBarChart,
   Heart
 } from "lucide-react";
+import { ColoredLineSegments } from "@/components/charts/LineChartWithColoredSegments";
 
 interface CustomDotProps {
   cx: number;

@@ -37,11 +37,12 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 
 // A wrapper for the Line component that adds colored segments
 export const ColoredSegmentLine = (props: LineProps) => {
+  // Fix: Remove the dot prop from being explicitly set here
+  // and instead spread all props to the Line component
   return (
     <Line
       {...props}
       stroke="none" // Make the main line invisible
-      dot={props.dot}
     />
   );
 };
