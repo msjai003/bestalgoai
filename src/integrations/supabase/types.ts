@@ -195,6 +195,198 @@ export type Database = {
         }
         Relationships: []
       }
+      education_badges: {
+        Row: {
+          badge_id: string
+          created_at: string | null
+          description: string
+          id: string
+          image: string
+          level: string
+          name: string
+          unlocked_by: string
+          updated_at: string | null
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string | null
+          description: string
+          id?: string
+          image: string
+          level: string
+          name: string
+          unlocked_by: string
+          updated_at?: string | null
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          image?: string
+          level?: string
+          name?: string
+          unlocked_by?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      education_content: {
+        Row: {
+          content: string
+          content_type: string | null
+          created_at: string | null
+          id: string
+          media_url: string | null
+          module_id: string
+          order_index: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          module_id: string
+          order_index: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          module_id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_content_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "education_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      education_modules: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          estimated_time: number | null
+          id: string
+          is_active: boolean | null
+          level: string
+          order_index: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          estimated_time?: number | null
+          id?: string
+          is_active?: boolean | null
+          level: string
+          order_index: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          estimated_time?: number | null
+          id?: string
+          is_active?: boolean | null
+          level?: string
+          order_index?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      education_quiz_answers: {
+        Row: {
+          answer_text: string
+          created_at: string | null
+          id: string
+          is_correct: boolean
+          order_index: number
+          question_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          answer_text: string
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean
+          order_index: number
+          question_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          answer_text?: string
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean
+          order_index?: number
+          question_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "education_quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      education_quiz_questions: {
+        Row: {
+          created_at: string | null
+          explanation: string | null
+          id: string
+          module_id: string
+          order_index: number
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id: string
+          order_index: number
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id?: string
+          order_index?: number
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_quiz_questions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "education_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_user_details: {
         Row: {
           created_at: string | null
