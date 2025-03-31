@@ -38,8 +38,8 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 
 // A wrapper for the Line component that adds colored segments
 const ColoredSegmentLine = (props: LineProps) => {
-  // Correctly returning the Line component with props
-  return <Line {...props} stroke="#777" />;
+  // Return the Line component with spread props
+  return <Line {...props} />;
 };
 
 export default ColoredSegmentLine;
