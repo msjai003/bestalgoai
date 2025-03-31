@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +15,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Dot
+  Dot,
+  ReferenceLine
 } from "recharts";
 import { 
   Loader, 
@@ -34,17 +34,17 @@ import {
   Heart
 } from "lucide-react";
 
-// Custom animated dot component for the line chart
 const CustomizedDot = (props: any) => {
-  const { cx, cy, stroke, payload, value, index } = props;
+  const { cx, cy, stroke, payload, value, index, dataKey } = props;
   const animationDelay = index * 0.2; // Stagger animation
-
+  const dotColor = payload.trend === "up" ? "#4CAF50" : "#F44336";
+  
   return (
     <circle
       cx={cx}
       cy={cy}
       r={4}
-      stroke={stroke}
+      stroke={dotColor}
       strokeWidth={2}
       fill="#121212"
       style={{
@@ -55,7 +55,6 @@ const CustomizedDot = (props: any) => {
   );
 };
 
-// Enhanced performance data with slight variations for animation effect
 const generateEnhancedData = (baseData) => {
   // Create a copy to avoid mutating the original
   return baseData.map(item => ({
@@ -65,11 +64,16 @@ const generateEnhancedData = (baseData) => {
 };
 
 const mockPerformanceData = [
-  { date: '1/5', value: 1200000 },
-  { date: '2/5', value: 1250000 },
-  { date: '3/5', value: 1245000 },
-  { date: '4/5', value: 1275000 },
-  { date: '5/5', value: 1245678 },
+  { date: '1/5', value: 1200000, trend: 'up' },
+  { date: '2/5', value: 1300000, trend: 'up' },
+  { date: '3/5', value: 1250000, trend: 'down' },
+  { date: '4/5', value: 1200000, trend: 'down' },
+  { date: '5/5', value: 1180000, trend: 'down' },
+  { date: '6/5', value: 1230000, trend: 'up' },
+  { date: '7/5', value: 1280000, trend: 'up' },
+  { date: '8/5', value: 1350000, trend: 'up' },
+  { date: '9/5', value: 1320000, trend: 'down' },
+  { date: '10/5', value: 1380000, trend: 'up' },
 ];
 
 const mockStrategies = [
@@ -93,6 +97,35 @@ const mockStrategies = [
   }
 ];
 
+const CustomizedCurve = (props) => {
+  const { points, dataKey } = props;
+  
+  return (
+    <g>
+      {points.map((point, index) => {
+        if (index === points.length - 1) return null;
+        
+        const nextPoint = points[index + 1];
+        const trend = point.payload.trend;
+        const color = trend === 'up' ? '#4CAF50' : '#F44336';
+        
+        return (
+          <line
+            key={`line-${index}`}
+            x1={point.x}
+            y1={point.y}
+            x2={nextPoint.x}
+            y2={nextPoint.y}
+            stroke={color}
+            strokeWidth={2}
+            className="recharts-curve recharts-line-curve"
+          />
+        );
+      })}
+    </g>
+  );
+};
+
 const Dashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -101,7 +134,6 @@ const Dashboard = () => {
   const [animatedData, setAnimatedData] = useState(mockPerformanceData);
   const [animationKey, setAnimationKey] = useState(0);
   
-  // Set up animation interval for data refreshing
   useEffect(() => {
     const intervalId = setInterval(() => {
       setAnimatedData(generateEnhancedData(mockPerformanceData));
@@ -162,6 +194,13 @@ const Dashboard = () => {
     );
   }
 
+  const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  const formattedValue = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(currentValue);
+
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <Header />
@@ -171,7 +210,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
-                <p className="text-2xl font-bold text-white">₹12,45,678</p>
+                <p className="text-2xl font-bold text-white">{formattedValue}</p>
               </div>
               <Link 
                 to="/subscription" 
@@ -181,14 +220,13 @@ const Dashboard = () => {
               </Link>
             </div>
             
-            <div className="h-36 my-6 relative">
-              {/* Add a subtle glow/pulse effect container */}
+            <div className="h-48 my-6 relative">
               <div className="absolute inset-0 bg-cyan/5 animate-pulse rounded-lg opacity-30"></div>
               
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart 
                   data={animatedData} 
-                  key={animationKey} // Force re-render on data change
+                  key={animationKey}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
                   <XAxis 
@@ -202,24 +240,35 @@ const Dashboard = () => {
                     tickFormatter={(value) => `₹${value/100000}L`}
                     axisLine={{ strokeWidth: 1, stroke: '#444' }}
                     tickLine={{ stroke: '#444' }}
+                    domain={['dataMin - 50000', 'dataMax + 50000']}
                   />
                   <Tooltip 
-                    formatter={(value) => [`₹${value}`, 'Value']}
+                    formatter={(value) => [
+                      `₹${new Intl.NumberFormat('en-IN').format(value)}`,
+                      'Value'
+                    ]}
                     contentStyle={{ 
                       backgroundColor: '#1F1F1F', 
                       borderColor: '#333',
                       borderRadius: '0.5rem',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                     }}
+                    labelStyle={{
+                      color: '#CCC'
+                    }}
+                    itemStyle={({ color }) => ({
+                      color: color
+                    })}
                     animationDuration={300}
                     animationEasing="ease-out"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="#00BCD4" 
+                    stroke="transparent"
                     strokeWidth={2}
                     dot={<CustomizedDot />}
+                    shape={<CustomizedCurve />}
                     activeDot={{ 
                       stroke: '#00BCD4', 
                       strokeWidth: 2, 
