@@ -15,7 +15,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Dot
 } from "recharts";
 import { 
   Loader, 
@@ -32,6 +33,36 @@ import {
   FileBarChart,
   Heart
 } from "lucide-react";
+
+// Custom animated dot component for the line chart
+const CustomizedDot = (props: any) => {
+  const { cx, cy, stroke, payload, value, index } = props;
+  const animationDelay = index * 0.2; // Stagger animation
+
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={4}
+      stroke={stroke}
+      strokeWidth={2}
+      fill="#121212"
+      style={{
+        animation: `pulseDot 2s infinite ${animationDelay}s`
+      }}
+      className="animated-dot"
+    />
+  );
+};
+
+// Enhanced performance data with slight variations for animation effect
+const generateEnhancedData = (baseData) => {
+  // Create a copy to avoid mutating the original
+  return baseData.map(item => ({
+    ...item,
+    animatedValue: item.value + (Math.random() * 20000 - 10000), // Slight random variation
+  }));
+};
 
 const mockPerformanceData = [
   { date: '1/5', value: 1200000 },
@@ -67,6 +98,18 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const [animatedData, setAnimatedData] = useState(mockPerformanceData);
+  const [animationKey, setAnimationKey] = useState(0);
+  
+  // Set up animation interval for data refreshing
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setAnimatedData(generateEnhancedData(mockPerformanceData));
+      setAnimationKey(prev => prev + 1);
+    }, 5000); // Refresh every 5 seconds
+    
+    return () => clearInterval(intervalId);
+  }, []);
   
   useEffect(() => {
     if (!user) {
@@ -138,12 +181,28 @@ const Dashboard = () => {
               </Link>
             </div>
             
-            <div className="h-36 my-6">
+            <div className="h-36 my-6 relative">
+              {/* Add a subtle glow/pulse effect container */}
+              <div className="absolute inset-0 bg-cyan/5 animate-pulse rounded-lg opacity-30"></div>
+              
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockPerformanceData}>
+                <LineChart 
+                  data={animatedData} 
+                  key={animationKey} // Force re-render on data change
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
-                  <XAxis dataKey="date" stroke="#888" />
-                  <YAxis stroke="#888" tickFormatter={(value) => `₹${value/100000}L`} />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#888" 
+                    axisLine={{ strokeWidth: 1, stroke: '#444' }}
+                    tickLine={{ stroke: '#444' }}
+                  />
+                  <YAxis 
+                    stroke="#888" 
+                    tickFormatter={(value) => `₹${value/100000}L`}
+                    axisLine={{ strokeWidth: 1, stroke: '#444' }}
+                    tickLine={{ stroke: '#444' }}
+                  />
                   <Tooltip 
                     formatter={(value) => [`₹${value}`, 'Value']}
                     contentStyle={{ 
@@ -152,30 +211,36 @@ const Dashboard = () => {
                       borderRadius: '0.5rem',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                     }}
+                    animationDuration={300}
+                    animationEasing="ease-out"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="value" 
                     stroke="#00BCD4" 
                     strokeWidth={2}
-                    dot={{ stroke: '#00BCD4', strokeWidth: 2, r: 4, fill: '#121212' }}
+                    dot={<CustomizedDot />}
                     activeDot={{ 
                       stroke: '#00BCD4', 
                       strokeWidth: 2, 
                       r: 6, 
-                      fill: '#00BCD4'
+                      fill: '#00BCD4',
+                      className: "animate-ping-slow"
                     }}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
             
             <div className="flex justify-between text-sm mt-4">
-              <div>
+              <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 <p className="text-gray-400">Today's P&L</p>
                 <p className="text-emerald-400 font-medium">+₹24,500</p>
               </div>
-              <div>
+              <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
                 <p className="text-gray-400">Overall P&L</p>
                 <p className="text-emerald-400 font-medium">+₹1,45,500</p>
               </div>

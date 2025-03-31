@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -112,6 +113,14 @@ export default {
           "25%": { transform: "rotate(1deg)" },
           "75%": { transform: "rotate(-1deg)" },
           "100%": { transform: "rotate(0deg)" }
+        },
+        "fade-in": {
+          "from": { opacity: "0", transform: "translateY(5px)" },
+          "to": { opacity: "1", transform: "translateY(0)" }
+        },
+        "ping-slow": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "75%, 100%": { transform: "scale(1.2)", opacity: "0" }
         }
       },
       animation: {
@@ -122,7 +131,9 @@ export default {
         "micro-scale": "micro-scale 0.3s ease-in-out",
         "micro-glow": "micro-glow 2s ease-in-out infinite",
         "image-float": "image-float 3s ease-in-out infinite",
-        "soft-rotate": "soft-rotate 3s ease-in-out infinite"
+        "soft-rotate": "soft-rotate 3s ease-in-out infinite",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+        "ping-slow": "ping-slow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite"
       },
     },
   },

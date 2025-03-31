@@ -108,3 +108,56 @@
 .dark-card:hover {
   border-color: rgba(0, 188, 212, 0.3);
 }
+
+/* Chart dot animation */
+@keyframes pulseDot {
+  0% {
+    r: 4;
+    opacity: 1;
+  }
+  50% {
+    r: 6;
+    opacity: 0.7;
+  }
+  100% {
+    r: 4;
+    opacity: 1;
+  }
+}
+
+.animated-dot {
+  filter: drop-shadow(0 0 2px rgba(0, 188, 212, 0.7));
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Slow ping animation for active chart dots */
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  75%, 100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
