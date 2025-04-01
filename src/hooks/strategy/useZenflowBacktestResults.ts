@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -114,7 +115,8 @@ export const useZenflowBacktestResults = () => {
         .limit(1);
         
       if (metricsError) {
-        throw metricsError;
+        console.error("Error fetching metrics:", metricsError);
+        // Continue execution but log the error
       }
       
       console.log("Fetched metrics data:", metricsData);
@@ -276,34 +278,37 @@ export const useZenflowBacktestResults = () => {
     
     // Save metrics to the database
     try {
+      // Convert camelCase keys to snake_case for database
+      const dbMetrics = {
+        overall_profit: calculatedMetrics.overallProfit,
+        overall_profit_percentage: calculatedMetrics.overallProfitPercentage,
+        number_of_trades: calculatedMetrics.numberOfTrades,
+        avg_profit_per_trade: calculatedMetrics.avgProfitPerTrade,
+        avg_profit_per_trade_percentage: calculatedMetrics.avgProfitPerTradePercentage,
+        win_percentage: calculatedMetrics.winPercentage,
+        loss_percentage: calculatedMetrics.lossPercentage,
+        avg_profit_on_winning_trades: calculatedMetrics.avgProfitOnWinningTrades,
+        avg_profit_on_winning_trades_percentage: calculatedMetrics.avgProfitOnWinningTradesPercentage,
+        avg_loss_on_losing_trades: calculatedMetrics.avgLossOnLosingTrades,
+        avg_loss_on_losing_trades_percentage: calculatedMetrics.avgLossOnLosingTradesPercentage,
+        max_profit_in_single_trade: calculatedMetrics.maxProfitInSingleTrade,
+        max_profit_in_single_trade_percentage: calculatedMetrics.maxProfitInSingleTradePercentage,
+        max_loss_in_single_trade: calculatedMetrics.maxLossInSingleTrade,
+        max_loss_in_single_trade_percentage: calculatedMetrics.maxLossInSingleTradePercentage,
+        max_drawdown: calculatedMetrics.maxDrawdown,
+        max_drawdown_percentage: calculatedMetrics.maxDrawdownPercentage,
+        drawdown_duration: calculatedMetrics.drawdownDuration,
+        return_max_dd: calculatedMetrics.returnMaxDD,
+        reward_to_risk_ratio: calculatedMetrics.rewardToRiskRatio,
+        expectancy_ratio: calculatedMetrics.expectancyRatio,
+        max_win_streak: calculatedMetrics.maxWinStreak,
+        max_losing_streak: calculatedMetrics.maxLosingStreak,
+        max_trades_in_drawdown: calculatedMetrics.maxTradesInDrawdown
+      };
+      
       const { data: savedMetrics, error: saveError } = await supabase
         .from('zenflow_metrics')
-        .insert([{
-          overall_profit: calculatedMetrics.overallProfit,
-          overall_profit_percentage: calculatedMetrics.overallProfitPercentage,
-          number_of_trades: calculatedMetrics.numberOfTrades,
-          avg_profit_per_trade: calculatedMetrics.avgProfitPerTrade,
-          avg_profit_per_trade_percentage: calculatedMetrics.avgProfitPerTradePercentage,
-          win_percentage: calculatedMetrics.winPercentage,
-          loss_percentage: calculatedMetrics.lossPercentage,
-          avg_profit_on_winning_trades: calculatedMetrics.avgProfitOnWinningTrades,
-          avg_profit_on_winning_trades_percentage: calculatedMetrics.avgProfitOnWinningTradesPercentage,
-          avg_loss_on_losing_trades: calculatedMetrics.avgLossOnLosingTrades,
-          avg_loss_on_losing_trades_percentage: calculatedMetrics.avgLossOnLosingTradesPercentage,
-          max_profit_in_single_trade: calculatedMetrics.maxProfitInSingleTrade,
-          max_profit_in_single_trade_percentage: calculatedMetrics.maxProfitInSingleTradePercentage,
-          max_loss_in_single_trade: calculatedMetrics.maxLossInSingleTrade,
-          max_loss_in_single_trade_percentage: calculatedMetrics.maxLossInSingleTradePercentage,
-          max_drawdown: calculatedMetrics.maxDrawdown,
-          max_drawdown_percentage: calculatedMetrics.maxDrawdownPercentage,
-          drawdown_duration: calculatedMetrics.drawdownDuration,
-          return_max_dd: calculatedMetrics.returnMaxDD,
-          reward_to_risk_ratio: calculatedMetrics.rewardToRiskRatio,
-          expectancy_ratio: calculatedMetrics.expectancyRatio,
-          max_win_streak: calculatedMetrics.maxWinStreak,
-          max_losing_streak: calculatedMetrics.maxLosingStreak,
-          max_trades_in_drawdown: calculatedMetrics.maxTradesInDrawdown
-        }])
+        .insert([dbMetrics])
         .select();
         
       if (saveError) {
