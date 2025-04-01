@@ -77,7 +77,7 @@ export const useLiveTrading = () => {
     const strategy = strategies.find(s => s.id === id || s.uniqueId === uniqueId || s.rowId === rowId);
     if (!strategy) return;
     
-    setCurrentStrategyId(typeof id === 'string' ? parseInt(id as string) : id);
+    setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
     setCurrentBroker(broker || strategy.selectedBroker || null);
     
     if (strategy.isCustom && rowId) {
@@ -86,6 +86,7 @@ export const useLiveTrading = () => {
       setCurrentCustomId(null);
     }
     
+    // Always toggle the current state for the specific broker
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
   };
