@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
 import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
 import { toast } from "sonner";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 import {
   Card,
   CardContent,
@@ -181,6 +182,42 @@ const ZenflowBacktestReport = () => {
     }));
   };
 
+  // Prepare metrics data for chart
+  const prepareMetricsData = () => {
+    return [
+      {
+        name: "Win Rate",
+        value: metrics.winPercentage || 0,
+        color: "#4CAF50"
+      },
+      {
+        name: "Loss Rate",
+        value: metrics.lossPercentage || 0,
+        color: "#F44336"
+      },
+      {
+        name: "Profit %",
+        value: metrics.overallProfitPercentage || 0,
+        color: "#2196F3"
+      },
+      {
+        name: "Drawdown %",
+        value: Math.abs(metrics.maxDrawdownPercentage || 0),
+        color: "#FF9800"
+      },
+      {
+        name: "Reward/Risk",
+        value: metrics.rewardToRiskRatio || 0,
+        color: "#9C27B0"
+      },
+      {
+        name: "Return/MaxDD",
+        value: metrics.returnMaxDD || 0,
+        color: "#00BCD4"
+      }
+    ];
+  };
+
   // Determine if a number is positive, negative, or zero
   const getValueClass = (value: number | undefined) => {
     if (value === undefined || value === null) return "";
@@ -314,53 +351,136 @@ const ZenflowBacktestReport = () => {
                 </Table>
               </div>
             ) : (
-              <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={prepareChartData()}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 20,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis 
-                      dataKey="year" 
-                      stroke="#888" 
-                      tick={{ fill: '#B0B0B0' }}
-                      axisLine={{ stroke: '#555' }}
-                      tickLine={{ stroke: '#555' }}
-                    />
-                    <YAxis 
-                      stroke="#888" 
-                      tick={{ fill: '#B0B0B0' }}
-                      axisLine={{ stroke: '#555' }}
-                      tickLine={{ stroke: '#555' }}
-                      width={40}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend 
-                      verticalAlign="top" 
-                      height={36} 
-                      wrapperStyle={{
-                        paddingTop: "10px",
-                        paddingBottom: "10px",
-                        fontSize: "12px"
+              <div className="space-y-6">
+                <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={prepareChartData()}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 20,
                       }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                      <XAxis 
+                        dataKey="year" 
+                        stroke="#888" 
+                        tick={{ fill: '#B0B0B0' }}
+                        axisLine={{ stroke: '#555' }}
+                        tickLine={{ stroke: '#555' }}
+                      />
+                      <YAxis 
+                        stroke="#888" 
+                        tick={{ fill: '#B0B0B0' }}
+                        axisLine={{ stroke: '#555' }}
+                        tickLine={{ stroke: '#555' }}
+                        width={40}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={36} 
+                        wrapperStyle={{
+                          paddingTop: "10px",
+                          paddingBottom: "10px",
+                          fontSize: "12px"
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="Total"
+                        name="Total"
+                        stroke="#00BCD4"
+                        strokeWidth={3}
+                        dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
+                        activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Key Metrics Section below chart */}
+                <div className="pb-4">
+                  <h3 className="text-md font-medium text-white mb-3">Key Performance Metrics</h3>
+                  
+                  <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart
+                        data={prepareMetricsData()}
+                        margin={{
+                          top: 20,
+                          right: 20,
+                          bottom: 20,
+                          left: 20,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="#888" 
+                          tick={{ fill: '#B0B0B0' }}
+                          axisLine={{ stroke: '#555' }}
+                          tickLine={{ stroke: '#555' }}
+                        />
+                        <YAxis 
+                          stroke="#888" 
+                          tick={{ fill: '#B0B0B0' }}
+                          axisLine={{ stroke: '#555' }}
+                          tickLine={{ stroke: '#555' }}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => [`${value}%`, name]}
+                          contentStyle={{ 
+                            backgroundColor: '#1E1E1E', 
+                            border: '1px solid #444',
+                            borderRadius: '4px',
+                            padding: '8px'
+                          }} 
+                        />
+                        <Legend verticalAlign="top" height={36} />
+                        <Bar 
+                          dataKey="value" 
+                          fill="#8884d8"
+                          background={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                          radius={[4, 4, 0, 0]}
+                          barSize={40}
+                        >
+                          {prepareMetricsData().map((entry, index) => (
+                            <Bar 
+                              key={`cell-${index}`} 
+                              dataKey="value" 
+                              name={entry.name} 
+                              fill={entry.color}
+                            />
+                          ))}
+                        </Bar>
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <StatCard 
+                      label="Win %" 
+                      value={metrics.winPercentage || 'N/A'} 
+                      tooltip="Percentage of trades that resulted in profit"
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="Total"
-                      name="Total"
-                      stroke="#00BCD4"
-                      strokeWidth={3}
-                      dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
-                      activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
+                    <StatCard 
+                      label="Overall Profit" 
+                      value={formatCurrency(metrics.overallProfit)}
+                      percentValue={metrics.overallProfitPercentage}
+                      tooltip="Total profit generated" 
                     />
-                  </LineChart>
-                </ResponsiveContainer>
+                    <StatCard 
+                      label="Max Drawdown" 
+                      value={formatCurrency(Math.abs(metrics.maxDrawdown || 0))}
+                      percentValue={Math.abs(metrics.maxDrawdownPercentage || 0)}
+                      isNegative
+                      tooltip="Maximum peak-to-trough decline"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </TabsContent>
