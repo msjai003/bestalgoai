@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Type for quiz result
@@ -194,11 +195,23 @@ export const updateEducationProgress = async (
       .eq('user_id', userId)
       .maybeSingle();
     
+    // Create an object with correctly named properties for the database
+    const dbUpdates: { 
+      current_level?: string; 
+      current_module?: string; 
+      current_card?: number;
+    } = {};
+
+    // Map the properties to match the database column names
+    if (updates.currentLevel !== undefined) dbUpdates.current_level = updates.currentLevel;
+    if (updates.currentModule !== undefined) dbUpdates.current_module = updates.currentModule;
+    if (updates.currentCard !== undefined) dbUpdates.current_card = updates.currentCard;
+    
     if (existing) {
       // Update existing progress
       const { data, error } = await supabase
         .from('user_education_progress')
-        .update(updates)
+        .update(dbUpdates)
         .eq('user_id', userId)
         .select()
         .single();

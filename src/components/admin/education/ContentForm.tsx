@@ -62,11 +62,21 @@ const ContentForm: React.FC<ContentFormProps> = ({ moduleId, content, onSuccess,
     let success;
     
     if (content) {
-      success = await updateEducationContent(content.id, data);
+      success = await updateEducationContent(content.id, {
+        title: data.title,
+        content: data.content,
+        order_index: data.order_index,
+        content_type: data.content_type,
+        media_url: data.media_url,
+      });
     } else {
       success = await createEducationContent({
         module_id: moduleId,
-        ...data,
+        title: data.title,
+        content: data.content,
+        order_index: data.order_index,
+        content_type: data.content_type,
+        media_url: data.media_url,
       });
     }
     

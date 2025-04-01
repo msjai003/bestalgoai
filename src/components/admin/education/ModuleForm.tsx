@@ -65,9 +65,23 @@ const ModuleForm: React.FC<ModuleFormProps> = ({ module, onSuccess, onCancel }) 
     let success: EducationModule | null;
     
     if (module) {
-      success = await updateEducationModule(module.id, data);
+      success = await updateEducationModule(module.id, {
+        title: data.title,
+        description: data.description || '',
+        level: data.level,
+        order_index: data.order_index,
+        estimated_time: data.estimated_time,
+        is_active: data.is_active,
+      });
     } else {
-      success = await createEducationModule(data);
+      success = await createEducationModule({
+        title: data.title,
+        description: data.description || '',
+        level: data.level,
+        order_index: data.order_index,
+        estimated_time: data.estimated_time,
+        is_active: data.is_active,
+      });
     }
     
     if (success) {

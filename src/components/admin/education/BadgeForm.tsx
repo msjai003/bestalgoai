@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -65,9 +64,23 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
     let success;
     
     if (badge) {
-      success = await updateEducationBadge(badge.id, data);
+      success = await updateEducationBadge(badge.id, {
+        badge_id: data.badge_id,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        level: data.level,
+        unlocked_by: data.unlocked_by
+      });
     } else {
-      success = await createEducationBadge(data);
+      success = await createEducationBadge({
+        badge_id: data.badge_id,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        level: data.level,
+        unlocked_by: data.unlocked_by
+      });
     }
     
     if (success) {
