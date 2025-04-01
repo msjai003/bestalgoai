@@ -198,32 +198,32 @@ const ZenflowBacktestReport = () => {
     return [
       {
         name: "Win Rate",
-        value: metrics.winPercentage || 0,
+        value: metrics.win_percentage || 0,
         color: "#4CAF50"
       },
       {
         name: "Loss Rate",
-        value: metrics.lossPercentage || 0,
+        value: metrics.loss_percentage || 0,
         color: "#F44336"
       },
       {
         name: "Profit %",
-        value: metrics.overallProfitPercentage || 0,
+        value: metrics.overall_profit_percentage || 0,
         color: "#2196F3"
       },
       {
         name: "Drawdown %",
-        value: Math.abs(metrics.maxDrawdownPercentage || 0),
+        value: Math.abs(metrics.max_drawdown_percentage || 0),
         color: "#FF9800"
       },
       {
         name: "Reward/Risk",
-        value: metrics.rewardToRiskRatio || 0,
+        value: metrics.reward_to_risk_ratio || 0,
         color: "#9C27B0"
       },
       {
         name: "Return/MaxDD",
-        value: metrics.returnMaxDD || 0,
+        value: metrics.return_max_dd || 0,
         color: "#00BCD4"
       }
     ];
@@ -239,6 +239,7 @@ const ZenflowBacktestReport = () => {
     return `₹${Math.abs(value).toLocaleString('en-IN')}`;
   };
 
+  // Main rendering logic stays the same, but we need to update all property references to use snake_case
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
@@ -442,19 +443,19 @@ const ZenflowBacktestReport = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                       <StatCard 
                         label="Win %" 
-                        value={metrics.winPercentage || 'N/A'} 
+                        value={metrics.win_percentage || 'N/A'} 
                         tooltip="Percentage of trades that resulted in profit"
                       />
                       <StatCard 
                         label="Overall Profit" 
-                        value={formatCurrency(metrics.overallProfit)}
-                        percentValue={metrics.overallProfitPercentage}
+                        value={formatCurrency(metrics.overall_profit)}
+                        percentValue={metrics.overall_profit_percentage}
                         tooltip="Total profit generated" 
                       />
                       <StatCard 
                         label="Max Drawdown" 
-                        value={formatCurrency(Math.abs(metrics.maxDrawdown || 0))}
-                        percentValue={Math.abs(metrics.maxDrawdownPercentage || 0)}
+                        value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
+                        percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
                         isNegative
                         tooltip="Maximum peak-to-trough decline"
                       />
@@ -463,13 +464,13 @@ const ZenflowBacktestReport = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                       <StatCard 
                         label="No. of Trades" 
-                        value={metrics.numberOfTrades || 'N/A'}
+                        value={metrics.number_of_trades || 'N/A'}
                         tooltip="Total number of trades executed"
                       />
                       <StatCard 
                         label="Avg. Profit per Trade" 
-                        value={formatCurrency(metrics.avgProfitPerTrade)}
-                        percentValue={metrics.avgProfitPerTradePercentage}
+                        value={formatCurrency(metrics.avg_profit_per_trade)}
+                        percentValue={metrics.avg_profit_per_trade_percentage}
                         tooltip="Average profit per trade across all trades"
                       />
                     </div>
@@ -477,12 +478,12 @@ const ZenflowBacktestReport = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <StatCard 
                         label="Reward to Risk Ratio" 
-                        value={metrics.rewardToRiskRatio || 'N/A'}
+                        value={metrics.reward_to_risk_ratio || 'N/A'}
                         tooltip="Ratio of average profit to average loss"
                       />
                       <StatCard 
                         label="Return/MaxDD" 
-                        value={metrics.returnMaxDD || 'N/A'}
+                        value={metrics.return_max_dd || 'N/A'}
                         tooltip="Overall return divided by maximum drawdown"
                       />
                     </div>
@@ -490,12 +491,12 @@ const ZenflowBacktestReport = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <StatCard 
                         label="Max Win Streak" 
-                        value={metrics.maxWinStreak || 'N/A'}
+                        value={metrics.max_win_streak || 'N/A'}
                         tooltip="Longest consecutive winning trades"
                       />
                       <StatCard 
                         label="Max Loss Streak" 
-                        value={metrics.maxLosingStreak || 'N/A'}
+                        value={metrics.max_losing_streak || 'N/A'}
                         tooltip="Longest consecutive losing trades"
                       />
                     </div>
@@ -530,13 +531,13 @@ const ZenflowBacktestReport = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Overall Profit" 
-                    value={formatCurrency(metrics.overallProfit)}
-                    percentValue={metrics.overallProfitPercentage}
+                    value={formatCurrency(metrics.overall_profit)}
+                    percentValue={metrics.overall_profit_percentage}
                     tooltip="Total profit generated over the entire backtest period" 
                   />
                   <StatCard 
                     label="No. of Trades" 
-                    value={metrics.numberOfTrades || 'N/A'}
+                    value={metrics.number_of_trades || 'N/A'}
                     tooltip="Total number of trades executed"
                   />
                 </div>
@@ -544,12 +545,12 @@ const ZenflowBacktestReport = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Win %" 
-                    value={metrics.winPercentage || 'N/A'} 
+                    value={metrics.win_percentage || 'N/A'} 
                     tooltip="Percentage of trades that resulted in profit"
                   />
                   <StatCard 
                     label="Loss %" 
-                    value={metrics.lossPercentage || 'N/A'} 
+                    value={metrics.loss_percentage || 'N/A'} 
                     isNegative
                     tooltip="Percentage of trades that resulted in loss"
                   />
@@ -558,14 +559,14 @@ const ZenflowBacktestReport = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Avg. Profit per Trade" 
-                    value={formatCurrency(metrics.avgProfitPerTrade)}
-                    percentValue={metrics.avgProfitPerTradePercentage}
+                    value={formatCurrency(metrics.avg_profit_per_trade)}
+                    percentValue={metrics.avg_profit_per_trade_percentage}
                     tooltip="Average profit per trade across all trades"
                   />
                   <StatCard 
                     label="Max Profit in Single Trade" 
-                    value={formatCurrency(metrics.maxProfitInSingleTrade)}
-                    percentValue={metrics.maxProfitInSingleTradePercentage}
+                    value={formatCurrency(metrics.max_profit_in_single_trade)}
+                    percentValue={metrics.max_profit_in_single_trade_percentage}
                     tooltip="Largest profit made in a single trade"
                   />
                 </div>
@@ -573,14 +574,14 @@ const ZenflowBacktestReport = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Avg. Profit on Winning Trades" 
-                    value={formatCurrency(metrics.avgProfitOnWinningTrades)}
-                    percentValue={metrics.avgProfitOnWinningTradesPercentage}
+                    value={formatCurrency(metrics.avg_profit_on_winning_trades)}
+                    percentValue={metrics.avg_profit_on_winning_trades_percentage}
                     tooltip="Average profit from profitable trades"
                   />
                   <StatCard 
                     label="Avg. Loss on Losing Trades" 
-                    value={formatCurrency(Math.abs(metrics.avgLossOnLosingTrades || 0))}
-                    percentValue={Math.abs(metrics.avgLossOnLosingTradesPercentage || 0)}
+                    value={formatCurrency(Math.abs(metrics.avg_loss_on_losing_trades || 0))}
+                    percentValue={Math.abs(metrics.avg_loss_on_losing_trades_percentage || 0)}
                     isNegative
                     tooltip="Average loss from unprofitable trades"
                   />
@@ -589,15 +590,15 @@ const ZenflowBacktestReport = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Max Loss in Single Trade" 
-                    value={formatCurrency(Math.abs(metrics.maxLossInSingleTrade || 0))}
-                    percentValue={Math.abs(metrics.maxLossInSingleTradePercentage || 0)}
+                    value={formatCurrency(Math.abs(metrics.max_loss_in_single_trade || 0))}
+                    percentValue={Math.abs(metrics.max_loss_in_single_trade_percentage || 0)}
                     isNegative
                     tooltip="Largest loss in a single trade"
                   />
                   <StatCard 
                     label="Max Drawdown" 
-                    value={formatCurrency(Math.abs(metrics.maxDrawdown || 0))}
-                    percentValue={Math.abs(metrics.maxDrawdownPercentage || 0)}
+                    value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
+                    percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
                     isNegative
                     tooltip="Maximum peak-to-trough decline during the backtesting period"
                   />
@@ -610,29 +611,29 @@ const ZenflowBacktestReport = () => {
                       <div className="p-3 space-y-3">
                         <div>
                           <p className="text-xs text-gray-400">Duration of Max Drawdown</p>
-                          <p className="text-sm text-white">{metrics.drawdownDuration || 'N/A'}</p>
+                          <p className="text-sm text-white">{metrics.drawdown_duration || 'N/A'}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Return/MaxDD</p>
-                          <p className="text-sm text-white">{metrics.returnMaxDD || 'N/A'}</p>
+                          <p className="text-sm text-white">{metrics.return_max_dd || 'N/A'}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Reward to Risk Ratio</p>
-                          <p className="text-sm text-white">{metrics.rewardToRiskRatio || 'N/A'}</p>
+                          <p className="text-sm text-white">{metrics.reward_to_risk_ratio || 'N/A'}</p>
                         </div>
                       </div>
                       <div className="p-3 space-y-3">
                         <div>
                           <p className="text-xs text-gray-400">Max Win Streak</p>
-                          <p className="text-sm text-white">{metrics.maxWinStreak || 'N/A'} trades</p>
+                          <p className="text-sm text-white">{metrics.max_win_streak || 'N/A'} trades</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Max Losing Streak</p>
-                          <p className="text-sm text-white">{metrics.maxLosingStreak || 'N/A'} trades</p>
+                          <p className="text-sm text-white">{metrics.max_losing_streak || 'N/A'} trades</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Expectancy Ratio</p>
-                          <p className="text-sm text-white">{metrics.expectancyRatio || 'N/A'}</p>
+                          <p className="text-sm text-white">{metrics.expectancy_ratio || 'N/A'}</p>
                         </div>
                       </div>
                     </div>
