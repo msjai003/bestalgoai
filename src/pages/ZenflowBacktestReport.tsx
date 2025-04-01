@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Custom tooltip component for the chart
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -87,7 +85,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Stat card component for displaying metrics
 const StatCard = ({ label, value, percentValue, isNegative, tooltip }: { 
   label: string;
   value: string | number;
@@ -95,7 +92,6 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
   isNegative?: boolean;
   tooltip?: string;
 }) => {
-  // Fix: Convert value and percentValue to numbers for comparison
   const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^\d.-]/g, '')) || 0 : value;
   const numPercentValue = percentValue !== undefined 
     ? (typeof percentValue === 'string' ? parseFloat(percentValue.replace(/[^\d.-]/g, '')) || 0 : percentValue)
@@ -151,7 +147,6 @@ const ZenflowBacktestReport = () => {
   const [activeTab, setActiveTab] = useState<string>('annual');
   
   useEffect(() => {
-    // Refresh data when component mounts
     fetchZenflowBacktestResults();
     console.log("Component mounted, fetching data...");
   }, []);
@@ -161,9 +156,7 @@ const ZenflowBacktestReport = () => {
     toast.success("Data refreshed");
   };
 
-  // Prepare chart data
   const prepareChartData = () => {
-    // Transform the data for the line chart
     return strategyData.map(year => ({
       year: year.year,
       Jan: year.jan || 0,
@@ -182,7 +175,6 @@ const ZenflowBacktestReport = () => {
     }));
   };
 
-  // Prepare metrics data for chart
   const prepareMetricsData = () => {
     return [
       {
@@ -218,13 +210,11 @@ const ZenflowBacktestReport = () => {
     ];
   };
 
-  // Determine if a number is positive, negative, or zero
   const getValueClass = (value: number | undefined) => {
     if (value === undefined || value === null) return "";
     return value > 0 ? "text-green-500" : value < 0 ? "text-red-500" : "";
   };
 
-  // Format currency values
   const formatCurrency = (value?: number) => {
     if (value === undefined || value === null) return 'N/A';
     return `₹${Math.abs(value).toLocaleString('en-IN')}`;
@@ -246,8 +236,8 @@ const ZenflowBacktestReport = () => {
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <TabsList className="bg-charcoalSecondary/50">
-              <TabsTrigger value="annual">Annual Chart</TabsTrigger>
-              <TabsTrigger value="metrics">Metrics</TabsTrigger>
+              <TabsTrigger value="annual">Performance Analysis</TabsTrigger>
+              <TabsTrigger value="details">Detailed Metrics</TabsTrigger>
             </TabsList>
             <Button 
               variant="outline" 
@@ -401,7 +391,6 @@ const ZenflowBacktestReport = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                {/* Key Metrics Section below chart */}
                 <div className="pb-4">
                   <h3 className="text-md font-medium text-white mb-3">Key Performance Metrics</h3>
                   
@@ -480,14 +469,41 @@ const ZenflowBacktestReport = () => {
                       tooltip="Maximum peak-to-trough decline"
                     />
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    <StatCard 
+                      label="No. of Trades" 
+                      value={metrics.numberOfTrades || 'N/A'}
+                      tooltip="Total number of trades executed"
+                    />
+                    <StatCard 
+                      label="Avg. Profit per Trade" 
+                      value={formatCurrency(metrics.avgProfitPerTrade)}
+                      percentValue={metrics.avgProfitPerTradePercentage}
+                      tooltip="Average profit per trade across all trades"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    <StatCard 
+                      label="Reward to Risk Ratio" 
+                      value={metrics.rewardToRiskRatio || 'N/A'}
+                      tooltip="Ratio of average profit to average loss"
+                    />
+                    <StatCard 
+                      label="Return/MaxDD" 
+                      value={metrics.returnMaxDD || 'N/A'}
+                      tooltip="Overall return divided by maximum drawdown"
+                    />
+                  </div>
                 </div>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="metrics" className="space-y-4">
+          <TabsContent value="details" className="space-y-4">
             <div className="mt-2 mb-4">
-              <h2 className="text-lg font-semibold text-white">Performance Metrics</h2>
+              <h2 className="text-lg font-semibold text-white">Detailed Performance Metrics</h2>
               <p className="text-sm text-gray-400">Comprehensive analysis of backtest results</p>
             </div>
             
