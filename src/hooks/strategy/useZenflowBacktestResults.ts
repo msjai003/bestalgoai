@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -69,6 +70,8 @@ export const useZenflowBacktestResults = () => {
       if (error) {
         throw error;
       }
+      
+      console.log("Fetched strategy data:", data);
       
       // Set the strategy data
       setStrategyData(data as ZenflowStrategyData[]);

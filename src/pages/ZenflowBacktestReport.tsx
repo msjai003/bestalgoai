@@ -38,7 +38,7 @@ const ZenflowBacktestReport = () => {
   // Prepare chart data
   const prepareChartData = () => {
     // Transform the data for the line chart
-    const chartData = strategyData.map(year => ({
+    return strategyData.map(year => ({
       year: year.year,
       Jan: year.jan || 0,
       Feb: year.feb || 0,
@@ -54,13 +54,11 @@ const ZenflowBacktestReport = () => {
       Dec: year.dec || 0,
       Total: year.total || 0
     }));
-    
-    return chartData;
   };
 
   // Determine if a number is positive, negative, or zero
   const getValueClass = (value: number | undefined) => {
-    if (!value) return "";
+    if (value === undefined || value === null) return "";
     return value > 0 ? "text-green-500" : value < 0 ? "text-red-500" : "";
   };
 
@@ -68,7 +66,7 @@ const ZenflowBacktestReport = () => {
     <div className="bg-charcoalPrimary min-h-screen">
       <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/backtest" className="p-2">
+          <Link to="/zenflow-backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
           <h1 className="text-charcoalTextPrimary text-lg font-medium">Strategy Backtest Report</h1>
