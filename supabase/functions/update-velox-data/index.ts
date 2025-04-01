@@ -1,5 +1,5 @@
 
-// Supabase Edge Function to update Velox Edge Strategy data
+// Supabase Edge Function to update ApexFlow Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
 
@@ -25,13 +25,13 @@ serve(async (req) => {
     // First, clear existing data for the years we're going to insert
     // to avoid duplicates
     await supabaseClient
-      .from('velox_edge_strategy')
+      .from('apexflow_strategy')
       .delete()
       .in('year', [2020, 2021, 2022, 2023, 2024, 2025]);
     
     // Insert the data from the image
     const { data, error } = await supabaseClient
-      .from('velox_edge_strategy')
+      .from('apexflow_strategy')
       .insert([
         {
           year: 2020,
@@ -148,7 +148,7 @@ serve(async (req) => {
       );
     }
     
-    // Update metrics for Velox Edge
+    // Update metrics for ApexFlow
     // Calculate key metrics based on the data
     const totalProfit = 97158 + 166777 + 161546 + 58777 + 81345 + 27153; // Sum of all yearly totals
     const worstDrawdown = -25942; // Worst max drawdown from 2024
@@ -184,7 +184,7 @@ serve(async (req) => {
     
     // Update the metrics table
     const { data: metricsUpdateData, error: metricsError } = await supabaseClient
-      .from('velox_edge_metrics')
+      .from('apexflow_metrics')
       .upsert([metricsData])
       .select();
     
@@ -201,7 +201,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: "Velox Edge Strategy data updated successfully",
+        message: "ApexFlow Strategy data updated successfully",
         data: data,
         metrics: metricsUpdateData
       }),
