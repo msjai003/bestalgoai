@@ -119,23 +119,6 @@ const ZenflowBacktestReport = () => {
     return value > 0 ? "text-green-500" : value < 0 ? "text-red-500" : "";
   };
 
-  // Chart configuration with cyan colors
-  const chartConfig = {
-    total: { label: "Total Return", color: "#00BCD4" }, // Cyan color
-    jan: { label: "January", color: "#4DD0E1" },
-    feb: { label: "February", color: "#26C6DA" },
-    mar: { label: "March", color: "#00ACC1" },
-    apr: { label: "April", color: "#0097A7" },
-    may: { label: "May", color: "#00838F" },
-    jun: { label: "June", color: "#006064" },
-    jul: { label: "July", color: "#80DEEA" },
-    aug: { label: "August", color: "#4DD0E1" },
-    sep: { label: "September", color: "#26C6DA" },
-    oct: { label: "October", color: "#00ACC1" },
-    nov: { label: "November", color: "#0097A7" },
-    dec: { label: "December", color: "#00838F" }
-  };
-
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
@@ -249,20 +232,6 @@ const ZenflowBacktestReport = () => {
           </div>
         ) : (
           <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]">
-            <div className="mb-2 flex items-center">
-              <Button 
-                variant={highlightMonths ? "default" : "outline"}
-                size="sm"
-                onClick={() => setHighlightMonths(!highlightMonths)}
-                className="text-xs"
-              >
-                {highlightMonths ? "Hide Monthly Lines" : "Show Monthly Lines"}
-              </Button>
-              <p className="ml-2 text-xs text-charcoalTextSecondary">
-                {highlightMonths ? "Showing all details" : "Showing only total performance"}
-              </p>
-            </div>
-
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={prepareChartData()}
@@ -298,34 +267,16 @@ const ZenflowBacktestReport = () => {
                     fontSize: "12px"
                   }}
                 />
-                {/* Total line always visible */}
+                {/* Only show the Total line with prominent styling */}
                 <Line
                   type="monotone"
                   dataKey="Total"
                   name="Total"
                   stroke="#00BCD4"
                   strokeWidth={3}
-                  dot={{ r: 4, fill: "#00BCD4", stroke: "#00BCD4" }}
-                  activeDot={{ r: 6, stroke: "#00BCD4", strokeWidth: 2 }}
+                  dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
+                  activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
                 />
-                
-                {/* Monthly lines only shown when highlightMonths is true */}
-                {highlightMonths && (
-                  <>
-                    <Line type="monotone" dataKey="Jan" name="Jan" stroke="#4DD0E1" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Feb" name="Feb" stroke="#26C6DA" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Mar" name="Mar" stroke="#00ACC1" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Apr" name="Apr" stroke="#0097A7" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="May" name="May" stroke="#00838F" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Jun" name="Jun" stroke="#006064" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Jul" name="Jul" stroke="#80DEEA" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Aug" name="Aug" stroke="#4DD0E1" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Sep" name="Sep" stroke="#26C6DA" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Oct" name="Oct" stroke="#00ACC1" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Nov" name="Nov" stroke="#0097A7" strokeWidth={1} dot={false} />
-                    <Line type="monotone" dataKey="Dec" name="Dec" stroke="#00838F" strokeWidth={1} dot={false} />
-                  </>
-                )}
               </LineChart>
             </ResponsiveContainer>
           </div>

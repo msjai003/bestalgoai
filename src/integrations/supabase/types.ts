@@ -455,6 +455,7 @@ export type Database = {
       }
       pnl_logs: {
         Row: {
+          alert_time: string | null
           client_name: string | null
           created_at: string | null
           date: string | null
@@ -467,6 +468,7 @@ export type Database = {
           symbol: string | null
         }
         Insert: {
+          alert_time?: string | null
           client_name?: string | null
           created_at?: string | null
           date?: string | null
@@ -479,6 +481,7 @@ export type Database = {
           symbol?: string | null
         }
         Update: {
+          alert_time?: string | null
           client_name?: string | null
           created_at?: string | null
           date?: string | null
