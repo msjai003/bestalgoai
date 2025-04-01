@@ -1,6 +1,6 @@
+
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CSSProperties } from 'react';
 
 interface DataPoint {
   time: string;
@@ -13,7 +13,7 @@ interface ColoredSegmentsLineChartProps {
   negativeColor: string;
   dataKey: string;
   dot?: boolean;
-  activeDot?: CSSProperties;
+  activeDot?: any; // Changed from CSSProperties to any to match recharts typing
 }
 
 const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
@@ -24,37 +24,32 @@ const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
   dot = false,
   activeDot
 }) => {
-  const renderLine = () => {
+  // Group data points into segments with the same color
+  const getColoredSegments = () => {
+    if (!data || data.length <= 1) return [];
+    
     const segments = [];
-    let currentSegment = [];
-
-    for (let i = 0; i < data.length - 1; i++) {
-      const currentPoint = data[i];
-      const nextPoint = data[i + 1];
-
-      const color = nextPoint.value >= currentPoint.value ? positiveColor : negativeColor;
-
-      currentSegment.push({
-        ...currentPoint,
-        color,
-      });
-
-      segments.push(
-        <Line 
-          type="monotone" 
-          dataKey={dataKey} 
-          stroke={color} 
-          dot={dot}
-          activeDot={activeDot}
-          strokeWidth={1.5}
-          connectNulls
-        />
-      );
-      currentSegment = [];
+    let segmentStart = 0;
+    
+    for (let i = 1; i < data.length; i++) {
+      const currentValue = data[i-1].value;
+      const nextValue = data[i].value;
+      const isRising = nextValue >= currentValue;
+      
+      // If this is the last point or if direction changes, create a segment
+      if (i === data.length - 1 || (isRising !== (data[i+1].value >= nextValue))) {
+        segments.push({
+          data: data.slice(segmentStart, i + 1),
+          color: isRising ? positiveColor : negativeColor
+        });
+        segmentStart = i;
+      }
     }
-
-    return <>{segments}</>;
+    
+    return segments;
   };
+
+  const segments = getColoredSegments();
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -71,7 +66,30 @@ const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
         <XAxis dataKey="time" stroke="#fff" />
         <YAxis stroke="#fff" />
         <Tooltip />
-        {renderLine()}
+        {segments.map((segment, index) => (
+          <Line
+            key={index}
+            data={segment.data}
+            type="monotone"
+            dataKey={dataKey}
+            stroke={segment.color}
+            dot={dot}
+            activeDot={activeDot || { r: 6, stroke: segment.color, strokeWidth: 2 }}
+            strokeWidth={1.5}
+            connectNulls
+          />
+        ))}
+        {segments.length === 0 && data.length > 0 && (
+          <Line
+            type="monotone"
+            dataKey={dataKey}
+            stroke={positiveColor}
+            dot={dot}
+            activeDot={activeDot || { r: 6, stroke: positiveColor, strokeWidth: 2 }}
+            strokeWidth={1.5}
+            connectNulls
+          />
+        )}
       </LineChart>
     </ResponsiveContainer>
   );

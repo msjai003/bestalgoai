@@ -1,11 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   DownloadCloud,
   RefreshCw,
-  ChevronLeft
+  ChevronLeft,
+  BarChart4,
+  Table as TableIcon
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
@@ -18,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import LineChartWithColoredSegments from "@/components/charts/LineChartWithColoredSegments";
 
 const ZenflowBacktestReport = () => {
   const { 
@@ -27,6 +30,8 @@ const ZenflowBacktestReport = () => {
     fetchZenflowBacktestResults
   } = useZenflowBacktestResults();
   
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  
   useEffect(() => {
     // Refresh data when component mounts
     fetchZenflowBacktestResults();
@@ -35,6 +40,29 @@ const ZenflowBacktestReport = () => {
 
   useEffect(() => {
     console.log("Current zenflow results:", zenflowResults);
+  }, [zenflowResults]);
+
+  // Transform data for the chart
+  const chartData = useMemo(() => {
+    if (zenflowResults.length === 0) return [];
+    
+    // Sort by entry date
+    const sortedResults = [...zenflowResults].sort((a, b) => {
+      const dateA = a["Entry-Date"] ? new Date(a["Entry-Date"]).getTime() : 0;
+      const dateB = b["Entry-Date"] ? new Date(b["Entry-Date"]).getTime() : 0;
+      return dateA - dateB;
+    });
+    
+    // Calculate cumulative P/L
+    let cumulativePL = 0;
+    return sortedResults.map(result => {
+      cumulativePL += result["P/L"] || 0;
+      return {
+        time: result["Entry-Date"] ? new Date(result["Entry-Date"]).toLocaleDateString() : 'N/A',
+        value: cumulativePL,
+        position: result["Position"] || 'N/A'
+      };
+    });
   }, [zenflowResults]);
 
   const handleRefresh = () => {
@@ -128,6 +156,28 @@ const ZenflowBacktestReport = () => {
           </div>
         </div>
 
+        {/* View toggle buttons */}
+        <div className="mb-4 flex">
+          <Button
+            variant={viewMode === 'chart' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('chart')}
+            className="flex items-center mr-2"
+          >
+            <BarChart4 className="h-4 w-4 mr-1" />
+            Chart
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className="flex items-center"
+          >
+            <TableIcon className="h-4 w-4 mr-1" />
+            Table
+          </Button>
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
@@ -156,6 +206,30 @@ const ZenflowBacktestReport = () => {
             >
               Refresh Data
             </Button>
+          </div>
+        ) : viewMode === 'chart' ? (
+          <div className="bg-charcoalSecondary/30 p-4 rounded-lg border border-gray-700">
+            <h3 className="text-lg font-medium text-white mb-4">Performance Chart</h3>
+            <div className="h-60">
+              <LineChartWithColoredSegments
+                data={chartData}
+                positiveColor="#00BCD4" // Cyan color for positive trends
+                negativeColor="#FF5252" // Red for negative trends
+                dataKey="value"
+                dot={true}
+                activeDot={{ r: 6, fill: "#00BCD4", stroke: "#fff", strokeWidth: 2 }}
+              />
+            </div>
+            <div className="flex justify-between mt-4 text-xs text-charcoalTextSecondary">
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#00BCD4] rounded-full mr-1"></span>
+                <span>Positive Trend</span>
+              </div>
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-[#FF5252] rounded-full mr-1"></span>
+                <span>Negative Trend</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-gray-700 bg-charcoalSecondary/30">

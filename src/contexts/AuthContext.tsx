@@ -24,9 +24,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check for session on mount
     const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
-      setIsLoading(false);
+      try {
+        const { data } = await supabase.auth.getSession();
+        // Make sure we handle the user data properly with required fields
+        if (data.session?.user) {
+          setUser({
+            id: data.session.user.id,
+            email: data.session.user.email || ''
+          });
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth session error:", error);
+        setUser(null);
+        setIsLoading(false);
+      }
     };
     
     getSession();
@@ -34,7 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null);
+        // Make sure we handle the user data properly with required fields
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || ''
+          });
+        } else {
+          setUser(null);
+        }
         setIsLoading(false);
       }
     );

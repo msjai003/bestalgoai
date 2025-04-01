@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
 import { BacktestResultsTable } from '@/components/backtest/BacktestResultsTable';
 import { BacktestDetailsView } from '@/components/backtest/BacktestDetailsView';
+import { BacktestResultsChart } from '@/components/backtest/BacktestResultsChart';
 import {
   Dialog,
   DialogContent,
@@ -74,6 +76,7 @@ const BacktestReport = () => {
   const [currentBacktest, setCurrentBacktest] = useState<BacktestResult | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'chart' | 'details'>('chart'); // Add view mode state
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { 
@@ -397,9 +400,40 @@ const BacktestReport = () => {
                 </p>
               )}
 
-              {currentBacktest && (
+              {/* View mode toggle buttons */}
+              <div className="bg-charcoalSecondary/50 p-1 rounded-lg inline-flex">
+                <button
+                  className={`px-4 py-2 text-sm rounded-md ${viewMode === 'chart' 
+                    ? 'bg-cyan text-charcoalPrimary' 
+                    : 'text-charcoalTextSecondary'}`}
+                  onClick={() => setViewMode('chart')}
+                >
+                  Chart View
+                </button>
+                <button
+                  className={`px-4 py-2 text-sm rounded-md ${viewMode === 'details' 
+                    ? 'bg-cyan text-charcoalPrimary' 
+                    : 'text-charcoalTextSecondary'}`}
+                  onClick={() => setViewMode('details')}
+                >
+                  Details View
+                </button>
+              </div>
+
+              {/* Conditional rendering based on view mode */}
+              {viewMode === 'chart' ? (
+                <div className="mt-4">
+                  {currentBacktest ? (
+                    <BacktestResultsChart results={[currentBacktest]} />
+                  ) : (
+                    <div className="bg-charcoalSecondary/30 p-6 rounded-lg border border-gray-700 text-center">
+                      <p className="text-charcoalTextSecondary">No backtest data available for chart visualization</p>
+                    </div>
+                  )}
+                </div>
+              ) : currentBacktest ? (
                 <BacktestDetailsView backtest={currentBacktest} />
-              )}
+              ) : null}
             </section>
           </>
         )}
@@ -407,6 +441,12 @@ const BacktestReport = () => {
         {backtestResults.length > 0 && (
           <section className="mt-8">
             <h2 className="text-lg font-semibold text-white mb-4">Recent Backtest Results</h2>
+            
+            {/* Show chart for all backtest results */}
+            <div className="mb-6">
+              <BacktestResultsChart results={backtestResults.slice(0, 5)} />
+            </div>
+            
             <BacktestResultsTable results={backtestResults.slice(0, 5)} />
             {backtestResults.length > 5 && (
               <div className="text-center mt-2">
