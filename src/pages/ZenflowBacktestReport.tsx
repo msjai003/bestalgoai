@@ -98,7 +98,7 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
     : 0;
     
   return (
-    <Card className="bg-charcoalSecondary/50 border-gray-700">
+    <Card className="bg-charcoalSecondary/50 border-gray-700 h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm text-gray-400 flex items-center">
@@ -120,12 +120,12 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-end">
-          <p className={`text-lg font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}`}>
-            {isNegative && numValue > 0 ? '-' : ''}{value}
+          <p className={`text-lg font-bold ${numValue > 0 ? (isNegative ? 'text-red-500' : 'text-green-500') : numValue < 0 ? (isNegative ? 'text-green-500' : 'text-red-500') : ''}`}>
+            {value}
           </p>
           {percentValue !== undefined && (
-            <p className={`text-sm ml-2 ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
-              ({isNegative && numPercentValue > 0 ? '-' : ''}{percentValue}%)
+            <p className={`text-sm ml-2 ${numPercentValue > 0 ? (isNegative ? 'text-red-400' : 'text-green-400') : numPercentValue < 0 ? (isNegative ? 'text-green-400' : 'text-red-400') : ''}`}>
+              ({percentValue}%)
             </p>
           )}
         </div>
@@ -394,62 +394,7 @@ const ZenflowBacktestReport = () => {
                 <div className="pb-4">
                   <h3 className="text-md font-medium text-white mb-3">Key Performance Metrics</h3>
                   
-                  <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart
-                        data={prepareMetricsData()}
-                        margin={{
-                          top: 20,
-                          right: 20,
-                          bottom: 20,
-                          left: 20,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                        <XAxis 
-                          dataKey="name" 
-                          stroke="#888" 
-                          tick={{ fill: '#B0B0B0' }}
-                          axisLine={{ stroke: '#555' }}
-                          tickLine={{ stroke: '#555' }}
-                        />
-                        <YAxis 
-                          stroke="#888" 
-                          tick={{ fill: '#B0B0B0' }}
-                          axisLine={{ stroke: '#555' }}
-                          tickLine={{ stroke: '#555' }}
-                        />
-                        <Tooltip 
-                          formatter={(value, name) => [`${value}%`, name]}
-                          contentStyle={{ 
-                            backgroundColor: '#1E1E1E', 
-                            border: '1px solid #444',
-                            borderRadius: '4px',
-                            padding: '8px'
-                          }} 
-                        />
-                        <Legend verticalAlign="top" height={36} />
-                        <Bar 
-                          dataKey="value" 
-                          fill="#8884d8"
-                          background={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                          radius={[4, 4, 0, 0]}
-                          barSize={40}
-                        >
-                          {prepareMetricsData().map((entry, index) => (
-                            <Bar 
-                              key={`cell-${index}`} 
-                              dataKey="value" 
-                              name={entry.name} 
-                              fill={entry.color}
-                            />
-                          ))}
-                        </Bar>
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
                     <StatCard 
                       label="Win %" 
                       value={metrics.winPercentage || 'N/A'} 
@@ -470,7 +415,7 @@ const ZenflowBacktestReport = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
                     <StatCard 
                       label="No. of Trades" 
                       value={metrics.numberOfTrades || 'N/A'}
@@ -484,7 +429,7 @@ const ZenflowBacktestReport = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <StatCard 
                       label="Reward to Risk Ratio" 
                       value={metrics.rewardToRiskRatio || 'N/A'}
