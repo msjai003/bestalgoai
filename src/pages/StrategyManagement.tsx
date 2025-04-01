@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useStrategyWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { Strategy } from "@/hooks/strategy/types";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
-  const [wishlistedStrategies, setWishlistedStrategies] = React.useState<Strategy[]>([]);
-  const [hasPremium, setHasPremium] = React.useState(false);
+  const { wishlistedStrategies, hasPremium } = useStrategyWishlist();
   const [currentStrategyId, setCurrentStrategyId] = React.useState<number | null>(null);
   const [targetMode, setTargetMode] = React.useState<"live" | "paper" | null>(null);
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);

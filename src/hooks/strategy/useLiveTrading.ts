@@ -102,7 +102,7 @@ export const useLiveTrading = () => {
       setCurrentCustomId(null);
     }
     
-    // Always use the current state to determine the next state
+    // Always toggle the current state for the specific broker
     // If it's currently live, set target to paper, and vice versa
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
@@ -161,13 +161,9 @@ export const useLiveTrading = () => {
         })
       );
       
-      const actionDescription = targetMode === "live" 
-        ? "Live Trading Enabled" 
-        : "Switched to Paper Trading";
-        
       toast({
-        title: actionDescription,
-        description: `Strategy is now in ${targetMode} trading mode${currentBroker ? ` with ${currentBroker}` : ''}`,
+        title: targetMode === "live" ? "Live Trading Enabled" : "Paper Trading Enabled",
+        description: `Strategy is now in ${targetMode} trading mode${currentBroker ? ` with ${currentBroker} broker` : ''}`,
         duration: 3000,
       });
       
