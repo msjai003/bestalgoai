@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, BookOpen, LayoutList, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -126,7 +125,7 @@ const ModuleManager = () => {
     setIsContentFormOpen(false);
     setEditingContent(null);
     if (selectedModule) {
-      getEducationContent(selectedModule.id).then(setContents);
+      getEducationContent(selectedModule.id).then(data => setContents(data));
     }
   };
   
@@ -135,7 +134,7 @@ const ModuleManager = () => {
     if (deleteContentId) {
       const success = await deleteEducationContent(deleteContentId);
       if (success && selectedModule) {
-        getEducationContent(selectedModule.id).then(setContents);
+        getEducationContent(selectedModule.id).then(data => setContents(data));
       }
       setDeleteContentId(null);
     }
@@ -146,7 +145,7 @@ const ModuleManager = () => {
     setIsQuizFormOpen(false);
     setEditingQuestion(null);
     if (selectedModule) {
-      getQuizQuestions(selectedModule.id).then(setQuestions);
+      getQuizQuestions(selectedModule.id).then(data => setQuestions(data));
     }
   };
   
@@ -155,7 +154,7 @@ const ModuleManager = () => {
     if (deleteQuestionId) {
       const success = await deleteQuizQuestion(deleteQuestionId);
       if (success && selectedModule) {
-        getQuizQuestions(selectedModule.id).then(setQuestions);
+        getQuizQuestions(selectedModule.id).then(data => setQuestions(data));
       }
       setDeleteQuestionId(null);
     }

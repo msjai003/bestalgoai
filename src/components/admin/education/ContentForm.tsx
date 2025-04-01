@@ -148,7 +148,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ moduleId, content, onSuccess,
               <FormItem>
                 <FormLabel>Media URL</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="URL to media content" />
+                  <Input {...field} value={field.value || ''} placeholder="URL to media content" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

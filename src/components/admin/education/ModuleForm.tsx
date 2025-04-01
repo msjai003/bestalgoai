@@ -99,7 +99,7 @@ const ModuleForm: React.FC<ModuleFormProps> = ({ module, onSuccess, onCancel }) 
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Module description" />
+                <Textarea {...field} value={field.value || ''} placeholder="Module description" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -164,6 +164,7 @@ const ModuleForm: React.FC<ModuleFormProps> = ({ module, onSuccess, onCancel }) 
                   <Input 
                     type="number" 
                     {...field} 
+                    value={field.value || ''} 
                     onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                     placeholder="Estimated time in minutes" 
                   />

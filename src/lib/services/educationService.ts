@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -61,7 +60,7 @@ export interface EducationBadge {
 }
 
 // Module functions
-export const getEducationModules = async () => {
+export const getEducationModules = async (): Promise<EducationModule[]> => {
   const { data, error } = await supabase
     .from('education_modules')
     .select('*')
@@ -73,7 +72,8 @@ export const getEducationModules = async () => {
     return [];
   }
   
-  return data;
+  // Cast the data to ensure proper typing
+  return (data as EducationModule[]) || [];
 };
 
 export const createEducationModule = async (module: Omit<EducationModule, 'id' | 'created_at' | 'updated_at'>) => {
@@ -90,10 +90,10 @@ export const createEducationModule = async (module: Omit<EducationModule, 'id' |
   }
   
   toast.success('Education module created successfully');
-  return data;
+  return data as EducationModule;
 };
 
-export const updateEducationModule = async (id: string, updates: Partial<EducationModule>) => {
+export const updateEducationModule = async (id: string, updates: Partial<Omit<EducationModule, 'id' | 'created_at' | 'updated_at'>>) => {
   const { data, error } = await supabase
     .from('education_modules')
     .update(updates)
@@ -108,7 +108,7 @@ export const updateEducationModule = async (id: string, updates: Partial<Educati
   }
   
   toast.success('Education module updated successfully');
-  return data;
+  return data as EducationModule;
 };
 
 export const deleteEducationModule = async (id: string) => {
@@ -128,7 +128,7 @@ export const deleteEducationModule = async (id: string) => {
 };
 
 // Content functions
-export const getEducationContent = async (moduleId: string) => {
+export const getEducationContent = async (moduleId: string): Promise<EducationContent[]> => {
   const { data, error } = await supabase
     .from('education_content')
     .select('*')
@@ -141,7 +141,7 @@ export const getEducationContent = async (moduleId: string) => {
     return [];
   }
   
-  return data;
+  return data as EducationContent[];
 };
 
 export const createEducationContent = async (content: Omit<EducationContent, 'id' | 'created_at' | 'updated_at'>) => {
@@ -158,10 +158,10 @@ export const createEducationContent = async (content: Omit<EducationContent, 'id
   }
   
   toast.success('Content created successfully');
-  return data;
+  return data as EducationContent;
 };
 
-export const updateEducationContent = async (id: string, updates: Partial<EducationContent>) => {
+export const updateEducationContent = async (id: string, updates: Partial<Omit<EducationContent, 'id' | 'created_at' | 'updated_at'>>) => {
   const { data, error } = await supabase
     .from('education_content')
     .update(updates)
@@ -176,7 +176,7 @@ export const updateEducationContent = async (id: string, updates: Partial<Educat
   }
   
   toast.success('Content updated successfully');
-  return data;
+  return data as EducationContent;
 };
 
 export const deleteEducationContent = async (id: string) => {
@@ -196,7 +196,7 @@ export const deleteEducationContent = async (id: string) => {
 };
 
 // Quiz functions
-export const getQuizQuestions = async (moduleId: string) => {
+export const getQuizQuestions = async (moduleId: string): Promise<QuizQuestion[]> => {
   const { data: questions, error: questionsError } = await supabase
     .from('education_quiz_questions')
     .select('*')
@@ -210,8 +210,10 @@ export const getQuizQuestions = async (moduleId: string) => {
   }
   
   // Get answers for all questions
-  if (questions.length > 0) {
-    for (const question of questions) {
+  if (questions && questions.length > 0) {
+    const questionsWithAnswers = [...questions] as QuizQuestion[];
+    
+    for (const question of questionsWithAnswers) {
       const { data: answers, error: answersError } = await supabase
         .from('education_quiz_answers')
         .select('*')
@@ -221,12 +223,14 @@ export const getQuizQuestions = async (moduleId: string) => {
       if (answersError) {
         console.error('Error fetching quiz answers:', answersError);
       } else {
-        question.answers = answers;
+        question.answers = answers as QuizAnswer[];
       }
     }
+    
+    return questionsWithAnswers;
   }
   
-  return questions;
+  return [];
 };
 
 export const createQuizQuestion = async (question: Omit<QuizQuestion, 'id' | 'created_at' | 'updated_at' | 'answers'>) => {
@@ -243,7 +247,7 @@ export const createQuizQuestion = async (question: Omit<QuizQuestion, 'id' | 'cr
   }
   
   toast.success('Quiz question created successfully');
-  return data;
+  return data as QuizQuestion;
 };
 
 export const updateQuizQuestion = async (id: string, updates: Partial<QuizQuestion>) => {
@@ -264,7 +268,7 @@ export const updateQuizQuestion = async (id: string, updates: Partial<QuizQuesti
   }
   
   toast.success('Quiz question updated successfully');
-  return data;
+  return data as QuizQuestion;
 };
 
 export const deleteQuizQuestion = async (id: string) => {
@@ -298,7 +302,7 @@ export const createQuizAnswer = async (answer: Omit<QuizAnswer, 'id' | 'created_
   }
   
   toast.success('Answer created successfully');
-  return data;
+  return data as QuizAnswer;
 };
 
 export const updateQuizAnswer = async (id: string, updates: Partial<QuizAnswer>) => {
@@ -316,7 +320,7 @@ export const updateQuizAnswer = async (id: string, updates: Partial<QuizAnswer>)
   }
   
   toast.success('Answer updated successfully');
-  return data;
+  return data as QuizAnswer;
 };
 
 export const deleteQuizAnswer = async (id: string) => {
@@ -336,7 +340,7 @@ export const deleteQuizAnswer = async (id: string) => {
 };
 
 // Badge functions
-export const getEducationBadges = async () => {
+export const getEducationBadges = async (): Promise<EducationBadge[]> => {
   const { data, error } = await supabase
     .from('education_badges')
     .select('*')
@@ -348,7 +352,7 @@ export const getEducationBadges = async () => {
     return [];
   }
   
-  return data;
+  return (data as EducationBadge[]) || [];
 };
 
 export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'created_at' | 'updated_at'>) => {
@@ -365,10 +369,10 @@ export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'c
   }
   
   toast.success('Badge created successfully');
-  return data;
+  return data as EducationBadge;
 };
 
-export const updateEducationBadge = async (id: string, updates: Partial<EducationBadge>) => {
+export const updateEducationBadge = async (id: string, updates: Partial<Omit<EducationBadge, 'id' | 'created_at' | 'updated_at'>>) => {
   const { data, error } = await supabase
     .from('education_badges')
     .update(updates)
@@ -383,7 +387,7 @@ export const updateEducationBadge = async (id: string, updates: Partial<Educatio
   }
   
   toast.success('Badge updated successfully');
-  return data;
+  return data as EducationBadge;
 };
 
 export const deleteEducationBadge = async (id: string) => {

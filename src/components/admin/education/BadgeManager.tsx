@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Dialog, 
@@ -65,7 +64,7 @@ const BadgeManager = () => {
   };
 
   // Get background color based on level
-  const getLevelColor = (level: string) => {
+  const getLevelColor = (level: 'basics' | 'intermediate' | 'pro') => {
     switch (level) {
       case 'basics':
         return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300';

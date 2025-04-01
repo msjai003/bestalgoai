@@ -27,10 +27,10 @@ import { EducationBadge, createEducationBadge, updateEducationBadge } from '@/li
 const badgeSchema = z.object({
   badge_id: z.string().min(3, { message: 'Badge ID is required' }),
   name: z.string().min(3, { message: 'Name is required' }),
-  description: z.string().min(3, { message: 'Description is required' }),
-  image: z.string().min(1, { message: 'Image emoji/URL is required' }),
+  description: z.string(),
+  image: z.string().min(1, { message: 'Image is required (emoji or URL)' }),
   level: z.enum(['basics', 'intermediate', 'pro']),
-  unlocked_by: z.string().min(1, { message: 'Unlock condition is required' }),
+  unlocked_by: z.string(),
 });
 
 type BadgeFormData = z.infer<typeof badgeSchema>;
@@ -55,7 +55,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
       badge_id: '',
       name: '',
       description: '',
-      image: '🏆',
+      image: '🏆', // Default emoji
       level: 'basics',
       unlocked_by: 'first_module',
     },
@@ -86,10 +86,10 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
               <FormItem className="flex-1">
                 <FormLabel>Badge ID</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="unique-badge-id" disabled={!!badge} />
+                  <Input {...field} placeholder="basics_complete" />
                 </FormControl>
                 <FormDescription>
-                  Unique identifier for this badge (e.g., "basics-starter")
+                  Unique identifier for this badge
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -103,7 +103,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
               <FormItem className="flex-1">
                 <FormLabel>Badge Image</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="🏆 or image URL" />
+                  <Input {...field} placeholder="🏆" />
                 </FormControl>
                 <FormDescription>
                   Emoji or image URL
@@ -121,7 +121,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
             <FormItem>
               <FormLabel>Badge Name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Badge name" />
+                <Input {...field} placeholder="Basics Mastery" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -135,7 +135,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Badge description" />
+                <Textarea {...field} placeholder="Describe what this badge represents" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -181,16 +181,16 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select condition" />
+                      <SelectValue placeholder="How to unlock" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="first_module">First Module</SelectItem>
-                    <SelectItem value="half_modules">Half Modules</SelectItem>
-                    <SelectItem value="all_modules">All Modules</SelectItem>
-                    <SelectItem value="first_quiz">First Quiz</SelectItem>
-                    <SelectItem value="perfect_score">Perfect Quiz Score</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
+                    <SelectItem value="first_module">Complete First Module</SelectItem>
+                    <SelectItem value="half_modules">Complete 50% of Modules</SelectItem>
+                    <SelectItem value="all_modules">Complete All Modules</SelectItem>
+                    <SelectItem value="first_quiz">Complete First Quiz</SelectItem>
+                    <SelectItem value="perfect_score">Get Perfect Quiz Score</SelectItem>
+                    <SelectItem value="custom">Custom Condition</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -199,7 +199,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
           />
         </div>
         
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
           <Button type="submit">{badge ? 'Update Badge' : 'Create Badge'}</Button>
         </div>

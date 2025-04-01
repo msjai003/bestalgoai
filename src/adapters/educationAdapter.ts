@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Type for quiz result
@@ -311,5 +310,32 @@ export const fetchUserEducationData = async (userId: string) => {
   } catch (error) {
     console.error('Exception fetching education data:', error);
     return null;
+  }
+};
+
+// Function to update user progress
+export const updateUserProgress = async (userId: string, progressData: { 
+  current_level?: string; 
+  current_module?: string; 
+  current_card?: number; 
+}) => {
+  try {
+    const { error } = await supabase
+      .from('user_education_progress')
+      .update({
+        current_level: progressData.current_level,
+        current_module: progressData.current_module,
+        current_card: progressData.current_card
+      })
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating user progress:', error);
+    return false;
   }
 };
