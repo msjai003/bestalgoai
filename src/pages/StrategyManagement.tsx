@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Strategy } from "@/hooks/strategy/types";
-import { removeFromWishlist, useStrategyWishlist } from "@/hooks/strategy/useStrategyWishlist";
+import { useStrategyWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { StrategySection } from "@/components/strategy/StrategySection";
 import { Heart, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
