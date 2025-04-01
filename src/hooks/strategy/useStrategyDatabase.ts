@@ -147,7 +147,7 @@ export const updateStrategyTradeType = async (
     // Check if record exists for this specific strategy + broker combination
     const { data: specificBrokerRecords, error: brokerCheckError } = await supabase
       .from('strategy_selections')
-      .select('id')
+      .select('id, broker_username')
       .eq('user_id', userId)
       .eq('strategy_id', strategyIdNum)
       .eq('selected_broker', selectedBroker);
@@ -158,12 +158,22 @@ export const updateStrategyTradeType = async (
     }
       
     if (specificBrokerRecords && specificBrokerRecords.length > 0) {
-      // Update only this specific broker's record
+      // Update only the specific broker record that matches both broker name and username if provided
+      let recordToUpdate = specificBrokerRecords[0].id;
+      
+      if (brokerUsername && specificBrokerRecords.length > 1) {
+        // If we have multiple records for the same broker, find the one with matching username
+        const specificRecord = specificBrokerRecords.find(r => r.broker_username === brokerUsername);
+        if (specificRecord) {
+          recordToUpdate = specificRecord.id;
+        }
+      }
+      
       console.log(`Updating trade type for strategy ${strategyId} with broker ${selectedBroker} to ${tradeType}`);
       const { error } = await supabase
         .from('strategy_selections')
         .update({ trade_type: tradeType })
-        .eq('id', specificBrokerRecords[0].id);
+        .eq('id', recordToUpdate);
         
       if (error) {
         console.error("Error updating strategy trade type:", error);
