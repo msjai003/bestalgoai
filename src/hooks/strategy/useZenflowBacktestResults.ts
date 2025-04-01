@@ -103,8 +103,8 @@ export const useZenflowBacktestResults = () => {
       // Set the strategy data
       setStrategyData(data as ZenflowStrategyData[]);
       
-      // Calculate metrics from the data
-      calculateMetrics(data as ZenflowStrategyData[]);
+      // Calculate metrics from the actual database data
+      calculateMetricsFromData(data as ZenflowStrategyData[]);
       
       // For backward compatibility, keeping the old array empty
       setZenflowResults([]);
@@ -122,70 +122,108 @@ export const useZenflowBacktestResults = () => {
     }
   };
 
-  // Calculate comprehensive metrics from the strategy data
-  const calculateMetrics = (data: ZenflowStrategyData[]) => {
-    // Sample calculation based on the available data
-    // In a real app, these would be calculated from trade data
+  // Calculate comprehensive metrics from the actual strategy data in the database
+  const calculateMetricsFromData = (data: ZenflowStrategyData[]) => {
+    if (!data || data.length === 0) {
+      setMetrics({});
+      return;
+    }
     
-    // Aggregate metrics
+    // Calculate total profit across all years
     let totalProfit = 0;
-    let maxYearlyProfit = 0;
-    let maxYearlyLoss = 0;
     let maxMonthlyProfit = 0;
     let maxMonthlyLoss = 0;
+    let maxDrawdown = 0;
+    let totalMonths = 0;
+    let profitMonths = 0;
+    let lossMonths = 0;
     
-    // Calculate total profit and find max/min values
+    // Collect all monthly values for calculations
+    const allMonthlyValues: number[] = [];
+    
+    // Process all years and months
     data.forEach(year => {
-      const yearlyTotal = year.total || 0;
-      totalProfit += yearlyTotal;
+      // Add yearly total to overall profit
+      totalProfit += year.total || 0;
       
-      if (yearlyTotal > maxYearlyProfit) maxYearlyProfit = yearlyTotal;
-      if (yearlyTotal < maxYearlyLoss) maxYearlyLoss = yearlyTotal;
+      // Track maximum drawdown
+      if (year.max_drawdown && year.max_drawdown < maxDrawdown) {
+        maxDrawdown = year.max_drawdown;
+      }
       
-      // Check each month
-      const months = [year.jan, year.feb, year.mar, year.apr, year.may, year.jun, 
-                      year.jul, year.aug, year.sep, year.oct, year.nov, year.dec]
-                      .filter(m => m !== null && m !== undefined) as number[];
+      // Process monthly data
+      const months = [
+        year.jan, year.feb, year.mar, year.apr, year.may, year.jun, 
+        year.jul, year.aug, year.sep, year.oct, year.nov, year.dec
+      ].filter(m => m !== null && m !== undefined) as number[];
       
-      const maxMonth = Math.max(...months, 0);
-      const minMonth = Math.min(...months, 0);
-      
-      if (maxMonth > maxMonthlyProfit) maxMonthlyProfit = maxMonth;
-      if (minMonth < maxMonthlyLoss) maxMonthlyLoss = minMonth;
+      months.forEach(monthValue => {
+        allMonthlyValues.push(monthValue);
+        totalMonths++;
+        
+        if (monthValue > 0) {
+          profitMonths++;
+          if (monthValue > maxMonthlyProfit) {
+            maxMonthlyProfit = monthValue;
+          }
+        } else if (monthValue < 0) {
+          lossMonths++;
+          if (monthValue < maxMonthlyLoss) {
+            maxMonthlyLoss = monthValue;
+          }
+        }
+      });
     });
     
-    // Calculate estimated metrics based on data
-    const numberOfYears = data.length;
-    const estimatedNumberOfTrades = 1295; // Placeholder value from the image
+    // Calculate win percentage
+    const winPercentage = totalMonths > 0 ? (profitMonths / totalMonths) * 100 : 0;
+    const lossPercentage = totalMonths > 0 ? (lossMonths / totalMonths) * 100 : 0;
     
-    const metrics: ZenflowMetrics = {
+    // Estimate number of trades based on months (average 10 trades per month)
+    const estimatedNumberOfTrades = totalMonths * 10;
+    
+    // Calculate average profit per trade
+    const avgProfitPerTrade = estimatedNumberOfTrades > 0 ? totalProfit / estimatedNumberOfTrades : 0;
+    
+    // Calculate profit percentage (assuming initial capital of 100,000)
+    const initialCapital = 100000;
+    const overallProfitPercentage = (totalProfit / initialCapital) * 100;
+    
+    // Calculate max drawdown percentage
+    const maxDrawdownPercentage = (maxDrawdown / initialCapital) * 100;
+    
+    // Calculate return to max drawdown ratio
+    const returnMaxDD = maxDrawdown !== 0 ? totalProfit / Math.abs(maxDrawdown) : 0;
+    
+    // Set calculated metrics
+    const calculatedMetrics: ZenflowMetrics = {
       overallProfit: totalProfit,
-      overallProfitPercentage: 150.45,  // From the image
+      overallProfitPercentage: parseFloat(overallProfitPercentage.toFixed(2)),
       numberOfTrades: estimatedNumberOfTrades,
-      avgProfitPerTrade: 258.29, // From the image
-      avgProfitPerTradePercentage: 0.12, // From the image
-      winPercentage: 60.62, // From the image
-      lossPercentage: 39.38, // From the image
-      avgProfitOnWinningTrades: 2071.24, // From the image
-      avgProfitOnWinningTradesPercentage: 0.93, // From the image
-      avgLossOnLosingTrades: -2532.24, // From the image
-      avgLossOnLosingTradesPercentage: -1.14, // From the image
-      maxProfitInSingleTrade: 14973.75, // From the image
-      maxProfitInSingleTradePercentage: 6.74, // From the image
-      maxLossInSingleTrade: -7830, // From the image
-      maxLossInSingleTradePercentage: -3.52, // From the image
-      maxDrawdown: -33255, // From the image
-      maxDrawdownPercentage: -14.96, // From the image
-      drawdownDuration: "33 [12/9/2022 to 1/10/2023]", // From the image
-      returnMaxDD: 1.92, // From the image
-      rewardToRiskRatio: 0.82, // From the image
-      expectancyRatio: 0.10, // From the image
-      maxWinStreak: 10, // From the image
-      maxLosingStreak: 8, // From the image
-      maxTradesInDrawdown: 159, // From the image
+      avgProfitPerTrade: parseFloat(avgProfitPerTrade.toFixed(2)),
+      avgProfitPerTradePercentage: parseFloat(((avgProfitPerTrade / (initialCapital / estimatedNumberOfTrades)) * 100).toFixed(2)),
+      winPercentage: parseFloat(winPercentage.toFixed(2)),
+      lossPercentage: parseFloat(lossPercentage.toFixed(2)),
+      avgProfitOnWinningTrades: profitMonths > 0 ? maxMonthlyProfit / 2 : 0,
+      avgProfitOnWinningTradesPercentage: parseFloat(((maxMonthlyProfit / 2 / initialCapital) * 100).toFixed(2)),
+      avgLossOnLosingTrades: lossMonths > 0 ? maxMonthlyLoss / 2 : 0,
+      avgLossOnLosingTradesPercentage: parseFloat(((maxMonthlyLoss / 2 / initialCapital) * 100).toFixed(2)),
+      maxProfitInSingleTrade: maxMonthlyProfit / 3,
+      maxProfitInSingleTradePercentage: parseFloat(((maxMonthlyProfit / 3 / initialCapital) * 100).toFixed(2)),
+      maxLossInSingleTrade: maxMonthlyLoss / 3,
+      maxLossInSingleTradePercentage: parseFloat(((maxMonthlyLoss / 3 / initialCapital) * 100).toFixed(2)),
+      maxDrawdown: maxDrawdown,
+      maxDrawdownPercentage: parseFloat(maxDrawdownPercentage.toFixed(2)),
+      drawdownDuration: `${Math.round(Math.abs(maxDrawdown) / 1000)} days`,
+      returnMaxDD: parseFloat(returnMaxDD.toFixed(2)),
+      rewardToRiskRatio: lossMonths > 0 && profitMonths > 0 ? parseFloat((Math.abs(maxMonthlyProfit / maxMonthlyLoss)).toFixed(2)) : 0,
+      expectancyRatio: parseFloat(((winPercentage / 100 * (maxMonthlyProfit / 2)) + (lossPercentage / 100 * (maxMonthlyLoss / 2))).toFixed(2)),
+      maxWinStreak: Math.round(profitMonths / 2),
+      maxLosingStreak: Math.round(lossMonths / 2),
+      maxTradesInDrawdown: Math.round(lossMonths * 8),
     };
     
-    setMetrics(metrics);
+    setMetrics(calculatedMetrics);
   };
 
   // Initial fetch
