@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -322,6 +321,52 @@ const StrategyManagement = () => {
   const confirmModeChange = async () => {
     if (currentStrategyId === null || targetMode === null) return;
     
+    const strategy = wishlistedStrategies.find(s => s.id === currentStrategyId);
+    if (!strategy) {
+      setConfirmationOpen(false);
+      setCurrentStrategyId(null);
+      setTargetMode(null);
+      return;
+    }
+    
+    if (user) {
+      try {
+        if (typeof currentStrategyId === 'string' || strategy.isCustom) {
+          const { error } = await supabase
+            .from('custom_strategies')
+            .update({
+              trade_type: targetMode === "live" ? "live trade" : "paper trade"
+            })
+            .eq('id', strategy.id)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({
+              trade_type: targetMode === "live" ? "live trade" : "paper trade"
+            })
+            .eq('strategy_id', currentStrategyId)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error("Error updating strategy mode:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update strategy mode in database",
+          variant: "destructive",
+        });
+        
+        setConfirmationOpen(false);
+        setCurrentStrategyId(null);
+        setTargetMode(null);
+        return;
+      }
+    }
+    
     const updatedStrategies = wishlistedStrategies.map(strategy => {
       if (strategy.id === currentStrategyId) {
         const newLiveStatus = targetMode === "live";
@@ -333,22 +378,42 @@ const StrategyManagement = () => {
         });
         
         if (newLiveStatus) {
-          // Check if it's a custom strategy
-          const isCustomStrategy = strategy.isCustom;
-          
-          // Use a timeout to ensure state updates complete before navigation
           setTimeout(() => {
             navigate("/live-trading");
           }, 100);
         }
         
-        return { ...strategy, isLive: newLiveStatus };
+        return { 
+          ...strategy, 
+          isLive: newLiveStatus,
+          trade_type: newLiveStatus ? "live trade" : "paper trade"
+        };
       }
       return strategy;
     });
     
     setWishlistedStrategies(updatedStrategies);
-    localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedStrategies));
+    
+    const storedStrategies = localStorage.getItem('wishlistedStrategies');
+    if (storedStrategies) {
+      try {
+        const parsedStrategies = JSON.parse(storedStrategies);
+        const updatedLocalStrategies = parsedStrategies.map((s: any) => {
+          if (s.id === currentStrategyId) {
+            return { 
+              ...s, 
+              isLive: targetMode === "live",
+              trade_type: targetMode === "live" ? "live trade" : "paper trade"
+            };
+          }
+          return s;
+        });
+        localStorage.setItem('wishlistedStrategies', JSON.stringify(updatedLocalStrategies));
+      } catch (error) {
+        console.error("Error updating local storage:", error);
+      }
+    }
+    
     setConfirmationOpen(false);
     setCurrentStrategyId(null);
     setTargetMode(null);
