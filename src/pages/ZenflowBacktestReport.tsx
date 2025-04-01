@@ -13,7 +13,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 // Custom tooltip component for the chart
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -79,7 +78,8 @@ const ZenflowBacktestReport = () => {
     fetchZenflowBacktestResults
   } = useZenflowBacktestResults();
 
-  const [viewMode, setViewMode] = useState<'chart' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  const [highlightMonths, setHighlightMonths] = useState<boolean>(false);
   
   useEffect(() => {
     // Refresh data when component mounts
@@ -249,6 +249,20 @@ const ZenflowBacktestReport = () => {
           </div>
         ) : (
           <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]">
+            <div className="mb-2 flex items-center">
+              <Button 
+                variant={highlightMonths ? "default" : "outline"}
+                size="sm"
+                onClick={() => setHighlightMonths(!highlightMonths)}
+                className="text-xs"
+              >
+                {highlightMonths ? "Hide Monthly Lines" : "Show Monthly Lines"}
+              </Button>
+              <p className="ml-2 text-xs text-charcoalTextSecondary">
+                {highlightMonths ? "Showing all details" : "Showing only total performance"}
+              </p>
+            </div>
+
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={prepareChartData()}
@@ -259,7 +273,7 @@ const ZenflowBacktestReport = () => {
                   bottom: 20,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                 <XAxis 
                   dataKey="year" 
                   stroke="#888" 
@@ -284,6 +298,7 @@ const ZenflowBacktestReport = () => {
                     fontSize: "12px"
                   }}
                 />
+                {/* Total line always visible */}
                 <Line
                   type="monotone"
                   dataKey="Total"
@@ -293,18 +308,24 @@ const ZenflowBacktestReport = () => {
                   dot={{ r: 4, fill: "#00BCD4", stroke: "#00BCD4" }}
                   activeDot={{ r: 6, stroke: "#00BCD4", strokeWidth: 2 }}
                 />
-                <Line type="monotone" dataKey="Jan" name="Jan" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Feb" name="Feb" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Mar" name="Mar" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Apr" name="Apr" stroke="#0097A7" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="May" name="May" stroke="#00838F" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Jun" name="Jun" stroke="#006064" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Jul" name="Jul" stroke="#80DEEA" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Aug" name="Aug" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Sep" name="Sep" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Oct" name="Oct" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Nov" name="Nov" stroke="#0097A7" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Dec" name="Dec" stroke="#00838F" strokeWidth={1.5} dot={false} />
+                
+                {/* Monthly lines only shown when highlightMonths is true */}
+                {highlightMonths && (
+                  <>
+                    <Line type="monotone" dataKey="Jan" name="Jan" stroke="#4DD0E1" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Feb" name="Feb" stroke="#26C6DA" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Mar" name="Mar" stroke="#00ACC1" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Apr" name="Apr" stroke="#0097A7" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="May" name="May" stroke="#00838F" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Jun" name="Jun" stroke="#006064" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Jul" name="Jul" stroke="#80DEEA" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Aug" name="Aug" stroke="#4DD0E1" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Sep" name="Sep" stroke="#26C6DA" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Oct" name="Oct" stroke="#00ACC1" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Nov" name="Nov" stroke="#0097A7" strokeWidth={1} dot={false} />
+                    <Line type="monotone" dataKey="Dec" name="Dec" stroke="#00838F" strokeWidth={1} dot={false} />
+                  </>
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
