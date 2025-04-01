@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, RefreshCw } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
@@ -8,14 +8,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const UpdateVeloxData = () => {
+  const [searchParams] = useSearchParams();
+  const strategyType = searchParams.get('strategy') || 'zenflow';
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string>('');
   const { toast } = useToast();
 
+  const getStrategyDisplayName = (strategy: string): string => {
+    switch (strategy) {
+      case 'velox':
+        return 'Velox Edge';
+      case 'zenflow':
+      default:
+        return 'Zenflow';
+    }
+  };
+
   const updateVeloxData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('update-velox-data');
+      const { data, error } = await supabase.functions.invoke('update-velox-data', {
+        body: { strategy: strategyType }
+      });
       
       if (error) {
         toast({
@@ -27,7 +41,7 @@ const UpdateVeloxData = () => {
       } else {
         toast({
           title: "Success",
-          description: "Zenflow Strategy data updated successfully",
+          description: `${getStrategyDisplayName(strategyType)} Strategy data updated successfully`,
         });
         setResult(JSON.stringify(data, null, 2));
       }
@@ -51,7 +65,9 @@ const UpdateVeloxData = () => {
           <Link to="/zenflow-backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Update Zenflow Data</h1>
+          <h1 className="text-charcoalTextPrimary text-lg font-medium">
+            Update {getStrategyDisplayName(strategyType)} Data
+          </h1>
           <div className="w-8"></div>
         </div>
       </header>
@@ -59,7 +75,7 @@ const UpdateVeloxData = () => {
       <main className="pt-20 pb-20 px-4">
         <div className="flex flex-col items-center space-y-6">
           <p className="text-white text-center">
-            This page will update the Zenflow Strategy data in the database.
+            This page will update the {getStrategyDisplayName(strategyType)} Strategy data in the database.
           </p>
           
           <Button 
@@ -68,7 +84,7 @@ const UpdateVeloxData = () => {
             className="flex items-center gap-2"
           >
             {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
-            {loading ? 'Updating Data...' : 'Update Zenflow Data'}
+            {loading ? 'Updating Data...' : `Update ${getStrategyDisplayName(strategyType)} Data`}
           </Button>
           
           {result && (
@@ -81,9 +97,9 @@ const UpdateVeloxData = () => {
           )}
           
           <div className="flex justify-center mt-6">
-            <Link to="/zenflow-backtest-report?strategy=zenflow">
+            <Link to={`/zenflow-backtest-report?strategy=${strategyType}`}>
               <Button variant="outline">
-                View Zenflow Strategy Report
+                View {getStrategyDisplayName(strategyType)} Strategy Report
               </Button>
             </Link>
           </div>
