@@ -151,7 +151,7 @@ serve(async (req) => {
     // Update metrics for Velox Edge
     // Calculate key metrics based on the data
     const totalProfit = 97158 + 166777 + 161546 + 58777 + 81345 + 27153; // Sum of all yearly totals
-    const worstDrawdown = -25942; // Worst max drawdown
+    const worstDrawdown = -25942; // Worst max drawdown from 2024
     const initialCapital = 100000; // Assumed initial capital
     
     // Prepare metrics update
@@ -165,9 +165,9 @@ serve(async (req) => {
       max_drawdown_percentage: parseFloat(((worstDrawdown / initialCapital) * 100).toFixed(2)),
       avg_profit_per_trade: parseFloat((totalProfit / 285).toFixed(2)),
       avg_profit_per_trade_percentage: parseFloat(((totalProfit / 285 / initialCapital) * 100).toFixed(2)),
-      max_profit_in_single_trade: 35028, // Highest monthly value
+      max_profit_in_single_trade: 35028, // Highest monthly value (May 2022)
       max_profit_in_single_trade_percentage: parseFloat(((35028 / initialCapital) * 100).toFixed(2)),
-      max_loss_in_single_trade: -12948, // Lowest monthly value
+      max_loss_in_single_trade: -12948, // Lowest monthly value (Aug 2024)
       max_loss_in_single_trade_percentage: parseFloat(((-12948 / initialCapital) * 100).toFixed(2)),
       avg_profit_on_winning_trades: 12500,
       avg_profit_on_winning_trades_percentage: parseFloat(((12500 / initialCapital) * 100).toFixed(2)),

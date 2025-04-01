@@ -28,7 +28,6 @@ const UpdateVeloxData = () => {
         toast({
           title: "Success",
           description: "Velox Edge Strategy data updated successfully",
-          variant: "default", // Fixed the variant to use a valid value
         });
         setResult(JSON.stringify(data, null, 2));
       }
