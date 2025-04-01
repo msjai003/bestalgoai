@@ -618,6 +618,81 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_first: {
+        Row: {
+          created_at: string | null
+          "Entry-Date": string | null
+          "Entry-Price": number | null
+          "Entry-Time": string | null
+          "Entry-Weekday": string | null
+          "Exit-Weekday": string | null
+          ExitDate: string | null
+          ExitPrice: number | null
+          ExitTime: string | null
+          ExpiryDate: string | null
+          "Highest MTM(Candle Close)": string | null
+          id: string
+          Index: number | null
+          "Instrument-Kind": string | null
+          "Lowest MTM(Candle Close)": string | null
+          "P/L": number | null
+          "P/L-Percentage": string | null
+          Position: string | null
+          Quantity: string | null
+          Remarks: string | null
+          StrikePrice: string | null
+          trend: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          "Entry-Date"?: string | null
+          "Entry-Price"?: number | null
+          "Entry-Time"?: string | null
+          "Entry-Weekday"?: string | null
+          "Exit-Weekday"?: string | null
+          ExitDate?: string | null
+          ExitPrice?: number | null
+          ExitTime?: string | null
+          ExpiryDate?: string | null
+          "Highest MTM(Candle Close)"?: string | null
+          id?: string
+          Index?: number | null
+          "Instrument-Kind"?: string | null
+          "Lowest MTM(Candle Close)"?: string | null
+          "P/L"?: number | null
+          "P/L-Percentage"?: string | null
+          Position?: string | null
+          Quantity?: string | null
+          Remarks?: string | null
+          StrikePrice?: string | null
+          trend?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          "Entry-Date"?: string | null
+          "Entry-Price"?: number | null
+          "Entry-Time"?: string | null
+          "Entry-Weekday"?: string | null
+          "Exit-Weekday"?: string | null
+          ExitDate?: string | null
+          ExitPrice?: number | null
+          ExitTime?: string | null
+          ExpiryDate?: string | null
+          "Highest MTM(Candle Close)"?: string | null
+          id?: string
+          Index?: number | null
+          "Instrument-Kind"?: string | null
+          "Lowest MTM(Candle Close)"?: string | null
+          "P/L"?: number | null
+          "P/L-Percentage"?: string | null
+          Position?: string | null
+          Quantity?: string | null
+          Remarks?: string | null
+          StrikePrice?: string | null
+          trend?: string | null
+        }
+        Relationships: []
+      }
       strategy_selections: {
         Row: {
           broker_username: string | null
@@ -891,72 +966,6 @@ export type Database = {
           strategy_name?: string
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      Zenflow_backtest: {
-        Row: {
-          "Entry-Date": string | null
-          "Entry-Price": number | null
-          "Entry-Time": string | null
-          "Entry-Weekday": string | null
-          "Exit-Weekday": string | null
-          ExitDate: string | null
-          ExitPrice: number | null
-          ExitTime: string | null
-          ExpiryDate: string | null
-          "Highest MTM(Candle Close)": string | null
-          Index: number | null
-          "Instrument-Kind": string | null
-          "Lowest MTM(Candle Close)": string | null
-          "P/L": number | null
-          "P/L-Percentage": string | null
-          Position: string | null
-          Quantity: string | null
-          Remarks: string | null
-          StrikePrice: string | null
-        }
-        Insert: {
-          "Entry-Date"?: string | null
-          "Entry-Price"?: number | null
-          "Entry-Time"?: string | null
-          "Entry-Weekday"?: string | null
-          "Exit-Weekday"?: string | null
-          ExitDate?: string | null
-          ExitPrice?: number | null
-          ExitTime?: string | null
-          ExpiryDate?: string | null
-          "Highest MTM(Candle Close)"?: string | null
-          Index?: number | null
-          "Instrument-Kind"?: string | null
-          "Lowest MTM(Candle Close)"?: string | null
-          "P/L"?: number | null
-          "P/L-Percentage"?: string | null
-          Position?: string | null
-          Quantity?: string | null
-          Remarks?: string | null
-          StrikePrice?: string | null
-        }
-        Update: {
-          "Entry-Date"?: string | null
-          "Entry-Price"?: number | null
-          "Entry-Time"?: string | null
-          "Entry-Weekday"?: string | null
-          "Exit-Weekday"?: string | null
-          ExitDate?: string | null
-          ExitPrice?: number | null
-          ExitTime?: string | null
-          ExpiryDate?: string | null
-          "Highest MTM(Candle Close)"?: string | null
-          Index?: number | null
-          "Instrument-Kind"?: string | null
-          "Lowest MTM(Candle Close)"?: string | null
-          "P/L"?: number | null
-          "P/L-Percentage"?: string | null
-          Position?: string | null
-          Quantity?: string | null
-          Remarks?: string | null
-          StrikePrice?: string | null
         }
         Relationships: []
       }

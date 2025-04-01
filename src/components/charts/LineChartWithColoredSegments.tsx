@@ -4,7 +4,7 @@ import { Line } from 'recharts';
 import type { LineProps } from 'recharts';
 
 interface ColoredLineSegmentProps {
-  points: { x: number; y: number; payload: { trend: string } }[];
+  points: { x: number; y: number; payload: { trend?: string } }[];
   strokeWidth?: number;
 }
 
@@ -38,7 +38,7 @@ export const ColoredLineSegments = ({ points, strokeWidth = 2 }: ColoredLineSegm
 
 // A wrapper for the Line component that adds colored segments
 const ColoredSegmentLine = (props: LineProps) => {
-  // Return the Line component with spread props, without ref to avoid type errors
+  // Return the Line component with spread props, without using ref to avoid type errors
   const { ref, ...restProps } = props;
   return <Line {...restProps} />;
 };

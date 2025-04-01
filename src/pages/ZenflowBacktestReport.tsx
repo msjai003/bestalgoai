@@ -48,7 +48,7 @@ const ZenflowBacktestReport = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Current zenflow results:", zenflowResults);
+    console.log("Current strategy results:", zenflowResults);
     
     // Transform data for chart when zenflowResults change
     if (zenflowResults && zenflowResults.length > 0) {
@@ -59,11 +59,15 @@ const ZenflowBacktestReport = () => {
           plValue = parseFloat(plValue);
         }
         
+        // Determine the trend based on P/L value
+        const trend = plValue && plValue > 0 ? 'up' : 'down';
+        
         return {
           name: result["Entry-Date"] || `Trade ${index + 1}`,
           pl: plValue || 0,
           entryPrice: result["Entry-Price"] || 0,
           exitPrice: result["ExitPrice"] || 0,
+          trend: trend
         };
       });
       
@@ -112,7 +116,7 @@ const ZenflowBacktestReport = () => {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `zenflow-backtest-report-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `strategy-backtest-report-${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -142,14 +146,14 @@ const ZenflowBacktestReport = () => {
           <Link to="/backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Zenflow Backtest Report</h1>
+          <h1 className="text-charcoalTextPrimary text-lg font-medium">Strategy Backtest Report</h1>
           <div className="w-8"></div>
         </div>
       </header>
 
       <main className="pt-16 pb-20 px-4">
         <div className="mt-4 mb-6 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-white">Zenflow Backtest Data</h2>
+          <h2 className="text-lg font-semibold text-white">Strategy Backtest Data</h2>
           <div className="flex space-x-2">
             <Button 
               variant="outline" 
@@ -199,8 +203,8 @@ const ZenflowBacktestReport = () => {
           </div>
         ) : zenflowResults.length === 0 ? (
           <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
-            <p className="text-charcoalTextSecondary">No Zenflow backtest data available.</p>
-            <p className="text-charcoalTextSecondary mt-2">Please make sure data is present in the Zenflow_backtest table.</p>
+            <p className="text-charcoalTextSecondary">No backtest data available.</p>
+            <p className="text-charcoalTextSecondary mt-2">Please make sure data is present in the strategy_first table.</p>
             <Button 
               variant="outline" 
               size="sm" 

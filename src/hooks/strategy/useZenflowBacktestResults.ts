@@ -25,6 +25,7 @@ export interface ZenflowBacktestResult {
   "ExpiryDate"?: string;
   "Highest MTM(Candle Close)"?: string;
   "Lowest MTM(Candle Close)"?: string;
+  trend?: string;
 }
 
 export const useZenflowBacktestResults = () => {
@@ -39,11 +40,11 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching Zenflow backtest results...");
+      console.log("Fetching Zenflow backtest results from strategy_first table...");
       
-      // Fetch data from Supabase Zenflow_backtest table
+      // Fetch data from Supabase strategy_first table instead of Zenflow_backtest
       const { data, error } = await supabase
-        .from('Zenflow_backtest')
+        .from('strategy_first')
         .select('*');
       
       if (error) {
@@ -51,12 +52,12 @@ export const useZenflowBacktestResults = () => {
         throw error;
       }
       
-      console.log("Zenflow backtest data received:", data);
+      console.log("Strategy first data received:", data);
       
       if (data) {
         setZenflowResults(data);
       } else {
-        console.log("No data received from Zenflow_backtest table");
+        console.log("No data received from strategy_first table");
         setZenflowResults([]);
       }
     } catch (err) {
@@ -64,7 +65,7 @@ export const useZenflowBacktestResults = () => {
       setError(err instanceof Error ? err : new Error(String(err)));
       toast({
         title: "Error",
-        description: "Failed to load Zenflow backtest results",
+        description: "Failed to load backtest results",
         variant: "destructive",
       });
     } finally {
