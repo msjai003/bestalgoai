@@ -60,7 +60,7 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch data from the new zenflow_strategy table
+      // Fetch data from the zenflow_strategy table
       const { data, error } = await supabase
         .from('zenflow_strategy')
         .select('*')
@@ -71,7 +71,7 @@ export const useZenflowBacktestResults = () => {
       }
       
       // Set the strategy data
-      setStrategyData(data || []);
+      setStrategyData(data as ZenflowStrategyData[]);
       
       // For backward compatibility, keeping the old array empty
       setZenflowResults([]);

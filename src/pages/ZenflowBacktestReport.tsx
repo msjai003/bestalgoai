@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   ChevronLeft,
   BarChart3,
-  TableIcon
+  TableIcon,
+  RefreshCw
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
@@ -101,7 +102,9 @@ const ZenflowBacktestReport = () => {
               variant="outline" 
               size="sm" 
               onClick={handleRefresh}
+              className="flex items-center gap-1"
             >
+              <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
           </div>
