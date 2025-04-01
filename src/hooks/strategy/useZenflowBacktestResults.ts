@@ -147,9 +147,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       const strategyTableName = getStrategyTableName(strategy);
       const metricsTableName = getMetricsTableName(strategy);
       
-      // Fetch data from the strategy table
       const { data: strategyData, error: strategyError } = await supabase
-        .from(strategyTableName)
+        .from(strategyTableName as any)
         .select('*')
         .order('year', { ascending: true });
       
@@ -159,12 +158,10 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       
       console.log(`Fetched ${strategy} strategy data:`, strategyData);
       
-      // Set the strategy data with type assertion
       setStrategyData(strategyData as unknown as ZenflowStrategyData[]);
       
-      // Fetch metrics from the metrics table
       const { data: metricsData, error: metricsError } = await supabase
-        .from(metricsTableName)
+        .from(metricsTableName as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
@@ -177,7 +174,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       console.log(`Fetched ${strategy} metrics data:`, metricsData);
       
       if (metricsData && metricsData.length > 0) {
-        // Transform database column names to camelCase for frontend with type assertions
         const metricsRecord = metricsData[0] as Record<string, any>;
         const transformedMetrics: ZenflowMetrics = {
           id: metricsRecord.id,
@@ -211,11 +207,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         
         setMetrics(transformedMetrics);
       } else {
-        // If no metrics data exists, calculate from strategy data
         calculateAndSaveMetricsFromData(strategyData as unknown as ZenflowStrategyData[], strategy);
       }
       
-      // For backward compatibility, keeping the old array empty
       setZenflowResults([]);
       
     } catch (err) {
@@ -231,14 +225,12 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     }
   };
 
-  // Calculate comprehensive metrics from the strategy data and save to the database
   const calculateAndSaveMetricsFromData = async (data: ZenflowStrategyData[], strategyType: StrategyType) => {
     if (!data || data.length === 0) {
       setMetrics({});
       return;
     }
     
-    // Calculate total profit across all years
     let totalProfit = 0;
     let maxMonthlyProfit = 0;
     let maxMonthlyLoss = 0;
@@ -247,20 +239,15 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     let profitMonths = 0;
     let lossMonths = 0;
     
-    // Collect all monthly values for calculations
     const allMonthlyValues: number[] = [];
     
-    // Process all years and months
     data.forEach(year => {
-      // Add yearly total to overall profit
       totalProfit += year.total || 0;
       
-      // Track maximum drawdown
       if (year.max_drawdown && year.max_drawdown < maxDrawdown) {
         maxDrawdown = year.max_drawdown;
       }
       
-      // Process monthly data
       const months = [
         year.jan, year.feb, year.mar, year.apr, year.may, year.jun, 
         year.jul, year.aug, year.sep, year.oct, year.nov, year.dec
@@ -284,27 +271,20 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       });
     });
     
-    // Calculate win percentage
     const winPercentage = totalMonths > 0 ? (profitMonths / totalMonths) * 100 : 0;
     const lossPercentage = totalMonths > 0 ? (lossMonths / totalMonths) * 100 : 0;
     
-    // Estimate number of trades based on months (average 10 trades per month)
     const estimatedNumberOfTrades = totalMonths * 10;
     
-    // Calculate average profit per trade
     const avgProfitPerTrade = estimatedNumberOfTrades > 0 ? totalProfit / estimatedNumberOfTrades : 0;
     
-    // Calculate profit percentage (assuming initial capital of 100,000)
     const initialCapital = 100000;
     const overallProfitPercentage = (totalProfit / initialCapital) * 100;
     
-    // Calculate max drawdown percentage
     const maxDrawdownPercentage = (maxDrawdown / initialCapital) * 100;
     
-    // Calculate return to max drawdown ratio
     const returnMaxDD = maxDrawdown !== 0 ? totalProfit / Math.abs(maxDrawdown) : 0;
     
-    // Set calculated metrics
     const calculatedMetrics: ZenflowMetrics = {
       overallProfit: totalProfit,
       overallProfitPercentage: parseFloat(overallProfitPercentage.toFixed(2)),
@@ -332,11 +312,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       maxTradesInDrawdown: Math.round(lossMonths * 8),
     };
     
-    // Save metrics to the database
     try {
       const metricsTableName = getMetricsTableName(strategyType);
       
-      // Convert camelCase keys to snake_case for database
       const dbMetrics = {
         overall_profit: calculatedMetrics.overallProfit,
         overall_profit_percentage: calculatedMetrics.overallProfitPercentage,
@@ -365,7 +343,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       };
       
       const { data: savedMetrics, error: saveError } = await supabase
-        .from(metricsTableName)
+        .from(metricsTableName as any)
         .insert([dbMetrics])
         .select();
         
@@ -381,7 +359,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     setMetrics(calculatedMetrics);
   };
 
-  // Initial fetch
   useEffect(() => {
     fetchZenflowBacktestResults();
   }, [strategy]);
