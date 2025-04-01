@@ -132,7 +132,7 @@ const AITrading = () => {
               {messages.map((message, index) => (
                 <TradingAssistantMessage 
                   key={index}
-                  message={message.content}
+                  content={message.content}
                   role={message.role}
                   timestamp={message.timestamp}
                 />

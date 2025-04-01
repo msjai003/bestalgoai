@@ -1,10 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Find line 202 which contains the type error and update the code
-// This assumes the function is called something like updateUserProgress
-// Replace the incorrect assignment with:
-
 // Assuming this is line 202 that needs fixing - updating to match the expected structure
 export const updateUserProgress = async (
   userId: string, 
