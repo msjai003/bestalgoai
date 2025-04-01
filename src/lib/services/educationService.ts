@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Types for our education module data
+// Updated types for our education module data
 export interface EducationModule {
   id: string;
   title: string;
@@ -79,12 +79,13 @@ export const getEducationModules = async () => {
   })) as EducationModule[];
 };
 
+// Fixed createEducationModule function
 export const createEducationModule = async (module: { 
   title: string; 
   description?: string; 
   level: 'basics' | 'intermediate' | 'pro'; 
   order_index: number;
-  estimated_time?: number;
+  estimated_time?: number | null;
   is_active?: boolean;
 }) => {
   const { data, error } = await supabase
@@ -103,12 +104,13 @@ export const createEducationModule = async (module: {
   return data as EducationModule;
 };
 
+// Fixed updateEducationModule function
 export const updateEducationModule = async (id: string, updates: Partial<{
   title: string;
-  description?: string;
+  description?: string | null;
   level: 'basics' | 'intermediate' | 'pro';
   order_index: number;
-  estimated_time?: number;
+  estimated_time?: number | null;
   is_active?: boolean;
 }>) => {
   const { data, error } = await supabase
@@ -161,13 +163,14 @@ export const getEducationContent = async (moduleId: string) => {
   return data as EducationContent[];
 };
 
+// Fixed createEducationContent function
 export const createEducationContent = async (content: { 
   module_id: string;
   title: string;
   content: string;
   order_index: number;
   content_type?: string;
-  media_url?: string;
+  media_url?: string | null;
 }) => {
   const { data, error } = await supabase
     .from('education_content')
