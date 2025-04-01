@@ -27,7 +27,7 @@ const UpdateVeloxData = () => {
       } else {
         toast({
           title: "Success",
-          description: "ApexFlow Strategy data updated successfully",
+          description: "Zenflow Strategy data updated successfully",
         });
         setResult(JSON.stringify(data, null, 2));
       }
@@ -51,7 +51,7 @@ const UpdateVeloxData = () => {
           <Link to="/zenflow-backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Update ApexFlow Data</h1>
+          <h1 className="text-charcoalTextPrimary text-lg font-medium">Update Zenflow Data</h1>
           <div className="w-8"></div>
         </div>
       </header>
@@ -59,7 +59,7 @@ const UpdateVeloxData = () => {
       <main className="pt-20 pb-20 px-4">
         <div className="flex flex-col items-center space-y-6">
           <p className="text-white text-center">
-            This page will update the ApexFlow Strategy data in the database with the latest data from the image.
+            This page will update the Zenflow Strategy data in the database.
           </p>
           
           <Button 
@@ -68,7 +68,7 @@ const UpdateVeloxData = () => {
             className="flex items-center gap-2"
           >
             {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
-            {loading ? 'Updating Data...' : 'Update ApexFlow Data'}
+            {loading ? 'Updating Data...' : 'Update Zenflow Data'}
           </Button>
           
           {result && (
@@ -81,9 +81,9 @@ const UpdateVeloxData = () => {
           )}
           
           <div className="flex justify-center mt-6">
-            <Link to="/zenflow-backtest-report?strategy=apexflow">
+            <Link to="/zenflow-backtest-report?strategy=zenflow">
               <Button variant="outline">
-                View ApexFlow Strategy Report
+                View Zenflow Strategy Report
               </Button>
             </Link>
           </div>

@@ -77,57 +77,18 @@ export interface ZenflowMetrics {
   updated_at?: string;
 }
 
-type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
+type StrategyType = 'zenflow';
 
 const getStrategyTableName = (strategy: StrategyType): string => {
-  switch (strategy) {
-    case 'zenflow':
-      return 'zenflow_strategy';
-    case 'velox':
-      return 'velox_edge_strategy';
-    case 'nova':
-      return 'nova_glide_strategy';
-    case 'evercrest':
-      return 'evercrest_strategy';
-    case 'apexflow':
-      return 'apexflow_strategy';
-    default:
-      return 'zenflow_strategy';
-  }
+  return 'zenflow_strategy';
 };
 
 const getMetricsTableName = (strategy: StrategyType): string => {
-  switch (strategy) {
-    case 'zenflow':
-      return 'zenflow_metrics';
-    case 'velox':
-      return 'velox_edge_metrics';
-    case 'nova':
-      return 'nova_glide_metrics';
-    case 'evercrest':
-      return 'evercrest_metrics';
-    case 'apexflow':
-      return 'apexflow_metrics';
-    default:
-      return 'zenflow_metrics';
-  }
+  return 'zenflow_metrics';
 };
 
 export const getStrategyDisplayName = (strategy: StrategyType): string => {
-  switch (strategy) {
-    case 'zenflow':
-      return 'Zenflow Strategy';
-    case 'velox':
-      return 'Velox Edge Strategy';
-    case 'nova':
-      return 'Nova Glide Strategy';
-    case 'evercrest':
-      return 'Evercrest Strategy';
-    case 'apexflow':
-      return 'Apexflow Strategy';
-    default:
-      return 'Zenflow Strategy';
-  }
+  return 'Zenflow Strategy';
 };
 
 export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') => {

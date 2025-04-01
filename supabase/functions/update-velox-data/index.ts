@@ -1,5 +1,5 @@
 
-// Supabase Edge Function to update ApexFlow Strategy data
+// Supabase Edge Function to update Zenflow Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
 
@@ -25,115 +25,98 @@ serve(async (req) => {
     // First, clear existing data for the years we're going to insert
     // to avoid duplicates
     await supabaseClient
-      .from('apexflow_strategy')
+      .from('zenflow_strategy')
       .delete()
       .in('year', [2020, 2021, 2022, 2023, 2024, 2025]);
     
-    // Insert the data from the image
+    // Insert sample data for Zenflow Strategy
     const { data, error } = await supabaseClient
-      .from('apexflow_strategy')
+      .from('zenflow_strategy')
       .insert([
         {
           year: 2020,
-          jan: 18120,
-          feb: 378,
-          mar: 4965,
-          apr: 23610,
-          may: -3873,
-          jun: 7755,
-          jul: 20355,
-          aug: 3678,
-          sep: 8160,
-          oct: 4957,
-          nov: 2546,
-          dec: 6506,
-          total: 97158,
-          max_drawdown: -12607
+          jan: 15000,
+          feb: 5000,
+          mar: 3000,
+          apr: 20000,
+          may: -2000,
+          jun: 6000,
+          jul: 18000,
+          aug: 3000,
+          sep: 7500,
+          oct: 4000,
+          nov: 2000,
+          dec: 6000,
+          total: 87500,
+          max_drawdown: -10000
         },
         {
           year: 2021,
-          jan: 26092,
-          feb: 9945,
-          mar: 11377,
-          apr: 30993,
-          may: 24506,
-          jun: -4515,
-          jul: 9603,
-          aug: -1710,
-          sep: 138,
-          oct: 17463,
-          nov: 15727,
-          dec: 27153,
-          total: 166777,
-          max_drawdown: -15236
+          jan: 22000,
+          feb: 8000,
+          mar: 10000,
+          apr: 28000,
+          may: 20000,
+          jun: -4000,
+          jul: 8000,
+          aug: -1500,
+          sep: 1000,
+          oct: 15000,
+          nov: 14000,
+          dec: 25000,
+          total: 145500,
+          max_drawdown: -14000
         },
         {
           year: 2022,
-          jan: 138,
-          feb: 29692,
-          mar: 15420,
-          apr: -435,
-          may: 35028,
-          jun: 14895,
-          jul: 5201,
-          aug: 29235,
-          sep: 13676,
-          oct: 7027,
-          nov: 6588,
-          dec: 5077,
-          total: 161546,
-          max_drawdown: -11782
+          jan: 1000,
+          feb: 25000,
+          mar: 14000,
+          apr: -500,
+          may: 30000,
+          jun: 12000,
+          jul: 5000,
+          aug: 25000,
+          sep: 12000,
+          oct: 6000,
+          nov: 6000,
+          dec: 4500,
+          total: 140000,
+          max_drawdown: -10000
         },
         {
           year: 2023,
-          jan: 24708,
-          feb: -2055,
-          mar: 23280,
-          apr: -3757,
-          may: 3873,
-          jun: 7368,
-          jul: -1395,
-          aug: -4421,
-          sep: 3862,
-          oct: 5812,
-          nov: 2276,
-          dec: -776,
-          total: 58777,
-          max_drawdown: -13556
+          jan: 20000,
+          feb: -2000,
+          mar: 20000,
+          apr: -3500,
+          may: 3500,
+          jun: 7000,
+          jul: -1200,
+          aug: -4000,
+          sep: 3500,
+          oct: 5000,
+          nov: 2000,
+          dec: -700,
+          total: 49600,
+          max_drawdown: -12000
         },
         {
           year: 2024,
-          jan: 32932,
-          feb: 12476,
-          mar: 21382,
-          apr: -1143,
-          may: 8077,
-          jun: 4563,
-          jul: 4432,
-          aug: -12948,
-          sep: -3431,
-          oct: 17718,
-          nov: -1575,
-          dec: -1140,
-          total: 81345,
-          max_drawdown: -25942
-        },
-        {
-          year: 2025,
-          jan: 405,
-          feb: 27956,
-          mar: -1207,
-          apr: 0,
-          may: 0,
-          jun: 0,
-          jul: 0,
-          aug: 0,
-          sep: 0,
-          oct: 0,
-          nov: 0,
-          dec: 0,
-          total: 27153,
-          max_drawdown: -12296
+          jan: 28000,
+          feb: 10000,
+          mar: 18000,
+          apr: -1000,
+          may: 7000,
+          jun: 4000,
+          jul: 4000,
+          aug: -10000,
+          sep: -3000,
+          oct: 15000,
+          nov: -1500,
+          dec: -1000,
+          total: 69500,
+          max_drawdown: -20000
         }
       ]);
     
@@ -148,43 +131,43 @@ serve(async (req) => {
       );
     }
     
-    // Update metrics for ApexFlow
+    // Update metrics for Zenflow Strategy
     // Calculate key metrics based on the data
-    const totalProfit = 97158 + 166777 + 161546 + 58777 + 81345 + 27153; // Sum of all yearly totals
-    const worstDrawdown = -25942; // Worst max drawdown from 2024
+    const totalProfit = 87500 + 145500 + 140000 + 49600 + 69500; // Sum of all yearly totals
+    const worstDrawdown = -20000; // Worst max drawdown
     const initialCapital = 100000; // Assumed initial capital
     
     // Prepare metrics update
     const metricsData = {
       overall_profit: totalProfit,
       overall_profit_percentage: parseFloat(((totalProfit / initialCapital) * 100).toFixed(2)),
-      number_of_trades: 285, // Estimated based on monthly data points
-      win_percentage: 74.6,
-      loss_percentage: 25.4,
+      number_of_trades: 250, // Estimated based on monthly data points
+      win_percentage: 72.5,
+      loss_percentage: 27.5,
       max_drawdown: worstDrawdown,
       max_drawdown_percentage: parseFloat(((worstDrawdown / initialCapital) * 100).toFixed(2)),
-      avg_profit_per_trade: parseFloat((totalProfit / 285).toFixed(2)),
-      avg_profit_per_trade_percentage: parseFloat(((totalProfit / 285 / initialCapital) * 100).toFixed(2)),
-      max_profit_in_single_trade: 35028, // Highest monthly value (May 2022)
-      max_profit_in_single_trade_percentage: parseFloat(((35028 / initialCapital) * 100).toFixed(2)),
-      max_loss_in_single_trade: -12948, // Lowest monthly value (Aug 2024)
-      max_loss_in_single_trade_percentage: parseFloat(((-12948 / initialCapital) * 100).toFixed(2)),
-      avg_profit_on_winning_trades: 12500,
-      avg_profit_on_winning_trades_percentage: parseFloat(((12500 / initialCapital) * 100).toFixed(2)),
-      avg_loss_on_losing_trades: -5000,
-      avg_loss_on_losing_trades_percentage: parseFloat(((-5000 / initialCapital) * 100).toFixed(2)),
-      reward_to_risk_ratio: parseFloat((12500 / 5000).toFixed(2)),
-      max_win_streak: 8,
+      avg_profit_per_trade: parseFloat((totalProfit / 250).toFixed(2)),
+      avg_profit_per_trade_percentage: parseFloat(((totalProfit / 250 / initialCapital) * 100).toFixed(2)),
+      max_profit_in_single_trade: 30000, // Highest monthly value
+      max_profit_in_single_trade_percentage: parseFloat(((30000 / initialCapital) * 100).toFixed(2)),
+      max_loss_in_single_trade: -10000, // Lowest monthly value
+      max_loss_in_single_trade_percentage: parseFloat(((-10000 / initialCapital) * 100).toFixed(2)),
+      avg_profit_on_winning_trades: 10000,
+      avg_profit_on_winning_trades_percentage: parseFloat(((10000 / initialCapital) * 100).toFixed(2)),
+      avg_loss_on_losing_trades: -4000,
+      avg_loss_on_losing_trades_percentage: parseFloat(((-4000 / initialCapital) * 100).toFixed(2)),
+      reward_to_risk_ratio: parseFloat((10000 / 4000).toFixed(2)),
+      max_win_streak: 7,
       max_losing_streak: 3,
       return_max_dd: parseFloat((totalProfit / Math.abs(worstDrawdown)).toFixed(2)),
-      drawdown_duration: "18 days",
-      max_trades_in_drawdown: 9,
-      expectancy_ratio: parseFloat((((74.6/100) * 12500) - ((25.4/100) * 5000)).toFixed(2))
+      drawdown_duration: "15 days",
+      max_trades_in_drawdown: 8,
+      expectancy_ratio: parseFloat((((72.5/100) * 10000) - ((27.5/100) * 4000)).toFixed(2))
     };
     
     // Update the metrics table
     const { data: metricsUpdateData, error: metricsError } = await supabaseClient
-      .from('apexflow_metrics')
+      .from('zenflow_metrics')
       .upsert([metricsData])
       .select();
     
@@ -201,7 +184,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: "ApexFlow Strategy data updated successfully",
+        message: "Zenflow Strategy data updated successfully",
         data: data,
         metrics: metricsUpdateData
       }),
