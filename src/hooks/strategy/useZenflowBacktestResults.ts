@@ -40,26 +40,11 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching Zenflow backtest results from strategy_first table...");
+      // Since the strategy_first table has been removed, we're returning an empty array
+      // This prevents errors when trying to access a non-existent table
+      console.log("The strategy_first table has been removed. Returning empty results.");
+      setZenflowResults([]);
       
-      // Fetch data from Supabase strategy_first table instead of Zenflow_backtest
-      const { data, error } = await supabase
-        .from('strategy_first')
-        .select('*');
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
-      
-      console.log("Strategy first data received:", data);
-      
-      if (data) {
-        setZenflowResults(data);
-      } else {
-        console.log("No data received from strategy_first table");
-        setZenflowResults([]);
-      }
     } catch (err) {
       console.error("Error fetching Zenflow backtest results:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
