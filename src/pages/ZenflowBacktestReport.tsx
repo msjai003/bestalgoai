@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -119,8 +120,8 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-end">
-          <p className={`text-lg font-bold ${numValue > 0 ? (isNegative ? 'text-red-500' : 'text-green-500') : numValue < 0 ? (isNegative ? 'text-green-500' : 'text-red-500') : ''}`}>
+        <div className="flex items-end flex-wrap">
+          <p className={`text-lg font-bold ${numValue > 0 ? (isNegative ? 'text-red-500' : 'text-green-500') : numValue < 0 ? (isNegative ? 'text-green-500' : 'text-red-500') : ''} truncate max-w-full break-words`}>
             {value}
           </p>
           {percentValue !== undefined && (
@@ -394,7 +395,7 @@ const ZenflowBacktestReport = () => {
                 <div className="pb-4">
                   <h3 className="text-md font-medium text-white mb-3">Key Performance Metrics</h3>
                   
-                  <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <StatCard 
                       label="Win %" 
                       value={metrics.winPercentage || 'N/A'} 
@@ -415,7 +416,7 @@ const ZenflowBacktestReport = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     <StatCard 
                       label="No. of Trades" 
                       value={metrics.numberOfTrades || 'N/A'}
@@ -429,7 +430,7 @@ const ZenflowBacktestReport = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <StatCard 
                       label="Reward to Risk Ratio" 
                       value={metrics.rewardToRiskRatio || 'N/A'}
@@ -458,7 +459,7 @@ const ZenflowBacktestReport = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Overall Profit" 
                     value={formatCurrency(metrics.overallProfit)}
@@ -472,7 +473,7 @@ const ZenflowBacktestReport = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Win %" 
                     value={metrics.winPercentage || 'N/A'} 
@@ -486,7 +487,7 @@ const ZenflowBacktestReport = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Avg. Profit per Trade" 
                     value={formatCurrency(metrics.avgProfitPerTrade)}
@@ -501,7 +502,7 @@ const ZenflowBacktestReport = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Avg. Profit on Winning Trades" 
                     value={formatCurrency(metrics.avgProfitOnWinningTrades)}
@@ -517,7 +518,7 @@ const ZenflowBacktestReport = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatCard 
                     label="Max Loss in Single Trade" 
                     value={formatCurrency(Math.abs(metrics.maxLossInSingleTrade || 0))}
@@ -537,7 +538,7 @@ const ZenflowBacktestReport = () => {
                 <div className="mt-4">
                   <h3 className="text-md font-medium text-white mb-3">Additional Statistics</h3>
                   <div className="bg-charcoalSecondary/30 rounded-xl border border-gray-700">
-                    <div className="grid grid-cols-2 divide-x divide-gray-700">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-700">
                       <div className="p-3 space-y-3">
                         <div>
                           <p className="text-xs text-gray-400">Duration of Max Drawdown</p>
