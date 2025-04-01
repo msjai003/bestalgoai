@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,8 @@ import {
   RefreshCw,
   TrendingUp,
   TrendingDown,
-  Info
+  Info,
+  ArrowRight
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
@@ -146,6 +146,7 @@ const ZenflowBacktestReport = () => {
 
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   const [activeTab, setActiveTab] = useState<string>('annual');
+  const [currentSection, setCurrentSection] = useState<'overview' | 'keyMetrics' | 'detailed'>('overview');
   
   useEffect(() => {
     fetchZenflowBacktestResults();
@@ -155,6 +156,18 @@ const ZenflowBacktestReport = () => {
   const handleRefresh = () => {
     fetchZenflowBacktestResults();
     toast.success("Data refreshed");
+  };
+
+  const handleNextSection = () => {
+    if (currentSection === 'overview') {
+      setCurrentSection('keyMetrics');
+    } else if (currentSection === 'keyMetrics') {
+      setCurrentSection('detailed');
+      setActiveTab('details');
+    } else {
+      setCurrentSection('overview');
+      setActiveTab('annual');
+    }
   };
 
   const prepareChartData = () => {
@@ -234,7 +247,7 @@ const ZenflowBacktestReport = () => {
       </header>
 
       <main className="pt-16 pb-20 px-4">
-        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mt-4">
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <TabsList className="bg-charcoalSecondary/50">
               <TabsTrigger value="annual">Performance Analysis</TabsTrigger>
@@ -252,198 +265,246 @@ const ZenflowBacktestReport = () => {
           </div>
 
           <TabsContent value="annual" className="space-y-5">
-            <div className="mt-2 mb-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">Annual Performance</h2>
-              <div className="flex space-x-2">
-                <Button 
-                  variant={viewMode === 'table' ? 'default' : 'outline'} 
-                  size="sm" 
-                  onClick={() => setViewMode('table')}
-                  className="flex items-center gap-1"
-                >
-                  <TableIcon className="h-4 w-4" />
-                  Table
-                </Button>
-                <Button 
-                  variant={viewMode === 'chart' ? 'default' : 'outline'} 
-                  size="sm" 
-                  onClick={() => setViewMode('chart')}
-                  className="flex items-center gap-1"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  Chart
-                </Button>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
-              </div>
-            ) : strategyData.length === 0 ? (
-              <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
-                <p className="text-charcoalTextSecondary">No backtest data available.</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefresh}
-                  className="mt-4"
-                >
-                  Try Again
-                </Button>
-              </div>
-            ) : viewMode === 'table' ? (
-              <div className="overflow-x-auto rounded-xl bg-charcoalSecondary/50">
-                <Table className="w-full text-sm">
-                  <TableHeader>
-                    <TableRow className="border-b border-gray-700">
-                      <TableHead className="text-charcoalTextSecondary font-medium">Year</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Jan</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Feb</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Mar</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Apr</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">May</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Jun</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Jul</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Aug</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Sep</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Oct</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Nov</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Dec</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Total</TableHead>
-                      <TableHead className="text-charcoalTextSecondary font-medium">Max Drawdown</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {strategyData.map((row) => (
-                      <TableRow key={row.id} className="border-b border-gray-700/50">
-                        <TableCell className="font-medium text-white">{row.year}</TableCell>
-                        <TableCell className={getValueClass(row.jan)}>{row.jan}</TableCell>
-                        <TableCell className={getValueClass(row.feb)}>{row.feb}</TableCell>
-                        <TableCell className={getValueClass(row.mar)}>{row.mar}</TableCell>
-                        <TableCell className={getValueClass(row.apr)}>{row.apr}</TableCell>
-                        <TableCell className={getValueClass(row.may)}>{row.may}</TableCell>
-                        <TableCell className={getValueClass(row.jun)}>{row.jun}</TableCell>
-                        <TableCell className={getValueClass(row.jul)}>{row.jul}</TableCell>
-                        <TableCell className={getValueClass(row.aug)}>{row.aug}</TableCell>
-                        <TableCell className={getValueClass(row.sep)}>{row.sep}</TableCell>
-                        <TableCell className={getValueClass(row.oct)}>{row.oct}</TableCell>
-                        <TableCell className={getValueClass(row.nov)}>{row.nov}</TableCell>
-                        <TableCell className={getValueClass(row.dec)}>{row.dec}</TableCell>
-                        <TableCell className={`font-medium ${getValueClass(row.total)}`}>
-                          {row.total}
-                        </TableCell>
-                        <TableCell className="text-red-500 font-medium">
-                          {row.max_drawdown}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={prepareChartData()}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 20,
-                      }}
+            {currentSection === 'overview' && (
+              <>
+                <div className="mt-2 mb-4 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-white">Annual Performance</h2>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant={viewMode === 'table' ? 'default' : 'outline'} 
+                      size="sm" 
+                      onClick={() => setViewMode('table')}
+                      className="flex items-center gap-1"
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                      <XAxis 
-                        dataKey="year" 
-                        stroke="#888" 
-                        tick={{ fill: '#B0B0B0' }}
-                        axisLine={{ stroke: '#555' }}
-                        tickLine={{ stroke: '#555' }}
-                      />
-                      <YAxis 
-                        stroke="#888" 
-                        tick={{ fill: '#B0B0B0' }}
-                        axisLine={{ stroke: '#555' }}
-                        tickLine={{ stroke: '#555' }}
-                        width={40}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend 
-                        verticalAlign="top" 
-                        height={36} 
-                        wrapperStyle={{
-                          paddingTop: "10px",
-                          paddingBottom: "10px",
-                          fontSize: "12px"
+                      <TableIcon className="h-4 w-4" />
+                      Table
+                    </Button>
+                    <Button 
+                      variant={viewMode === 'chart' ? 'default' : 'outline'} 
+                      size="sm" 
+                      onClick={() => setViewMode('chart')}
+                      className="flex items-center gap-1"
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                      Chart
+                    </Button>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
+                  </div>
+                ) : strategyData.length === 0 ? (
+                  <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
+                    <p className="text-charcoalTextSecondary">No backtest data available.</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleRefresh}
+                      className="mt-4"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                ) : viewMode === 'table' ? (
+                  <div className="overflow-x-auto rounded-xl bg-charcoalSecondary/50">
+                    <Table className="w-full text-sm">
+                      <TableHeader>
+                        <TableRow className="border-b border-gray-700">
+                          <TableHead className="text-charcoalTextSecondary font-medium">Year</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Jan</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Feb</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Mar</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Apr</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">May</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Jun</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Jul</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Aug</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Sep</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Oct</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Nov</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Dec</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Total</TableHead>
+                          <TableHead className="text-charcoalTextSecondary font-medium">Max Drawdown</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {strategyData.map((row) => (
+                          <TableRow key={row.id} className="border-b border-gray-700/50">
+                            <TableCell className="font-medium text-white">{row.year}</TableCell>
+                            <TableCell className={getValueClass(row.jan)}>{row.jan}</TableCell>
+                            <TableCell className={getValueClass(row.feb)}>{row.feb}</TableCell>
+                            <TableCell className={getValueClass(row.mar)}>{row.mar}</TableCell>
+                            <TableCell className={getValueClass(row.apr)}>{row.apr}</TableCell>
+                            <TableCell className={getValueClass(row.may)}>{row.may}</TableCell>
+                            <TableCell className={getValueClass(row.jun)}>{row.jun}</TableCell>
+                            <TableCell className={getValueClass(row.jul)}>{row.jul}</TableCell>
+                            <TableCell className={getValueClass(row.aug)}>{row.aug}</TableCell>
+                            <TableCell className={getValueClass(row.sep)}>{row.sep}</TableCell>
+                            <TableCell className={getValueClass(row.oct)}>{row.oct}</TableCell>
+                            <TableCell className={getValueClass(row.nov)}>{row.nov}</TableCell>
+                            <TableCell className={getValueClass(row.dec)}>{row.dec}</TableCell>
+                            <TableCell className={`font-medium ${getValueClass(row.total)}`}>
+                              {row.total}
+                            </TableCell>
+                            <TableCell className="text-red-500 font-medium">
+                              {row.max_drawdown}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={prepareChartData()}
+                        margin={{
+                          top: 20,
+                          right: 30,
+                          left: 20,
+                          bottom: 20,
                         }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="Total"
-                        name="Total"
-                        stroke="#00BCD4"
-                        strokeWidth={3}
-                        dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
-                        activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                        <XAxis 
+                          dataKey="year" 
+                          stroke="#888" 
+                          tick={{ fill: '#B0B0B0' }}
+                          axisLine={{ stroke: '#555' }}
+                          tickLine={{ stroke: '#555' }}
+                        />
+                        <YAxis 
+                          stroke="#888" 
+                          tick={{ fill: '#B0B0B0' }}
+                          axisLine={{ stroke: '#555' }}
+                          tickLine={{ stroke: '#555' }}
+                          width={40}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend 
+                          verticalAlign="top" 
+                          height={36} 
+                          wrapperStyle={{
+                            paddingTop: "10px",
+                            paddingBottom: "10px",
+                            fontSize: "12px"
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="Total"
+                          name="Total"
+                          stroke="#00BCD4"
+                          strokeWidth={3}
+                          dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
+                          activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                
+                <div className="flex justify-end mt-4">
+                  <Button 
+                    onClick={handleNextSection}
+                    className="flex items-center gap-2"
+                  >
+                    <span>Key Performance Metrics</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {currentSection === 'keyMetrics' && (
+              <>
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold text-white">Key Performance Metrics</h2>
+                  <p className="text-sm text-gray-400">Summary of metrics from the Zenflow backtest</p>
                 </div>
                 
-                <div className="pb-4">
-                  <h3 className="text-md font-medium text-white mb-3">Key Performance Metrics</h3>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                    <StatCard 
-                      label="Win %" 
-                      value={metrics.winPercentage || 'N/A'} 
-                      tooltip="Percentage of trades that resulted in profit"
-                    />
-                    <StatCard 
-                      label="Overall Profit" 
-                      value={formatCurrency(metrics.overallProfit)}
-                      percentValue={metrics.overallProfitPercentage}
-                      tooltip="Total profit generated" 
-                    />
-                    <StatCard 
-                      label="Max Drawdown" 
-                      value={formatCurrency(Math.abs(metrics.maxDrawdown || 0))}
-                      percentValue={Math.abs(metrics.maxDrawdownPercentage || 0)}
-                      isNegative
-                      tooltip="Maximum peak-to-trough decline"
-                    />
+                {loading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    <StatCard 
-                      label="No. of Trades" 
-                      value={metrics.numberOfTrades || 'N/A'}
-                      tooltip="Total number of trades executed"
-                    />
-                    <StatCard 
-                      label="Avg. Profit per Trade" 
-                      value={formatCurrency(metrics.avgProfitPerTrade)}
-                      percentValue={metrics.avgProfitPerTradePercentage}
-                      tooltip="Average profit per trade across all trades"
-                    />
+                ) : (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                      <StatCard 
+                        label="Win %" 
+                        value={metrics.winPercentage || 'N/A'} 
+                        tooltip="Percentage of trades that resulted in profit"
+                      />
+                      <StatCard 
+                        label="Overall Profit" 
+                        value={formatCurrency(metrics.overallProfit)}
+                        percentValue={metrics.overallProfitPercentage}
+                        tooltip="Total profit generated" 
+                      />
+                      <StatCard 
+                        label="Max Drawdown" 
+                        value={formatCurrency(Math.abs(metrics.maxDrawdown || 0))}
+                        percentValue={Math.abs(metrics.maxDrawdownPercentage || 0)}
+                        isNegative
+                        tooltip="Maximum peak-to-trough decline"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                      <StatCard 
+                        label="No. of Trades" 
+                        value={metrics.numberOfTrades || 'N/A'}
+                        tooltip="Total number of trades executed"
+                      />
+                      <StatCard 
+                        label="Avg. Profit per Trade" 
+                        value={formatCurrency(metrics.avgProfitPerTrade)}
+                        percentValue={metrics.avgProfitPerTradePercentage}
+                        tooltip="Average profit per trade across all trades"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <StatCard 
+                        label="Reward to Risk Ratio" 
+                        value={metrics.rewardToRiskRatio || 'N/A'}
+                        tooltip="Ratio of average profit to average loss"
+                      />
+                      <StatCard 
+                        label="Return/MaxDD" 
+                        value={metrics.returnMaxDD || 'N/A'}
+                        tooltip="Overall return divided by maximum drawdown"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <StatCard 
+                        label="Max Win Streak" 
+                        value={metrics.maxWinStreak || 'N/A'}
+                        tooltip="Longest consecutive winning trades"
+                      />
+                      <StatCard 
+                        label="Max Loss Streak" 
+                        value={metrics.maxLosingStreak || 'N/A'}
+                        tooltip="Longest consecutive losing trades"
+                      />
+                    </div>
+                    
+                    <div className="flex justify-end mt-4">
+                      <Button 
+                        onClick={handleNextSection}
+                        className="flex items-center gap-2"
+                      >
+                        <span>Detailed Metrics</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <StatCard 
-                      label="Reward to Risk Ratio" 
-                      value={metrics.rewardToRiskRatio || 'N/A'}
-                      tooltip="Ratio of average profit to average loss"
-                    />
-                    <StatCard 
-                      label="Return/MaxDD" 
-                      value={metrics.returnMaxDD || 'N/A'}
-                      tooltip="Overall return divided by maximum drawdown"
-                    />
-                  </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -576,6 +637,16 @@ const ZenflowBacktestReport = () => {
                     Last updated: {new Date(metrics.updated_at || metrics.created_at || '').toLocaleString()}
                   </div>
                 )}
+                
+                <div className="flex justify-end mt-4">
+                  <Button 
+                    onClick={handleNextSection}
+                    className="flex items-center gap-2"
+                  >
+                    <span>Back to Overview</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </>
             )}
           </TabsContent>
