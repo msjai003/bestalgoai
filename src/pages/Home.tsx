@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BottomNav } from '@/components/BottomNav';
-import Header from '@/components/Header';
+import { Header } from '@/components/Header';
 
 const Home = () => {
   return (

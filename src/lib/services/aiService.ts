@@ -13,7 +13,7 @@ export const askTradingAssistant = async (query: string): Promise<string> => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`,
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
       },
       body: JSON.stringify({ query }),
     });
@@ -44,7 +44,7 @@ export const getRelevantEducationalContent = async (keywords: string[]): Promise
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`,
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
       },
       body: JSON.stringify({ keywords }),
     });

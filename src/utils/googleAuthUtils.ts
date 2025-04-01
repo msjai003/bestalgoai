@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export interface GoogleUserDetails {
+  id: string;
   email: string;
   google_id?: string;
   picture_url?: string;
@@ -11,61 +12,131 @@ export interface GoogleUserDetails {
   verified_email?: boolean;
 }
 
-export const saveGoogleUserDetails = async (userId: string, userData: GoogleUserDetails): Promise<boolean> => {
-  if (!userData.email) {
-    console.error('Email is required for Google user details');
-    return false;
-  }
-
-  try {
-    const { error } = await supabase.from('google_user_details').upsert({
-      user_id: userId,
-      email: userData.email,
-      google_id: userData.google_id,
-      picture_url: userData.picture_url,
-      given_name: userData.given_name,
-      family_name: userData.family_name,
-      locale: userData.locale,
-      verified_email: userData.verified_email,
-      updated_at: new Date().toISOString()
-    });
-
-    if (error) {
-      console.error('Error saving Google user details:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Exception saving Google user details:', error);
-    return false;
-  }
-};
-
-export const getGoogleUserDetails = async (userId: string): Promise<GoogleUserDetails | null> => {
+export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUserDetails | null> => {
   try {
     const { data, error } = await supabase
       .from('google_user_details')
       .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !data) {
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (error) {
       console.error('Error fetching Google user details:', error);
       return null;
     }
-
-    return {
-      email: data.email,
-      google_id: data.google_id,
-      picture_url: data.picture_url,
-      given_name: data.given_name,
-      family_name: data.family_name,
-      locale: data.locale,
-      verified_email: data.verified_email
-    };
+    
+    return data as GoogleUserDetails | null;
   } catch (error) {
     console.error('Exception fetching Google user details:', error);
     return null;
+  }
+};
+
+export const isGoogleUser = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+  
+  try {
+    const googleDetails = await fetchGoogleUserDetails(userId);
+    return !!googleDetails;
+  } catch (error) {
+    console.error('Error checking if user is Google user:', error);
+    return false;
+  }
+};
+
+export const getGoogleDisplayName = (googleDetails: GoogleUserDetails | null): string => {
+  if (!googleDetails) return '';
+  
+  if (googleDetails.given_name && googleDetails.family_name) {
+    return `${googleDetails.given_name} ${googleDetails.family_name}`;
+  }
+  
+  if (googleDetails.given_name) {
+    return googleDetails.given_name;
+  }
+  
+  return googleDetails.email || 'Google User';
+};
+
+export const saveGoogleUserDetails = async (
+  userId: string, 
+  googleData: {
+    email: string;
+    google_id?: string;
+    picture_url?: string;
+    given_name?: string | { _type: string; value: string };
+    family_name?: string | { _type: string; value: string };
+    locale?: string | { _type: string; value: string };
+    verified_email?: boolean;
+  }
+): Promise<boolean> => {
+  if (!userId || !googleData.email) {
+    console.error('Missing required user data for saving Google details');
+    return false;
+  }
+  
+  try {
+    // Process potentially malformed data from Google metadata
+    const processField = (field: any): string | null => {
+      if (!field) return null;
+      if (field && typeof field === 'object' && field._type === 'undefined') {
+        return null;
+      }
+      if (typeof field === 'string') return field;
+      if (field && typeof field === 'object' && field.value) return field.value;
+      return null;
+    };
+
+    const cleanedData = {
+      email: googleData.email,
+      google_id: googleData.google_id || null,
+      picture_url: googleData.picture_url || null,
+      given_name: processField(googleData.given_name),
+      family_name: processField(googleData.family_name),
+      locale: processField(googleData.locale),
+      verified_email: googleData.verified_email || false
+    };
+    
+    // First check if the record already exists
+    const { data: existing } = await supabase
+      .from('google_user_details')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase
+        .from('google_user_details')
+        .update({
+          ...cleanedData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+        
+      if (error) {
+        console.error('Error updating Google user details:', error);
+        return false;
+      }
+    } else {
+      // Insert new record
+      const { error } = await supabase
+        .from('google_user_details')
+        .insert({
+          id: userId,
+          ...cleanedData,
+          updated_at: new Date().toISOString()
+        });
+        
+      if (error) {
+        console.error('Error inserting Google user details:', error);
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception saving Google user details:', error);
+    return false;
   }
 };
