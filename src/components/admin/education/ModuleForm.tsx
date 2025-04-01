@@ -47,7 +47,7 @@ const ModuleForm: React.FC<ModuleFormProps> = ({ module, onSuccess, onCancel }) 
     defaultValues: module ? {
       title: module.title,
       description: module.description || '',
-      level: module.level as 'basics' | 'intermediate' | 'pro',
+      level: module.level,
       order_index: module.order_index,
       estimated_time: module.estimated_time || 0,
       is_active: module.is_active,
@@ -67,15 +67,7 @@ const ModuleForm: React.FC<ModuleFormProps> = ({ module, onSuccess, onCancel }) 
     if (module) {
       success = await updateEducationModule(module.id, data);
     } else {
-      // Ensure all required fields are provided
-      success = await createEducationModule({
-        title: data.title,
-        description: data.description,
-        level: data.level,
-        order_index: data.order_index,
-        estimated_time: data.estimated_time,
-        is_active: data.is_active
-      });
+      success = await createEducationModule(data);
     }
     
     if (success) {

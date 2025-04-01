@@ -28,9 +28,9 @@ const badgeSchema = z.object({
   badge_id: z.string().min(3, { message: 'Badge ID is required' }),
   name: z.string().min(3, { message: 'Name is required' }),
   description: z.string().min(3, { message: 'Description is required' }),
-  image: z.string().min(1, { message: 'Image is required (emoji or URL)' }),
+  image: z.string().min(1, { message: 'Image emoji/URL is required' }),
   level: z.enum(['basics', 'intermediate', 'pro']),
-  unlocked_by: z.string().min(3, { message: 'Unlock condition is required' }),
+  unlocked_by: z.string().min(1, { message: 'Unlock condition is required' }),
 });
 
 type BadgeFormData = z.infer<typeof badgeSchema>;
@@ -57,7 +57,7 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
       description: '',
       image: '🏆',
       level: 'basics',
-      unlocked_by: '',
+      unlocked_by: 'first_module',
     },
   });
 
@@ -67,7 +67,6 @@ const BadgeForm: React.FC<BadgeFormProps> = ({ badge, onSuccess, onCancel }) => 
     if (badge) {
       success = await updateEducationBadge(badge.id, data);
     } else {
-      // Now data is properly typed with all required fields
       success = await createEducationBadge(data);
     }
     

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   LineChart,
@@ -8,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import { ColoredLineSegments } from "@/components/charts/LineChartWithColoredSegments";
 
 interface CustomDotProps {
   cx: number;
@@ -21,16 +23,16 @@ interface CustomDotProps {
 
 const CustomizedDot = (props: CustomDotProps) => {
   const { cx, cy, stroke, payload, value, index, dataKey } = props;
-  const animationDelay = index * 0.2;
+  const animationDelay = index * 0.2; // Stagger animation
   const dotColor = payload.trend === "up" ? "#4CAF50" : "#F44336";
   
   return (
     <circle
       cx={cx}
       cy={cy}
-      r={3}
+      r={3} // Reduced dot size from 4 to 3
       stroke={dotColor}
-      strokeWidth={1.5}
+      strokeWidth={1.5} // Also reduced stroke width for better appearance
       fill="#121212"
       style={{
         animation: `pulseDot 2s infinite ${animationDelay}s`
@@ -64,9 +66,10 @@ interface PortfolioChartProps {
 }
 
 const generateEnhancedData = (baseData: any[]) => {
+  // Create a copy to avoid mutating the original
   return baseData.map(item => ({
     ...item,
-    animatedValue: item.value + (Math.random() * 20000 - 10000),
+    animatedValue: item.value + (Math.random() * 20000 - 10000), // Slight random variation
   }));
 };
 
@@ -78,7 +81,7 @@ const PortfolioChart = ({ performanceData }: PortfolioChartProps) => {
     const intervalId = setInterval(() => {
       setAnimatedData(generateEnhancedData(performanceData));
       setAnimationKey(prev => prev + 1);
-    }, 5000);
+    }, 5000); // Refresh every 5 seconds
     
     return () => clearInterval(intervalId);
   }, [performanceData]);
@@ -111,8 +114,8 @@ const PortfolioChart = ({ performanceData }: PortfolioChartProps) => {
           <Line 
             type="monotone" 
             dataKey="value" 
-            stroke="#777" 
-            strokeWidth={1.5} 
+            stroke="#777" // Default connecting line color
+            strokeWidth={1.5} // Thinner line to match the reduced dot size
             dot={(props) => <CustomizedDot 
               cx={props.cx} 
               cy={props.cy} 
@@ -127,7 +130,7 @@ const PortfolioChart = ({ performanceData }: PortfolioChartProps) => {
             activeDot={{ 
               stroke: '#00BCD4', 
               strokeWidth: 2, 
-              r: 5, 
+              r: 5, // Also reduced active dot size
               fill: '#00BCD4',
               className: "animate-ping-slow"
             }}

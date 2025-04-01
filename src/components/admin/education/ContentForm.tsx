@@ -64,14 +64,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ moduleId, content, onSuccess,
     if (content) {
       success = await updateEducationContent(content.id, data);
     } else {
-      // Ensure all required fields are provided
       success = await createEducationContent({
         module_id: moduleId,
-        title: data.title,
-        content: data.content,
-        order_index: data.order_index,
-        content_type: data.content_type,
-        media_url: data.media_url
+        ...data,
       });
     }
     

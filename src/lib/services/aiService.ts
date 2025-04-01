@@ -8,16 +8,12 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const askTradingAssistant = async (query: string): Promise<string> => {
   try {
-    // Get the access token for authorization
-    const { data: authData } = await supabase.auth.getSession();
-    const accessToken = authData?.session?.access_token || '';
-    
     // Create a fetch request directly to the Supabase Edge Function
     const response = await fetch('https://fzvrozrjtvflksumiqsk.supabase.co/functions/v1/trading-assistant', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
       },
       body: JSON.stringify({ query }),
     });
@@ -43,16 +39,12 @@ export const askTradingAssistant = async (query: string): Promise<string> => {
  */
 export const getRelevantEducationalContent = async (keywords: string[]): Promise<any[]> => {
   try {
-    // Get the access token for authorization
-    const { data: authData } = await supabase.auth.getSession();
-    const accessToken = authData?.session?.access_token || '';
-    
     // Create a fetch request directly to the Supabase Edge Function
     const response = await fetch('https://fzvrozrjtvflksumiqsk.supabase.co/functions/v1/search-educational-content', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
       },
       body: JSON.stringify({ keywords }),
     });
