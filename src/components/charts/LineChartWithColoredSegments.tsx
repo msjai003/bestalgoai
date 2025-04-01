@@ -1,6 +1,6 @@
+
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { CSSProperties } from 'react';
 
 interface DataPoint {
   time: string;
@@ -13,7 +13,7 @@ interface ColoredSegmentsLineChartProps {
   negativeColor: string;
   dataKey: string;
   dot?: boolean;
-  activeDot?: CSSProperties;
+  activeDot?: { r?: number };  // Changed from CSSProperties to valid prop type
 }
 
 const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
@@ -22,7 +22,7 @@ const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
   negativeColor,
   dataKey,
   dot = false,
-  activeDot
+  activeDot = { r: 5 }  // Set a default value with valid prop
 }) => {
   const renderLine = () => {
     const segments = [];
@@ -41,6 +41,7 @@ const LineChartWithColoredSegments: React.FC<ColoredSegmentsLineChartProps> = ({
 
       segments.push(
         <Line 
+          key={i}  // Added key to avoid React warnings
           type="monotone" 
           dataKey={dataKey} 
           stroke={color} 
