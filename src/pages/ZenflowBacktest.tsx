@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { 
   ChevronLeft,
   FileSpreadsheet,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  Layers,
+  Compass,
+  LineChart,
+  Mountain
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -47,8 +52,60 @@ const ZenflowBacktest = () => {
                   <FileSpreadsheet className="h-5 w-5 text-cyan" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">Backtest Report</h3>
+                  <h3 className="text-white font-medium">Zenflow Backtest Report</h3>
                   <p className="text-sm text-charcoalTextSecondary">View and analyze Zenflow backtest data</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+            </Link>
+            
+            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                  <BarChart3 className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Velox Edge Strategy</h3>
+                  <p className="text-sm text-charcoalTextSecondary">High-frequency trading backtest analysis</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+            </Link>
+            
+            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                  <Layers className="h-5 w-5 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Nova Glide Strategy</h3>
+                  <p className="text-sm text-charcoalTextSecondary">Momentum-based market swing analysis</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+            </Link>
+            
+            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                  <Mountain className="h-5 w-5 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Evercrest Strategy</h3>
+                  <p className="text-sm text-charcoalTextSecondary">Trend following with volatility controls</p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+            </Link>
+            
+            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                  <LineChart className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Apexflow Strategy</h3>
+                  <p className="text-sm text-charcoalTextSecondary">Algorithmic trend detection and analysis</p>
                 </div>
               </div>
               <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
