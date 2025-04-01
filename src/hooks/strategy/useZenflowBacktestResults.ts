@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -147,9 +148,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       const strategyTableName = getStrategyTableName(strategy);
       const metricsTableName = getMetricsTableName(strategy);
       
-      // Fetch data from the strategy table
+      // Fetch data from the strategy table using type assertion for dynamic table names
       const { data: strategyData, error: strategyError } = await supabase
-        .from(strategyTableName)
+        .from(strategyTableName as any)
         .select('*')
         .order('year', { ascending: true });
       
@@ -162,9 +163,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       // Set the strategy data
       setStrategyData(strategyData as ZenflowStrategyData[]);
       
-      // Fetch metrics from the metrics table
+      // Fetch metrics from the metrics table using type assertion for dynamic table names
       const { data: metricsData, error: metricsError } = await supabase
-        .from(metricsTableName)
+        .from(metricsTableName as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
@@ -177,35 +178,36 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       console.log(`Fetched ${strategy} metrics data:`, metricsData);
       
       if (metricsData && metricsData.length > 0) {
-        // Transform database column names to camelCase for frontend
+        // Transform database column names to camelCase for frontend with type assertions
+        const metricsRecord = metricsData[0] as Record<string, any>;
         const transformedMetrics: ZenflowMetrics = {
-          id: metricsData[0].id,
-          overallProfit: metricsData[0].overall_profit,
-          overallProfitPercentage: metricsData[0].overall_profit_percentage,
-          numberOfTrades: metricsData[0].number_of_trades,
-          avgProfitPerTrade: metricsData[0].avg_profit_per_trade,
-          avgProfitPerTradePercentage: metricsData[0].avg_profit_per_trade_percentage,
-          winPercentage: metricsData[0].win_percentage,
-          lossPercentage: metricsData[0].loss_percentage,
-          avgProfitOnWinningTrades: metricsData[0].avg_profit_on_winning_trades,
-          avgProfitOnWinningTradesPercentage: metricsData[0].avg_profit_on_winning_trades_percentage,
-          avgLossOnLosingTrades: metricsData[0].avg_loss_on_losing_trades,
-          avgLossOnLosingTradesPercentage: metricsData[0].avg_loss_on_losing_trades_percentage,
-          maxProfitInSingleTrade: metricsData[0].max_profit_in_single_trade,
-          maxProfitInSingleTradePercentage: metricsData[0].max_profit_in_single_trade_percentage,
-          maxLossInSingleTrade: metricsData[0].max_loss_in_single_trade,
-          maxLossInSingleTradePercentage: metricsData[0].max_loss_in_single_trade_percentage,
-          maxDrawdown: metricsData[0].max_drawdown,
-          maxDrawdownPercentage: metricsData[0].max_drawdown_percentage,
-          drawdownDuration: metricsData[0].drawdown_duration,
-          returnMaxDD: metricsData[0].return_max_dd,
-          rewardToRiskRatio: metricsData[0].reward_to_risk_ratio,
-          expectancyRatio: metricsData[0].expectancy_ratio,
-          maxWinStreak: metricsData[0].max_win_streak,
-          maxLosingStreak: metricsData[0].max_losing_streak,
-          maxTradesInDrawdown: metricsData[0].max_trades_in_drawdown,
-          created_at: metricsData[0].created_at,
-          updated_at: metricsData[0].updated_at
+          id: metricsRecord.id,
+          overallProfit: metricsRecord.overall_profit,
+          overallProfitPercentage: metricsRecord.overall_profit_percentage,
+          numberOfTrades: metricsRecord.number_of_trades,
+          avgProfitPerTrade: metricsRecord.avg_profit_per_trade,
+          avgProfitPerTradePercentage: metricsRecord.avg_profit_per_trade_percentage,
+          winPercentage: metricsRecord.win_percentage,
+          lossPercentage: metricsRecord.loss_percentage,
+          avgProfitOnWinningTrades: metricsRecord.avg_profit_on_winning_trades,
+          avgProfitOnWinningTradesPercentage: metricsRecord.avg_profit_on_winning_trades_percentage,
+          avgLossOnLosingTrades: metricsRecord.avg_loss_on_losing_trades,
+          avgLossOnLosingTradesPercentage: metricsRecord.avg_loss_on_losing_trades_percentage,
+          maxProfitInSingleTrade: metricsRecord.max_profit_in_single_trade,
+          maxProfitInSingleTradePercentage: metricsRecord.max_profit_in_single_trade_percentage,
+          maxLossInSingleTrade: metricsRecord.max_loss_in_single_trade,
+          maxLossInSingleTradePercentage: metricsRecord.max_loss_in_single_trade_percentage,
+          maxDrawdown: metricsRecord.max_drawdown,
+          maxDrawdownPercentage: metricsRecord.max_drawdown_percentage,
+          drawdownDuration: metricsRecord.drawdown_duration,
+          returnMaxDD: metricsRecord.return_max_dd,
+          rewardToRiskRatio: metricsRecord.reward_to_risk_ratio,
+          expectancyRatio: metricsRecord.expectancy_ratio,
+          maxWinStreak: metricsRecord.max_win_streak,
+          maxLosingStreak: metricsRecord.max_losing_streak,
+          maxTradesInDrawdown: metricsRecord.max_trades_in_drawdown,
+          created_at: metricsRecord.created_at,
+          updated_at: metricsRecord.updated_at
         };
         
         setMetrics(transformedMetrics);
@@ -364,7 +366,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       };
       
       const { data: savedMetrics, error: saveError } = await supabase
-        .from(metricsTableName)
+        .from(metricsTableName as any)
         .insert([dbMetrics])
         .select();
         
