@@ -79,7 +79,6 @@ const ZenflowBacktestReport = () => {
   } = useZenflowBacktestResults();
 
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
-  const [highlightMonths, setHighlightMonths] = useState<boolean>(false);
   
   useEffect(() => {
     // Refresh data when component mounts
@@ -113,11 +112,46 @@ const ZenflowBacktestReport = () => {
     }));
   };
 
+  // Determine line color based on yearly performance comparison
+  const determineLineColor = (yearlyData: any[]) => {
+    if (yearlyData.length < 2) return "#00BCD4"; // Default cyan for single year
+    
+    const sortedData = [...yearlyData].sort((a, b) => a.year - b.year);
+    
+    // Create a map with years and their performance
+    const yearPerformance = sortedData.reduce((acc, item, index, array) => {
+      // For each year except the first, check if total is lower than previous year
+      if (index > 0) {
+        const prevYearTotal = array[index - 1].Total;
+        const currentTotal = item.Total;
+        acc[item.year] = {
+          isDown: currentTotal < prevYearTotal,
+          total: currentTotal
+        };
+      } else {
+        // First year has no comparison
+        acc[item.year] = {
+          isDown: false,
+          total: item.Total
+        };
+      }
+      return acc;
+    }, {});
+    
+    return (entry: any) => {
+      const yearInfo = yearPerformance[entry.year];
+      return yearInfo && yearInfo.isDown ? "#F44336" : "#00BCD4"; // Red if down, Cyan if up or same
+    };
+  };
+
   // Determine if a number is positive, negative, or zero
   const getValueClass = (value: number | undefined) => {
     if (value === undefined || value === null) return "";
     return value > 0 ? "text-green-500" : value < 0 ? "text-red-500" : "";
   };
+
+  const chartData = prepareChartData();
+  const lineColorFn = determineLineColor(chartData);
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
@@ -234,7 +268,7 @@ const ZenflowBacktestReport = () => {
           <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={prepareChartData()}
+                data={chartData}
                 margin={{
                   top: 20,
                   right: 30,
@@ -267,16 +301,20 @@ const ZenflowBacktestReport = () => {
                     fontSize: "12px"
                   }}
                 />
-                {/* Only show the Total line with prominent styling */}
-                <Line
-                  type="monotone"
-                  dataKey="Total"
-                  name="Total"
-                  stroke="#00BCD4"
-                  strokeWidth={3}
-                  dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
-                  activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
-                />
+                {/* Show Total line with dynamic coloring based on year-over-year performance */}
+                {chartData.map((entry, index) => (
+                  <Line
+                    key={entry.year}
+                    type="monotone"
+                    dataKey="Total"
+                    name={`${entry.year}`}
+                    data={[entry]}
+                    stroke={lineColorFn(entry)}
+                    strokeWidth={3}
+                    dot={{ r: 6, fill: lineColorFn(entry), stroke: lineColorFn(entry) }}
+                    activeDot={{ r: 8, stroke: lineColorFn(entry), strokeWidth: 2 }}
+                  />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
