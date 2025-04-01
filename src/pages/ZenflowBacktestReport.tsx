@@ -15,6 +15,62 @@ import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
+// Custom tooltip component for the chart
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-charcoalSecondary p-3 rounded-lg border border-gray-700 shadow-xl">
+        <p className="text-cyan font-medium mb-1">{`Year: ${data.year}`}</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <p className={`text-white ${data.Jan > 0 ? 'text-green-500' : data.Jan < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Jan:</span> {data.Jan}
+          </p>
+          <p className={`text-white ${data.Feb > 0 ? 'text-green-500' : data.Feb < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Feb:</span> {data.Feb}
+          </p>
+          <p className={`text-white ${data.Mar > 0 ? 'text-green-500' : data.Mar < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Mar:</span> {data.Mar}
+          </p>
+          <p className={`text-white ${data.Apr > 0 ? 'text-green-500' : data.Apr < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Apr:</span> {data.Apr}
+          </p>
+          <p className={`text-white ${data.May > 0 ? 'text-green-500' : data.May < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">May:</span> {data.May}
+          </p>
+          <p className={`text-white ${data.Jun > 0 ? 'text-green-500' : data.Jun < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Jun:</span> {data.Jun}
+          </p>
+          <p className={`text-white ${data.Jul > 0 ? 'text-green-500' : data.Jul < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Jul:</span> {data.Jul}
+          </p>
+          <p className={`text-white ${data.Aug > 0 ? 'text-green-500' : data.Aug < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Aug:</span> {data.Aug}
+          </p>
+          <p className={`text-white ${data.Sep > 0 ? 'text-green-500' : data.Sep < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Sep:</span> {data.Sep}
+          </p>
+          <p className={`text-white ${data.Oct > 0 ? 'text-green-500' : data.Oct < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Oct:</span> {data.Oct}
+          </p>
+          <p className={`text-white ${data.Nov > 0 ? 'text-green-500' : data.Nov < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Nov:</span> {data.Nov}
+          </p>
+          <p className={`text-white ${data.Dec > 0 ? 'text-green-500' : data.Dec < 0 ? 'text-red-500' : ''}`}>
+            <span className="text-gray-400">Dec:</span> {data.Dec}
+          </p>
+        </div>
+        <div className="mt-2 pt-2 border-t border-gray-700">
+          <p className={`font-medium ${data.Total > 0 ? 'text-green-500' : data.Total < 0 ? 'text-red-500' : 'text-white'}`}>
+            <span className="text-cyan">Total:</span> {data.Total}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const ZenflowBacktestReport = () => {
   const { 
     strategyData, 
@@ -192,69 +248,66 @@ const ZenflowBacktestReport = () => {
             </Table>
           </div>
         ) : (
-          <ChartContainer 
-            config={chartConfig}
-            className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]"
-          >
-            <LineChart
-              data={prepareChartData()}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 20,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
-              <XAxis 
-                dataKey="year" 
-                stroke="#888" 
-                tick={{ fill: '#B0B0B0' }}
-                axisLine={{ stroke: '#555' }}
-                tickLine={{ stroke: '#555' }}
-              />
-              <YAxis 
-                stroke="#888" 
-                tick={{ fill: '#B0B0B0' }}
-                axisLine={{ stroke: '#555' }}
-                tickLine={{ stroke: '#555' }}
-                width={40}
-              />
-              <ChartTooltip
-                content={<ChartTooltipContent />}
-              />
-              <Legend 
-                verticalAlign="top" 
-                height={36} 
-                wrapperStyle={{
-                  paddingTop: "10px",
-                  paddingBottom: "10px",
-                  fontSize: "12px"
+          <div className="bg-charcoalSecondary/50 rounded-xl p-4 h-[500px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={prepareChartData()}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 20,
                 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="Total"
-                name="Total"
-                stroke="#00BCD4"
-                strokeWidth={3}
-                dot={{ r: 4, fill: "#00BCD4", stroke: "#00BCD4" }}
-                activeDot={{ r: 6, stroke: "#00BCD4", strokeWidth: 2 }}
-              />
-              <Line type="monotone" dataKey="Jan" name="Jan" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Feb" name="Feb" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Mar" name="Mar" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Apr" name="Apr" stroke="#0097A7" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="May" name="May" stroke="#00838F" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Jun" name="Jun" stroke="#006064" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Jul" name="Jul" stroke="#80DEEA" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Aug" name="Aug" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Sep" name="Sep" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Oct" name="Oct" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Nov" name="Nov" stroke="#0097A7" strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="Dec" name="Dec" stroke="#00838F" strokeWidth={1.5} dot={false} />
-            </LineChart>
-          </ChartContainer>
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
+                <XAxis 
+                  dataKey="year" 
+                  stroke="#888" 
+                  tick={{ fill: '#B0B0B0' }}
+                  axisLine={{ stroke: '#555' }}
+                  tickLine={{ stroke: '#555' }}
+                />
+                <YAxis 
+                  stroke="#888" 
+                  tick={{ fill: '#B0B0B0' }}
+                  axisLine={{ stroke: '#555' }}
+                  tickLine={{ stroke: '#555' }}
+                  width={40}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  verticalAlign="top" 
+                  height={36} 
+                  wrapperStyle={{
+                    paddingTop: "10px",
+                    paddingBottom: "10px",
+                    fontSize: "12px"
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Total"
+                  name="Total"
+                  stroke="#00BCD4"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: "#00BCD4", stroke: "#00BCD4" }}
+                  activeDot={{ r: 6, stroke: "#00BCD4", strokeWidth: 2 }}
+                />
+                <Line type="monotone" dataKey="Jan" name="Jan" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Feb" name="Feb" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Mar" name="Mar" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Apr" name="Apr" stroke="#0097A7" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="May" name="May" stroke="#00838F" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Jun" name="Jun" stroke="#006064" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Jul" name="Jul" stroke="#80DEEA" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Aug" name="Aug" stroke="#4DD0E1" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Sep" name="Sep" stroke="#26C6DA" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Oct" name="Oct" stroke="#00ACC1" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Nov" name="Nov" stroke="#0097A7" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Dec" name="Dec" stroke="#00838F" strokeWidth={1.5} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </main>
       
