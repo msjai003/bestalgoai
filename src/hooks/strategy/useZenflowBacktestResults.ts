@@ -48,6 +48,7 @@ export interface ZenflowStrategyData {
 }
 
 export interface ZenflowMetrics {
+  id?: string;
   overallProfit?: number;
   overallProfitPercentage?: number;
   numberOfTrades?: number;
@@ -72,6 +73,8 @@ export interface ZenflowMetrics {
   maxWinStreak?: number;
   maxLosingStreak?: number;
   maxTradesInDrawdown?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useZenflowBacktestResults = () => {
@@ -89,22 +92,70 @@ export const useZenflowBacktestResults = () => {
       setError(null);
       
       // Fetch data from the zenflow_strategy table
-      const { data, error } = await supabase
+      const { data: strategyData, error: strategyError } = await supabase
         .from('zenflow_strategy')
         .select('*')
         .order('year', { ascending: true });
       
-      if (error) {
-        throw error;
+      if (strategyError) {
+        throw strategyError;
       }
       
-      console.log("Fetched strategy data:", data);
+      console.log("Fetched strategy data:", strategyData);
       
       // Set the strategy data
-      setStrategyData(data as ZenflowStrategyData[]);
+      setStrategyData(strategyData as ZenflowStrategyData[]);
       
-      // Calculate metrics from the actual database data
-      calculateMetricsFromData(data as ZenflowStrategyData[]);
+      // Fetch metrics from the zenflow_metrics table
+      const { data: metricsData, error: metricsError } = await supabase
+        .from('zenflow_metrics')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+        
+      if (metricsError) {
+        throw metricsError;
+      }
+      
+      console.log("Fetched metrics data:", metricsData);
+      
+      if (metricsData && metricsData.length > 0) {
+        // Transform database column names to camelCase for frontend
+        const transformedMetrics: ZenflowMetrics = {
+          id: metricsData[0].id,
+          overallProfit: metricsData[0].overall_profit,
+          overallProfitPercentage: metricsData[0].overall_profit_percentage,
+          numberOfTrades: metricsData[0].number_of_trades,
+          avgProfitPerTrade: metricsData[0].avg_profit_per_trade,
+          avgProfitPerTradePercentage: metricsData[0].avg_profit_per_trade_percentage,
+          winPercentage: metricsData[0].win_percentage,
+          lossPercentage: metricsData[0].loss_percentage,
+          avgProfitOnWinningTrades: metricsData[0].avg_profit_on_winning_trades,
+          avgProfitOnWinningTradesPercentage: metricsData[0].avg_profit_on_winning_trades_percentage,
+          avgLossOnLosingTrades: metricsData[0].avg_loss_on_losing_trades,
+          avgLossOnLosingTradesPercentage: metricsData[0].avg_loss_on_losing_trades_percentage,
+          maxProfitInSingleTrade: metricsData[0].max_profit_in_single_trade,
+          maxProfitInSingleTradePercentage: metricsData[0].max_profit_in_single_trade_percentage,
+          maxLossInSingleTrade: metricsData[0].max_loss_in_single_trade,
+          maxLossInSingleTradePercentage: metricsData[0].max_loss_in_single_trade_percentage,
+          maxDrawdown: metricsData[0].max_drawdown,
+          maxDrawdownPercentage: metricsData[0].max_drawdown_percentage,
+          drawdownDuration: metricsData[0].drawdown_duration,
+          returnMaxDD: metricsData[0].return_max_dd,
+          rewardToRiskRatio: metricsData[0].reward_to_risk_ratio,
+          expectancyRatio: metricsData[0].expectancy_ratio,
+          maxWinStreak: metricsData[0].max_win_streak,
+          maxLosingStreak: metricsData[0].max_losing_streak,
+          maxTradesInDrawdown: metricsData[0].max_trades_in_drawdown,
+          created_at: metricsData[0].created_at,
+          updated_at: metricsData[0].updated_at
+        };
+        
+        setMetrics(transformedMetrics);
+      } else {
+        // If no metrics data exists, calculate from strategy data and save to the database
+        calculateAndSaveMetricsFromData(strategyData as ZenflowStrategyData[]);
+      }
       
       // For backward compatibility, keeping the old array empty
       setZenflowResults([]);
@@ -122,8 +173,8 @@ export const useZenflowBacktestResults = () => {
     }
   };
 
-  // Calculate comprehensive metrics from the actual strategy data in the database
-  const calculateMetricsFromData = (data: ZenflowStrategyData[]) => {
+  // Calculate comprehensive metrics from the strategy data and save to the database
+  const calculateAndSaveMetricsFromData = async (data: ZenflowStrategyData[]) => {
     if (!data || data.length === 0) {
       setMetrics({});
       return;
@@ -222,6 +273,47 @@ export const useZenflowBacktestResults = () => {
       maxLosingStreak: Math.round(lossMonths / 2),
       maxTradesInDrawdown: Math.round(lossMonths * 8),
     };
+    
+    // Save metrics to the database
+    try {
+      const { data: savedMetrics, error: saveError } = await supabase
+        .from('zenflow_metrics')
+        .insert([{
+          overall_profit: calculatedMetrics.overallProfit,
+          overall_profit_percentage: calculatedMetrics.overallProfitPercentage,
+          number_of_trades: calculatedMetrics.numberOfTrades,
+          avg_profit_per_trade: calculatedMetrics.avgProfitPerTrade,
+          avg_profit_per_trade_percentage: calculatedMetrics.avgProfitPerTradePercentage,
+          win_percentage: calculatedMetrics.winPercentage,
+          loss_percentage: calculatedMetrics.lossPercentage,
+          avg_profit_on_winning_trades: calculatedMetrics.avgProfitOnWinningTrades,
+          avg_profit_on_winning_trades_percentage: calculatedMetrics.avgProfitOnWinningTradesPercentage,
+          avg_loss_on_losing_trades: calculatedMetrics.avgLossOnLosingTrades,
+          avg_loss_on_losing_trades_percentage: calculatedMetrics.avgLossOnLosingTradesPercentage,
+          max_profit_in_single_trade: calculatedMetrics.maxProfitInSingleTrade,
+          max_profit_in_single_trade_percentage: calculatedMetrics.maxProfitInSingleTradePercentage,
+          max_loss_in_single_trade: calculatedMetrics.maxLossInSingleTrade,
+          max_loss_in_single_trade_percentage: calculatedMetrics.maxLossInSingleTradePercentage,
+          max_drawdown: calculatedMetrics.maxDrawdown,
+          max_drawdown_percentage: calculatedMetrics.maxDrawdownPercentage,
+          drawdown_duration: calculatedMetrics.drawdownDuration,
+          return_max_dd: calculatedMetrics.returnMaxDD,
+          reward_to_risk_ratio: calculatedMetrics.rewardToRiskRatio,
+          expectancy_ratio: calculatedMetrics.expectancyRatio,
+          max_win_streak: calculatedMetrics.maxWinStreak,
+          max_losing_streak: calculatedMetrics.maxLosingStreak,
+          max_trades_in_drawdown: calculatedMetrics.maxTradesInDrawdown
+        }])
+        .select();
+        
+      if (saveError) {
+        console.error("Error saving metrics to database:", saveError);
+      } else {
+        console.log("Successfully saved metrics to database:", savedMetrics);
+      }
+    } catch (err) {
+      console.error("Exception saving metrics to database:", err);
+    }
     
     setMetrics(calculatedMetrics);
   };

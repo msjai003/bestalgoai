@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -569,6 +570,12 @@ const ZenflowBacktestReport = () => {
                     </div>
                   </div>
                 </div>
+                
+                {metrics.created_at && (
+                  <div className="mt-4 text-right text-xs text-gray-500">
+                    Last updated: {new Date(metrics.updated_at || metrics.created_at || '').toLocaleString()}
+                  </div>
+                )}
               </>
             )}
           </TabsContent>
