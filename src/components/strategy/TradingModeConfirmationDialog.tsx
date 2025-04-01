@@ -38,8 +38,8 @@ export const TradingModeConfirmationDialog = ({
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             {targetMode === "live" 
-              ? `Are you sure you want to switch to live trading${brokerName ? ` with ${brokerName}` : ''}? This will use real funds for trading operations.`
-              : `Are you sure you want to switch to paper trading${brokerName ? ` with ${brokerName}` : ''}? This will use simulated funds for trading operations.`}
+              ? `Are you sure you want to switch to live trading${brokerName ? ` with ${brokerName} broker` : ''}? This will use real funds for trading operations.`
+              : `Are you sure you want to switch to paper trading${brokerName ? ` with ${brokerName} broker` : ''}? This will use simulated funds for trading operations.`}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">

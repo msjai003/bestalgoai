@@ -74,8 +74,24 @@ export const useLiveTrading = () => {
   };
   
   const handleToggleLiveMode = (id: number, uniqueId?: string, rowId?: string, broker?: string) => {
-    const strategy = strategies.find(s => s.id === id || s.uniqueId === uniqueId || s.rowId === rowId);
-    if (!strategy) return;
+    // Find the specific strategy based on these identifiers
+    const strategy = strategies.find(s => {
+      if (s.id === id) {
+        // For predefined strategies, also check the broker if provided
+        if (broker && s.selectedBroker) {
+          return s.selectedBroker === broker;
+        }
+        // If no broker is provided, or the strategy doesn't have a broker, match by id
+        return true;
+      }
+      // Also check uniqueId or rowId for custom strategies
+      return (uniqueId && s.uniqueId === uniqueId) || (rowId && s.rowId === rowId);
+    });
+    
+    if (!strategy) {
+      console.error("Strategy not found:", id, uniqueId, rowId, broker);
+      return;
+    }
     
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
     setCurrentBroker(broker || strategy.selectedBroker || null);
@@ -86,7 +102,7 @@ export const useLiveTrading = () => {
       setCurrentCustomId(null);
     }
     
-    // Always toggle the current state for the specific broker
+    // Toggle the current state for the specific broker
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
   };
@@ -111,26 +127,33 @@ export const useLiveTrading = () => {
           .eq('user_id', user.id);
           
         if (error) throw error;
-      } else if (currentStrategyId !== null) {
+      } else if (currentStrategyId !== null && currentBroker) {
         // For predefined strategies, update the specific broker's record
-        const strategy = strategies.find(s => s.id === currentStrategyId);
-        if (strategy) {
-          await updateStrategyTradeType(
-            user.id,
-            currentStrategyId,
-            targetMode === "live" ? "live trade" : "paper trade",
-            currentBroker || strategy.selectedBroker || "",
-            strategy.brokerUsername || ""
-          );
-        }
+        await updateStrategyTradeType(
+          user.id,
+          currentStrategyId,
+          targetMode === "live" ? "live trade" : "paper trade",
+          currentBroker
+        );
       }
       
-      // Update local state
+      // Update local state - but only for the specific broker-strategy combination
       setStrategies(prev => 
         prev.map(strategy => {
-          if ((strategy.id === currentStrategyId && 
-               (currentBroker === null || strategy.selectedBroker === currentBroker)) || 
-              (strategy.rowId === currentCustomId)) {
+          // Match by strategy ID and broker name (if applicable)
+          if (strategy.id === currentStrategyId) {
+            // For predefined strategies with brokers, make sure we only update the correct broker record
+            if (strategy.selectedBroker && currentBroker) {
+              if (strategy.selectedBroker === currentBroker) {
+                return { ...strategy, isLive: targetMode === "live" };
+              }
+              // Different broker for same strategy ID, don't update
+              return strategy;
+            }
+            // No broker specificity, update based on ID
+            return { ...strategy, isLive: targetMode === "live" };
+          } else if (strategy.rowId === currentCustomId) {
+            // Custom strategy match by rowId
             return { ...strategy, isLive: targetMode === "live" };
           }
           return strategy;

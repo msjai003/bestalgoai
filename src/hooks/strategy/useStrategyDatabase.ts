@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -44,8 +45,8 @@ export const updateStrategyLiveConfig = async (
   selectedBroker: string,
   brokerUsername: string,
   tradeType: string,
-  strategyName: string = "",  // Added strategyName parameter with default value
-  strategyDescription: string = "" // Added strategyDescription parameter with default value
+  strategyName: string = "",
+  strategyDescription: string = ""
 ) => {
   try {
     console.log("Updating strategy with trade type:", tradeType);
@@ -94,7 +95,7 @@ export const updateStrategyLiveConfig = async (
         .from('strategy_selections')
         .update({
           quantity: quantity,
-          trade_type: tradeType,  // This is where we update paper trade to live trade
+          trade_type: tradeType,
           strategy_name: strategyName,
           strategy_description: strategyDescription
         })
