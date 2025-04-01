@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Sends a query to the AI trading assistant and returns the response
@@ -8,16 +8,22 @@ import { supabase } from '@/lib/supabase/client';
  */
 export const askTradingAssistant = async (query: string): Promise<string> => {
   try {
-    // Call to the Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke('trading-assistant', {
-      body: { query },
+    // Create a fetch request directly to the Supabase Edge Function
+    const response = await fetch('https://fzvrozrjtvflksumiqsk.supabase.co/functions/v1/trading-assistant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
+      },
+      body: JSON.stringify({ query }),
     });
 
-    if (error) {
-      console.error('Error calling trading assistant:', error);
-      throw new Error(`Error calling assistant: ${error.message || 'Unknown error'}`);
+    if (!response.ok) {
+      throw new Error(`Error calling assistant: ${response.statusText}`);
     }
 
+    const data = await response.json();
+    
     // Return the assistant's response
     return data?.response || 'I apologize, but I couldn\'t generate a helpful response.';
   } catch (error) {
@@ -33,15 +39,22 @@ export const askTradingAssistant = async (query: string): Promise<string> => {
  */
 export const getRelevantEducationalContent = async (keywords: string[]): Promise<any[]> => {
   try {
-    const { data, error } = await supabase.functions.invoke('search-educational-content', {
-      body: { keywords },
+    // Create a fetch request directly to the Supabase Edge Function
+    const response = await fetch('https://fzvrozrjtvflksumiqsk.supabase.co/functions/v1/search-educational-content', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token || ''}`,
+      },
+      body: JSON.stringify({ keywords }),
     });
 
-    if (error) {
-      console.error('Error searching educational content:', error);
-      throw new Error(`Error searching content: ${error.message || 'Unknown error'}`);
+    if (!response.ok) {
+      throw new Error(`Error searching content: ${response.statusText}`);
     }
 
+    const data = await response.json();
+    
     return data?.results || [];
   } catch (error) {
     console.error('Error in getRelevantEducationalContent:', error);

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
@@ -15,12 +16,12 @@ import { useToast } from '@/hooks/use-toast';
 import AITrading from './pages/AITrading';
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth(); // Changed from loading to isLoading
   const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user && !loading && location.pathname !== '/auth') {
+    if (!user && !isLoading && location.pathname !== '/auth') {
       // Redirect to /auth only if not already there and not loading
       // toast({
       //   title: "Please Sign In",
@@ -28,7 +29,7 @@ function App() {
       // })
       // history.push('/auth'); // Use history.push to navigate
     }
-  }, [user, loading, location, toast]);
+  }, [user, isLoading, location, toast]); // Updated to isLoading
   
   return (
     <div className="App min-h-screen bg-charcoalPrimary">

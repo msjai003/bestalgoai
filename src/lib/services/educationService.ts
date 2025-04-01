@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -73,10 +72,21 @@ export const getEducationModules = async () => {
     return [];
   }
   
-  return data;
+  // Type assertion to ensure proper level formatting
+  return (data as any[]).map(module => ({
+    ...module,
+    level: module.level as 'basics' | 'intermediate' | 'pro'
+  })) as EducationModule[];
 };
 
-export const createEducationModule = async (module: Omit<EducationModule, 'id' | 'created_at' | 'updated_at'>) => {
+export const createEducationModule = async (module: { 
+  title: string; 
+  description?: string; 
+  level: 'basics' | 'intermediate' | 'pro'; 
+  order_index: number;
+  estimated_time?: number;
+  is_active?: boolean;
+}) => {
   const { data, error } = await supabase
     .from('education_modules')
     .insert(module)
@@ -90,10 +100,17 @@ export const createEducationModule = async (module: Omit<EducationModule, 'id' |
   }
   
   toast.success('Education module created successfully');
-  return data;
+  return data as EducationModule;
 };
 
-export const updateEducationModule = async (id: string, updates: Partial<EducationModule>) => {
+export const updateEducationModule = async (id: string, updates: Partial<{
+  title: string;
+  description?: string;
+  level: 'basics' | 'intermediate' | 'pro';
+  order_index: number;
+  estimated_time?: number;
+  is_active?: boolean;
+}>) => {
   const { data, error } = await supabase
     .from('education_modules')
     .update(updates)
@@ -108,7 +125,7 @@ export const updateEducationModule = async (id: string, updates: Partial<Educati
   }
   
   toast.success('Education module updated successfully');
-  return data;
+  return data as EducationModule;
 };
 
 export const deleteEducationModule = async (id: string) => {
@@ -141,10 +158,17 @@ export const getEducationContent = async (moduleId: string) => {
     return [];
   }
   
-  return data;
+  return data as EducationContent[];
 };
 
-export const createEducationContent = async (content: Omit<EducationContent, 'id' | 'created_at' | 'updated_at'>) => {
+export const createEducationContent = async (content: { 
+  module_id: string;
+  title: string;
+  content: string;
+  order_index: number;
+  content_type?: string;
+  media_url?: string;
+}) => {
   const { data, error } = await supabase
     .from('education_content')
     .insert(content)
@@ -158,10 +182,16 @@ export const createEducationContent = async (content: Omit<EducationContent, 'id
   }
   
   toast.success('Content created successfully');
-  return data;
+  return data as EducationContent;
 };
 
-export const updateEducationContent = async (id: string, updates: Partial<EducationContent>) => {
+export const updateEducationContent = async (id: string, updates: Partial<{
+  title: string;
+  content: string;
+  order_index: number;
+  content_type?: string;
+  media_url?: string;
+}>) => {
   const { data, error } = await supabase
     .from('education_content')
     .update(updates)
@@ -176,7 +206,7 @@ export const updateEducationContent = async (id: string, updates: Partial<Educat
   }
   
   toast.success('Content updated successfully');
-  return data;
+  return data as EducationContent;
 };
 
 export const deleteEducationContent = async (id: string) => {
@@ -210,7 +240,9 @@ export const getQuizQuestions = async (moduleId: string) => {
   }
   
   // Get answers for all questions
-  if (questions.length > 0) {
+  const questionsWithAnswers: QuizQuestion[] = [];
+  
+  if (questions && questions.length > 0) {
     for (const question of questions) {
       const { data: answers, error: answersError } = await supabase
         .from('education_quiz_answers')
@@ -220,13 +252,19 @@ export const getQuizQuestions = async (moduleId: string) => {
       
       if (answersError) {
         console.error('Error fetching quiz answers:', answersError);
-      } else {
-        question.answers = answers;
       }
+      
+      // Create a properly typed question with answers
+      const questionWithAnswers: QuizQuestion = {
+        ...question,
+        answers: answers as QuizAnswer[] || []
+      };
+      
+      questionsWithAnswers.push(questionWithAnswers);
     }
   }
   
-  return questions;
+  return questionsWithAnswers;
 };
 
 export const createQuizQuestion = async (question: Omit<QuizQuestion, 'id' | 'created_at' | 'updated_at' | 'answers'>) => {
@@ -348,10 +386,21 @@ export const getEducationBadges = async () => {
     return [];
   }
   
-  return data;
+  // Type assertion to ensure proper level formatting
+  return (data as any[]).map(badge => ({
+    ...badge,
+    level: badge.level as 'basics' | 'intermediate' | 'pro'
+  })) as EducationBadge[];
 };
 
-export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'created_at' | 'updated_at'>) => {
+export const createEducationBadge = async (badge: {
+  badge_id: string;
+  name: string;
+  description: string;
+  image: string;
+  level: 'basics' | 'intermediate' | 'pro';
+  unlocked_by: string;
+}) => {
   const { data, error } = await supabase
     .from('education_badges')
     .insert(badge)
@@ -365,10 +414,17 @@ export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'c
   }
   
   toast.success('Badge created successfully');
-  return data;
+  return data as EducationBadge;
 };
 
-export const updateEducationBadge = async (id: string, updates: Partial<EducationBadge>) => {
+export const updateEducationBadge = async (id: string, updates: Partial<{
+  badge_id: string;
+  name: string;
+  description: string;
+  image: string;
+  level: 'basics' | 'intermediate' | 'pro';
+  unlocked_by: string;
+}>) => {
   const { data, error } = await supabase
     .from('education_badges')
     .update(updates)
@@ -383,7 +439,7 @@ export const updateEducationBadge = async (id: string, updates: Partial<Educatio
   }
   
   toast.success('Badge updated successfully');
-  return data;
+  return data as EducationBadge;
 };
 
 export const deleteEducationBadge = async (id: string) => {

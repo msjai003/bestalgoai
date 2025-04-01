@@ -50,7 +50,7 @@ const TradingAssistantMessage: React.FC<TradingAssistantMessageProps> = ({
             <p className="whitespace-pre-wrap">{message}</p>
           ) : (
             <ReactMarkdown 
-              className="whitespace-pre-wrap text-sm"
+              /* Remove className from ReactMarkdown as it doesn't accept it */
               components={{
                 // Override to avoid hydration mismatch
                 p: ({node, ...props}) => <p className="my-2" {...props} />,
@@ -60,8 +60,8 @@ const TradingAssistantMessage: React.FC<TradingAssistantMessageProps> = ({
                 ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2" {...props} />,
                 ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-2" {...props} />,
                 li: ({node, ...props}) => <li className="my-1" {...props} />,
-                code: ({node, inline, ...props}) => 
-                  inline 
+                code: ({node, className, ...props}) => 
+                  props.className?.includes('inline') 
                     ? <code className="bg-gray-700/50 px-1 py-0.5 rounded" {...props} />
                     : <code className="block bg-gray-700/50 p-2 rounded my-2 overflow-x-auto" {...props} />
               }}
