@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Strategy } from "@/hooks/strategy/types";
@@ -12,6 +11,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useToast } from "@/hooks/use-toast";
 import { NoStrategiesFound } from "@/components/strategy/NoStrategiesFound";
 import { useAuth } from "@/contexts/AuthContext";
+import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
@@ -21,6 +21,8 @@ const StrategyManagement = () => {
   const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [strategyToDelete, setStrategyToDelete] = useState<Strategy | null>(null);
 
   const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
@@ -40,15 +42,24 @@ const StrategyManagement = () => {
   };
 
   const handleDeleteStrategy = async (id: number) => {
-    if (!user) return;
+    const strategy = wishlistedStrategies.find(s => s.id === id);
+    if (!strategy || !user) return;
+    
+    setStrategyToDelete(strategy);
+    setDeleteConfirmationOpen(true);
+  };
+  
+  const confirmDeleteStrategy = async () => {
+    if (!user || !strategyToDelete) return;
     
     try {
-      await removeFromWishlist(user.id, id);
+      await removeFromWishlist(user.id, strategyToDelete.id);
+      setDeleteConfirmationOpen(false);
+      
       toast({
         title: "Success",
         description: "Strategy removed from wishlist",
       });
-      // Reload page to refresh the list
       window.location.reload();
     } catch (error) {
       console.error("Error removing strategy from wishlist:", error);
@@ -59,9 +70,13 @@ const StrategyManagement = () => {
       });
     }
   };
+  
+  const cancelDeleteStrategy = () => {
+    setDeleteConfirmationOpen(false);
+    setStrategyToDelete(null);
+  };
 
   const handleConfirmLiveMode = () => {
-    // Handle confirming live mode toggle
     setConfirmationOpen(false);
     toast({
       title: "Mode Change",
@@ -126,6 +141,16 @@ const StrategyManagement = () => {
         onConfirm={handleConfirmLiveMode}
         onCancel={handleCancelLiveMode}
       />
+      
+      {strategyToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteConfirmationOpen}
+          onOpenChange={setDeleteConfirmationOpen}
+          strategyName={strategyToDelete.name}
+          onConfirm={confirmDeleteStrategy}
+          onCancel={cancelDeleteStrategy}
+        />
+      )}
 
       <BottomNav />
     </div>
