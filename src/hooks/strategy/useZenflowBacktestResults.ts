@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -148,9 +147,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       const strategyTableName = getStrategyTableName(strategy);
       const metricsTableName = getMetricsTableName(strategy);
       
-      // Fetch data from the strategy table using type assertion for dynamic table names
+      // Fetch data from the strategy table
       const { data: strategyData, error: strategyError } = await supabase
-        .from(strategyTableName as any)
+        .from(strategyTableName)
         .select('*')
         .order('year', { ascending: true });
       
@@ -160,12 +159,12 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       
       console.log(`Fetched ${strategy} strategy data:`, strategyData);
       
-      // Set the strategy data
-      setStrategyData(strategyData as ZenflowStrategyData[]);
+      // Set the strategy data with type assertion
+      setStrategyData(strategyData as unknown as ZenflowStrategyData[]);
       
-      // Fetch metrics from the metrics table using type assertion for dynamic table names
+      // Fetch metrics from the metrics table
       const { data: metricsData, error: metricsError } = await supabase
-        .from(metricsTableName as any)
+        .from(metricsTableName)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
@@ -199,7 +198,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
           maxLossInSingleTradePercentage: metricsRecord.max_loss_in_single_trade_percentage,
           maxDrawdown: metricsRecord.max_drawdown,
           maxDrawdownPercentage: metricsRecord.max_drawdown_percentage,
-          drawdownDuration: metricsRecord.drawdown_duration,
+          drawdownDuration: metricsRecord.drawdown_duration || '',
           returnMaxDD: metricsRecord.return_max_dd,
           rewardToRiskRatio: metricsRecord.reward_to_risk_ratio,
           expectancyRatio: metricsRecord.expectancy_ratio,
@@ -213,7 +212,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setMetrics(transformedMetrics);
       } else {
         // If no metrics data exists, calculate from strategy data
-        calculateAndSaveMetricsFromData(strategyData as ZenflowStrategyData[], strategy);
+        calculateAndSaveMetricsFromData(strategyData as unknown as ZenflowStrategyData[], strategy);
       }
       
       // For backward compatibility, keeping the old array empty
@@ -366,7 +365,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       };
       
       const { data: savedMetrics, error: saveError } = await supabase
-        .from(metricsTableName as any)
+        .from(metricsTableName)
         .insert([dbMetrics])
         .select();
         
