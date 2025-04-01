@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -302,14 +301,14 @@ const StrategyManagement = () => {
     setStrategyToDelete(null);
   };
 
-  const handleToggleLiveMode = (id: number | string) => {
+const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
     if (!strategy) return;
     
     const isPremium = typeof id === 'number' && id > 1;
     if (isPremium && !hasPremium && !strategy.isPaid) {
       sessionStorage.setItem('selectedStrategyId', id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
+      sessionStorage.setItem('redirectAfterPayment', '/pricing');
       navigate('/pricing');
       return;
     }

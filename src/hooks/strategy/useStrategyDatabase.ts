@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -70,12 +71,14 @@ export const updateStrategyLiveConfig = async (
       strategyName = `Strategy ${strategyId}`;
     }
 
-    // Check if record exists for this strategy
+    // Check if record exists for this specific strategy + broker combination
     const { data: existingRecords, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
+      .eq('strategy_id', strategyId)
+      .eq('selected_broker', selectedBroker)
+      .eq('broker_username', brokerUsername);
 
     if (checkError) {
       console.error("Error checking for existing records:", checkError);
@@ -84,16 +87,14 @@ export const updateStrategyLiveConfig = async (
 
     let result;
 
-    // Check if the record exists for this strategy
+    // Check if the record exists for this specific strategy + broker combination
     if (existingRecords && existingRecords.length > 0) {
-      // Update existing record instead of creating a new one
-      console.log("Updating existing strategy record, record ID:", existingRecords[0].id);
+      // Update existing record for this specific broker
+      console.log("Updating existing strategy-broker record, record ID:", existingRecords[0].id);
       result = await supabase
         .from('strategy_selections')
         .update({
           quantity: quantity,
-          selected_broker: selectedBroker,
-          broker_username: brokerUsername,
           trade_type: tradeType,  // This is where we update paper trade to live trade
           strategy_name: strategyName,
           strategy_description: strategyDescription
@@ -101,8 +102,8 @@ export const updateStrategyLiveConfig = async (
         .eq('id', existingRecords[0].id)
         .select();
     } else {
-      // Insert new record only if none exists for this strategy
-      console.log("Creating new strategy selection record for strategyId:", strategyId);
+      // Insert new record for this strategy-broker combination if none exists
+      console.log("Creating new strategy-broker selection record for strategyId:", strategyId, "broker:", selectedBroker);
       result = await supabase
         .from('strategy_selections')
         .insert({
@@ -126,6 +127,75 @@ export const updateStrategyLiveConfig = async (
     return result.data;
   } catch (error) {
     console.error("Error in updateStrategyLiveConfig:", error);
+    throw error;
+  }
+};
+
+export const updateStrategyTradeType = async (
+  userId: string,
+  strategyId: number | string,
+  tradeType: string,
+  selectedBroker: string,
+  brokerUsername: string = ""
+) => {
+  try {
+    console.log(`Updating strategy ${strategyId} with broker ${selectedBroker} to trade type: ${tradeType}`);
+    
+    // Check if record exists for this specific strategy + broker combination
+    const { data: existingRecords, error: checkError } = await supabase
+      .from('strategy_selections')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId);
+      
+    if (selectedBroker) {
+      // If broker is specified, filter to that specific broker
+      const { data: specificBrokerRecords, error: brokerCheckError } = await supabase
+        .from('strategy_selections')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId)
+        .eq('selected_broker', selectedBroker);
+        
+      if (!brokerCheckError && specificBrokerRecords && specificBrokerRecords.length > 0) {
+        // Update only this specific broker's record
+        console.log(`Updating trade type for strategy ${strategyId} with broker ${selectedBroker}`);
+        const { error } = await supabase
+          .from('strategy_selections')
+          .update({ trade_type: tradeType })
+          .eq('id', specificBrokerRecords[0].id);
+          
+        if (error) throw error;
+        return { success: true, message: `Updated trade type for strategy with broker ${selectedBroker}` };
+      }
+    }
+    
+    if (checkError) {
+      console.error("Error checking for existing records:", checkError);
+      throw checkError;
+    }
+
+    // If no records exist at all for this strategy (unusual case)
+    if (!existingRecords || existingRecords.length === 0) {
+      console.error(`No records found for strategy ${strategyId}`);
+      throw new Error(`No records found for strategy ${strategyId}`);
+    }
+    
+    // Update all records for this strategy (if no specific broker was found)
+    if (!selectedBroker) {
+      const { error } = await supabase
+        .from('strategy_selections')
+        .update({ trade_type: tradeType })
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId);
+        
+      if (error) throw error;
+      return { success: true, message: "Updated trade type for all broker records of this strategy" };
+    }
+    
+    return { success: false, message: "No matching strategy-broker combination found" };
+  } catch (error) {
+    console.error("Error updating strategy trade type:", error);
     throw error;
   }
 };

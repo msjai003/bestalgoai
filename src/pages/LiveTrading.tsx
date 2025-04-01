@@ -25,6 +25,7 @@ const LiveTrading = () => {
     showBrokerDialog,
     setShowBrokerDialog,
     targetMode,
+    currentBroker,
     handleTradingToggle,
     handleModeChange,
     handleToggleLiveMode,
@@ -85,6 +86,7 @@ const LiveTrading = () => {
         open={showConfirmationDialog}
         onOpenChange={setShowConfirmationDialog}
         targetMode={targetMode}
+        brokerName={currentBroker}
         onConfirm={confirmModeChange}
         onCancel={cancelModeChange}
       />
