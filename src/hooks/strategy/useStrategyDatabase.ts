@@ -141,59 +141,86 @@ export const updateStrategyTradeType = async (
   try {
     console.log(`Updating strategy ${strategyId} with broker ${selectedBroker} to trade type: ${tradeType}`);
     
+    // Make sure strategyId is a number for database operations
+    const strategyIdNum = typeof strategyId === 'string' ? parseInt(strategyId, 10) : strategyId;
+    
     // Check if record exists for this specific strategy + broker combination
     const { data: existingRecords, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
+      .eq('strategy_id', strategyIdNum);
       
+    if (checkError) {
+      console.error("Error checking for existing records:", checkError);
+      throw checkError;
+    }
+      
+    // If broker is specified, target that specific broker
     if (selectedBroker) {
-      // If broker is specified, filter to that specific broker
       const { data: specificBrokerRecords, error: brokerCheckError } = await supabase
         .from('strategy_selections')
         .select('id')
         .eq('user_id', userId)
-        .eq('strategy_id', strategyId)
+        .eq('strategy_id', strategyIdNum)
         .eq('selected_broker', selectedBroker);
         
-      if (!brokerCheckError && specificBrokerRecords && specificBrokerRecords.length > 0) {
+      if (brokerCheckError) {
+        console.error("Error checking for broker records:", brokerCheckError);
+        throw brokerCheckError;
+      }
+        
+      if (specificBrokerRecords && specificBrokerRecords.length > 0) {
         // Update only this specific broker's record
-        console.log(`Updating trade type for strategy ${strategyId} with broker ${selectedBroker}`);
+        console.log(`Updating trade type for strategy ${strategyId} with broker ${selectedBroker} to ${tradeType}`);
         const { error } = await supabase
           .from('strategy_selections')
           .update({ trade_type: tradeType })
           .eq('id', specificBrokerRecords[0].id);
           
-        if (error) throw error;
-        return { success: true, message: `Updated trade type for strategy with broker ${selectedBroker}` };
+        if (error) {
+          console.error("Error updating strategy trade type:", error);
+          throw error;
+        }
+        
+        return { 
+          success: true, 
+          message: `Updated trade type to ${tradeType} for strategy with broker ${selectedBroker}` 
+        };
+      } else {
+        return { 
+          success: false, 
+          message: `No record found for strategy ${strategyId} with broker ${selectedBroker}` 
+        };
       }
     }
     
-    if (checkError) {
-      console.error("Error checking for existing records:", checkError);
-      throw checkError;
-    }
-
     // If no records exist at all for this strategy (unusual case)
     if (!existingRecords || existingRecords.length === 0) {
       console.error(`No records found for strategy ${strategyId}`);
-      throw new Error(`No records found for strategy ${strategyId}`);
+      return { 
+        success: false, 
+        message: `No records found for strategy ${strategyId}` 
+      };
     }
     
     // Update all records for this strategy (if no specific broker was found)
-    if (!selectedBroker) {
-      const { error } = await supabase
-        .from('strategy_selections')
-        .update({ trade_type: tradeType })
-        .eq('user_id', userId)
-        .eq('strategy_id', strategyId);
-        
-      if (error) throw error;
-      return { success: true, message: "Updated trade type for all broker records of this strategy" };
+    console.log(`Updating all brokers for strategy ${strategyId} to trade type: ${tradeType}`);
+    const { error } = await supabase
+      .from('strategy_selections')
+      .update({ trade_type: tradeType })
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyIdNum);
+      
+    if (error) {
+      console.error("Error updating strategy trade type for all brokers:", error);
+      throw error;
     }
-    
-    return { success: false, message: "No matching strategy-broker combination found" };
+      
+    return { 
+      success: true, 
+      message: "Updated trade type for all broker records of this strategy" 
+    };
   } catch (error) {
     console.error("Error updating strategy trade type:", error);
     throw error;
