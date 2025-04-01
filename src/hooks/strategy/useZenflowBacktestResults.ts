@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -78,7 +77,60 @@ export interface ZenflowMetrics {
   updated_at?: string;
 }
 
-export const useZenflowBacktestResults = () => {
+type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
+
+const getStrategyTableName = (strategy: StrategyType): string => {
+  switch (strategy) {
+    case 'zenflow':
+      return 'zenflow_strategy';
+    case 'velox':
+      return 'velox_edge_strategy';
+    case 'nova':
+      return 'nova_glide_strategy';
+    case 'evercrest':
+      return 'evercrest_strategy';
+    case 'apexflow':
+      return 'apexflow_strategy';
+    default:
+      return 'zenflow_strategy';
+  }
+};
+
+const getMetricsTableName = (strategy: StrategyType): string => {
+  switch (strategy) {
+    case 'zenflow':
+      return 'zenflow_metrics';
+    case 'velox':
+      return 'velox_edge_metrics';
+    case 'nova':
+      return 'nova_glide_metrics';
+    case 'evercrest':
+      return 'evercrest_metrics';
+    case 'apexflow':
+      return 'apexflow_metrics';
+    default:
+      return 'zenflow_metrics';
+  }
+};
+
+export const getStrategyDisplayName = (strategy: StrategyType): string => {
+  switch (strategy) {
+    case 'zenflow':
+      return 'Zenflow Strategy';
+    case 'velox':
+      return 'Velox Edge Strategy';
+    case 'nova':
+      return 'Nova Glide Strategy';
+    case 'evercrest':
+      return 'Evercrest Strategy';
+    case 'apexflow':
+      return 'Apexflow Strategy';
+    default:
+      return 'Zenflow Strategy';
+  }
+};
+
+export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') => {
   const [zenflowResults, setZenflowResults] = useState<ZenflowBacktestResult[]>([]);
   const [strategyData, setStrategyData] = useState<ZenflowStrategyData[]>([]);
   const [metrics, setMetrics] = useState<ZenflowMetrics>({});
@@ -92,9 +144,12 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch data from the zenflow_strategy table
+      const strategyTableName = getStrategyTableName(strategy);
+      const metricsTableName = getMetricsTableName(strategy);
+      
+      // Fetch data from the strategy table
       const { data: strategyData, error: strategyError } = await supabase
-        .from('zenflow_strategy')
+        .from(strategyTableName)
         .select('*')
         .order('year', { ascending: true });
       
@@ -102,24 +157,24 @@ export const useZenflowBacktestResults = () => {
         throw strategyError;
       }
       
-      console.log("Fetched strategy data:", strategyData);
+      console.log(`Fetched ${strategy} strategy data:`, strategyData);
       
       // Set the strategy data
       setStrategyData(strategyData as ZenflowStrategyData[]);
       
-      // Fetch metrics from the zenflow_metrics table
+      // Fetch metrics from the metrics table
       const { data: metricsData, error: metricsError } = await supabase
-        .from('zenflow_metrics')
+        .from(metricsTableName)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
         
       if (metricsError) {
-        console.error("Error fetching metrics:", metricsError);
+        console.error(`Error fetching ${strategy} metrics:`, metricsError);
         // Continue execution but log the error
       }
       
-      console.log("Fetched metrics data:", metricsData);
+      console.log(`Fetched ${strategy} metrics data:`, metricsData);
       
       if (metricsData && metricsData.length > 0) {
         // Transform database column names to camelCase for frontend
@@ -155,15 +210,15 @@ export const useZenflowBacktestResults = () => {
         
         setMetrics(transformedMetrics);
       } else {
-        // If no metrics data exists, calculate from strategy data and save to the database
-        calculateAndSaveMetricsFromData(strategyData as ZenflowStrategyData[]);
+        // If no metrics data exists, calculate from strategy data
+        calculateAndSaveMetricsFromData(strategyData as ZenflowStrategyData[], strategy);
       }
       
       // For backward compatibility, keeping the old array empty
       setZenflowResults([]);
       
     } catch (err) {
-      console.error("Error fetching Zenflow backtest results:", err);
+      console.error(`Error fetching ${strategy} backtest results:`, err);
       setError(err instanceof Error ? err : new Error(String(err)));
       toast({
         title: "Error",
@@ -176,7 +231,7 @@ export const useZenflowBacktestResults = () => {
   };
 
   // Calculate comprehensive metrics from the strategy data and save to the database
-  const calculateAndSaveMetricsFromData = async (data: ZenflowStrategyData[]) => {
+  const calculateAndSaveMetricsFromData = async (data: ZenflowStrategyData[], strategyType: StrategyType) => {
     if (!data || data.length === 0) {
       setMetrics({});
       return;
@@ -278,6 +333,8 @@ export const useZenflowBacktestResults = () => {
     
     // Save metrics to the database
     try {
+      const metricsTableName = getMetricsTableName(strategyType);
+      
       // Convert camelCase keys to snake_case for database
       const dbMetrics = {
         overall_profit: calculatedMetrics.overallProfit,
@@ -307,17 +364,17 @@ export const useZenflowBacktestResults = () => {
       };
       
       const { data: savedMetrics, error: saveError } = await supabase
-        .from('zenflow_metrics')
+        .from(metricsTableName)
         .insert([dbMetrics])
         .select();
         
       if (saveError) {
-        console.error("Error saving metrics to database:", saveError);
+        console.error(`Error saving ${strategyType} metrics to database:`, saveError);
       } else {
-        console.log("Successfully saved metrics to database:", savedMetrics);
+        console.log(`Successfully saved ${strategyType} metrics to database:`, savedMetrics);
       }
     } catch (err) {
-      console.error("Exception saving metrics to database:", err);
+      console.error(`Exception saving ${strategyType} metrics to database:`, err);
     }
     
     setMetrics(calculatedMetrics);
@@ -326,7 +383,7 @@ export const useZenflowBacktestResults = () => {
   // Initial fetch
   useEffect(() => {
     fetchZenflowBacktestResults();
-  }, []);
+  }, [strategy]);
 
   return {
     zenflowResults,
@@ -334,6 +391,7 @@ export const useZenflowBacktestResults = () => {
     metrics,
     loading,
     error,
-    fetchZenflowBacktestResults
+    fetchZenflowBacktestResults,
+    strategyType: strategy
   };
 };

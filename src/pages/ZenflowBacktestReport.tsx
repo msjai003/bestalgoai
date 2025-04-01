@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
@@ -13,7 +14,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
-import { useZenflowBacktestResults } from '@/hooks/strategy/useZenflowBacktestResults';
+import { useZenflowBacktestResults, getStrategyDisplayName } from '@/hooks/strategy/useZenflowBacktestResults';
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 import {
@@ -136,13 +137,17 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
 };
 
 const ZenflowBacktestReport = () => {
+  const [searchParams] = useSearchParams();
+  const strategyParam = searchParams.get('strategy') as 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow' || 'zenflow';
+  
   const { 
     strategyData, 
     metrics,
     loading, 
     error,
-    fetchZenflowBacktestResults
-  } = useZenflowBacktestResults();
+    fetchZenflowBacktestResults,
+    strategyType
+  } = useZenflowBacktestResults(strategyParam);
 
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   const [activeTab, setActiveTab] = useState<string>('annual');
@@ -150,12 +155,12 @@ const ZenflowBacktestReport = () => {
   
   useEffect(() => {
     fetchZenflowBacktestResults();
-    console.log("Component mounted, fetching data...");
-  }, []);
+    console.log("Component mounted, fetching data for strategy:", strategyParam);
+  }, [strategyParam]);
 
   const handleRefresh = () => {
     fetchZenflowBacktestResults();
-    toast.success("Data refreshed");
+    toast.success(`${getStrategyDisplayName(strategyType)} data refreshed`);
   };
 
   const handleNextSection = () => {
@@ -241,7 +246,9 @@ const ZenflowBacktestReport = () => {
           <Link to="/zenflow-backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Strategy Backtest Report</h1>
+          <h1 className="text-charcoalTextPrimary text-lg font-medium">
+            {getStrategyDisplayName(strategyType)} Report
+          </h1>
           <div className="w-8"></div>
         </div>
       </header>
@@ -423,7 +430,7 @@ const ZenflowBacktestReport = () => {
               <>
                 <div className="mb-4">
                   <h2 className="text-lg font-semibold text-white">Key Performance Metrics</h2>
-                  <p className="text-sm text-gray-400">Summary of metrics from the Zenflow backtest</p>
+                  <p className="text-sm text-gray-400">Summary of metrics from the {getStrategyDisplayName(strategyType)} backtest</p>
                 </div>
                 
                 {loading ? (
@@ -511,7 +518,7 @@ const ZenflowBacktestReport = () => {
           <TabsContent value="details" className="space-y-4">
             <div className="mt-2 mb-4">
               <h2 className="text-lg font-semibold text-white">Detailed Performance Metrics</h2>
-              <p className="text-sm text-gray-400">Comprehensive analysis of backtest results</p>
+              <p className="text-sm text-gray-400">Comprehensive analysis of {getStrategyDisplayName(strategyType)} results</p>
             </div>
             
             {loading ? (

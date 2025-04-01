@@ -46,7 +46,7 @@ const ZenflowBacktest = () => {
           <h2 className="text-xl font-semibold text-white mb-4">Zenflow Backtest Tools</h2>
           
           <div className="space-y-4">
-            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+            <Link to="/zenflow-backtest-report?strategy=zenflow" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
                   <FileSpreadsheet className="h-5 w-5 text-cyan" />
@@ -59,7 +59,7 @@ const ZenflowBacktest = () => {
               <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
             </Link>
             
-            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+            <Link to="/zenflow-backtest-report?strategy=velox" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
                   <BarChart3 className="h-5 w-5 text-emerald-400" />
@@ -72,7 +72,7 @@ const ZenflowBacktest = () => {
               <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
             </Link>
             
-            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+            <Link to="/zenflow-backtest-report?strategy=nova" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
                   <Layers className="h-5 w-5 text-purple-400" />
@@ -85,7 +85,7 @@ const ZenflowBacktest = () => {
               <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
             </Link>
             
-            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+            <Link to="/zenflow-backtest-report?strategy=evercrest" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
                   <Mountain className="h-5 w-5 text-amber-400" />
@@ -98,7 +98,7 @@ const ZenflowBacktest = () => {
               <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
             </Link>
             
-            <Link to="/zenflow-backtest-report" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
+            <Link to="/zenflow-backtest-report?strategy=apexflow" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
                   <LineChart className="h-5 w-5 text-blue-400" />
