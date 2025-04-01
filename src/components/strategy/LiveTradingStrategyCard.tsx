@@ -20,6 +20,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  // Determine the correct button text based on strategy.isLive
+  const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
+  
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
@@ -121,10 +124,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               variant="outline"
               size="sm"
               onClick={onToggleLiveMode}
-              className={`min-w-[75px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
+              className={`min-w-[90px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
             >
               <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
-              {strategy.isLive ? "On" : "Off"}
+              {buttonText}
             </Button>
           </div>
           <Button

@@ -28,18 +28,28 @@ export const TradingModeConfirmationDialog = ({
   onConfirm,
   onCancel,
 }: TradingModeConfirmationDialogProps) => {
+  const dialogTitle = targetMode === "live" 
+    ? "Enable Live Trading" 
+    : "Switch to Paper Trading";
+    
+  const dialogDescription = targetMode === "live" 
+    ? `Are you sure you want to switch to live trading${brokerName ? ` with ${brokerName}` : ''}? This will use real funds for trading operations.`
+    : `Are you sure you want to switch to paper trading${brokerName ? ` with ${brokerName}` : ''}? This will use simulated funds for trading operations.`;
+  
+  const confirmButtonText = targetMode === "live" 
+    ? "Yes, Enable Live Trading" 
+    : "Yes, Switch to Paper Trading";
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Confirm Trading Mode Change
+            {dialogTitle}
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            {targetMode === "live" 
-              ? `Are you sure you want to switch to live trading${brokerName ? ` with ${brokerName} broker` : ''}? This will use real funds for trading operations.`
-              : `Are you sure you want to switch to paper trading${brokerName ? ` with ${brokerName} broker` : ''}? This will use simulated funds for trading operations.`}
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">
@@ -54,7 +64,7 @@ export const TradingModeConfirmationDialog = ({
             variant={targetMode === "live" ? "destructive" : "cyan"}
             onClick={onConfirm}
           >
-            {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
+            {confirmButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>
