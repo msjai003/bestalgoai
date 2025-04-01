@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -94,41 +93,49 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
   percentValue?: string | number;
   isNegative?: boolean;
   tooltip?: string;
-}) => (
-  <Card className="bg-charcoalSecondary/50 border-gray-700">
-    <CardHeader className="pb-2">
-      <div className="flex items-center justify-between">
-        <CardTitle className="text-sm text-gray-400 flex items-center">
-          {label}
-          {tooltip && (
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 ml-1 text-gray-500" />
-                </TooltipTrigger>
-                <TooltipContent className="bg-charcoalPrimary border-gray-700 text-xs">
-                  {tooltip}
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-          )}
-        </CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="pt-0">
-      <div className="flex items-end">
-        <p className={`text-lg font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}`}>
-          {isNegative && value > 0 ? '-' : ''}{value}
-        </p>
-        {percentValue !== undefined && (
-          <p className={`text-sm ml-2 ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
-            ({isNegative && percentValue > 0 ? '-' : ''}{percentValue}%)
+}) => {
+  // Fix: Convert value and percentValue to numbers for comparison
+  const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^\d.-]/g, '')) || 0 : value;
+  const numPercentValue = percentValue !== undefined 
+    ? (typeof percentValue === 'string' ? parseFloat(percentValue.replace(/[^\d.-]/g, '')) || 0 : percentValue)
+    : 0;
+    
+  return (
+    <Card className="bg-charcoalSecondary/50 border-gray-700">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm text-gray-400 flex items-center">
+            {label}
+            {tooltip && (
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 ml-1 text-gray-500" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-charcoalPrimary border-gray-700 text-xs">
+                    {tooltip}
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            )}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex items-end">
+          <p className={`text-lg font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}`}>
+            {isNegative && numValue > 0 ? '-' : ''}{value}
           </p>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
+          {percentValue !== undefined && (
+            <p className={`text-sm ml-2 ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
+              ({isNegative && numPercentValue > 0 ? '-' : ''}{percentValue}%)
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ZenflowBacktestReport = () => {
   const { 
@@ -343,7 +350,6 @@ const ZenflowBacktestReport = () => {
                         fontSize: "12px"
                       }}
                     />
-                    {/* Only show the Total line with prominent styling */}
                     <Line
                       type="monotone"
                       dataKey="Total"
