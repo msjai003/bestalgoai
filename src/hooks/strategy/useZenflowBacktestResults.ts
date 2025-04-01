@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -28,8 +27,29 @@ export interface ZenflowBacktestResult {
   trend?: string;
 }
 
+export interface ZenflowStrategyData {
+  id: string;
+  year: number;
+  jan?: number;
+  feb?: number;
+  mar?: number;
+  apr?: number;
+  may?: number;
+  jun?: number;
+  jul?: number;
+  aug?: number;
+  sep?: number;
+  oct?: number;
+  nov?: number;
+  dec?: number;
+  total?: number;
+  max_drawdown?: number;
+  created_at?: string;
+}
+
 export const useZenflowBacktestResults = () => {
   const [zenflowResults, setZenflowResults] = useState<ZenflowBacktestResult[]>([]);
+  const [strategyData, setStrategyData] = useState<ZenflowStrategyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
@@ -40,9 +60,20 @@ export const useZenflowBacktestResults = () => {
       setLoading(true);
       setError(null);
       
-      // Since the strategy_first table has been removed, we're returning an empty array
-      // This prevents errors when trying to access a non-existent table
-      console.log("The strategy_first table has been removed. Returning empty results.");
+      // Fetch data from the new zenflow_strategy table
+      const { data, error } = await supabase
+        .from('zenflow_strategy')
+        .select('*')
+        .order('year', { ascending: true });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Set the strategy data
+      setStrategyData(data || []);
+      
+      // For backward compatibility, keeping the old array empty
       setZenflowResults([]);
       
     } catch (err) {
@@ -65,6 +96,7 @@ export const useZenflowBacktestResults = () => {
 
   return {
     zenflowResults,
+    strategyData,
     loading,
     error,
     fetchZenflowBacktestResults
