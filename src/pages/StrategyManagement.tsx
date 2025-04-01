@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -331,7 +332,8 @@ const StrategyManagement = () => {
     
     if (user) {
       try {
-        if (typeof currentStrategyId === 'string' || strategy.isCustom) {
+        if (typeof strategy.id === 'string' || strategy.isCustom) {
+          // Update custom strategy in custom_strategies table
           const { error } = await supabase
             .from('custom_strategies')
             .update({
@@ -342,15 +344,29 @@ const StrategyManagement = () => {
             
           if (error) throw error;
         } else {
-          const { error } = await supabase
+          // Find the exact record for this predefined strategy to update
+          const { data: selectionData, error: findError } = await supabase
             .from('strategy_selections')
-            .update({
-              trade_type: targetMode === "live" ? "live trade" : "paper trade"
-            })
-            .eq('strategy_id', currentStrategyId)
+            .select('id')
+            .eq('strategy_id', strategy.id)
             .eq('user_id', user.id);
-            
-          if (error) throw error;
+          
+          if (findError) throw findError;
+          
+          if (selectionData && selectionData.length > 0) {
+            // Update existing record for this strategy
+            const { error } = await supabase
+              .from('strategy_selections')
+              .update({
+                trade_type: targetMode === "live" ? "live trade" : "paper trade"
+              })
+              .eq('id', selectionData[0].id);
+              
+            if (error) throw error;
+          } else {
+            console.error("Could not find matching strategy selection record");
+            throw new Error("Strategy selection not found");
+          }
         }
       } catch (error) {
         console.error("Error updating strategy mode:", error);

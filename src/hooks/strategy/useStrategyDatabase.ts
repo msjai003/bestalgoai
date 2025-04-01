@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -50,6 +49,7 @@ export const updateStrategyLiveConfig = async (
 ) => {
   try {
     console.log("Updating strategy with trade type:", tradeType);
+    
     // If strategyName is empty, try to fetch it from existing record
     if (!strategyName || !strategyDescription) {
       const { data: existingStrategy, error: fetchError } = await supabase
@@ -70,13 +70,12 @@ export const updateStrategyLiveConfig = async (
       strategyName = `Strategy ${strategyId}`;
     }
 
-    // Check if record exists for this specific broker and strategy
+    // Check if record exists for this strategy
     const { data: existingRecords, error: checkError } = await supabase
       .from('strategy_selections')
       .select('id')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .eq('selected_broker', selectedBroker);
+      .eq('strategy_id', strategyId);
 
     if (checkError) {
       console.error("Error checking for existing records:", checkError);
@@ -85,14 +84,15 @@ export const updateStrategyLiveConfig = async (
 
     let result;
 
-    // Check if the record exists for this strategy and broker
+    // Check if the record exists for this strategy
     if (existingRecords && existingRecords.length > 0) {
-      // Update existing record for this specific broker
-      console.log("Updating existing strategy record for broker:", selectedBroker, "record ID:", existingRecords[0].id);
+      // Update existing record instead of creating a new one
+      console.log("Updating existing strategy record, record ID:", existingRecords[0].id);
       result = await supabase
         .from('strategy_selections')
         .update({
           quantity: quantity,
+          selected_broker: selectedBroker,
           broker_username: brokerUsername,
           trade_type: tradeType,  // This is where we update paper trade to live trade
           strategy_name: strategyName,
@@ -101,8 +101,8 @@ export const updateStrategyLiveConfig = async (
         .eq('id', existingRecords[0].id)
         .select();
     } else {
-      // Insert new record
-      console.log("Creating new strategy selection record for broker:", selectedBroker);
+      // Insert new record only if none exists for this strategy
+      console.log("Creating new strategy selection record for strategyId:", strategyId);
       result = await supabase
         .from('strategy_selections')
         .insert({

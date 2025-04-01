@@ -104,15 +104,36 @@ export const useLiveTrading = () => {
           
         if (error) throw error;
       } else if (currentStrategyId) {
-        // Update predefined strategy in strategy_selections table
-        await updateStrategyLiveConfig(
-          user.id,
-          currentStrategyId,
-          0, // Default quantity
-          "", // Default broker
-          "", // Default username
-          targetMode === "live" ? "live trade" : "paper trade"
-        );
+        // Find the exact record for this predefined strategy
+        const { data: existingRecord, error: findError } = await supabase
+          .from('strategy_selections')
+          .select('id')
+          .eq('strategy_id', currentStrategyId)
+          .eq('user_id', user.id);
+          
+        if (findError) throw findError;
+        
+        if (existingRecord && existingRecord.length > 0) {
+          // Update existing record by its row ID
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({
+              trade_type: targetMode === "live" ? "live trade" : "paper trade"
+            })
+            .eq('id', existingRecord[0].id);
+            
+          if (error) throw error;
+        } else {
+          // If no record exists, create one
+          await updateStrategyLiveConfig(
+            user.id,
+            currentStrategyId,
+            0, // Default quantity
+            "", // Default broker
+            "", // Default username
+            targetMode === "live" ? "live trade" : "paper trade"
+          );
+        }
       }
       
       // Update local state
