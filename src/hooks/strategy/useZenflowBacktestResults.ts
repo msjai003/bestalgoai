@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -90,7 +89,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const getMetricsTableNameForStrategy = (strategy: StrategyType): string => {
     switch (strategy) {
       case 'velox':
-        return 'velox_edge_metrics';
+        return 'zenflow_metrics';
       case 'zenflow':
       default:
         return 'zenflow_metrics';
@@ -102,11 +101,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     setError(null);
     
     try {
-      // Set the strategy type based on the input
       setStrategyType(strategy);
       
       if (strategy === 'nova' || strategy === 'evercrest' || strategy === 'apexflow') {
-        // For strategies without tables yet, show mock data
         setStrategyData(getMockDataForStrategy(strategy));
         setMetrics(getMockMetricsForStrategy(strategy));
         setLoading(false);
@@ -114,11 +111,9 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       }
       
       const tableName = getTableNameForStrategy(strategy);
-      const metricsTable = getMetricsTableNameForStrategy(strategy);
       
-      // Fetch strategy data
       const { data, error } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .select('*')
         .order('year', { ascending: true });
         
@@ -127,27 +122,29 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setError(error.message);
         toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
       } else {
-        // Cast the data to the correct type before setting it
         setStrategyData(data as StrategyDataRow[]);
       }
       
-      // Fetch metrics data
-      const { data: metricsData, error: metricsError } = await supabase
-        .from(metricsTable)
-        .select('*')
-        .limit(1)
-        .single();
-        
-      if (metricsError) {
-        console.error("Error fetching metrics data:", metricsError);
-        // If we have strategy data, don't show an error for metrics
-        if (!data) {
-          setError(metricsError.message);
-          toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
-        }
+      if (strategy === 'velox') {
+        setMetrics(getMockMetricsForStrategy('velox'));
       } else {
-        // Cast the metrics data to the correct type before setting it
-        setMetrics(metricsData as unknown as MetricsData);
+        const metricsTable = getMetricsTableNameForStrategy(strategy);
+        
+        const { data: metricsData, error: metricsError } = await supabase
+          .from(metricsTable as any)
+          .select('*')
+          .limit(1)
+          .single();
+          
+        if (metricsError) {
+          console.error("Error fetching metrics data:", metricsError);
+          if (!data) {
+            setError(metricsError.message);
+            toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
+          }
+        } else {
+          setMetrics(metricsData as unknown as MetricsData);
+        }
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);
@@ -172,7 +169,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   };
 };
 
-// Helper function to generate mock data for strategies without tables yet
 const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
   switch (strategy) {
     case 'nova':
@@ -294,9 +290,36 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
   }
 };
 
-// Helper function to generate mock metrics for strategies without tables yet
 const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
   switch (strategy) {
+    case 'velox':
+      return {
+        id: '1',
+        overall_profit: 592758.75,
+        overall_profit_percentage: 266.62,
+        number_of_trades: 1295,
+        win_percentage: 44.09,
+        loss_percentage: 55.91,
+        max_drawdown: -25942.5,
+        max_drawdown_percentage: -11.67,
+        avg_profit_per_trade: 457.73,
+        avg_profit_per_trade_percentage: 0.21,
+        max_profit_in_single_trade: 7323.75,
+        max_profit_in_single_trade_percentage: 3.29,
+        max_loss_in_single_trade: -4136.25,
+        max_loss_in_single_trade_percentage: -1.86,
+        avg_profit_on_winning_trades: 2853.84,
+        avg_profit_on_winning_trades_percentage: 1.28,
+        avg_loss_on_losing_trades: -1432.02,
+        avg_loss_on_losing_trades_percentage: -0.64,
+        reward_to_risk_ratio: 1.99,
+        max_win_streak: 7,
+        max_losing_streak: 10,
+        return_max_dd: 4.36,
+        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+        max_trades_in_drawdown: 70,
+        expectancy_ratio: 0.32
+      };
     case 'nova':
       return {
         id: '1',

@@ -1,4 +1,3 @@
-
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -198,53 +197,9 @@ serve(async (req) => {
         }
       );
     } else if (strategyType === 'velox') {
-      // For Velox Edge Strategy, update with the data from the image
+      // For Velox Edge Strategy, just fetch the existing data since the metrics table has been removed
       
-      // Update the metrics table with the data from the image
-      const veloxMetricsData = {
-        overall_profit: 592758.75,
-        overall_profit_percentage: 266.62,
-        number_of_trades: 1295,
-        win_percentage: 44.09,
-        loss_percentage: 55.91,
-        max_drawdown: -25942.5,
-        max_drawdown_percentage: -11.67,
-        avg_profit_per_trade: 457.73,
-        avg_profit_per_trade_percentage: 0.21,
-        max_profit_in_single_trade: 7323.75,
-        max_profit_in_single_trade_percentage: 3.29,
-        max_loss_in_single_trade: -4136.25,
-        max_loss_in_single_trade_percentage: -1.86,
-        avg_profit_on_winning_trades: 2853.84,
-        avg_profit_on_winning_trades_percentage: 1.28,
-        avg_loss_on_losing_trades: -1432.02,
-        avg_loss_on_losing_trades_percentage: -0.64,
-        reward_to_risk_ratio: 1.99,
-        max_win_streak: 7,
-        max_losing_streak: 10,
-        return_max_dd: 4.36,
-        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
-        max_trades_in_drawdown: 70,
-        expectancy_ratio: 0.32
-      };
-      
-      const { data: metricsUpdateData, error: metricsError } = await supabaseClient
-        .from('velox_edge_metrics')
-        .upsert([veloxMetricsData])
-        .select();
-        
-      if (metricsError) {
-        console.error("Error updating Velox Edge metrics:", metricsError);
-        return new Response(
-          JSON.stringify({ error: metricsError.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      // Fetch the metrics and data to return
+      // Fetch the velox data to return
       const { data: veloxData, error: dataError } = await supabaseClient
         .from('velox_edge_strategy')
         .select('*')
@@ -253,19 +208,19 @@ serve(async (req) => {
       if (dataError) {
         console.error("Error fetching Velox Edge data:", dataError);
         return new Response(
-          JSON.stringify({ error: dataError.message, metrics: metricsUpdateData }),
+          JSON.stringify({ error: dataError.message }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200 
+            status: 400 
           }
         );
       }
       
       return new Response(
         JSON.stringify({ 
-          message: "Velox Edge Strategy data updated successfully",
+          message: "Velox Edge Strategy data fetched successfully",
           data: veloxData,
-          metrics: metricsUpdateData
+          note: "The velox_edge_metrics table has been removed. Using mock metrics data on the client."
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
