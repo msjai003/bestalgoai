@@ -55,7 +55,7 @@ export type MetricsData = {
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
 // Define explicit table name types to satisfy TypeScript
-type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy';
+type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy' | 'evercrest_strategy';
 type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
@@ -87,6 +87,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return 'velox_edge_strategy';
       case 'nova':
         return 'novaglide_strategy';
+      case 'evercrest':
+        return 'evercrest_strategy';
       case 'zenflow':
       default:
         return 'zenflow_strategy';
@@ -112,16 +114,17 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     try {
       setStrategyType(strategy);
       
-      // For Evercrest and Apexflow strategies, we use mock data
-      if (strategy === 'evercrest' || strategy === 'apexflow') {
-        // Use mock data for these strategies
+      // For the Apexflow strategy, we use mock data
+      if (strategy === 'apexflow') {
+        // Use mock data for this strategy
         setStrategyData(getMockDataForStrategy(strategy));
         setMetrics(getMockMetricsForStrategy(strategy));
         setLoading(false);
         return;
       }
       
-      // For Zenflow, Velox, and Nova, proceed with database fetching
+      // For Evercrest, we've stored the data in the database, so we fetch it
+      // For Zenflow, Velox, Nova, and Evercrest, proceed with database fetching
       const tableName = getTableNameForStrategy(strategy);
       
       console.log(`Fetching strategy data from ${tableName} table for ${strategy} strategy...`);
@@ -141,32 +144,37 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
-      // Now fetch metrics for all strategies from their respective tables
-      const metricsTable = getMetricsTableNameForStrategy(strategy);
-      
-      try {
-        console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
+      // For Evercrest strategy, use mock metrics since we don't have a dedicated metrics table yet
+      if (strategy === 'evercrest') {
+        setMetrics(getMockMetricsForStrategy(strategy));
+      } else {
+        // Now fetch metrics for other strategies from their respective tables
+        const metricsTable = getMetricsTableNameForStrategy(strategy);
         
-        const { data: metricsData, error: metricsError } = await supabase
-          .from(metricsTable as any)
-          .select('*')
-          .limit(1);
+        try {
+          console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
           
-        if (metricsError) {
-          throw metricsError;
-        }
-        
-        if (metricsData && metricsData.length > 0) {
-          console.log(`Successfully fetched metrics for ${strategy}`);
-          setMetrics(metricsData[0] as unknown as MetricsData);
-        } else {
-          console.log(`No ${strategy} metrics found in DB, using mock data`);
+          const { data: metricsData, error: metricsError } = await supabase
+            .from(metricsTable as any)
+            .select('*')
+            .limit(1);
+            
+          if (metricsError) {
+            throw metricsError;
+          }
+          
+          if (metricsData && metricsData.length > 0) {
+            console.log(`Successfully fetched metrics for ${strategy}`);
+            setMetrics(metricsData[0] as unknown as MetricsData);
+          } else {
+            console.log(`No ${strategy} metrics found in DB, using mock data`);
+            setMetrics(getMockMetricsForStrategy(strategy));
+          }
+        } catch (metricsError: any) {
+          console.error(`Error fetching ${strategy} metrics data:`, metricsError);
+          console.log(`Error fetching ${strategy} metrics, using mock data`);
           setMetrics(getMockMetricsForStrategy(strategy));
         }
-      } catch (metricsError: any) {
-        console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-        console.log(`Error fetching ${strategy} metrics, using mock data`);
-        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error(`Unexpected error fetching ${strategy} data:`, err);
@@ -199,37 +207,44 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
         { 
           id: '1', 
           year: 2020, 
-          jan: 16500, feb: 5500, mar: 3300, apr: 21000, may: -2200, jun: 6600, 
-          jul: 19000, aug: 3300, sep: 8250, oct: 4400, nov: 2200, dec: 6600, 
-          total: 95000, max_drawdown: -11000 
+          jan: -3360, feb: 12438, mar: -44381, apr: 48423, may: 36948, jun: 30956, 
+          jul: 21467, aug: 14037, sep: 16367, oct: 37581, nov: 17568, dec: 187068, 
+          total: 375112, max_drawdown: -70140
         },
         { 
           id: '2', 
           year: 2021, 
-          jan: 24000, feb: 8800, mar: 11000, apr: 31000, may: 22000, jun: -4400, 
-          jul: 8800, aug: -1650, sep: 1100, oct: 16500, nov: 15000, dec: 27500, 
-          total: 160000, max_drawdown: -15500 
+          jan: -1923, feb: 75802, mar: -21258, apr: 29175, may: 8883, jun: 28027, 
+          jul: 16998, aug: 42135, sep: 38227, oct: 38868, nov: 6453, dec: -2636, 
+          total: 258753, max_drawdown: -30401 
         },
         { 
           id: '3', 
           year: 2022, 
-          jan: 1100, feb: 27500, mar: 15500, apr: -550, may: 33000, jun: 13200, 
-          jul: 5500, aug: 27500, sep: 13200, oct: 6600, nov: 6600, dec: 5000, 
-          total: 155000, max_drawdown: -11000 
+          jan: -18596, feb: 16271, mar: 63847, apr: -37428, may: -1766, jun: -18532, 
+          jul: 14370, aug: 21506, sep: -21911, oct: 5756, nov: 26452, dec: 15723, 
+          total: 65692, max_drawdown: -96693 
         },
         { 
           id: '4', 
           year: 2023, 
-          jan: 22000, feb: -2200, mar: 22000, apr: -3850, may: 3850, jun: 7700, 
-          jul: -1320, aug: -4400, sep: 3850, oct: 5500, nov: 2200, dec: -770, 
-          total: 55000, max_drawdown: -13200 
+          jan: -6251, feb: -2523, mar: 9933, apr: -5156, may: 20403, jun: 17703, 
+          jul: 10972, aug: 1083, sep: 31316, oct: -5838, nov: -1335, dec: 46185, 
+          total: 116493, max_drawdown: -24483 
         },
         { 
           id: '5', 
           year: 2024, 
-          jan: 31000, feb: 11000, mar: 20000, apr: -1100, may: 7700, jun: 4400, 
-          jul: 4400, aug: -11000, sep: -3300, oct: 16500, nov: -1650, dec: -1100, 
-          total: 76000, max_drawdown: -22000 
+          jan: 4057, feb: 16331, mar: -8070, apr: 21693, may: -3093, jun: 40608, 
+          jul: 23797, aug: 15390, sep: 2343, oct: -47400, nov: 53692, dec: 32362, 
+          total: 151713, max_drawdown: -71411 
+        },
+        {
+          id: '6',
+          year: 2025,
+          jan: -40695, feb: -16398, mar: -4406, apr: 0, may: 0, jun: 0,
+          jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0,
+          total: -51500, max_drawdown: -65422
         }
       ];
     case 'apexflow':
@@ -280,30 +295,30 @@ const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
     case 'evercrest':
       return {
         id: '1',
-        overall_profit: 541000,
-        overall_profit_percentage: 541.0,
-        number_of_trades: 260,
-        win_percentage: 71.5,
-        loss_percentage: 28.5,
-        max_drawdown: -22000,
-        max_drawdown_percentage: -22.0,
-        avg_profit_per_trade: 2080.77,
-        avg_profit_per_trade_percentage: 2.08,
-        max_profit_in_single_trade: 33000,
-        max_profit_in_single_trade_percentage: 33.0,
-        max_loss_in_single_trade: -11000,
-        max_loss_in_single_trade_percentage: -11.0,
-        avg_profit_on_winning_trades: 11000,
-        avg_profit_on_winning_trades_percentage: 11.0,
-        avg_loss_on_losing_trades: -4400,
-        avg_loss_on_losing_trades_percentage: -4.4,
-        reward_to_risk_ratio: 2.5,
-        max_win_streak: 7,
-        max_losing_streak: 3,
-        return_max_dd: 24.6,
-        drawdown_duration: "16 days",
-        max_trades_in_drawdown: 8,
-        expectancy_ratio: 6545.5
+        overall_profit: 916763,
+        overall_profit_percentage: 916.76,
+        number_of_trades: 312,
+        win_percentage: 63.78,
+        loss_percentage: 36.22,
+        max_drawdown: -96693,
+        max_drawdown_percentage: -96.69,
+        avg_profit_per_trade: 2939.63,
+        avg_profit_per_trade_percentage: 2.94,
+        max_profit_in_single_trade: 187068,
+        max_profit_in_single_trade_percentage: 187.07,
+        max_loss_in_single_trade: -47400,
+        max_loss_in_single_trade_percentage: -47.40,
+        avg_profit_on_winning_trades: 26528.73,
+        avg_profit_on_winning_trades_percentage: 26.53,
+        avg_loss_on_losing_trades: -15150.61,
+        avg_loss_on_losing_trades_percentage: -15.15,
+        reward_to_risk_ratio: 1.75,
+        max_win_streak: 9,
+        max_losing_streak: 5,
+        return_max_dd: 9.48,
+        drawdown_duration: "72 days",
+        max_trades_in_drawdown: 14,
+        expectancy_ratio: 3.21
       };
     case 'apexflow':
       return {

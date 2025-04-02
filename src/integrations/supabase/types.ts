@@ -387,6 +387,69 @@ export type Database = {
           },
         ]
       }
+      evercrest_strategy: {
+        Row: {
+          apr: number | null
+          aug: number | null
+          created_at: string | null
+          dec: number | null
+          feb: number | null
+          id: string
+          jan: number | null
+          jul: number | null
+          jun: number | null
+          mar: number | null
+          max_drawdown: number | null
+          may: number | null
+          nov: number | null
+          oct: number | null
+          sep: number | null
+          total: number | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          apr?: number | null
+          aug?: number | null
+          created_at?: string | null
+          dec?: number | null
+          feb?: number | null
+          id?: string
+          jan?: number | null
+          jul?: number | null
+          jun?: number | null
+          mar?: number | null
+          max_drawdown?: number | null
+          may?: number | null
+          nov?: number | null
+          oct?: number | null
+          sep?: number | null
+          total?: number | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          apr?: number | null
+          aug?: number | null
+          created_at?: string | null
+          dec?: number | null
+          feb?: number | null
+          id?: string
+          jan?: number | null
+          jul?: number | null
+          jun?: number | null
+          mar?: number | null
+          max_drawdown?: number | null
+          may?: number | null
+          nov?: number | null
+          oct?: number | null
+          sep?: number | null
+          total?: number | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       google_user_details: {
         Row: {
           created_at: string | null
