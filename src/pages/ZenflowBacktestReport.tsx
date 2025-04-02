@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ import {
 import { BottomNav } from "@/components/BottomNav";
 import { useZenflowBacktestResults, getStrategyDisplayName } from '@/hooks/strategy/useZenflowBacktestResults';
 import { toast } from "sonner";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -31,6 +30,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -40,51 +40,60 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p className="text-cyan font-medium mb-1">{`Year: ${data.year}`}</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
           <p className={`text-white ${data.Jan > 0 ? 'text-green-500' : data.Jan < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Jan:</span> {data.Jan}
+            <span className="text-gray-400">Jan:</span> {data.Jan?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Feb > 0 ? 'text-green-500' : data.Feb < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Feb:</span> {data.Feb}
+            <span className="text-gray-400">Feb:</span> {data.Feb?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Mar > 0 ? 'text-green-500' : data.Mar < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Mar:</span> {data.Mar}
+            <span className="text-gray-400">Mar:</span> {data.Mar?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Apr > 0 ? 'text-green-500' : data.Apr < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Apr:</span> {data.Apr}
+            <span className="text-gray-400">Apr:</span> {data.Apr?.toLocaleString()}
           </p>
           <p className={`text-white ${data.May > 0 ? 'text-green-500' : data.May < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">May:</span> {data.May}
+            <span className="text-gray-400">May:</span> {data.May?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Jun > 0 ? 'text-green-500' : data.Jun < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Jun:</span> {data.Jun}
+            <span className="text-gray-400">Jun:</span> {data.Jun?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Jul > 0 ? 'text-green-500' : data.Jul < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Jul:</span> {data.Jul}
+            <span className="text-gray-400">Jul:</span> {data.Jul?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Aug > 0 ? 'text-green-500' : data.Aug < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Aug:</span> {data.Aug}
+            <span className="text-gray-400">Aug:</span> {data.Aug?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Sep > 0 ? 'text-green-500' : data.Sep < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Sep:</span> {data.Sep}
+            <span className="text-gray-400">Sep:</span> {data.Sep?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Oct > 0 ? 'text-green-500' : data.Oct < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Oct:</span> {data.Oct}
+            <span className="text-gray-400">Oct:</span> {data.Oct?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Nov > 0 ? 'text-green-500' : data.Nov < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Nov:</span> {data.Nov}
+            <span className="text-gray-400">Nov:</span> {data.Nov?.toLocaleString()}
           </p>
           <p className={`text-white ${data.Dec > 0 ? 'text-green-500' : data.Dec < 0 ? 'text-red-500' : ''}`}>
-            <span className="text-gray-400">Dec:</span> {data.Dec}
+            <span className="text-gray-400">Dec:</span> {data.Dec?.toLocaleString()}
           </p>
         </div>
         <div className="mt-2 pt-2 border-t border-gray-700">
           <p className={`font-medium ${data.Total > 0 ? 'text-green-500' : data.Total < 0 ? 'text-red-500' : 'text-white'}`}>
-            <span className="text-cyan">Total:</span> {data.Total}
+            <span className="text-cyan">Total:</span> {data.Total?.toLocaleString()}
           </p>
         </div>
       </div>
     );
   }
   return null;
+};
+
+const formatYAxisTick = (value: number) => {
+  if (Math.abs(value) >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  } else if (Math.abs(value) >= 1000) {
+    return `${(value / 1000).toFixed(0)}K`;
+  }
+  return value;
 };
 
 const StatCard = ({ label, value, percentValue, isNegative, tooltip }: { 
@@ -157,7 +166,6 @@ const ZenflowBacktestReport = () => {
     fetchZenflowBacktestResults();
     console.log("Component mounted, fetching data for strategy:", strategyParam);
     
-    // Add refresh interval for real-time updates - update every 30 seconds
     const refreshInterval = setInterval(() => {
       fetchZenflowBacktestResults();
       console.log("Refreshing data for strategy:", strategyParam);
@@ -250,6 +258,22 @@ const ZenflowBacktestReport = () => {
 
   const isEmptyMetrics = strategyType === 'velox' && 
     (!metrics || Object.keys(metrics).length === 0 || !metrics.overall_profit);
+
+  const getStrategyColor = () => {
+    switch (strategyType) {
+      case 'nova':
+        return "#a855f7";
+      case 'velox':
+        return "#3b82f6";
+      case 'evercrest':
+        return "#10b981";
+      case 'apexflow':
+        return "#f59e0b";
+      case 'zenflow':
+      default:
+        return "#00BCD4";
+    }
+  };
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
@@ -386,7 +410,7 @@ const ZenflowBacktestReport = () => {
                         margin={{
                           top: 20,
                           right: 30,
-                          left: 20,
+                          left: 12,
                           bottom: 20,
                         }}
                       >
@@ -400,10 +424,12 @@ const ZenflowBacktestReport = () => {
                         />
                         <YAxis 
                           stroke="#888" 
-                          tick={{ fill: '#B0B0B0' }}
+                          tick={{ fill: '#B0B0B0', fontSize: 11 }}
                           axisLine={{ stroke: '#555' }}
                           tickLine={{ stroke: '#555' }}
-                          width={40}
+                          tickFormatter={formatYAxisTick}
+                          width={45}
+                          padding={{ top: 15, bottom: 15 }}
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend 
@@ -419,10 +445,10 @@ const ZenflowBacktestReport = () => {
                           type="monotone"
                           dataKey="Total"
                           name="Total"
-                          stroke={strategyType === 'nova' ? "#a855f7" : "#00BCD4"}
+                          stroke={getStrategyColor()}
                           strokeWidth={3}
-                          dot={{ r: 6, fill: strategyType === 'nova' ? "#a855f7" : "#00BCD4", stroke: strategyType === 'nova' ? "#a855f7" : "#00BCD4" }}
-                          activeDot={{ r: 8, stroke: strategyType === 'nova' ? "#a855f7" : "#00BCD4", strokeWidth: 2 }}
+                          dot={{ r: 6, fill: getStrategyColor(), stroke: getStrategyColor() }}
+                          activeDot={{ r: 8, stroke: getStrategyColor(), strokeWidth: 2 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
