@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -79,17 +80,19 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const [error, setError] = useState<string | null>(null);
   const [strategyType, setStrategyType] = useState<StrategyType>(strategy);
   
-  const getTableNameForStrategy = (strategy: StrategyType): StrategyTable => {
+  const getTableNameForStrategy = (strategy: StrategyType): string => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_strategy';
+      case 'nova':
+        return 'novaglide_strategy';
       case 'zenflow':
       default:
         return 'zenflow_strategy';
     }
   };
   
-  const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTable => {
+  const getMetricsTableNameForStrategy = (strategy: StrategyType): string => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_metrics';
@@ -106,8 +109,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     try {
       setStrategyType(strategy);
       
-      // For Nova, Evercrest and Apexflow strategies, we use mock data
-      if (strategy === 'nova' || strategy === 'evercrest' || strategy === 'apexflow') {
+      // For Evercrest and Apexflow strategies, we use mock data
+      if (strategy === 'evercrest' || strategy === 'apexflow') {
         // Use mock data for these strategies
         setStrategyData(getMockDataForStrategy(strategy));
         setMetrics(getMockMetricsForStrategy(strategy));
@@ -115,7 +118,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return;
       }
       
-      // For Zenflow and Velox, proceed with database fetching
+      // For Zenflow, Velox, and Nova, proceed with database fetching
       const tableName = getTableNameForStrategy(strategy);
       
       const { data, error } = await supabase
@@ -131,29 +134,34 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
-      const metricsTable = getMetricsTableNameForStrategy(strategy);
-      
-      try {
-        const { data: metricsData, error: metricsError } = await supabase
-          .from(metricsTable)
-          .select('*')
-          .limit(1);
-          
-        if (metricsError) {
-          throw metricsError;
-        }
+      // For Nova, we don't have a metrics table yet, use mock metrics
+      if (strategy === 'nova') {
+        setMetrics(getMockMetricsForStrategy(strategy));
+      } else {
+        const metricsTable = getMetricsTableNameForStrategy(strategy);
         
-        if (metricsData && metricsData.length > 0) {
-          setMetrics(metricsData[0] as unknown as MetricsData);
-          console.log(`${strategy} metrics loaded from DB:`, metricsData[0]);
-        } else {
-          console.log(`No ${strategy} metrics found in DB`);
+        try {
+          const { data: metricsData, error: metricsError } = await supabase
+            .from(metricsTable)
+            .select('*')
+            .limit(1);
+            
+          if (metricsError) {
+            throw metricsError;
+          }
+          
+          if (metricsData && metricsData.length > 0) {
+            setMetrics(metricsData[0] as unknown as MetricsData);
+            console.log(`${strategy} metrics loaded from DB:`, metricsData[0]);
+          } else {
+            console.log(`No ${strategy} metrics found in DB`);
+            setMetrics(getMockMetricsForStrategy(strategy));
+          }
+        } catch (metricsError: any) {
+          console.error(`Error fetching ${strategy} metrics data:`, metricsError);
+          console.log(`Error fetching ${strategy} metrics, using mock data`);
           setMetrics(getMockMetricsForStrategy(strategy));
         }
-      } catch (metricsError: any) {
-        console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-        console.log(`Error fetching ${strategy} metrics, using mock data`);
-        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);

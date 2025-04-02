@@ -1,4 +1,3 @@
-
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -386,6 +385,58 @@ serve(async (req) => {
         }
       );
     }
+    else if (strategyType === 'nova') {
+      // For Nova Glide Strategy, check if there's any data already
+      const { data: novaCheckData, error: novaCheckError } = await supabaseClient
+        .from('novaglide_strategy')
+        .select('id')
+        .limit(1);
+        
+      if (novaCheckError) {
+        console.error("Error checking Nova Glide data:", novaCheckError);
+        return new Response(
+          JSON.stringify({ error: novaCheckError.message }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400 
+          }
+        );
+      }
+      
+      // If no data exists, we don't need to do anything as data was already inserted via SQL
+      
+      // Fetch the complete nova strategy data to return
+      const { data: novaData, error: fetchError } = await supabaseClient
+        .from('novaglide_strategy')
+        .select('*')
+        .order('year', { ascending: true });
+        
+      if (fetchError) {
+        console.error("Error fetching Nova Glide data:", fetchError);
+        return new Response(
+          JSON.stringify({ 
+            message: "Failed to fetch strategy data",
+            error: fetchError.message
+          }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200 
+          }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          message: "Nova Glide Strategy data updated successfully",
+          data: novaData,
+          metrics: getMockNovaMetrics()
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
+    }
     
     return new Response(
       JSON.stringify({ 
@@ -409,3 +460,34 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to get mock Nova metrics
+function getMockNovaMetrics() {
+  return {
+    id: '1',
+    overall_profit: 455000,
+    overall_profit_percentage: 455.0,
+    number_of_trades: 240,
+    win_percentage: 70.5,
+    loss_percentage: 29.5,
+    max_drawdown: -18500,
+    max_drawdown_percentage: -18.5,
+    avg_profit_per_trade: 1895.83,
+    avg_profit_per_trade_percentage: 1.90,
+    max_profit_in_single_trade: 28000,
+    max_profit_in_single_trade_percentage: 28.0,
+    max_loss_in_single_trade: -9300,
+    max_loss_in_single_trade_percentage: -9.3,
+    avg_profit_on_winning_trades: 9500,
+    avg_profit_on_winning_trades_percentage: 9.5,
+    avg_loss_on_losing_trades: -3800,
+    avg_loss_on_losing_trades_percentage: -3.8,
+    reward_to_risk_ratio: 2.5,
+    max_win_streak: 8,
+    max_losing_streak: 3,
+    return_max_dd: 24.6,
+    drawdown_duration: "18 days",
+    max_trades_in_drawdown: 7,
+    expectancy_ratio: 5507.5
+  };
+}
