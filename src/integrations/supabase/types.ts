@@ -133,10 +133,9 @@ export type Database = {
         Row: {
           apr: number | null
           aug: number | null
-          created_at: string | null
           dec: number | null
           feb: number | null
-          id: string
+          id: number
           jan: number | null
           jul: number | null
           jun: number | null
@@ -147,16 +146,14 @@ export type Database = {
           oct: number | null
           sep: number | null
           total: number | null
-          updated_at: string | null
           year: number
         }
         Insert: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -167,16 +164,14 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year: number
         }
         Update: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -187,7 +182,6 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year?: number
         }
         Relationships: []
@@ -628,10 +622,9 @@ export type Database = {
         Row: {
           apr: number | null
           aug: number | null
-          created_at: string | null
           dec: number | null
           feb: number | null
-          id: string
+          id: number
           jan: number | null
           jul: number | null
           jun: number | null
@@ -642,16 +635,14 @@ export type Database = {
           oct: number | null
           sep: number | null
           total: number | null
-          updated_at: string | null
           year: number
         }
         Insert: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -662,16 +653,14 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year: number
         }
         Update: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -682,7 +671,6 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year?: number
         }
         Relationships: []
@@ -820,10 +808,9 @@ export type Database = {
         Row: {
           apr: number | null
           aug: number | null
-          created_at: string | null
           dec: number | null
           feb: number | null
-          id: string
+          id: number
           jan: number | null
           jul: number | null
           jun: number | null
@@ -834,16 +821,14 @@ export type Database = {
           oct: number | null
           sep: number | null
           total: number | null
-          updated_at: string | null
           year: number
         }
         Insert: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -854,16 +839,14 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year: number
         }
         Update: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -874,7 +857,6 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year?: number
         }
         Relationships: []
@@ -1420,10 +1402,9 @@ export type Database = {
         Row: {
           apr: number | null
           aug: number | null
-          created_at: string | null
           dec: number | null
           feb: number | null
-          id: string
+          id: number
           jan: number | null
           jul: number | null
           jun: number | null
@@ -1434,16 +1415,14 @@ export type Database = {
           oct: number | null
           sep: number | null
           total: number | null
-          updated_at: string | null
           year: number
         }
         Insert: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -1454,16 +1433,14 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year: number
         }
         Update: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -1474,7 +1451,6 @@ export type Database = {
           oct?: number | null
           sep?: number | null
           total?: number | null
-          updated_at?: string | null
           year?: number
         }
         Relationships: []
@@ -1603,7 +1579,6 @@ export type Database = {
         Row: {
           apr: number | null
           aug: number | null
-          created_at: string | null
           dec: number | null
           feb: number | null
           id: number
@@ -1622,7 +1597,6 @@ export type Database = {
         Insert: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
           id?: number
@@ -1641,7 +1615,6 @@ export type Database = {
         Update: {
           apr?: number | null
           aug?: number | null
-          created_at?: string | null
           dec?: number | null
           feb?: number | null
           id?: number
