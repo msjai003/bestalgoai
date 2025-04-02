@@ -114,7 +114,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       const tableName = getTableNameForStrategy(strategy);
       
       const { data, error } = await supabase
-        .from(tableName as any)
+        .from(tableName)
         .select('*')
         .order('year', { ascending: true });
         
@@ -123,28 +123,44 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setError(error.message);
         toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
       } else {
-        setStrategyData(data as StrategyDataRow[]);
+        // Fix: Ensure the data is cast to the correct type
+        setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
       const metricsTable = getMetricsTableNameForStrategy(strategy);
       
-      const { data: metricsData, error: metricsError } = await supabase
-        .from(metricsTable as any)
-        .select('*')
-        .limit(1)
-        .single();
+      try {
+        // Using try-catch to handle the specific error when no data is found
+        const { data: metricsData, error: metricsError } = await supabase
+          .from(metricsTable)
+          .select('*')
+          .limit(1);
+          
+        if (metricsError) {
+          throw metricsError;
+        }
         
-      if (metricsError) {
+        if (metricsData && metricsData.length > 0) {
+          setMetrics(metricsData[0] as unknown as MetricsData);
+        } else {
+          // If no data is found in the veloxedge_metrics table, use mock data
+          if (strategy === 'velox') {
+            console.log("No Velox metrics found in DB, using mock data");
+            setMetrics(getMockMetricsForStrategy('velox'));
+          } else {
+            setError("No metrics data found");
+          }
+        }
+      } catch (metricsError: any) {
         console.error("Error fetching metrics data:", metricsError);
         if (strategy === 'velox') {
           // Fallback to mock data if database fetch fails
+          console.log("Error fetching Velox metrics, using mock data");
           setMetrics(getMockMetricsForStrategy('velox'));
-        } else if (!data) {
+        } else {
           setError(metricsError.message);
           toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
         }
-      } else {
-        setMetrics(metricsData as unknown as MetricsData);
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);

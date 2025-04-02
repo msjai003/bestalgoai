@@ -217,12 +217,82 @@ serve(async (req) => {
         );
       }
       
-      // Fetch the velox metrics data
+      // Check if there's any data in the veloxedge_metrics table
+      const { data: existingMetrics, error: checkError } = await supabaseClient
+        .from('veloxedge_metrics')
+        .select('id')
+        .limit(1);
+        
+      // If the metrics table is empty, insert the mock metrics
+      if (!existingMetrics || existingMetrics.length === 0 || checkError) {
+        console.log("No existing Velox Edge metrics found, creating default metrics");
+        
+        // Insert mock metrics data
+        const mockMetricsData = {
+          overall_profit: 592758.75,
+          overall_profit_percentage: 266.62,
+          number_of_trades: 1295,
+          win_percentage: 44.09,
+          loss_percentage: 55.91,
+          max_drawdown: -25942.5,
+          max_drawdown_percentage: -11.67,
+          avg_profit_per_trade: 457.73,
+          avg_profit_per_trade_percentage: 0.21,
+          max_profit_in_single_trade: 7323.75,
+          max_profit_in_single_trade_percentage: 3.29,
+          max_loss_in_single_trade: -4136.25,
+          max_loss_in_single_trade_percentage: -1.86,
+          avg_profit_on_winning_trades: 2853.84,
+          avg_profit_on_winning_trades_percentage: 1.28,
+          avg_loss_on_losing_trades: -1432.02,
+          avg_loss_on_losing_trades_percentage: -0.64,
+          reward_to_risk_ratio: 1.99,
+          max_win_streak: 7,
+          max_losing_streak: 10,
+          return_max_dd: 4.36,
+          drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+          max_trades_in_drawdown: 70,
+          expectancy_ratio: 0.32
+        };
+        
+        const { data: insertedData, error: insertError } = await supabaseClient
+          .from('veloxedge_metrics')
+          .insert([mockMetricsData])
+          .select();
+          
+        if (insertError) {
+          console.error("Error inserting mock Velox Edge metrics:", insertError);
+          return new Response(
+            JSON.stringify({ 
+              message: "Velox Edge Strategy data fetched, but failed to create metrics",
+              data: veloxData,
+              error: insertError.message
+            }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200 
+            }
+          );
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            message: "Velox Edge Strategy data fetched and default metrics created",
+            data: veloxData,
+            metrics: insertedData[0]
+          }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200 
+          }
+        );
+      }
+      
+      // If metrics exist, fetch them
       const { data: metricsData, error: metricsError } = await supabaseClient
         .from('veloxedge_metrics')
         .select('*')
-        .limit(1)
-        .single();
+        .limit(1);
         
       if (metricsError) {
         console.error("Error fetching Velox Edge metrics:", metricsError);
@@ -243,7 +313,7 @@ serve(async (req) => {
         JSON.stringify({ 
           message: "Velox Edge Strategy data and metrics fetched successfully",
           data: veloxData,
-          metrics: metricsData
+          metrics: metricsData && metricsData.length > 0 ? metricsData[0] : null
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },

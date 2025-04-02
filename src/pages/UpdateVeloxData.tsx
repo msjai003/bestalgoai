@@ -36,7 +36,7 @@ const UpdateVeloxData = () => {
       
       <div className="mb-6">
         <p className="text-gray-400 mb-4">
-          The Velox Edge metrics are now stored in the veloxedge_metrics table in the database.
+          The Velox Edge metrics are stored in the veloxedge_metrics table in the database.
           Use this button to update or refresh the Velox Edge data.
         </p>
         
