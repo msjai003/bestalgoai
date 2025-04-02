@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -239,7 +238,9 @@ const ZenflowBacktestReport = () => {
     return `₹${Math.abs(value).toLocaleString('en-IN')}`;
   };
 
-  // Main rendering logic stays the same, but we need to update all property references to use snake_case
+  const isEmptyMetrics = strategyType === 'velox' && 
+    (!metrics || Object.keys(metrics).length === 0 || !metrics.overall_profit);
+
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
@@ -438,6 +439,20 @@ const ZenflowBacktestReport = () => {
                   <div className="flex justify-center items-center h-40">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
                   </div>
+                ) : isEmptyMetrics ? (
+                  <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
+                    <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
+                    <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleRefresh}
+                      className="mt-4"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
@@ -525,6 +540,20 @@ const ZenflowBacktestReport = () => {
             {loading ? (
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
+              </div>
+            ) : isEmptyMetrics ? (
+              <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
+                <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
+                <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  className="mt-4"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
               </div>
             ) : (
               <>

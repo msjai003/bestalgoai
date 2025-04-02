@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -143,17 +144,34 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         }
         
         if (metricsData && metricsData.length > 0) {
-          setMetrics(metricsData[0] as unknown as MetricsData);
+          if (strategy === 'velox') {
+            // For Velox Edge strategy, show empty metrics in UI
+            setMetrics({} as MetricsData);
+            console.log("Velox metrics found in DB, but showing empty metrics in UI as requested");
+          } else {
+            setMetrics(metricsData[0] as unknown as MetricsData);
+          }
         } else {
-          // If no data is found in the metrics table, use mock data
-          console.log(`No ${strategy} metrics found in DB, using mock data`);
-          setMetrics(getMockMetricsForStrategy(strategy));
+          // If no data is found in the metrics table
+          console.log(`No ${strategy} metrics found in DB`);
+          if (strategy === 'velox') {
+            // For Velox, show empty metrics
+            setMetrics({} as MetricsData);
+          } else {
+            // For other strategies, use mock data
+            setMetrics(getMockMetricsForStrategy(strategy));
+          }
         }
       } catch (metricsError: any) {
         console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-        // Fallback to mock data if database fetch fails
-        console.log(`Error fetching ${strategy} metrics, using mock data`);
-        setMetrics(getMockMetricsForStrategy(strategy));
+        // For Velox Edge, don't use mock data as fallback, show empty metrics
+        if (strategy === 'velox') {
+          setMetrics({} as MetricsData);
+        } else {
+          // For other strategies, use mock data as fallback
+          console.log(`Error fetching ${strategy} metrics, using mock data`);
+          setMetrics(getMockMetricsForStrategy(strategy));
+        }
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);
