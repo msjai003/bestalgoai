@@ -127,7 +127,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setError(error.message);
         toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
       } else {
-        setStrategyData(data || []);
+        // Cast the data to the correct type before setting it
+        setStrategyData(data as StrategyDataRow[]);
       }
       
       // Fetch metrics data
@@ -145,7 +146,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
           toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
         }
       } else {
-        setMetrics(metricsData);
+        // Cast the metrics data to the correct type before setting it
+        setMetrics(metricsData as unknown as MetricsData);
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);

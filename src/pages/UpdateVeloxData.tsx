@@ -1,112 +1,57 @@
 
 import React, { useState } from 'react';
-import { Link, useSearchParams } from "react-router-dom";
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, RefreshCw } from "lucide-react";
-import { BottomNav } from "@/components/BottomNav";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 const UpdateVeloxData = () => {
-  const [searchParams] = useSearchParams();
-  const strategyType = searchParams.get('strategy') || 'zenflow';
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string>('');
-  const { toast } = useToast();
-
-  const getStrategyDisplayName = (strategy: string): string => {
-    switch (strategy) {
-      case 'velox':
-        return 'Velox Edge';
-      case 'zenflow':
-      default:
-        return 'Zenflow';
-    }
-  };
-
+  
   const updateVeloxData = async () => {
     setLoading(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('update-velox-data', {
-        body: { strategy: strategyType }
+        body: { strategy: 'velox' },
       });
       
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        setResult(JSON.stringify(error, null, 2));
-      } else {
-        toast({
-          title: "Success",
-          description: `${getStrategyDisplayName(strategyType)} Strategy data updated successfully`,
-        });
-        setResult(JSON.stringify(data, null, 2));
+        throw error;
       }
-    } catch (err) {
-      console.error("Error updating data:", err);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-      setResult(JSON.stringify(err, null, 2));
+      
+      toast.success('Velox Edge data updated successfully');
+      console.log('Update result:', data);
+    } catch (error: any) {
+      toast.error(`Error updating data: ${error.message}`);
+      console.error('Error updating data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
-      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
-        <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/zenflow-backtest" className="p-2">
-            <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
-          </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">
-            Update {getStrategyDisplayName(strategyType)} Data
-          </h1>
-          <div className="w-8"></div>
-        </div>
-      </header>
-
-      <main className="pt-20 pb-20 px-4">
-        <div className="flex flex-col items-center space-y-6">
-          <p className="text-white text-center">
-            This page will update the {getStrategyDisplayName(strategyType)} Strategy data in the database.
-          </p>
-          
-          <Button 
-            onClick={updateVeloxData} 
-            disabled={loading}
-            className="flex items-center gap-2"
-          >
-            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
-            {loading ? 'Updating Data...' : `Update ${getStrategyDisplayName(strategyType)} Data`}
-          </Button>
-          
-          {result && (
-            <div className="mt-6 w-full">
-              <h2 className="text-white font-medium mb-2">Result:</h2>
-              <pre className="bg-charcoalSecondary/50 p-4 rounded-lg text-xs text-gray-300 overflow-x-auto max-h-96 overflow-y-auto">
-                {result}
-              </pre>
-            </div>
-          )}
-          
-          <div className="flex justify-center mt-6">
-            <Link to={`/zenflow-backtest-report?strategy=${strategyType}`}>
-              <Button variant="outline">
-                View {getStrategyDisplayName(strategyType)} Strategy Report
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </main>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Update Velox Edge Strategy Data</h1>
       
-      <BottomNav />
+      <div className="mb-6">
+        <p className="text-gray-400 mb-4">
+          Click the button below to update the Velox Edge Strategy data in the database.
+        </p>
+        
+        <Button 
+          onClick={updateVeloxData}
+          disabled={loading}
+        >
+          {loading ? 'Updating...' : 'Update Velox Edge Data'}
+        </Button>
+      </div>
+      
+      <div className="mt-6">
+        <Link to="/zenflow-backtest-report?strategy=velox" className="text-cyan underline">
+          View Velox Edge Strategy Report
+        </Link>
+      </div>
     </div>
   );
 };
