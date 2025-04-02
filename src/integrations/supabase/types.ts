@@ -870,96 +870,6 @@ export type Database = {
         }
         Relationships: []
       }
-      velox_edge_metrics: {
-        Row: {
-          avg_loss_on_losing_trades: number | null
-          avg_loss_on_losing_trades_percentage: number | null
-          avg_profit_on_winning_trades: number | null
-          avg_profit_on_winning_trades_percentage: number | null
-          avg_profit_per_trade: number | null
-          avg_profit_per_trade_percentage: number | null
-          created_at: string | null
-          drawdown_duration: string | null
-          expectancy_ratio: number | null
-          id: string
-          loss_percentage: number | null
-          max_drawdown: number | null
-          max_drawdown_percentage: number | null
-          max_losing_streak: number | null
-          max_loss_in_single_trade: number | null
-          max_loss_in_single_trade_percentage: number | null
-          max_profit_in_single_trade: number | null
-          max_profit_in_single_trade_percentage: number | null
-          max_trades_in_drawdown: number | null
-          max_win_streak: number | null
-          number_of_trades: number | null
-          overall_profit: number | null
-          overall_profit_percentage: number | null
-          return_max_dd: number | null
-          reward_to_risk_ratio: number | null
-          updated_at: string | null
-          win_percentage: number | null
-        }
-        Insert: {
-          avg_loss_on_losing_trades?: number | null
-          avg_loss_on_losing_trades_percentage?: number | null
-          avg_profit_on_winning_trades?: number | null
-          avg_profit_on_winning_trades_percentage?: number | null
-          avg_profit_per_trade?: number | null
-          avg_profit_per_trade_percentage?: number | null
-          created_at?: string | null
-          drawdown_duration?: string | null
-          expectancy_ratio?: number | null
-          id?: string
-          loss_percentage?: number | null
-          max_drawdown?: number | null
-          max_drawdown_percentage?: number | null
-          max_losing_streak?: number | null
-          max_loss_in_single_trade?: number | null
-          max_loss_in_single_trade_percentage?: number | null
-          max_profit_in_single_trade?: number | null
-          max_profit_in_single_trade_percentage?: number | null
-          max_trades_in_drawdown?: number | null
-          max_win_streak?: number | null
-          number_of_trades?: number | null
-          overall_profit?: number | null
-          overall_profit_percentage?: number | null
-          return_max_dd?: number | null
-          reward_to_risk_ratio?: number | null
-          updated_at?: string | null
-          win_percentage?: number | null
-        }
-        Update: {
-          avg_loss_on_losing_trades?: number | null
-          avg_loss_on_losing_trades_percentage?: number | null
-          avg_profit_on_winning_trades?: number | null
-          avg_profit_on_winning_trades_percentage?: number | null
-          avg_profit_per_trade?: number | null
-          avg_profit_per_trade_percentage?: number | null
-          created_at?: string | null
-          drawdown_duration?: string | null
-          expectancy_ratio?: number | null
-          id?: string
-          loss_percentage?: number | null
-          max_drawdown?: number | null
-          max_drawdown_percentage?: number | null
-          max_losing_streak?: number | null
-          max_loss_in_single_trade?: number | null
-          max_loss_in_single_trade_percentage?: number | null
-          max_profit_in_single_trade?: number | null
-          max_profit_in_single_trade_percentage?: number | null
-          max_trades_in_drawdown?: number | null
-          max_win_streak?: number | null
-          number_of_trades?: number | null
-          overall_profit?: number | null
-          overall_profit_percentage?: number | null
-          return_max_dd?: number | null
-          reward_to_risk_ratio?: number | null
-          updated_at?: string | null
-          win_percentage?: number | null
-        }
-        Relationships: []
-      }
       velox_edge_strategy: {
         Row: {
           apr: number | null
@@ -1020,6 +930,96 @@ export type Database = {
           total?: number | null
           updated_at?: string | null
           year?: number
+        }
+        Relationships: []
+      }
+      veloxedge_metrics: {
+        Row: {
+          avg_loss_on_losing_trades: number
+          avg_loss_on_losing_trades_percentage: number
+          avg_profit_on_winning_trades: number
+          avg_profit_on_winning_trades_percentage: number
+          avg_profit_per_trade: number
+          avg_profit_per_trade_percentage: number
+          created_at: string
+          drawdown_duration: string
+          expectancy_ratio: number
+          id: string
+          loss_percentage: number
+          max_drawdown: number
+          max_drawdown_percentage: number
+          max_losing_streak: number
+          max_loss_in_single_trade: number
+          max_loss_in_single_trade_percentage: number
+          max_profit_in_single_trade: number
+          max_profit_in_single_trade_percentage: number
+          max_trades_in_drawdown: number
+          max_win_streak: number
+          number_of_trades: number
+          overall_profit: number
+          overall_profit_percentage: number
+          return_max_dd: number
+          reward_to_risk_ratio: number
+          updated_at: string
+          win_percentage: number
+        }
+        Insert: {
+          avg_loss_on_losing_trades: number
+          avg_loss_on_losing_trades_percentage: number
+          avg_profit_on_winning_trades: number
+          avg_profit_on_winning_trades_percentage: number
+          avg_profit_per_trade: number
+          avg_profit_per_trade_percentage: number
+          created_at?: string
+          drawdown_duration: string
+          expectancy_ratio: number
+          id?: string
+          loss_percentage: number
+          max_drawdown: number
+          max_drawdown_percentage: number
+          max_losing_streak: number
+          max_loss_in_single_trade: number
+          max_loss_in_single_trade_percentage: number
+          max_profit_in_single_trade: number
+          max_profit_in_single_trade_percentage: number
+          max_trades_in_drawdown: number
+          max_win_streak: number
+          number_of_trades: number
+          overall_profit: number
+          overall_profit_percentage: number
+          return_max_dd: number
+          reward_to_risk_ratio: number
+          updated_at?: string
+          win_percentage: number
+        }
+        Update: {
+          avg_loss_on_losing_trades?: number
+          avg_loss_on_losing_trades_percentage?: number
+          avg_profit_on_winning_trades?: number
+          avg_profit_on_winning_trades_percentage?: number
+          avg_profit_per_trade?: number
+          avg_profit_per_trade_percentage?: number
+          created_at?: string
+          drawdown_duration?: string
+          expectancy_ratio?: number
+          id?: string
+          loss_percentage?: number
+          max_drawdown?: number
+          max_drawdown_percentage?: number
+          max_losing_streak?: number
+          max_loss_in_single_trade?: number
+          max_loss_in_single_trade_percentage?: number
+          max_profit_in_single_trade?: number
+          max_profit_in_single_trade_percentage?: number
+          max_trades_in_drawdown?: number
+          max_win_streak?: number
+          number_of_trades?: number
+          overall_profit?: number
+          overall_profit_percentage?: number
+          return_max_dd?: number
+          reward_to_risk_ratio?: number
+          updated_at?: string
+          win_percentage?: number
         }
         Relationships: []
       }

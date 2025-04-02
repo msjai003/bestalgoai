@@ -36,8 +36,8 @@ const UpdateVeloxData = () => {
       
       <div className="mb-6">
         <p className="text-gray-400 mb-4">
-          Please note: The Velox Edge metrics table has been removed from the database.
-          The strategy data still exists but detailed metrics are no longer available.
+          The Velox Edge metrics are now stored in the veloxedge_metrics table in the database.
+          Use this button to update or refresh the Velox Edge data.
         </p>
         
         <Button 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -89,7 +90,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const getMetricsTableNameForStrategy = (strategy: StrategyType): string => {
     switch (strategy) {
       case 'velox':
-        return 'zenflow_metrics';
+        return 'veloxedge_metrics';
       case 'zenflow':
       default:
         return 'zenflow_metrics';
@@ -125,26 +126,25 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as StrategyDataRow[]);
       }
       
-      if (strategy === 'velox') {
-        setMetrics(getMockMetricsForStrategy('velox'));
-      } else {
-        const metricsTable = getMetricsTableNameForStrategy(strategy);
+      const metricsTable = getMetricsTableNameForStrategy(strategy);
+      
+      const { data: metricsData, error: metricsError } = await supabase
+        .from(metricsTable as any)
+        .select('*')
+        .limit(1)
+        .single();
         
-        const { data: metricsData, error: metricsError } = await supabase
-          .from(metricsTable as any)
-          .select('*')
-          .limit(1)
-          .single();
-          
-        if (metricsError) {
-          console.error("Error fetching metrics data:", metricsError);
-          if (!data) {
-            setError(metricsError.message);
-            toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
-          }
-        } else {
-          setMetrics(metricsData as unknown as MetricsData);
+      if (metricsError) {
+        console.error("Error fetching metrics data:", metricsError);
+        if (strategy === 'velox') {
+          // Fallback to mock data if database fetch fails
+          setMetrics(getMockMetricsForStrategy('velox'));
+        } else if (!data) {
+          setError(metricsError.message);
+          toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
         }
+      } else {
+        setMetrics(metricsData as unknown as MetricsData);
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);

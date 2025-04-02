@@ -1,3 +1,4 @@
+
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -197,9 +198,9 @@ serve(async (req) => {
         }
       );
     } else if (strategyType === 'velox') {
-      // For Velox Edge Strategy, just fetch the existing data since the metrics table has been removed
+      // For Velox Edge Strategy, fetch both strategy and metrics data
       
-      // Fetch the velox data to return
+      // Fetch the velox strategy data
       const { data: veloxData, error: dataError } = await supabaseClient
         .from('velox_edge_strategy')
         .select('*')
@@ -216,11 +217,33 @@ serve(async (req) => {
         );
       }
       
+      // Fetch the velox metrics data
+      const { data: metricsData, error: metricsError } = await supabaseClient
+        .from('veloxedge_metrics')
+        .select('*')
+        .limit(1)
+        .single();
+        
+      if (metricsError) {
+        console.error("Error fetching Velox Edge metrics:", metricsError);
+        return new Response(
+          JSON.stringify({ 
+            message: "Velox Edge Strategy data fetched successfully, but metrics failed",
+            data: veloxData,
+            error: metricsError.message
+          }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200 
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
-          message: "Velox Edge Strategy data fetched successfully",
+          message: "Velox Edge Strategy data and metrics fetched successfully",
           data: veloxData,
-          note: "The velox_edge_metrics table has been removed. Using mock metrics data on the client."
+          metrics: metricsData
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
