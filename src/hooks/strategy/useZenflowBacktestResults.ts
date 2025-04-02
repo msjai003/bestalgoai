@@ -54,7 +54,7 @@ export type MetricsData = {
 
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
-type StrategyTable = 'zenflow_strategy' | 'velox_edge_strategy';
+type StrategyTable = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy';
 type MetricsTable = 'zenflow_metrics' | 'velox_edge_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
@@ -80,7 +80,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const [error, setError] = useState<string | null>(null);
   const [strategyType, setStrategyType] = useState<StrategyType>(strategy);
   
-  const getTableNameForStrategy = (strategy: StrategyType): string => {
+  const getTableNameForStrategy = (strategy: StrategyType): StrategyTable => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_strategy';
@@ -92,7 +92,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     }
   };
   
-  const getMetricsTableNameForStrategy = (strategy: StrategyType): string => {
+  const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTable => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_metrics';

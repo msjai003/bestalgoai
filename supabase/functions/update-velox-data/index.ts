@@ -1,6 +1,6 @@
-// Supabase Edge Function to update Strategy data
-import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
+// Follow Deno deploy standard: https://deno.com/deploy/docs/typescript
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,486 +8,297 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  // Handle CORS preflight request
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
-  
+
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
+    // Create a Supabase client with the Auth context
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Extract the request body
+    const { strategy = 'velox' } = await req.json();
     
-    // Parse request to determine which strategy to update
-    const { strategy } = await req.json();
-    const strategyType = strategy || 'zenflow';
+    console.log(`Received request to update ${strategy} data`);
     
-    if (strategyType === 'zenflow') {
-      // Clear existing zenflow data for the years we're going to insert
-      await supabaseClient
-        .from('zenflow_strategy')
+    // Create sample data based on the strategy type
+    if (strategy === 'velox') {
+      // Generate new mock data for velox_edge_strategy
+      const mockStrategyData = [
+        {
+          year: 2020,
+          jan: 12000,
+          feb: 4000,
+          mar: 2500,
+          apr: 17000,
+          may: -1500,
+          jun: 5000,
+          jul: 15000,
+          aug: 2500,
+          sep: 6500,
+          oct: 3500,
+          nov: 1500,
+          dec: 5000,
+          total: 73000,
+          max_drawdown: -8000
+        },
+        {
+          year: 2021,
+          jan: 18000,
+          feb: 7000,
+          mar: 9000,
+          apr: 24000,
+          may: 17000,
+          jun: -3000,
+          jul: 7000,
+          aug: -1000,
+          sep: 800,
+          oct: 13000,
+          nov: 12000,
+          dec: 21000,
+          total: 125000,
+          max_drawdown: -12000
+        },
+        {
+          year: 2022,
+          jan: 800,
+          feb: 21000,
+          mar: 12000,
+          apr: -300,
+          may: 26000,
+          jun: 10000,
+          jul: 4200,
+          aug: 21000,
+          sep: 10000,
+          oct: 5000,
+          nov: 5000,
+          dec: 3800,
+          total: 118500,
+          max_drawdown: -8500
+        },
+        {
+          year: 2023,
+          jan: 17000,
+          feb: -1700,
+          mar: 17000,
+          apr: -2900,
+          may: 2900,
+          jun: 6000,
+          jul: -900,
+          aug: -3400,
+          sep: 2900,
+          oct: 4200,
+          nov: 1700,
+          dec: -600,
+          total: 42200,
+          max_drawdown: -10000
+        },
+        {
+          year: 2024,
+          jan: 24000,
+          feb: 8500,
+          mar: 15000,
+          apr: -800,
+          may: 6000,
+          jun: 3400,
+          jul: 3400,
+          aug: -8500,
+          sep: -2500,
+          oct: 13000,
+          nov: -1300,
+          dec: -800,
+          total: 59400,
+          max_drawdown: -17000
+        }
+      ];
+      
+      // Clear existing data
+      const { error: deleteError } = await supabase
+        .from('velox_edge_strategy')
         .delete()
-        .in('year', [2020, 2021, 2022, 2023, 2024, 2025]);
-      
-      // Insert sample data for Zenflow Strategy
-      const { data, error } = await supabaseClient
-        .from('zenflow_strategy')
-        .insert([
-          {
-            year: 2020,
-            jan: 15000,
-            feb: 5000,
-            mar: 3000,
-            apr: 20000,
-            may: -2000,
-            jun: 6000,
-            jul: 18000,
-            aug: 3000,
-            sep: 7500,
-            oct: 4000,
-            nov: 2000,
-            dec: 6000,
-            total: 87500,
-            max_drawdown: -10000
-          },
-          {
-            year: 2021,
-            jan: 22000,
-            feb: 8000,
-            mar: 10000,
-            apr: 28000,
-            may: 20000,
-            jun: -4000,
-            jul: 8000,
-            aug: -1500,
-            sep: 1000,
-            oct: 15000,
-            nov: 14000,
-            dec: 25000,
-            total: 145500,
-            max_drawdown: -14000
-          },
-          {
-            year: 2022,
-            jan: 1000,
-            feb: 25000,
-            mar: 14000,
-            apr: -500,
-            may: 30000,
-            jun: 12000,
-            jul: 5000,
-            aug: 25000,
-            sep: 12000,
-            oct: 6000,
-            nov: 6000,
-            dec: 4500,
-            total: 140000,
-            max_drawdown: -10000
-          },
-          {
-            year: 2023,
-            jan: 20000,
-            feb: -2000,
-            mar: 20000,
-            apr: -3500,
-            may: 3500,
-            jun: 7000,
-            jul: -1200,
-            aug: -4000,
-            sep: 3500,
-            oct: 5000,
-            nov: 2000,
-            dec: -700,
-            total: 49600,
-            max_drawdown: -12000
-          },
-          {
-            year: 2024,
-            jan: 28000,
-            feb: 10000,
-            mar: 18000,
-            apr: -1000,
-            may: 7000,
-            jun: 4000,
-            jul: 4000,
-            aug: -10000,
-            sep: -3000,
-            oct: 15000,
-            nov: -1500,
-            dec: -1000,
-            total: 69500,
-            max_drawdown: -20000
-          }
-        ]);
-      
-      if (error) {
-        console.error("Error inserting data:", error);
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
+        .neq('id', 0);
+        
+      if (deleteError) {
+        throw new Error(`Error clearing existing data: ${deleteError.message}`);
       }
       
-      // Update metrics for Zenflow Strategy
-      // Calculate key metrics based on the data
-      const totalProfit = 87500 + 145500 + 140000 + 49600 + 69500; // Sum of all yearly totals
-      const worstDrawdown = -20000; // Worst max drawdown
-      const initialCapital = 100000; // Assumed initial capital
+      // Insert new data
+      const { error: insertError } = await supabase
+        .from('velox_edge_strategy')
+        .insert(mockStrategyData);
+        
+      if (insertError) {
+        throw new Error(`Error inserting new data: ${insertError.message}`);
+      }
       
-      // Prepare metrics update
-      const metricsData = {
-        overall_profit: totalProfit,
-        overall_profit_percentage: parseFloat(((totalProfit / initialCapital) * 100).toFixed(2)),
-        number_of_trades: 250, // Estimated based on monthly data points
-        win_percentage: 72.5,
-        loss_percentage: 27.5,
-        max_drawdown: worstDrawdown,
-        max_drawdown_percentage: parseFloat(((worstDrawdown / initialCapital) * 100).toFixed(2)),
-        avg_profit_per_trade: parseFloat((totalProfit / 250).toFixed(2)),
-        avg_profit_per_trade_percentage: parseFloat(((totalProfit / 250 / initialCapital) * 100).toFixed(2)),
-        max_profit_in_single_trade: 30000, // Highest monthly value
-        max_profit_in_single_trade_percentage: parseFloat(((30000 / initialCapital) * 100).toFixed(2)),
-        max_loss_in_single_trade: -10000, // Lowest monthly value
-        max_loss_in_single_trade_percentage: parseFloat(((-10000 / initialCapital) * 100).toFixed(2)),
-        avg_profit_on_winning_trades: 10000,
-        avg_profit_on_winning_trades_percentage: parseFloat(((10000 / initialCapital) * 100).toFixed(2)),
-        avg_loss_on_losing_trades: -4000,
-        avg_loss_on_losing_trades_percentage: parseFloat(((-4000 / initialCapital) * 100).toFixed(2)),
-        reward_to_risk_ratio: parseFloat((10000 / 4000).toFixed(2)),
+      // Mock data for velox_edge_metrics
+      const mockMetricsData = {
+        overall_profit: 592758.75,
+        overall_profit_percentage: 266.62,
+        number_of_trades: 1295,
+        win_percentage: 44.09,
+        loss_percentage: 55.91,
+        max_drawdown: -25942.5,
+        max_drawdown_percentage: -11.67,
+        avg_profit_per_trade: 457.73,
+        avg_profit_per_trade_percentage: 0.21,
+        max_profit_in_single_trade: 7323.75,
+        max_profit_in_single_trade_percentage: 3.29,
+        max_loss_in_single_trade: -4136.25,
+        max_loss_in_single_trade_percentage: -1.86,
+        avg_profit_on_winning_trades: 2853.84,
+        avg_profit_on_winning_trades_percentage: 1.28,
+        avg_loss_on_losing_trades: -1432.02,
+        avg_loss_on_losing_trades_percentage: -0.64,
+        reward_to_risk_ratio: 1.99,
         max_win_streak: 7,
-        max_losing_streak: 3,
-        return_max_dd: parseFloat((totalProfit / Math.abs(worstDrawdown)).toFixed(2)),
-        drawdown_duration: "15 days",
-        max_trades_in_drawdown: 8,
-        expectancy_ratio: parseFloat((((72.5/100) * 10000) - ((27.5/100) * 4000)).toFixed(2))
+        max_losing_streak: 10,
+        return_max_dd: 4.36,
+        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+        max_trades_in_drawdown: 70,
+        expectancy_ratio: 0.32
       };
       
-      // Update the metrics table
-      const { data: metricsUpdateData, error: metricsError } = await supabaseClient
-        .from('zenflow_metrics')
-        .upsert([metricsData])
-        .select();
-      
-      if (metricsError) {
-        console.error("Error updating metrics:", metricsError);
-        return new Response(
-          JSON.stringify({ error: metricsError.message, data: data }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200 
-          }
-        );
+      // Clear existing metrics
+      const { error: deleteMetricsError } = await supabase
+        .from('velox_edge_metrics')
+        .delete()
+        .neq('id', 0);
+        
+      if (deleteMetricsError) {
+        throw new Error(`Error clearing existing metrics: ${deleteMetricsError.message}`);
       }
       
+      // Insert new metrics
+      const { error: insertMetricsError } = await supabase
+        .from('velox_edge_metrics')
+        .insert(mockMetricsData);
+        
+      if (insertMetricsError) {
+        throw new Error(`Error inserting new metrics: ${insertMetricsError.message}`);
+      }
+      
+      console.log("Velox Edge data update completed successfully");
+      
       return new Response(
-        JSON.stringify({ 
-          message: "Zenflow Strategy data updated successfully",
-          data: data,
-          metrics: metricsUpdateData
+        JSON.stringify({
+          success: true,
+          message: 'Velox Edge data updated successfully',
+          data: { strategy: 'velox' }
         }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200 
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          } 
         }
       );
-    } else if (strategyType === 'velox') {
-      // For Velox Edge Strategy, we only need to insert strategy data now
-      
-      // Check if there's any data already
-      const { data: veloxCheckData, error: veloxCheckError } = await supabaseClient
-        .from('velox_edge_strategy')
-        .select('id')
-        .limit(1);
-        
-      if (veloxCheckError) {
-        console.error("Error checking Velox Edge data:", veloxCheckError);
-        return new Response(
-          JSON.stringify({ error: veloxCheckError.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      // If no data exists, insert sample data
-      if (!veloxCheckData || veloxCheckData.length === 0) {
-        const veloxData = [
-          {
-            year: 2020,
-            jan: 18000,
-            feb: 6000,
-            mar: 3600,
-            apr: 24000,
-            may: -2400,
-            jun: 7200,
-            jul: 21600,
-            aug: 3600,
-            sep: 9000,
-            oct: 4800,
-            nov: 2400,
-            dec: 7200,
-            total: 105000,
-            max_drawdown: -12000
-          },
-          {
-            year: 2021,
-            jan: 26400,
-            feb: 9600,
-            mar: 12000,
-            apr: 33600,
-            may: 24000,
-            jun: -4800,
-            jul: 9600,
-            aug: -1800,
-            sep: 1200,
-            oct: 18000,
-            nov: 16800,
-            dec: 30000,
-            total: 174600,
-            max_drawdown: -16800
-          },
-          {
-            year: 2022,
-            jan: 1200,
-            feb: 30000,
-            mar: 16800,
-            apr: -600,
-            may: 36000,
-            jun: 14400,
-            jul: 6000,
-            aug: 30000,
-            sep: 14400,
-            oct: 7200,
-            nov: 7200,
-            dec: 5400,
-            total: 168000,
-            max_drawdown: -12000
-          },
-          {
-            year: 2023,
-            jan: 24000,
-            feb: -2400,
-            mar: 24000,
-            apr: -4200,
-            may: 4200,
-            jun: 8400,
-            jul: -1440,
-            aug: -4800,
-            sep: 4200,
-            oct: 6000,
-            nov: 2400,
-            dec: -840,
-            total: 59520,
-            max_drawdown: -14400
-          },
-          {
-            year: 2024,
-            jan: 33600,
-            feb: 12000,
-            mar: 21600,
-            apr: -1200,
-            may: 8400,
-            jun: 4800,
-            jul: 4800,
-            aug: -12000,
-            sep: -3600,
-            oct: 18000,
-            nov: -1800,
-            dec: -1200,
-            total: 83400,
-            max_drawdown: -24000
-          }
-        ];
-        
-        const { error: insertVeloxError } = await supabaseClient
-          .from('velox_edge_strategy')
-          .insert(veloxData);
-          
-        if (insertVeloxError) {
-          console.error("Error inserting Velox Edge strategy data:", insertVeloxError);
-          return new Response(
-            JSON.stringify({ error: insertVeloxError.message }),
-            { 
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 400 
-            }
-          );
+    } 
+    else if (strategy === 'nova') {
+      // Generate mock data for novaglide_strategy
+      const mockNovaData = [
+        { 
+          year: 2020, 
+          jan: 13000, feb: 4500, mar: 2800, apr: 18500, may: -1800, jun: 5500, 
+          jul: 16500, aug: 2800, sep: 7000, oct: 3800, nov: 1800, dec: 5500, 
+          total: 80000, max_drawdown: -9000 
+        },
+        { 
+          year: 2021, 
+          jan: 20000, feb: 7500, mar: 9500, apr: 26000, may: 18500, jun: -3600, 
+          jul: 7500, aug: -1400, sep: 900, oct: 14000, nov: 13000, dec: 23000, 
+          total: 135000, max_drawdown: -13000 
+        },
+        { 
+          year: 2022, 
+          jan: 900, feb: 23000, mar: 13000, apr: -400, may: 28000, jun: 11000, 
+          jul: 4600, aug: 23000, sep: 11000, oct: 5500, nov: 5500, dec: 4200, 
+          total: 130000, max_drawdown: -9500 
+        },
+        { 
+          year: 2023, 
+          jan: 18500, feb: -1900, mar: 18500, apr: -3200, may: 3200, jun: 6500, 
+          jul: -1000, aug: -3700, sep: 3200, oct: 4600, nov: 1900, dec: -650, 
+          total: 46000, max_drawdown: -11000 
+        },
+        { 
+          year: 2024, 
+          jan: 26000, feb: 9300, mar: 16500, apr: -900, may: 6500, jun: 3700, 
+          jul: 3700, aug: -9300, sep: -2700, oct: 14000, nov: -1400, dec: -900, 
+          total: 64000, max_drawdown: -18500 
         }
-        console.log("Successfully inserted Velox Edge strategy data");
-      }
+      ];
       
-      // Check for velox_edge_metrics and update if needed
-      const { data: metricsCheckData, error: metricsCheckError } = await supabaseClient
-        .from('velox_edge_metrics')
-        .select('id')
-        .limit(1);
-      
-      if (metricsCheckError) {
-        console.error("Error checking Velox Edge metrics:", metricsCheckError);
-        return new Response(
-          JSON.stringify({ error: metricsCheckError.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      // Update the metrics if they don't exist or need to be refreshed
-      // We simply upsert the data to ensure it's present
-      if (!metricsCheckData || metricsCheckData.length === 0) {
-        // The metrics should already exist from our SQL insertion, but just to be safe
-        console.log("No Velox Edge metrics found, they should have been added via SQL migration");
-      }
-      
-      // Fetch the complete velox strategy data to return
-      const { data: veloxData, error: fetchError } = await supabaseClient
-        .from('velox_edge_strategy')
-        .select('*')
-        .order('year', { ascending: true });
-      
-      // Fetch the metrics
-      const { data: veloxMetrics, error: metricsError } = await supabaseClient
-        .from('velox_edge_metrics')
-        .select('*')
-        .limit(1);
+      // Clear existing data
+      const { error: deleteError } = await supabase
+        .from('novaglide_strategy')
+        .delete()
+        .neq('id', 0);
         
-      if (fetchError || metricsError) {
-        console.error("Error fetching Velox Edge data:", fetchError || metricsError);
-        return new Response(
-          JSON.stringify({ 
-            message: "Failed to fetch strategy data",
-            error: (fetchError || metricsError)?.message
-          }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200 
-          }
-        );
+      if (deleteError) {
+        throw new Error(`Error clearing existing Nova data: ${deleteError.message}`);
       }
+      
+      // Insert new data
+      const { error: insertError } = await supabase
+        .from('novaglide_strategy')
+        .insert(mockNovaData);
+        
+      if (insertError) {
+        throw new Error(`Error inserting new Nova data: ${insertError.message}`);
+      }
+      
+      console.log("Nova Glide data update completed successfully");
       
       return new Response(
-        JSON.stringify({ 
-          message: "Velox Edge Strategy data updated successfully",
-          data: veloxData,
-          metrics: veloxMetrics ? veloxMetrics[0] : null
+        JSON.stringify({
+          success: true,
+          message: 'Nova Glide data updated successfully',
+          data: { strategy: 'nova' }
         }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200 
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          } 
         }
       );
     }
-    else if (strategyType === 'nova') {
-      // For Nova Glide Strategy, check if there's any data already
-      const { data: novaCheckData, error: novaCheckError } = await supabaseClient
-        .from('novaglide_strategy')
-        .select('id')
-        .limit(1);
-        
-      if (novaCheckError) {
-        console.error("Error checking Nova Glide data:", novaCheckError);
-        return new Response(
-          JSON.stringify({ error: novaCheckError.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      // If no data exists, we don't need to do anything as data was already inserted via SQL
-      
-      // Fetch the complete nova strategy data to return
-      const { data: novaData, error: fetchError } = await supabaseClient
-        .from('novaglide_strategy')
-        .select('*')
-        .order('year', { ascending: true });
-        
-      if (fetchError) {
-        console.error("Error fetching Nova Glide data:", fetchError);
-        return new Response(
-          JSON.stringify({ 
-            message: "Failed to fetch strategy data",
-            error: fetchError.message
-          }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200 
-          }
-        );
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          message: "Nova Glide Strategy data updated successfully",
-          data: novaData,
-          metrics: getMockNovaMetrics()
-        }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200 
-        }
-      );
+    else {
+      throw new Error(`Unsupported strategy type: ${strategy}`);
     }
+    
+    // Return a success response for other strategies
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `${strategy} data updated successfully` 
+      }),
+      { 
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        } 
+      }
+    );
+  } catch (error) {
+    console.error("Error:", error.message);
     
     return new Response(
       JSON.stringify({ 
-        message: "Invalid strategy type specified",
-        error: "Please specify a valid strategy type"
+        success: false, 
+        error: error.message 
       }),
       { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400 
-      }
-    );
-    
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({ error: "An unexpected error occurred" }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500 
+        status: 400,
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        } 
       }
     );
   }
 });
-
-// Helper function to get mock Nova metrics
-function getMockNovaMetrics() {
-  return {
-    id: '1',
-    overall_profit: 455000,
-    overall_profit_percentage: 455.0,
-    number_of_trades: 240,
-    win_percentage: 70.5,
-    loss_percentage: 29.5,
-    max_drawdown: -18500,
-    max_drawdown_percentage: -18.5,
-    avg_profit_per_trade: 1895.83,
-    avg_profit_per_trade_percentage: 1.90,
-    max_profit_in_single_trade: 28000,
-    max_profit_in_single_trade_percentage: 28.0,
-    max_loss_in_single_trade: -9300,
-    max_loss_in_single_trade_percentage: -9.3,
-    avg_profit_on_winning_trades: 9500,
-    avg_profit_on_winning_trades_percentage: 9.5,
-    avg_loss_on_losing_trades: -3800,
-    avg_loss_on_losing_trades_percentage: -3.8,
-    reward_to_risk_ratio: 2.5,
-    max_win_streak: 8,
-    max_losing_streak: 3,
-    return_max_dd: 24.6,
-    drawdown_duration: "18 days",
-    max_trades_in_drawdown: 7,
-    expectancy_ratio: 5507.5
-  };
-}
