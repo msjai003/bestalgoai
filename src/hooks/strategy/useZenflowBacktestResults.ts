@@ -105,6 +105,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return 'novaglide_metrics';
       case 'evercrest':
         return 'evercrest_metrics';
+      case 'apexflow':
+        return 'apexflow_metrics';
       case 'zenflow':
       default:
         return 'zenflow_metrics';
