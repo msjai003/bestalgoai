@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -54,6 +53,9 @@ export type MetricsData = {
 
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
+type StrategyTable = 'zenflow_strategy' | 'velox_edge_strategy';
+type MetricsTable = 'zenflow_metrics' | 'veloxedge_metrics';
+
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
     case 'velox':
@@ -77,7 +79,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const [error, setError] = useState<string | null>(null);
   const [strategyType, setStrategyType] = useState<StrategyType>(strategy);
   
-  const getTableNameForStrategy = (strategy: StrategyType): string => {
+  const getTableNameForStrategy = (strategy: StrategyType): StrategyTable => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_strategy';
@@ -87,7 +89,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     }
   };
   
-  const getMetricsTableNameForStrategy = (strategy: StrategyType): string => {
+  const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTable => {
     switch (strategy) {
       case 'velox':
         return 'veloxedge_metrics';
@@ -143,24 +145,15 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         if (metricsData && metricsData.length > 0) {
           setMetrics(metricsData[0] as unknown as MetricsData);
         } else {
-          // If no data is found in the veloxedge_metrics table, use mock data
-          if (strategy === 'velox') {
-            console.log("No Velox metrics found in DB, using mock data");
-            setMetrics(getMockMetricsForStrategy('velox'));
-          } else {
-            setError("No metrics data found");
-          }
+          // If no data is found in the metrics table, use mock data
+          console.log(`No ${strategy} metrics found in DB, using mock data`);
+          setMetrics(getMockMetricsForStrategy(strategy));
         }
       } catch (metricsError: any) {
-        console.error("Error fetching metrics data:", metricsError);
-        if (strategy === 'velox') {
-          // Fallback to mock data if database fetch fails
-          console.log("Error fetching Velox metrics, using mock data");
-          setMetrics(getMockMetricsForStrategy('velox'));
-        } else {
-          setError(metricsError.message);
-          toast.error(`Error loading ${getStrategyDisplayName(strategy)} metrics`);
-        }
+        console.error(`Error fetching ${strategy} metrics data:`, metricsError);
+        // Fallback to mock data if database fetch fails
+        console.log(`Error fetching ${strategy} metrics, using mock data`);
+        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);
