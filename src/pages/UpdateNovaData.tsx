@@ -1,85 +1,127 @@
 
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
-import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { RefreshCw, Save, CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const UpdateNovaData = () => {
   const [loading, setLoading] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  
-  const updateNovaData = async () => {
+  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const handleUpdateNovaData = async () => {
     setLoading(true);
-    setUpdateStatus('idle');
+    setSuccess(false);
     
     try {
-      // Invoke the update function to generate new data
-      const { data, error } = await supabase.functions.invoke('update-velox-data', {
+      // First, check if the function exists
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('update-velox-data', {
         body: { strategy: 'nova' },
       });
-      
-      if (error) {
-        throw error;
+
+      if (functionError) {
+        throw new Error(`Error calling edge function: ${functionError.message}`);
       }
+
+      console.log('Function response:', functionData);
       
-      toast.success('Nova Glide data updated successfully');
-      console.log('Update result:', data);
-      setUpdateStatus('success');
-    } catch (error: any) {
-      toast.error(`Error updating data: ${error.message}`);
-      console.error('Error updating data:', error);
-      setUpdateStatus('error');
+      if (functionData.success) {
+        setResult(functionData);
+        setSuccess(true);
+        toast.success(functionData.message || 'Nova Glide data updated successfully');
+      } else {
+        throw new Error(functionData.error || 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error('Error updating Nova Glide data:', error);
+      toast.error(`Failed to update Nova Glide data: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Update Nova Glide Strategy Data</h1>
-      
-      <div className="mb-6">
-        <p className="text-gray-400 mb-4">
-          Use the button below to update the Nova Glide data. This will populate the data required for the strategy report.
-        </p>
-        
-        <Button 
-          onClick={updateNovaData}
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Updating...</span>
-            </>
-          ) : (
-            'Update Nova Glide Data'
-          )}
-        </Button>
-        
-        {updateStatus === 'success' && (
-          <p className="mt-3 text-green-500 text-sm">
-            Data updated successfully! The metrics are now available in the report.
-          </p>
+    <div className="bg-charcoalPrimary min-h-screen pt-8 px-4">
+      <div className="max-w-xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">Nova Glide Data Management</h1>
+          <p className="text-charcoalTextSecondary">Update and refresh the Nova Glide strategy backtest data</p>
+        </header>
+
+        <Card className="bg-charcoalSecondary/50 border-gray-700 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white">Update Nova Glide Data</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-charcoalTextSecondary">
+              This action will refresh the Nova Glide strategy data in the database. This will affect all users viewing the Nova Glide strategy reports.
+            </p>
+            
+            <div className="flex space-x-4">
+              <Button
+                onClick={handleUpdateNovaData}
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : success ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Updated
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Update Data
+                  </>
+                )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                asChild
+              >
+                <Link to="/zenflow-backtest-report?strategy=nova">
+                  View Report
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {success && result && (
+          <Card className="bg-green-950/30 border-green-700 mb-6">
+            <CardHeader>
+              <CardTitle className="text-green-400">Update Successful</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-white mb-2">{result.message}</p>
+              <p className="text-gray-400 text-sm">
+                Strategy data has been updated. You can now view the latest data in the Nova Glide Strategy Report.
+              </p>
+            </CardContent>
+          </Card>
         )}
-        
-        {updateStatus === 'error' && (
-          <p className="mt-3 text-red-500 text-sm">
-            Failed to update data. Please try again or check console for errors.
-          </p>
-        )}
-      </div>
-      
-      <div className="mt-6 space-y-2">
-        <Link to="/zenflow-backtest-report?strategy=nova" className="text-cyan underline block">
-          View Nova Glide Strategy Report
-        </Link>
-        <p className="text-xs text-gray-500">
-          Note: After updating the data, you may need to refresh the report page to see the changes.
-        </p>
+
+        <div className="flex justify-between">
+          <Button variant="outline" asChild>
+            <Link to="/dashboard">
+              Back to Dashboard
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/backtest-report">
+              Backtest Reports
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

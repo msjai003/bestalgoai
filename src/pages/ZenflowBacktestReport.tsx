@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -155,6 +156,14 @@ const ZenflowBacktestReport = () => {
   useEffect(() => {
     fetchZenflowBacktestResults();
     console.log("Component mounted, fetching data for strategy:", strategyParam);
+    
+    // Add refresh interval for real-time updates - update every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchZenflowBacktestResults();
+      console.log("Refreshing data for strategy:", strategyParam);
+    }, 30000);
+    
+    return () => clearInterval(refreshInterval);
   }, [strategyParam]);
 
   const handleRefresh = () => {
@@ -175,6 +184,7 @@ const ZenflowBacktestReport = () => {
   };
 
   const prepareChartData = () => {
+    console.log("Preparing chart data from strategy data:", strategyData);
     return strategyData.map(year => ({
       year: year.year,
       Jan: year.jan || 0,
@@ -277,7 +287,10 @@ const ZenflowBacktestReport = () => {
             {currentSection === 'overview' && (
               <>
                 <div className="mt-2 mb-4 flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-white">Annual Performance</h2>
+                  <h2 className="text-lg font-semibold text-white">
+                    Annual Performance
+                    {strategyType === 'nova' && <span className="ml-2 text-sm text-cyan">(Nova Glide Strategy)</span>}
+                  </h2>
                   <div className="flex space-x-2">
                     <Button 
                       variant={viewMode === 'table' ? 'default' : 'outline'} 
@@ -406,10 +419,10 @@ const ZenflowBacktestReport = () => {
                           type="monotone"
                           dataKey="Total"
                           name="Total"
-                          stroke="#00BCD4"
+                          stroke={strategyType === 'nova' ? "#a855f7" : "#00BCD4"}
                           strokeWidth={3}
-                          dot={{ r: 6, fill: "#00BCD4", stroke: "#00BCD4" }}
-                          activeDot={{ r: 8, stroke: "#00BCD4", strokeWidth: 2 }}
+                          dot={{ r: 6, fill: strategyType === 'nova' ? "#a855f7" : "#00BCD4", stroke: strategyType === 'nova' ? "#a855f7" : "#00BCD4" }}
+                          activeDot={{ r: 8, stroke: strategyType === 'nova' ? "#a855f7" : "#00BCD4", strokeWidth: 2 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>

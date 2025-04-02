@@ -1,4 +1,5 @@
-// Follow Deno deploy standard: https://deno.com/deploy/docs/typescript
+
+// Follow Deno deploy standard: https://deno.land/std@0.168.0/http/server.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -232,6 +233,8 @@ serve(async (req) => {
         }
       ];
       
+      console.log("Updating Nova Glide strategy data...");
+      
       // Clear existing data
       const { error: deleteError } = await supabase
         .from('novaglide_strategy')
@@ -243,21 +246,22 @@ serve(async (req) => {
       }
       
       // Insert new data
-      const { error: insertError } = await supabase
+      const { data, error: insertError } = await supabase
         .from('novaglide_strategy')
-        .insert(mockNovaData);
+        .insert(mockNovaData)
+        .select();
         
       if (insertError) {
         throw new Error(`Error inserting new Nova data: ${insertError.message}`);
       }
       
-      console.log("Nova Glide data update completed successfully");
+      console.log("Nova Glide data update completed successfully:", data);
       
       return new Response(
         JSON.stringify({
           success: true,
           message: 'Nova Glide data updated successfully',
-          data: { strategy: 'nova' }
+          data: { strategy: 'nova', rows: data }
         }),
         { 
           headers: { 

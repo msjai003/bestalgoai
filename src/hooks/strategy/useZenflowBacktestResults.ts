@@ -54,8 +54,9 @@ export type MetricsData = {
 
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
-type StrategyTable = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy';
-type MetricsTable = 'zenflow_metrics' | 'velox_edge_metrics';
+// Define explicit table name types to satisfy TypeScript
+type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy';
+type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
@@ -80,7 +81,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   const [error, setError] = useState<string | null>(null);
   const [strategyType, setStrategyType] = useState<StrategyType>(strategy);
   
-  const getTableNameForStrategy = (strategy: StrategyType): StrategyTable => {
+  const getTableNameForStrategy = (strategy: StrategyType): StrategyTableName => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_strategy';
@@ -92,7 +93,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     }
   };
   
-  const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTable => {
+  const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTableName => {
     switch (strategy) {
       case 'velox':
         return 'velox_edge_metrics';
@@ -121,16 +122,20 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       // For Zenflow, Velox, and Nova, proceed with database fetching
       const tableName = getTableNameForStrategy(strategy);
       
-      const { data, error } = await supabase
-        .from(tableName)
+      console.log(`Fetching strategy data from ${tableName} table for ${strategy} strategy...`);
+      
+      // Force TypeScript to accept our table name
+      const { data, error: fetchError } = await supabase
+        .from(tableName as any)
         .select('*')
         .order('year', { ascending: true });
         
-      if (error) {
-        console.error("Error fetching strategy data:", error);
-        setError(error.message);
+      if (fetchError) {
+        console.error(`Error fetching ${strategy} data:`, fetchError);
+        setError(fetchError.message);
         toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
       } else {
+        console.log(`Successfully fetched ${data?.length} rows of ${strategy} data from ${tableName}`);
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
@@ -141,8 +146,10 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         const metricsTable = getMetricsTableNameForStrategy(strategy);
         
         try {
+          console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
+          
           const { data: metricsData, error: metricsError } = await supabase
-            .from(metricsTable)
+            .from(metricsTable as any)
             .select('*')
             .limit(1);
             
@@ -151,10 +158,10 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
           }
           
           if (metricsData && metricsData.length > 0) {
+            console.log(`Successfully fetched metrics for ${strategy}`);
             setMetrics(metricsData[0] as unknown as MetricsData);
-            console.log(`${strategy} metrics loaded from DB:`, metricsData[0]);
           } else {
-            console.log(`No ${strategy} metrics found in DB`);
+            console.log(`No ${strategy} metrics found in DB, using mock data`);
             setMetrics(getMockMetricsForStrategy(strategy));
           }
         } catch (metricsError: any) {
@@ -164,7 +171,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         }
       }
     } catch (err: any) {
-      console.error("Unexpected error:", err);
+      console.error(`Unexpected error fetching ${strategy} data:`, err);
       setError(err.message || "An unexpected error occurred");
       toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
     } finally {
@@ -174,6 +181,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
 
   useEffect(() => {
     fetchZenflowBacktestResults();
+    console.log("Component mounted, fetching data for strategy:", strategy);
   }, [strategy]);
 
   return { 
