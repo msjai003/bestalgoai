@@ -1606,7 +1606,7 @@ export type Database = {
           created_at: string | null
           dec: number | null
           feb: number | null
-          id: string
+          id: number
           jan: number | null
           jul: number | null
           jun: number | null
@@ -1625,7 +1625,7 @@ export type Database = {
           created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null
@@ -1644,7 +1644,7 @@ export type Database = {
           created_at?: string | null
           dec?: number | null
           feb?: number | null
-          id?: string
+          id?: number
           jan?: number | null
           jul?: number | null
           jun?: number | null

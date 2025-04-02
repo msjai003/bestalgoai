@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export type StrategyDataRow = {
-  id: string;
+  id: number;
   year: number;
   jan?: number;
   feb?: number;
@@ -54,7 +53,6 @@ export type MetricsData = {
 
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
-// Define explicit table name types to satisfy TypeScript
 type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy' | 'evercrest_strategy' | 'apexflow_strategy';
 type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics' | 'evercrest_metrics' | 'apexflow_metrics';
 
@@ -120,12 +118,10 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     try {
       setStrategyType(strategy);
       
-      // Table name to fetch from
       const tableName = getTableNameForStrategy(strategy);
       
       console.log(`Fetching strategy data from ${tableName} table for ${strategy} strategy...`);
       
-      // Force TypeScript to accept our table name
       const { data, error: fetchError } = await supabase
         .from(tableName as any)
         .select('*')
@@ -140,7 +136,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
-      // Now fetch metrics from the appropriate metrics table
       const metricsTable = getMetricsTableNameForStrategy(strategy);
       
       try {
