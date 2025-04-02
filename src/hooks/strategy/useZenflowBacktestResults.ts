@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -191,42 +192,42 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
     case 'evercrest':
       return [
         { 
-          id: '1', 
+          id: 1, 
           year: 2020, 
           jan: -3360, feb: 12438, mar: -44381, apr: 48423, may: 36948, jun: 30956, 
           jul: 21467, aug: 14037, sep: 16367, oct: 37581, nov: 17568, dec: 187068, 
           total: 375112, max_drawdown: -70140
         },
         { 
-          id: '2', 
+          id: 2, 
           year: 2021, 
           jan: -1923, feb: 75802, mar: -21258, apr: 29175, may: 8883, jun: 28027, 
           jul: 16998, aug: 42135, sep: 38227, oct: 38868, nov: 6453, dec: -2636, 
           total: 258753, max_drawdown: -30401 
         },
         { 
-          id: '3', 
+          id: 3, 
           year: 2022, 
           jan: -18596, feb: 16271, mar: 63847, apr: -37428, may: -1766, jun: -18532, 
           jul: 14370, aug: 21506, sep: -21911, oct: 5756, nov: 26452, dec: 15723, 
           total: 65692, max_drawdown: -96693 
         },
         { 
-          id: '4', 
+          id: 4, 
           year: 2023, 
           jan: -6251, feb: -2523, mar: 9933, apr: -5156, may: 20403, jun: 17703, 
           jul: 10972, aug: 1083, sep: 31316, oct: -5838, nov: -1335, dec: 46185, 
           total: 116493, max_drawdown: -24483 
         },
         { 
-          id: '5', 
+          id: 5, 
           year: 2024, 
           jan: 4057, feb: 16331, mar: -8070, apr: 21693, may: -3093, jun: 40608, 
           jul: 23797, aug: 15390, sep: 2343, oct: -47400, nov: 53692, dec: 32362, 
           total: 151713, max_drawdown: -71411 
         },
         {
-          id: '6',
+          id: 6,
           year: 2025,
           jan: -40695, feb: -16398, mar: -4406, apr: 0, may: 0, jun: 0,
           jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0,
@@ -236,42 +237,42 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
     case 'apexflow':
       return [
         { 
-          id: '1', 
+          id: 1, 
           year: 2020, 
           jan: -3078, feb: 23583, mar: 135146, apr: 16350, may: 24063, jun: 31841, 
           jul: -899, aug: 6841, sep: -1866, oct: -8365, nov: -12517, dec: 237483, 
           total: 447682, max_drawdown: -40623 
         },
         { 
-          id: '2', 
+          id: 2, 
           year: 2021, 
           jan: 14028, feb: -16976, mar: -5613, apr: -1166, may: 592, jun: 1417, 
           jul: 16695, aug: -8640, sep: 15963, oct: 32857, nov: 36551, dec: 7923, 
           total: 93633, max_drawdown: -68261 
         },
         { 
-          id: '3', 
+          id: 3, 
           year: 2022, 
           jan: 29726, feb: 49357, mar: -10856, apr: -11227, may: 33420, jun: 44988, 
           jul: -8632, aug: 5448, sep: -24022, oct: -19710, nov: -468, dec: 25980, 
           total: 114003, max_drawdown: -84678 
         },
         { 
-          id: '4', 
+          id: 4, 
           year: 2023, 
           jan: -19425, feb: 4173, mar: 746, apr: -4976, may: -15195, jun: 6645, 
           jul: -9618, aug: 22091, sep: 12536, oct: 28833, nov: -31008, dec: 19470, 
           total: 14272, max_drawdown: -68943 
         },
         { 
-          id: '5', 
+          id: 5, 
           year: 2024, 
           jan: 28938, feb: 9840, mar: 16331, apr: 8445, may: -2486, jun: 17883, 
           jul: -9727, aug: 23647, sep: -35388, oct: 43893, nov: 37845, dec: 35407, 
           total: 174630, max_drawdown: -50730 
         },
         {
-          id: '6',
+          id: 6,
           year: 2025,
           jan: -20917, feb: 1203, mar: 2520, apr: 0, may: 0, jun: 0,
           jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0,
@@ -287,7 +288,7 @@ const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
   switch (strategy) {
     case 'evercrest':
       return {
-        id: '1',
+        id: 1,
         overall_profit: 916763,
         overall_profit_percentage: 916.76,
         number_of_trades: 312,
@@ -315,7 +316,7 @@ const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
       };
     case 'apexflow':
       return {
-        id: '1',
+        id: 1,
         overall_profit: 827028,
         overall_profit_percentage: 827.03,
         number_of_trades: 364,
