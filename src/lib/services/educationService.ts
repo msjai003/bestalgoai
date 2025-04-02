@@ -48,15 +48,13 @@ export interface QuizAnswer {
 }
 
 export interface EducationBadge {
-  id: string;
+  id: number;
   badge_id: string;
   name: string;
   description: string;
   image: string;
   level: 'basics' | 'intermediate' | 'pro';
   unlocked_by: string;
-  created_at: string;
-  updated_at: string;
 }
 
 // Module functions
@@ -72,7 +70,6 @@ export const getEducationModules = async (): Promise<EducationModule[]> => {
     return [];
   }
   
-  // Cast the data to ensure proper typing
   return (data as EducationModule[]) || [];
 };
 
@@ -355,7 +352,7 @@ export const getEducationBadges = async (): Promise<EducationBadge[]> => {
   return (data as EducationBadge[]) || [];
 };
 
-export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'created_at' | 'updated_at'>) => {
+export const createEducationBadge = async (badge: Omit<EducationBadge, 'id'>) => {
   const { data, error } = await supabase
     .from('education_badges')
     .insert(badge)
@@ -372,7 +369,7 @@ export const createEducationBadge = async (badge: Omit<EducationBadge, 'id' | 'c
   return data as EducationBadge;
 };
 
-export const updateEducationBadge = async (id: string, updates: Partial<Omit<EducationBadge, 'id' | 'created_at' | 'updated_at'>>) => {
+export const updateEducationBadge = async (id: number, updates: Partial<Omit<EducationBadge, 'id'>>) => {
   const { data, error } = await supabase
     .from('education_badges')
     .update(updates)
@@ -390,7 +387,7 @@ export const updateEducationBadge = async (id: string, updates: Partial<Omit<Edu
   return data as EducationBadge;
 };
 
-export const deleteEducationBadge = async (id: string) => {
+export const deleteEducationBadge = async (id: number) => {
   const { error } = await supabase
     .from('education_badges')
     .delete()

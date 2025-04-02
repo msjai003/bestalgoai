@@ -351,36 +351,30 @@ export type Database = {
       education_badges: {
         Row: {
           badge_id: string
-          created_at: string | null
           description: string
-          id: string
+          id: number
           image: string
           level: string
           name: string
           unlocked_by: string
-          updated_at: string | null
         }
         Insert: {
           badge_id: string
-          created_at?: string | null
           description: string
-          id?: string
+          id?: number
           image: string
           level: string
           name: string
           unlocked_by: string
-          updated_at?: string | null
         }
         Update: {
           badge_id?: string
-          created_at?: string | null
           description?: string
-          id?: string
+          id?: number
           image?: string
           level?: string
           name?: string
           unlocked_by?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -924,6 +918,7 @@ export type Database = {
           price: number | null
           qty: number | null
           side: string | null
+          status: string | null
           strategy_id: number | null
           symbol: string | null
         }
@@ -938,6 +933,7 @@ export type Database = {
           price?: number | null
           qty?: number | null
           side?: string | null
+          status?: string | null
           strategy_id?: number | null
           symbol?: string | null
         }
@@ -952,6 +948,7 @@ export type Database = {
           price?: number | null
           qty?: number | null
           side?: string | null
+          status?: string | null
           strategy_id?: number | null
           symbol?: string | null
         }
@@ -1667,6 +1664,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      execute_sql: {
+        Args: {
+          query: string
+        }
+        Returns: Json
+      }
       force_strategy_paid_status: {
         Args: {
           p_user_id: string
@@ -1675,6 +1678,14 @@ export type Database = {
           p_strategy_description: string
         }
         Returns: undefined
+      }
+      get_all_tables: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          schema: string
+          row_count: number
+        }[]
       }
       get_broker_image: {
         Args: {

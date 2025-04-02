@@ -35,7 +35,7 @@ const BadgeManager = () => {
   // Dialogs state
   const [isBadgeFormOpen, setIsBadgeFormOpen] = useState(false);
   const [editingBadge, setEditingBadge] = useState<EducationBadge | null>(null);
-  const [deleteBadgeId, setDeleteBadgeId] = useState<string | null>(null);
+  const [deleteBadgeId, setDeleteBadgeId] = useState<number | null>(null);
 
   // Fetch badges
   const fetchBadges = async () => {
