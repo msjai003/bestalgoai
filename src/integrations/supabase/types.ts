@@ -387,6 +387,96 @@ export type Database = {
           },
         ]
       }
+      evercrest_metrics: {
+        Row: {
+          avg_loss_on_losing_trades: number | null
+          avg_loss_on_losing_trades_percentage: number | null
+          avg_profit_on_winning_trades: number | null
+          avg_profit_on_winning_trades_percentage: number | null
+          avg_profit_per_trade: number | null
+          avg_profit_per_trade_percentage: number | null
+          created_at: string
+          drawdown_duration: string | null
+          expectancy_ratio: number | null
+          id: string
+          loss_percentage: number | null
+          max_drawdown: number | null
+          max_drawdown_percentage: number | null
+          max_losing_streak: number | null
+          max_loss_in_single_trade: number | null
+          max_loss_in_single_trade_percentage: number | null
+          max_profit_in_single_trade: number | null
+          max_profit_in_single_trade_percentage: number | null
+          max_trades_in_drawdown: number | null
+          max_win_streak: number | null
+          number_of_trades: number | null
+          overall_profit: number | null
+          overall_profit_percentage: number | null
+          return_max_dd: number | null
+          reward_to_risk_ratio: number | null
+          updated_at: string
+          win_percentage: number | null
+        }
+        Insert: {
+          avg_loss_on_losing_trades?: number | null
+          avg_loss_on_losing_trades_percentage?: number | null
+          avg_profit_on_winning_trades?: number | null
+          avg_profit_on_winning_trades_percentage?: number | null
+          avg_profit_per_trade?: number | null
+          avg_profit_per_trade_percentage?: number | null
+          created_at?: string
+          drawdown_duration?: string | null
+          expectancy_ratio?: number | null
+          id?: string
+          loss_percentage?: number | null
+          max_drawdown?: number | null
+          max_drawdown_percentage?: number | null
+          max_losing_streak?: number | null
+          max_loss_in_single_trade?: number | null
+          max_loss_in_single_trade_percentage?: number | null
+          max_profit_in_single_trade?: number | null
+          max_profit_in_single_trade_percentage?: number | null
+          max_trades_in_drawdown?: number | null
+          max_win_streak?: number | null
+          number_of_trades?: number | null
+          overall_profit?: number | null
+          overall_profit_percentage?: number | null
+          return_max_dd?: number | null
+          reward_to_risk_ratio?: number | null
+          updated_at?: string
+          win_percentage?: number | null
+        }
+        Update: {
+          avg_loss_on_losing_trades?: number | null
+          avg_loss_on_losing_trades_percentage?: number | null
+          avg_profit_on_winning_trades?: number | null
+          avg_profit_on_winning_trades_percentage?: number | null
+          avg_profit_per_trade?: number | null
+          avg_profit_per_trade_percentage?: number | null
+          created_at?: string
+          drawdown_duration?: string | null
+          expectancy_ratio?: number | null
+          id?: string
+          loss_percentage?: number | null
+          max_drawdown?: number | null
+          max_drawdown_percentage?: number | null
+          max_losing_streak?: number | null
+          max_loss_in_single_trade?: number | null
+          max_loss_in_single_trade_percentage?: number | null
+          max_profit_in_single_trade?: number | null
+          max_profit_in_single_trade_percentage?: number | null
+          max_trades_in_drawdown?: number | null
+          max_win_streak?: number | null
+          number_of_trades?: number | null
+          overall_profit?: number | null
+          overall_profit_percentage?: number | null
+          return_max_dd?: number | null
+          reward_to_risk_ratio?: number | null
+          updated_at?: string
+          win_percentage?: number | null
+        }
+        Relationships: []
+      }
       evercrest_strategy: {
         Row: {
           apr: number | null

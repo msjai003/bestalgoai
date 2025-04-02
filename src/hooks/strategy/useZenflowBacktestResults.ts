@@ -56,7 +56,7 @@ export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflo
 
 // Define explicit table name types to satisfy TypeScript
 type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy' | 'evercrest_strategy';
-type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics';
+type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics' | 'evercrest_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
@@ -101,6 +101,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return 'velox_edge_metrics';
       case 'nova':
         return 'novaglide_metrics';
+      case 'evercrest':
+        return 'evercrest_metrics';
       case 'zenflow':
       default:
         return 'zenflow_metrics';
@@ -123,8 +125,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return;
       }
       
-      // For Evercrest, we've stored the data in the database, so we fetch it
-      // For Zenflow, Velox, Nova, and Evercrest, proceed with database fetching
+      // For other strategies, we fetch data from the database
       const tableName = getTableNameForStrategy(strategy);
       
       console.log(`Fetching strategy data from ${tableName} table for ${strategy} strategy...`);
@@ -144,37 +145,32 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
-      // For Evercrest strategy, use mock metrics since we don't have a dedicated metrics table yet
-      if (strategy === 'evercrest') {
-        setMetrics(getMockMetricsForStrategy(strategy));
-      } else {
-        // Now fetch metrics for other strategies from their respective tables
-        const metricsTable = getMetricsTableNameForStrategy(strategy);
+      // Now fetch metrics from the appropriate metrics table
+      const metricsTable = getMetricsTableNameForStrategy(strategy);
+      
+      try {
+        console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
         
-        try {
-          console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
+        const { data: metricsData, error: metricsError } = await supabase
+          .from(metricsTable as any)
+          .select('*')
+          .limit(1);
           
-          const { data: metricsData, error: metricsError } = await supabase
-            .from(metricsTable as any)
-            .select('*')
-            .limit(1);
-            
-          if (metricsError) {
-            throw metricsError;
-          }
-          
-          if (metricsData && metricsData.length > 0) {
-            console.log(`Successfully fetched metrics for ${strategy}`);
-            setMetrics(metricsData[0] as unknown as MetricsData);
-          } else {
-            console.log(`No ${strategy} metrics found in DB, using mock data`);
-            setMetrics(getMockMetricsForStrategy(strategy));
-          }
-        } catch (metricsError: any) {
-          console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-          console.log(`Error fetching ${strategy} metrics, using mock data`);
+        if (metricsError) {
+          throw metricsError;
+        }
+        
+        if (metricsData && metricsData.length > 0) {
+          console.log(`Successfully fetched metrics for ${strategy}`);
+          setMetrics(metricsData[0] as unknown as MetricsData);
+        } else {
+          console.log(`No ${strategy} metrics found in DB, using mock data`);
           setMetrics(getMockMetricsForStrategy(strategy));
         }
+      } catch (metricsError: any) {
+        console.error(`Error fetching ${strategy} metrics data:`, metricsError);
+        console.log(`Error fetching ${strategy} metrics, using mock data`);
+        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error(`Unexpected error fetching ${strategy} data:`, err);
