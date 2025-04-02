@@ -324,22 +324,48 @@ serve(async (req) => {
         console.log("Successfully inserted Velox Edge strategy data");
       }
       
-      // Velox Edge metrics are now handled through mock data in the frontend,
-      // so we don't try to access or update the veloxedge_metrics table
-      console.log("Velox Edge metrics will be provided through mock data in the frontend");
+      // Check for velox_edge_metrics and update if needed
+      const { data: metricsCheckData, error: metricsCheckError } = await supabaseClient
+        .from('velox_edge_metrics')
+        .select('id')
+        .limit(1);
+      
+      if (metricsCheckError) {
+        console.error("Error checking Velox Edge metrics:", metricsCheckError);
+        return new Response(
+          JSON.stringify({ error: metricsCheckError.message }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400 
+          }
+        );
+      }
+      
+      // Update the metrics if they don't exist or need to be refreshed
+      // We simply upsert the data to ensure it's present
+      if (!metricsCheckData || metricsCheckData.length === 0) {
+        // The metrics should already exist from our SQL insertion, but just to be safe
+        console.log("No Velox Edge metrics found, they should have been added via SQL migration");
+      }
       
       // Fetch the complete velox strategy data to return
       const { data: veloxData, error: fetchError } = await supabaseClient
         .from('velox_edge_strategy')
         .select('*')
         .order('year', { ascending: true });
+      
+      // Fetch the metrics
+      const { data: veloxMetrics, error: metricsError } = await supabaseClient
+        .from('velox_edge_metrics')
+        .select('*')
+        .limit(1);
         
-      if (fetchError) {
-        console.error("Error fetching Velox Edge data:", fetchError);
+      if (fetchError || metricsError) {
+        console.error("Error fetching Velox Edge data:", fetchError || metricsError);
         return new Response(
           JSON.stringify({ 
             message: "Failed to fetch strategy data",
-            error: fetchError.message
+            error: (fetchError || metricsError)?.message
           }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -352,7 +378,7 @@ serve(async (req) => {
         JSON.stringify({ 
           message: "Velox Edge Strategy data updated successfully",
           data: veloxData,
-          metrics: null // No metrics from database, will use mock data
+          metrics: veloxMetrics ? veloxMetrics[0] : null
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },

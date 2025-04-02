@@ -15,8 +15,7 @@ const UpdateVeloxData = () => {
     setUpdateStatus('idle');
     
     try {
-      // No need to clear the veloxedge_metrics table as it no longer exists
-      // Instead, directly invoke the update function to generate new data
+      // Invoke the update function to generate new data
       const { data, error } = await supabase.functions.invoke('update-velox-data', {
         body: { strategy: 'velox' },
       });
