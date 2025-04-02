@@ -55,8 +55,8 @@ export type MetricsData = {
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
 // Define explicit table name types to satisfy TypeScript
-type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy' | 'evercrest_strategy';
-type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics' | 'evercrest_metrics';
+type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy' | 'evercrest_strategy' | 'apexflow_strategy';
+type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics' | 'evercrest_metrics' | 'apexflow_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
@@ -89,6 +89,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         return 'novaglide_strategy';
       case 'evercrest':
         return 'evercrest_strategy';
+      case 'apexflow':
+        return 'apexflow_strategy';
       case 'zenflow':
       default:
         return 'zenflow_strategy';
@@ -116,16 +118,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     try {
       setStrategyType(strategy);
       
-      // For the Apexflow strategy, we use mock data
-      if (strategy === 'apexflow') {
-        // Use mock data for this strategy
-        setStrategyData(getMockDataForStrategy(strategy));
-        setMetrics(getMockMetricsForStrategy(strategy));
-        setLoading(false);
-        return;
-      }
-      
-      // For other strategies, we fetch data from the database
+      // Table name to fetch from
       const tableName = getTableNameForStrategy(strategy);
       
       console.log(`Fetching strategy data from ${tableName} table for ${strategy} strategy...`);
@@ -248,37 +241,44 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
         { 
           id: '1', 
           year: 2020, 
-          jan: 14500, feb: 4800, mar: 2900, apr: 19500, may: -1950, jun: 5800, 
-          jul: 17500, aug: 2900, sep: 7300, oct: 3900, nov: 1950, dec: 5800, 
-          total: 85000, max_drawdown: -9800 
+          jan: -3078, feb: 23583, mar: 135146, apr: 16350, may: 24063, jun: 31841, 
+          jul: -899, aug: 6841, sep: -1866, oct: -8365, nov: -12517, dec: 237483, 
+          total: 447682, max_drawdown: -40623 
         },
         { 
           id: '2', 
           year: 2021, 
-          jan: 21500, feb: 7800, mar: 9750, apr: 27000, may: 19500, jun: -3900, 
-          jul: 7800, aug: -1450, sep: 975, oct: 14500, nov: 13500, dec: 24000, 
-          total: 140000, max_drawdown: -13500 
+          jan: 14028, feb: -16976, mar: -5613, apr: -1166, may: 592, jun: 1417, 
+          jul: 16695, aug: -8640, sep: 15963, oct: 32857, nov: 36551, dec: 7923, 
+          total: 93633, max_drawdown: -68261 
         },
         { 
           id: '3', 
           year: 2022, 
-          jan: 975, feb: 24000, mar: 13500, apr: -490, may: 29000, jun: 11700, 
-          jul: 4900, aug: 24000, sep: 11700, oct: 5800, nov: 5800, dec: 4350, 
-          total: 135000, max_drawdown: -9800 
+          jan: 29726, feb: 49357, mar: -10856, apr: -11227, may: 33420, jun: 44988, 
+          jul: -8632, aug: 5448, sep: -24022, oct: -19710, nov: -468, dec: 25980, 
+          total: 114003, max_drawdown: -84678 
         },
         { 
           id: '4', 
           year: 2023, 
-          jan: 19500, feb: -1950, mar: 19500, apr: -3400, may: 3400, jun: 6800, 
-          jul: -1150, aug: -3900, sep: 3400, oct: 4900, nov: 1950, dec: -680, 
-          total: 48000, max_drawdown: -11700 
+          jan: -19425, feb: 4173, mar: 746, apr: -4976, may: -15195, jun: 6645, 
+          jul: -9618, aug: 22091, sep: 12536, oct: 28833, nov: -31008, dec: 19470, 
+          total: 14272, max_drawdown: -68943 
         },
         { 
           id: '5', 
           year: 2024, 
-          jan: 27000, feb: 9750, mar: 17500, apr: -975, may: 6800, jun: 3900, 
-          jul: 3900, aug: -9750, sep: -2900, oct: 14500, nov: -1450, dec: -975, 
-          total: 67000, max_drawdown: -19500 
+          jan: 28938, feb: 9840, mar: 16331, apr: 8445, may: -2486, jun: 17883, 
+          jul: -9727, aug: 23647, sep: -35388, oct: 43893, nov: 37845, dec: 35407, 
+          total: 174630, max_drawdown: -50730 
+        },
+        {
+          id: '6',
+          year: 2025,
+          jan: -20917, feb: 1203, mar: 2520, apr: 0, may: 0, jun: 0,
+          jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0,
+          total: -17193, max_drawdown: -32808
         }
       ];
     default:
@@ -319,30 +319,30 @@ const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
     case 'apexflow':
       return {
         id: '1',
-        overall_profit: 475000,
-        overall_profit_percentage: 475.0,
-        number_of_trades: 245,
-        win_percentage: 71.0,
-        loss_percentage: 29.0,
-        max_drawdown: -19500,
-        max_drawdown_percentage: -19.5,
-        avg_profit_per_trade: 1938.78,
-        avg_profit_per_trade_percentage: 1.94,
-        max_profit_in_single_trade: 29000,
-        max_profit_in_single_trade_percentage: 29.0,
-        max_loss_in_single_trade: -9750,
-        max_loss_in_single_trade_percentage: -9.75,
-        avg_profit_on_winning_trades: 9750,
-        avg_profit_on_winning_trades_percentage: 9.75,
-        avg_loss_on_losing_trades: -3900,
-        avg_loss_on_losing_trades_percentage: -3.9,
-        reward_to_risk_ratio: 2.5,
-        max_win_streak: 7,
-        max_losing_streak: 3,
-        return_max_dd: 24.35,
-        drawdown_duration: "17 days",
-        max_trades_in_drawdown: 7,
-        expectancy_ratio: 5760.9
+        overall_profit: 827028,
+        overall_profit_percentage: 827.03,
+        number_of_trades: 364,
+        win_percentage: 59.3,
+        loss_percentage: 40.7,
+        max_drawdown: -84678,
+        max_drawdown_percentage: -84.68,
+        avg_profit_per_trade: 2272.05,
+        avg_profit_per_trade_percentage: 2.27,
+        max_profit_in_single_trade: 237483,
+        max_profit_in_single_trade_percentage: 237.48,
+        max_loss_in_single_trade: -35388,
+        max_loss_in_single_trade_percentage: -35.39,
+        avg_profit_on_winning_trades: 24630,
+        avg_profit_on_winning_trades_percentage: 24.63,
+        avg_loss_on_losing_trades: -11810,
+        avg_loss_on_losing_trades_percentage: -11.81,
+        reward_to_risk_ratio: 2.09,
+        max_win_streak: 8,
+        max_losing_streak: 6,
+        return_max_dd: 9.77,
+        drawdown_duration: "84 days",
+        max_trades_in_drawdown: 16,
+        expectancy_ratio: 2.64
       };
     default:
       return {} as MetricsData;
