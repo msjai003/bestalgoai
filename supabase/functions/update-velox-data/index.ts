@@ -198,18 +198,19 @@ serve(async (req) => {
         }
       );
     } else if (strategyType === 'velox') {
-      // For Velox Edge Strategy, fetch both strategy and metrics data
+      // For Velox Edge Strategy, we need to insert data and metrics
       
-      // Fetch the velox strategy data
-      const { data: veloxData, error: dataError } = await supabaseClient
+      // First, ensure velox_edge_strategy has data
+      // Check if there's any data already
+      const { data: veloxCheckData, error: veloxCheckError } = await supabaseClient
         .from('velox_edge_strategy')
-        .select('*')
-        .order('year', { ascending: true });
+        .select('id')
+        .limit(1);
         
-      if (dataError) {
-        console.error("Error fetching Velox Edge data:", dataError);
+      if (veloxCheckError) {
+        console.error("Error checking Velox Edge data:", veloxCheckError);
         return new Response(
-          JSON.stringify({ error: dataError.message }),
+          JSON.stringify({ error: veloxCheckError.message }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 400 
@@ -217,153 +218,185 @@ serve(async (req) => {
         );
       }
       
-      // Check if there's any data in the veloxedge_metrics table
-      const { data: existingMetrics, error: checkError } = await supabaseClient
-        .from('veloxedge_metrics')
-        .select('id')
-        .limit(1);
+      // If no data exists, insert sample data
+      if (!veloxCheckData || veloxCheckData.length === 0) {
+        const veloxData = [
+          {
+            year: 2020,
+            jan: 18000,
+            feb: 6000,
+            mar: 3600,
+            apr: 24000,
+            may: -2400,
+            jun: 7200,
+            jul: 21600,
+            aug: 3600,
+            sep: 9000,
+            oct: 4800,
+            nov: 2400,
+            dec: 7200,
+            total: 105000,
+            max_drawdown: -12000
+          },
+          {
+            year: 2021,
+            jan: 26400,
+            feb: 9600,
+            mar: 12000,
+            apr: 33600,
+            may: 24000,
+            jun: -4800,
+            jul: 9600,
+            aug: -1800,
+            sep: 1200,
+            oct: 18000,
+            nov: 16800,
+            dec: 30000,
+            total: 174600,
+            max_drawdown: -16800
+          },
+          {
+            year: 2022,
+            jan: 1200,
+            feb: 30000,
+            mar: 16800,
+            apr: -600,
+            may: 36000,
+            jun: 14400,
+            jul: 6000,
+            aug: 30000,
+            sep: 14400,
+            oct: 7200,
+            nov: 7200,
+            dec: 5400,
+            total: 168000,
+            max_drawdown: -12000
+          },
+          {
+            year: 2023,
+            jan: 24000,
+            feb: -2400,
+            mar: 24000,
+            apr: -4200,
+            may: 4200,
+            jun: 8400,
+            jul: -1440,
+            aug: -4800,
+            sep: 4200,
+            oct: 6000,
+            nov: 2400,
+            dec: -840,
+            total: 59520,
+            max_drawdown: -14400
+          },
+          {
+            year: 2024,
+            jan: 33600,
+            feb: 12000,
+            mar: 21600,
+            apr: -1200,
+            may: 8400,
+            jun: 4800,
+            jul: 4800,
+            aug: -12000,
+            sep: -3600,
+            oct: 18000,
+            nov: -1800,
+            dec: -1200,
+            total: 83400,
+            max_drawdown: -24000
+          }
+        ];
         
-      // If the metrics table is empty, insert the metrics
-      if (!existingMetrics || existingMetrics.length === 0 || checkError) {
-        console.log("No existing Velox Edge metrics found, creating new metrics from data");
-        
-        // Insert metrics data from the image with numeric ID
-        const metricsData = {
-          id: 1,
-          overall_profit: 592758.75,
-          overall_profit_percentage: 266.62,
-          number_of_trades: 1295,
-          win_percentage: 44.09,
-          loss_percentage: 55.91,
-          max_drawdown: -25942.5,
-          max_drawdown_percentage: -11.67,
-          avg_profit_per_trade: 457.73,
-          avg_profit_per_trade_percentage: 0.21,
-          max_profit_in_single_trade: 7323.75,
-          max_profit_in_single_trade_percentage: 3.29,
-          max_loss_in_single_trade: -4136.25,
-          max_loss_in_single_trade_percentage: -1.86,
-          avg_profit_on_winning_trades: 2853.84,
-          avg_profit_on_winning_trades_percentage: 1.28,
-          avg_loss_on_losing_trades: -1432.02,
-          avg_loss_on_losing_trades_percentage: -0.64,
-          reward_to_risk_ratio: 1.99,
-          max_win_streak: 7,
-          max_losing_streak: 10,
-          return_max_dd: 4.36,
-          drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
-          max_trades_in_drawdown: 70,
-          expectancy_ratio: 0.32
-        };
-        
-        const { data: insertedData, error: insertError } = await supabaseClient
-          .from('veloxedge_metrics')
-          .insert([metricsData])
-          .select();
+        const { error: insertVeloxError } = await supabaseClient
+          .from('velox_edge_strategy')
+          .insert(veloxData);
           
-        if (insertError) {
-          console.error("Error inserting Velox Edge metrics:", insertError);
+        if (insertVeloxError) {
+          console.error("Error inserting Velox Edge strategy data:", insertVeloxError);
           return new Response(
-            JSON.stringify({ 
-              message: "Velox Edge Strategy data fetched, but failed to create metrics",
-              data: veloxData,
-              error: insertError.message
-            }),
+            JSON.stringify({ error: insertVeloxError.message }),
             { 
               headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200 
+              status: 400 
             }
           );
         }
+        console.log("Successfully inserted Velox Edge strategy data");
+      }
+      
+      // Now let's handle the Velox Edge metrics
+      // First, delete any existing metrics
+      const { error: deleteMetricsError } = await supabaseClient
+        .from('veloxedge_metrics')
+        .delete()
+        .neq('id', 0);  // This will delete all records
         
+      if (deleteMetricsError) {
+        console.error("Error clearing Velox Edge metrics:", deleteMetricsError);
+      }
+
+      // Insert the new metrics with the numeric ID of 1
+      const metricsData = {
+        id: 1,
+        overall_profit: 592758.75,
+        overall_profit_percentage: 266.62,
+        number_of_trades: 1295,
+        win_percentage: 44.09,
+        loss_percentage: 55.91,
+        max_drawdown: -25942.5,
+        max_drawdown_percentage: -11.67,
+        avg_profit_per_trade: 457.73,
+        avg_profit_per_trade_percentage: 0.21,
+        max_profit_in_single_trade: 7323.75,
+        max_profit_in_single_trade_percentage: 3.29,
+        max_loss_in_single_trade: -4136.25,
+        max_loss_in_single_trade_percentage: -1.86,
+        avg_profit_on_winning_trades: 2853.84,
+        avg_profit_on_winning_trades_percentage: 1.28,
+        avg_loss_on_losing_trades: -1432.02,
+        avg_loss_on_losing_trades_percentage: -0.64,
+        reward_to_risk_ratio: 1.99,
+        max_win_streak: 7,
+        max_losing_streak: 10,
+        return_max_dd: 4.36,
+        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+        max_trades_in_drawdown: 70,
+        expectancy_ratio: 0.32
+      };
+      
+      const { data: insertedMetrics, error: insertMetricsError } = await supabaseClient
+        .from('veloxedge_metrics')
+        .insert(metricsData)
+        .select();
+        
+      if (insertMetricsError) {
+        console.error("Error inserting Velox Edge metrics:", insertMetricsError);
         return new Response(
           JSON.stringify({ 
-            message: "Velox Edge Strategy data fetched and metrics created",
-            data: veloxData,
-            metrics: insertedData[0]
+            message: "Failed to insert Velox Edge metrics",
+            error: insertMetricsError.message 
           }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200 
+            status: 400 
           }
         );
-      } else {
-        // If metrics exist, update them with new data
-        const metricsData = {
-          overall_profit: 592758.75,
-          overall_profit_percentage: 266.62,
-          number_of_trades: 1295,
-          win_percentage: 44.09,
-          loss_percentage: 55.91,
-          max_drawdown: -25942.5,
-          max_drawdown_percentage: -11.67,
-          avg_profit_per_trade: 457.73,
-          avg_profit_per_trade_percentage: 0.21,
-          max_profit_in_single_trade: 7323.75,
-          max_profit_in_single_trade_percentage: 3.29,
-          max_loss_in_single_trade: -4136.25,
-          max_loss_in_single_trade_percentage: -1.86,
-          avg_profit_on_winning_trades: 2853.84,
-          avg_profit_on_winning_trades_percentage: 1.28,
-          avg_loss_on_losing_trades: -1432.02,
-          avg_loss_on_losing_trades_percentage: -0.64,
-          reward_to_risk_ratio: 1.99,
-          max_win_streak: 7,
-          max_losing_streak: 10,
-          return_max_dd: 4.36,
-          drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
-          max_trades_in_drawdown: 70,
-          expectancy_ratio: 0.32
-        };
+      }
+      
+      // Fetch the complete velox strategy data to return
+      const { data: veloxData, error: fetchError } = await supabaseClient
+        .from('velox_edge_strategy')
+        .select('*')
+        .order('year', { ascending: true });
         
-        // Update the existing metrics
-        const { data: updatedData, error: updateError } = await supabaseClient
-          .from('veloxedge_metrics')
-          .update(metricsData)
-          .eq('id', existingMetrics[0].id)
-          .select();
-        
-        if (updateError) {
-          console.error("Error updating Velox Edge metrics:", updateError);
-          return new Response(
-            JSON.stringify({ 
-              message: "Velox Edge Strategy data fetched but metrics update failed",
-              data: veloxData,
-              error: updateError.message
-            }),
-            { 
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200 
-            }
-          );
-        }
-        
-        // Fetch the updated metrics
-        const { data: metricsData, error: metricsError } = await supabaseClient
-          .from('veloxedge_metrics')
-          .select('*')
-          .limit(1);
-          
-        if (metricsError) {
-          console.error("Error fetching Velox Edge metrics:", metricsError);
-          return new Response(
-            JSON.stringify({ 
-              message: "Velox Edge Strategy data fetched successfully, but metrics failed",
-              data: veloxData,
-              error: metricsError.message
-            }),
-            { 
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-              status: 200 
-            }
-          );
-        }
-        
+      if (fetchError) {
+        console.error("Error fetching Velox Edge data:", fetchError);
         return new Response(
           JSON.stringify({ 
-            message: "Velox Edge Strategy data and metrics updated successfully",
-            data: veloxData,
-            metrics: metricsData && metricsData.length > 0 ? metricsData[0] : null
+            message: "Velox Edge metrics updated but failed to fetch strategy data",
+            metrics: insertedMetrics,
+            error: fetchError.message
           }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -371,6 +404,18 @@ serve(async (req) => {
           }
         );
       }
+      
+      return new Response(
+        JSON.stringify({ 
+          message: "Velox Edge Strategy data and metrics updated successfully",
+          data: veloxData,
+          metrics: insertedMetrics && insertedMetrics.length > 0 ? insertedMetrics[0] : null
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
     }
     
     return new Response(
