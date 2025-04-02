@@ -326,7 +326,7 @@ serve(async (req) => {
       }
       
       // Now let's handle the Velox Edge metrics
-      // First, delete any existing metrics
+      // First, explicitly delete any existing metrics
       const { error: deleteMetricsError } = await supabaseClient
         .from('veloxedge_metrics')
         .delete()
@@ -334,7 +334,16 @@ serve(async (req) => {
         
       if (deleteMetricsError) {
         console.error("Error clearing Velox Edge metrics:", deleteMetricsError);
+        return new Response(
+          JSON.stringify({ error: deleteMetricsError.message }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400 
+          }
+        );
       }
+      
+      console.log("Successfully deleted existing Velox Edge metrics");
 
       // Insert the new metrics with the numeric ID of 1
       const metricsData = {
@@ -360,10 +369,12 @@ serve(async (req) => {
         max_win_streak: 7,
         max_losing_streak: 10,
         return_max_dd: 4.36,
-        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+        drawdown_duration: "57 days [7/29/2024 to 9/23/2024]",
         max_trades_in_drawdown: 70,
         expectancy_ratio: 0.32
       };
+      
+      console.log("Attempting to insert Velox Edge metrics with data:", metricsData);
       
       const { data: insertedMetrics, error: insertMetricsError } = await supabaseClient
         .from('veloxedge_metrics')
@@ -383,6 +394,8 @@ serve(async (req) => {
           }
         );
       }
+      
+      console.log("Successfully inserted Velox Edge metrics:", insertedMetrics);
       
       // Fetch the complete velox strategy data to return
       const { data: veloxData, error: fetchError } = await supabaseClient
@@ -409,7 +422,7 @@ serve(async (req) => {
         JSON.stringify({ 
           message: "Velox Edge Strategy data and metrics updated successfully",
           data: veloxData,
-          metrics: insertedMetrics && insertedMetrics.length > 0 ? insertedMetrics[0] : null
+          metrics: insertedMetrics
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
