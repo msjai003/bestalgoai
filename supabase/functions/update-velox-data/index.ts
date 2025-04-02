@@ -1,4 +1,3 @@
-
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -198,9 +197,8 @@ serve(async (req) => {
         }
       );
     } else if (strategyType === 'velox') {
-      // For Velox Edge Strategy, we need to insert data and metrics
+      // For Velox Edge Strategy, we only need to insert strategy data now
       
-      // First, ensure velox_edge_strategy has data
       // Check if there's any data already
       const { data: veloxCheckData, error: veloxCheckError } = await supabaseClient
         .from('velox_edge_strategy')
@@ -325,77 +323,9 @@ serve(async (req) => {
         console.log("Successfully inserted Velox Edge strategy data");
       }
       
-      // Now let's handle the Velox Edge metrics
-      // First, explicitly delete any existing metrics
-      const { error: deleteMetricsError } = await supabaseClient
-        .from('veloxedge_metrics')
-        .delete()
-        .neq('id', 0);  // This will delete all records
-        
-      if (deleteMetricsError) {
-        console.error("Error clearing Velox Edge metrics:", deleteMetricsError);
-        return new Response(
-          JSON.stringify({ error: deleteMetricsError.message }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      console.log("Successfully deleted existing Velox Edge metrics");
-
-      // Insert the new metrics with the numeric ID of 1
-      const metricsData = {
-        id: 1,
-        overall_profit: 592758.75,
-        overall_profit_percentage: 266.62,
-        number_of_trades: 1295,
-        win_percentage: 44.09,
-        loss_percentage: 55.91,
-        max_drawdown: -25942.5,
-        max_drawdown_percentage: -11.67,
-        avg_profit_per_trade: 457.73,
-        avg_profit_per_trade_percentage: 0.21,
-        max_profit_in_single_trade: 7323.75,
-        max_profit_in_single_trade_percentage: 3.29,
-        max_loss_in_single_trade: -4136.25,
-        max_loss_in_single_trade_percentage: -1.86,
-        avg_profit_on_winning_trades: 2853.84,
-        avg_profit_on_winning_trades_percentage: 1.28,
-        avg_loss_on_losing_trades: -1432.02,
-        avg_loss_on_losing_trades_percentage: -0.64,
-        reward_to_risk_ratio: 1.99,
-        max_win_streak: 7,
-        max_losing_streak: 10,
-        return_max_dd: 4.36,
-        drawdown_duration: "57 days [7/29/2024 to 9/23/2024]",
-        max_trades_in_drawdown: 70,
-        expectancy_ratio: 0.32
-      };
-      
-      console.log("Attempting to insert Velox Edge metrics with data:", metricsData);
-      
-      const { data: insertedMetrics, error: insertMetricsError } = await supabaseClient
-        .from('veloxedge_metrics')
-        .insert(metricsData)
-        .select();
-        
-      if (insertMetricsError) {
-        console.error("Error inserting Velox Edge metrics:", insertMetricsError);
-        return new Response(
-          JSON.stringify({ 
-            message: "Failed to insert Velox Edge metrics",
-            error: insertMetricsError.message 
-          }),
-          { 
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400 
-          }
-        );
-      }
-      
-      console.log("Successfully inserted Velox Edge metrics:", insertedMetrics);
+      // Velox Edge metrics are now handled through mock data in the frontend,
+      // so we don't try to access or update the veloxedge_metrics table
+      console.log("Velox Edge metrics will be provided through mock data in the frontend");
       
       // Fetch the complete velox strategy data to return
       const { data: veloxData, error: fetchError } = await supabaseClient
@@ -407,8 +337,7 @@ serve(async (req) => {
         console.error("Error fetching Velox Edge data:", fetchError);
         return new Response(
           JSON.stringify({ 
-            message: "Velox Edge metrics updated but failed to fetch strategy data",
-            metrics: insertedMetrics,
+            message: "Failed to fetch strategy data",
             error: fetchError.message
           }),
           { 
@@ -420,9 +349,9 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({ 
-          message: "Velox Edge Strategy data and metrics updated successfully",
+          message: "Velox Edge Strategy data updated successfully",
           data: veloxData,
-          metrics: insertedMetrics
+          metrics: null // No metrics from database, will use mock data
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },

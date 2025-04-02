@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -54,7 +55,7 @@ export type MetricsData = {
 export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflow';
 
 type StrategyTable = 'zenflow_strategy' | 'velox_edge_strategy';
-type MetricsTable = 'zenflow_metrics' | 'veloxedge_metrics';
+type MetricsTable = 'zenflow_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
@@ -90,13 +91,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   };
   
   const getMetricsTableNameForStrategy = (strategy: StrategyType): MetricsTable => {
-    switch (strategy) {
-      case 'velox':
-        return 'veloxedge_metrics';
-      case 'zenflow':
-      default:
-        return 'zenflow_metrics';
-    }
+    // Now we only have zenflow_metrics table
+    return 'zenflow_metrics';
   };
   
   const fetchZenflowBacktestResults = async () => {
@@ -106,13 +102,40 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     try {
       setStrategyType(strategy);
       
-      if (strategy === 'nova' || strategy === 'evercrest' || strategy === 'apexflow') {
-        setStrategyData(getMockDataForStrategy(strategy));
+      // For all non-Zenflow strategies, we use mock data or special handling
+      if (strategy === 'velox' || strategy === 'nova' || strategy === 'evercrest' || strategy === 'apexflow') {
+        // If we're looking for Velox strategy data, try to fetch it from the database
+        if (strategy === 'velox') {
+          try {
+            const { data, error } = await supabase
+              .from('velox_edge_strategy')
+              .select('*')
+              .order('year', { ascending: true });
+              
+            if (error) {
+              console.error("Error fetching velox strategy data:", error);
+              setStrategyData(getMockDataForStrategy(strategy));
+            } else if (data && data.length > 0) {
+              setStrategyData(data as unknown as StrategyDataRow[]);
+            } else {
+              setStrategyData(getMockDataForStrategy(strategy));
+            }
+          } catch (err) {
+            console.error("Error in velox data fetch:", err);
+            setStrategyData(getMockDataForStrategy(strategy));
+          }
+        } else {
+          // For non-velox strategies, just use mock data
+          setStrategyData(getMockDataForStrategy(strategy));
+        }
+        
+        // Always use mock metrics for these strategies
         setMetrics(getMockMetricsForStrategy(strategy));
         setLoading(false);
         return;
       }
       
+      // For Zenflow, proceed with the original implementation
       const tableName = getTableNameForStrategy(strategy);
       
       const { data, error } = await supabase

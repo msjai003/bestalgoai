@@ -15,20 +15,8 @@ const UpdateVeloxData = () => {
     setUpdateStatus('idle');
     
     try {
-      // First, clear the veloxedge_metrics table to ensure clean data
-      const { error: clearError } = await supabase
-        .from('veloxedge_metrics')
-        .delete()
-        .neq('id', 0); // Delete all records
-      
-      if (clearError) {
-        console.error("Error clearing Velox metrics:", clearError);
-        toast.error(`Error clearing metrics: ${clearError.message}`);
-      } else {
-        console.log("Successfully cleared Velox Edge metrics table");
-      }
-      
-      // Now invoke the update function to generate new data
+      // No need to clear the veloxedge_metrics table as it no longer exists
+      // Instead, directly invoke the update function to generate new data
       const { data, error } = await supabase.functions.invoke('update-velox-data', {
         body: { strategy: 'velox' },
       });
@@ -55,7 +43,7 @@ const UpdateVeloxData = () => {
       
       <div className="mb-6">
         <p className="text-gray-400 mb-4">
-          Use the button below to reset and update the Velox Edge data. This will clear existing metrics and populate the new metrics required for the strategy report.
+          Use the button below to update the Velox Edge data. This will populate the data required for the strategy report.
         </p>
         
         <Button 
