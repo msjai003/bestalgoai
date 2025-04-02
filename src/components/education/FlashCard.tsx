@@ -95,7 +95,7 @@ export const FlashCard = () => {
         </div>
       </div>
       
-      <Progress value={cardProgress} className="h-1 w-full bg-charcoalPrimary" />
+      <Progress value={cardProgress} className="h-1 w-full bg-charcoalPrimary animate-progress" style={{"--progress-width": `${cardProgress}%`} as React.CSSProperties} />
       
       <div className="h-[300px] md:h-[360px] relative">
         <div 
@@ -127,7 +127,7 @@ export const FlashCard = () => {
                   Flip to Answer
                 </Button>
                 
-                <div className="flex justify-between gap-2">
+                <div className="flex w-full gap-2">
                   <Button 
                     variant="secondary" 
                     size="sm"
@@ -176,7 +176,7 @@ export const FlashCard = () => {
                   Flip to Question
                 </Button>
                 
-                <div className="flex justify-between gap-2">
+                <div className="flex w-full gap-2">
                   <Button 
                     variant="secondary" 
                     size="sm"

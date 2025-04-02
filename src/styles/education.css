@@ -161,3 +161,14 @@
 .animate-ping-slow {
   animation: ping-slow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
+
+/* Button container styles */
+.button-container {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.button-container .flex-1 {
+  flex: 1;
+}
