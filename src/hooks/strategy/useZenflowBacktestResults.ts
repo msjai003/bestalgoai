@@ -56,7 +56,7 @@ export type StrategyType = 'zenflow' | 'velox' | 'nova' | 'evercrest' | 'apexflo
 
 // Define explicit table name types to satisfy TypeScript
 type StrategyTableName = 'zenflow_strategy' | 'velox_edge_strategy' | 'novaglide_strategy';
-type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics';
+type MetricsTableName = 'zenflow_metrics' | 'velox_edge_metrics' | 'novaglide_metrics';
 
 export const getStrategyDisplayName = (strategy: string): string => {
   switch (strategy) {
@@ -97,6 +97,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
     switch (strategy) {
       case 'velox':
         return 'velox_edge_metrics';
+      case 'nova':
+        return 'novaglide_metrics';
       case 'zenflow':
       default:
         return 'zenflow_metrics';
@@ -139,36 +141,32 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
-      // For Nova, we don't have a metrics table yet, use mock metrics
-      if (strategy === 'nova') {
-        setMetrics(getMockMetricsForStrategy(strategy));
-      } else {
-        const metricsTable = getMetricsTableNameForStrategy(strategy);
+      // Now fetch metrics for all strategies from their respective tables
+      const metricsTable = getMetricsTableNameForStrategy(strategy);
+      
+      try {
+        console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
         
-        try {
-          console.log(`Fetching metrics from ${metricsTable} table for ${strategy} strategy...`);
+        const { data: metricsData, error: metricsError } = await supabase
+          .from(metricsTable as any)
+          .select('*')
+          .limit(1);
           
-          const { data: metricsData, error: metricsError } = await supabase
-            .from(metricsTable as any)
-            .select('*')
-            .limit(1);
-            
-          if (metricsError) {
-            throw metricsError;
-          }
-          
-          if (metricsData && metricsData.length > 0) {
-            console.log(`Successfully fetched metrics for ${strategy}`);
-            setMetrics(metricsData[0] as unknown as MetricsData);
-          } else {
-            console.log(`No ${strategy} metrics found in DB, using mock data`);
-            setMetrics(getMockMetricsForStrategy(strategy));
-          }
-        } catch (metricsError: any) {
-          console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-          console.log(`Error fetching ${strategy} metrics, using mock data`);
+        if (metricsError) {
+          throw metricsError;
+        }
+        
+        if (metricsData && metricsData.length > 0) {
+          console.log(`Successfully fetched metrics for ${strategy}`);
+          setMetrics(metricsData[0] as unknown as MetricsData);
+        } else {
+          console.log(`No ${strategy} metrics found in DB, using mock data`);
           setMetrics(getMockMetricsForStrategy(strategy));
         }
+      } catch (metricsError: any) {
+        console.error(`Error fetching ${strategy} metrics data:`, metricsError);
+        console.log(`Error fetching ${strategy} metrics, using mock data`);
+        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error(`Unexpected error fetching ${strategy} data:`, err);
@@ -196,44 +194,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
 
 const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
   switch (strategy) {
-    case 'nova':
-      return [
-        { 
-          id: '1', 
-          year: 2020, 
-          jan: 13000, feb: 4500, mar: 2800, apr: 18500, may: -1800, jun: 5500, 
-          jul: 16500, aug: 2800, sep: 7000, oct: 3800, nov: 1800, dec: 5500, 
-          total: 80000, max_drawdown: -9000 
-        },
-        { 
-          id: '2', 
-          year: 2021, 
-          jan: 20000, feb: 7500, mar: 9500, apr: 26000, may: 18500, jun: -3600, 
-          jul: 7500, aug: -1400, sep: 900, oct: 14000, nov: 13000, dec: 23000, 
-          total: 135000, max_drawdown: -13000 
-        },
-        { 
-          id: '3', 
-          year: 2022, 
-          jan: 900, feb: 23000, mar: 13000, apr: -400, may: 28000, jun: 11000, 
-          jul: 4600, aug: 23000, sep: 11000, oct: 5500, nov: 5500, dec: 4200, 
-          total: 130000, max_drawdown: -9500 
-        },
-        { 
-          id: '4', 
-          year: 2023, 
-          jan: 18500, feb: -1900, mar: 18500, apr: -3200, may: 3200, jun: 6500, 
-          jul: -1000, aug: -3700, sep: 3200, oct: 4600, nov: 1900, dec: -650, 
-          total: 46000, max_drawdown: -11000 
-        },
-        { 
-          id: '5', 
-          year: 2024, 
-          jan: 26000, feb: 9300, mar: 16500, apr: -900, may: 6500, jun: 3700, 
-          jul: 3700, aug: -9300, sep: -2700, oct: 14000, nov: -1400, dec: -900, 
-          total: 64000, max_drawdown: -18500 
-        }
-      ];
     case 'evercrest':
       return [
         { 
@@ -317,62 +277,6 @@ const getMockDataForStrategy = (strategy: StrategyType): StrategyDataRow[] => {
 
 const getMockMetricsForStrategy = (strategy: StrategyType): MetricsData => {
   switch (strategy) {
-    case 'velox':
-      return {
-        id: '1',
-        overall_profit: 592758.75,
-        overall_profit_percentage: 266.62,
-        number_of_trades: 1295,
-        win_percentage: 44.09,
-        loss_percentage: 55.91,
-        max_drawdown: -25942.5,
-        max_drawdown_percentage: -11.67,
-        avg_profit_per_trade: 457.73,
-        avg_profit_per_trade_percentage: 0.21,
-        max_profit_in_single_trade: 7323.75,
-        max_profit_in_single_trade_percentage: 3.29,
-        max_loss_in_single_trade: -4136.25,
-        max_loss_in_single_trade_percentage: -1.86,
-        avg_profit_on_winning_trades: 2853.84,
-        avg_profit_on_winning_trades_percentage: 1.28,
-        avg_loss_on_losing_trades: -1432.02,
-        avg_loss_on_losing_trades_percentage: -0.64,
-        reward_to_risk_ratio: 1.99,
-        max_win_streak: 7,
-        max_losing_streak: 10,
-        return_max_dd: 4.36,
-        drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
-        max_trades_in_drawdown: 70,
-        expectancy_ratio: 0.32
-      };
-    case 'nova':
-      return {
-        id: '1',
-        overall_profit: 455000,
-        overall_profit_percentage: 455.0,
-        number_of_trades: 240,
-        win_percentage: 70.5,
-        loss_percentage: 29.5,
-        max_drawdown: -18500,
-        max_drawdown_percentage: -18.5,
-        avg_profit_per_trade: 1895.83,
-        avg_profit_per_trade_percentage: 1.90,
-        max_profit_in_single_trade: 28000,
-        max_profit_in_single_trade_percentage: 28.0,
-        max_loss_in_single_trade: -9300,
-        max_loss_in_single_trade_percentage: -9.3,
-        avg_profit_on_winning_trades: 9500,
-        avg_profit_on_winning_trades_percentage: 9.5,
-        avg_loss_on_losing_trades: -3800,
-        avg_loss_on_losing_trades_percentage: -3.8,
-        reward_to_risk_ratio: 2.5,
-        max_win_streak: 8,
-        max_losing_streak: 3,
-        return_max_dd: 24.6,
-        drawdown_duration: "18 days",
-        max_trades_in_drawdown: 7,
-        expectancy_ratio: 5507.5
-      };
     case 'evercrest':
       return {
         id: '1',

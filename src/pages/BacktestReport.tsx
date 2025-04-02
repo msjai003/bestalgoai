@@ -8,7 +8,8 @@ import {
   Trash,
   ChevronLeft,
   FileSpreadsheet,
-  ArrowRight
+  ArrowRight,
+  Layers
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
@@ -344,6 +345,19 @@ const BacktestReport = () => {
                     <div>
                       <h3 className="text-white font-medium">Backtest Report</h3>
                       <p className="text-sm text-charcoalTextSecondary">View and analyze Zenflow backtest data</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
+                </Link>
+                
+                <Link to="/zenflow-backtest-report?strategy=nova" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-purple-400/50 transition-colors">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-charcoalSecondary mr-3">
+                      <Layers className="h-5 w-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium">Nova Glide Strategy</h3>
+                      <p className="text-sm text-charcoalTextSecondary">Momentum-based market swing analysis</p>
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-charcoalTextSecondary" />
