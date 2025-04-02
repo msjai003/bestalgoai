@@ -1,3 +1,4 @@
+
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -222,13 +223,13 @@ serve(async (req) => {
         .select('id')
         .limit(1);
         
-      // If the metrics table is empty, insert the mock metrics
+      // If the metrics table is empty, insert the metrics
       if (!existingMetrics || existingMetrics.length === 0 || checkError) {
-        console.log("No existing Velox Edge metrics found, creating default metrics");
+        console.log("No existing Velox Edge metrics found, creating new metrics from data");
         
-        // Insert mock metrics data with numeric ID
-        const mockMetricsData = {
-          id: 1, // Using numeric ID instead of uuid
+        // Insert metrics data from the image with numeric ID
+        const metricsData = {
+          id: 1,
           overall_profit: 592758.75,
           overall_profit_percentage: 266.62,
           number_of_trades: 1295,
@@ -257,11 +258,11 @@ serve(async (req) => {
         
         const { data: insertedData, error: insertError } = await supabaseClient
           .from('veloxedge_metrics')
-          .insert([mockMetricsData])
+          .insert([metricsData])
           .select();
           
         if (insertError) {
-          console.error("Error inserting mock Velox Edge metrics:", insertError);
+          console.error("Error inserting Velox Edge metrics:", insertError);
           return new Response(
             JSON.stringify({ 
               message: "Velox Edge Strategy data fetched, but failed to create metrics",
@@ -277,7 +278,7 @@ serve(async (req) => {
         
         return new Response(
           JSON.stringify({ 
-            message: "Velox Edge Strategy data fetched and default metrics created",
+            message: "Velox Edge Strategy data fetched and metrics created",
             data: veloxData,
             metrics: insertedData[0]
           }),
@@ -286,21 +287,83 @@ serve(async (req) => {
             status: 200 
           }
         );
-      }
-      
-      // If metrics exist, fetch them
-      const { data: metricsData, error: metricsError } = await supabaseClient
-        .from('veloxedge_metrics')
-        .select('*')
-        .limit(1);
+      } else {
+        // If metrics exist, update them with new data
+        const metricsData = {
+          overall_profit: 592758.75,
+          overall_profit_percentage: 266.62,
+          number_of_trades: 1295,
+          win_percentage: 44.09,
+          loss_percentage: 55.91,
+          max_drawdown: -25942.5,
+          max_drawdown_percentage: -11.67,
+          avg_profit_per_trade: 457.73,
+          avg_profit_per_trade_percentage: 0.21,
+          max_profit_in_single_trade: 7323.75,
+          max_profit_in_single_trade_percentage: 3.29,
+          max_loss_in_single_trade: -4136.25,
+          max_loss_in_single_trade_percentage: -1.86,
+          avg_profit_on_winning_trades: 2853.84,
+          avg_profit_on_winning_trades_percentage: 1.28,
+          avg_loss_on_losing_trades: -1432.02,
+          avg_loss_on_losing_trades_percentage: -0.64,
+          reward_to_risk_ratio: 1.99,
+          max_win_streak: 7,
+          max_losing_streak: 10,
+          return_max_dd: 4.36,
+          drawdown_duration: "57 [7/29/2024 to 9/23/2024]",
+          max_trades_in_drawdown: 70,
+          expectancy_ratio: 0.32
+        };
         
-      if (metricsError) {
-        console.error("Error fetching Velox Edge metrics:", metricsError);
+        // Update the existing metrics
+        const { data: updatedData, error: updateError } = await supabaseClient
+          .from('veloxedge_metrics')
+          .update(metricsData)
+          .eq('id', existingMetrics[0].id)
+          .select();
+        
+        if (updateError) {
+          console.error("Error updating Velox Edge metrics:", updateError);
+          return new Response(
+            JSON.stringify({ 
+              message: "Velox Edge Strategy data fetched but metrics update failed",
+              data: veloxData,
+              error: updateError.message
+            }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200 
+            }
+          );
+        }
+        
+        // Fetch the updated metrics
+        const { data: metricsData, error: metricsError } = await supabaseClient
+          .from('veloxedge_metrics')
+          .select('*')
+          .limit(1);
+          
+        if (metricsError) {
+          console.error("Error fetching Velox Edge metrics:", metricsError);
+          return new Response(
+            JSON.stringify({ 
+              message: "Velox Edge Strategy data fetched successfully, but metrics failed",
+              data: veloxData,
+              error: metricsError.message
+            }),
+            { 
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200 
+            }
+          );
+        }
+        
         return new Response(
           JSON.stringify({ 
-            message: "Velox Edge Strategy data fetched successfully, but metrics failed",
+            message: "Velox Edge Strategy data and metrics updated successfully",
             data: veloxData,
-            error: metricsError.message
+            metrics: metricsData && metricsData.length > 0 ? metricsData[0] : null
           }),
           { 
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -308,18 +371,6 @@ serve(async (req) => {
           }
         );
       }
-      
-      return new Response(
-        JSON.stringify({ 
-          message: "Velox Edge Strategy data and metrics fetched successfully",
-          data: veloxData,
-          metrics: metricsData && metricsData.length > 0 ? metricsData[0] : null
-        }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200 
-        }
-      );
     }
     
     return new Response(

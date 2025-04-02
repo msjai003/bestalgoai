@@ -141,28 +141,16 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         }
         
         if (metricsData && metricsData.length > 0) {
-          if (strategy === 'velox') {
-            setMetrics({} as MetricsData);
-            console.log("Velox metrics found in DB, but showing empty metrics in UI as requested");
-          } else {
-            setMetrics(metricsData[0] as unknown as MetricsData);
-          }
+          setMetrics(metricsData[0] as unknown as MetricsData);
+          console.log(`${strategy} metrics loaded from DB:`, metricsData[0]);
         } else {
           console.log(`No ${strategy} metrics found in DB`);
-          if (strategy === 'velox') {
-            setMetrics({} as MetricsData);
-          } else {
-            setMetrics(getMockMetricsForStrategy(strategy));
-          }
+          setMetrics(getMockMetricsForStrategy(strategy));
         }
       } catch (metricsError: any) {
         console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-        if (strategy === 'velox') {
-          setMetrics({} as MetricsData);
-        } else {
-          console.log(`Error fetching ${strategy} metrics, using mock data`);
-          setMetrics(getMockMetricsForStrategy(strategy));
-        }
+        console.log(`Error fetching ${strategy} metrics, using mock data`);
+        setMetrics(getMockMetricsForStrategy(strategy));
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);
