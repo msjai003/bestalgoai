@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,7 +22,7 @@ export type StrategyDataRow = {
 };
 
 export type MetricsData = {
-  id: string;
+  id: string | number;
   overall_profit: number;
   overall_profit_percentage: number;
   number_of_trades: number;
@@ -126,14 +125,12 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         setError(error.message);
         toast.error(`Error loading ${getStrategyDisplayName(strategy)} data`);
       } else {
-        // Fix: Ensure the data is cast to the correct type
         setStrategyData(data as unknown as StrategyDataRow[]);
       }
       
       const metricsTable = getMetricsTableNameForStrategy(strategy);
       
       try {
-        // Using try-catch to handle the specific error when no data is found
         const { data: metricsData, error: metricsError } = await supabase
           .from(metricsTable)
           .select('*')
@@ -145,30 +142,24 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         
         if (metricsData && metricsData.length > 0) {
           if (strategy === 'velox') {
-            // For Velox Edge strategy, show empty metrics in UI
             setMetrics({} as MetricsData);
             console.log("Velox metrics found in DB, but showing empty metrics in UI as requested");
           } else {
             setMetrics(metricsData[0] as unknown as MetricsData);
           }
         } else {
-          // If no data is found in the metrics table
           console.log(`No ${strategy} metrics found in DB`);
           if (strategy === 'velox') {
-            // For Velox, show empty metrics
             setMetrics({} as MetricsData);
           } else {
-            // For other strategies, use mock data
             setMetrics(getMockMetricsForStrategy(strategy));
           }
         }
       } catch (metricsError: any) {
         console.error(`Error fetching ${strategy} metrics data:`, metricsError);
-        // For Velox Edge, don't use mock data as fallback, show empty metrics
         if (strategy === 'velox') {
           setMetrics({} as MetricsData);
         } else {
-          // For other strategies, use mock data as fallback
           console.log(`Error fetching ${strategy} metrics, using mock data`);
           setMetrics(getMockMetricsForStrategy(strategy));
         }

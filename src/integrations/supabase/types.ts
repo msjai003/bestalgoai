@@ -944,7 +944,7 @@ export type Database = {
           created_at: string
           drawdown_duration: string
           expectancy_ratio: number
-          id: string
+          id: number
           loss_percentage: number
           max_drawdown: number
           max_drawdown_percentage: number
@@ -973,7 +973,7 @@ export type Database = {
           created_at?: string
           drawdown_duration: string
           expectancy_ratio: number
-          id?: string
+          id: number
           loss_percentage: number
           max_drawdown: number
           max_drawdown_percentage: number
@@ -1002,7 +1002,7 @@ export type Database = {
           created_at?: string
           drawdown_duration?: string
           expectancy_ratio?: number
-          id?: string
+          id?: number
           loss_percentage?: number
           max_drawdown?: number
           max_drawdown_percentage?: number

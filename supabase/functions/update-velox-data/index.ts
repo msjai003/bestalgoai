@@ -1,4 +1,3 @@
-
 // Supabase Edge Function to update Strategy data
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0";
@@ -227,8 +226,9 @@ serve(async (req) => {
       if (!existingMetrics || existingMetrics.length === 0 || checkError) {
         console.log("No existing Velox Edge metrics found, creating default metrics");
         
-        // Insert mock metrics data
+        // Insert mock metrics data with numeric ID
         const mockMetricsData = {
+          id: 1, // Using numeric ID instead of uuid
           overall_profit: 592758.75,
           overall_profit_percentage: 266.62,
           number_of_trades: 1295,
