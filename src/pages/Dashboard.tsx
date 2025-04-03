@@ -6,7 +6,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/dashboard")
+    fetch("http://localhost:8000/api/dashboard")
       .then(res => res.json())
       .then(data => {
         setSummary(data)
