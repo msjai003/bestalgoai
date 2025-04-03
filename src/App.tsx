@@ -15,7 +15,7 @@ import Registration from "./pages/Registration";
 import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
+import Overview from "./pages/Overview";
 import StrategyBuilder from "./pages/StrategyBuilder";
 import StrategySelection from "./pages/StrategySelection";
 import StrategyDetails from "./pages/StrategyDetails";
@@ -65,9 +65,9 @@ function AppRoutes() {
       <Route path="/education" element={<Education />} />
       
       {/* Protected routes */}
-      <Route path="/dashboard" element={
+      <Route path="/overview" element={
         <ProtectedRoute>
-          <Dashboard />
+          <Overview />
         </ProtectedRoute>
       } />
       <Route path="/onboarding" element={
@@ -164,6 +164,13 @@ function AppRoutes() {
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
       <Route path="/price-admin" element={<PriceAdminPage />} />
       <Route path="/api-keys" element={<ApiKeys />} />
+      
+      {/* Keep dashboard route temporarily for backward compatibility */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Overview />
+        </ProtectedRoute>
+      } />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

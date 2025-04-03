@@ -11,7 +11,7 @@ import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
-const Dashboard = () => {
+const Overview = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Dashboard = () => {
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to access the dashboard.",
+        description: "Please log in to access the overview.",
         variant: "destructive",
       });
       navigate('/auth');
@@ -53,7 +53,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
-          <p className="text-gray-300">Loading dashboard...</p>
+          <p className="text-gray-300">Loading overview...</p>
         </div>
       </div>
     );
@@ -74,4 +74,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Overview;

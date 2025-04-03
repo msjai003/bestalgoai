@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,9 +55,9 @@ const Header = () => {
         
         <div className="flex items-center">
           {user ? (
-            <Link to="/dashboard">
+            <Link to="/overview">
               <Button variant="gradient" className="hidden md:block">
-                Dashboard
+                Overview
               </Button>
             </Link>
           ) : (
@@ -82,7 +81,6 @@ const Header = () => {
         </div>
       </nav>
       
-      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
@@ -102,11 +100,11 @@ const Header = () => {
             ))}
             {user ? (
               <Link
-                to="/dashboard"
+                to="/overview"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Dashboard
+                Overview
               </Link>
             ) : (
               <Link

@@ -12,10 +12,10 @@ export const BottomNav = () => {
       <div className="h-16 bg-black/60 backdrop-blur-lg border-t border-gray-800/50">
         <div className="flex justify-around h-full items-center px-4">
           <NavItem 
-            to="/dashboard" 
+            to="/overview" 
             icon="fa-house" 
             label="Home" 
-            isActive={location.pathname === '/dashboard'}
+            isActive={location.pathname === '/overview' || location.pathname === '/dashboard'}
           />
           
           <NavItem 
