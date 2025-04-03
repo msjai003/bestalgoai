@@ -51,7 +51,7 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
 };
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
-  const { functions, isLoading, refresh } = useBrokerFunctions(broker.id);
+  const { functions, brokerName, isLoading, refresh } = useBrokerFunctions(broker.id);
   
   // Refresh functions when component mounts
   useEffect(() => {
@@ -66,6 +66,9 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     ? functions[0].broker_image 
     : broker.logo;
   
+  // Use broker name from functions table if available
+  const displayName = brokerName || broker.name;
+
   return (
     <div
       className="flex items-center p-4 bg-gray-800/30 rounded-xl border border-gray-700 cursor-pointer hover:border-pink-500 transition-colors"
@@ -74,10 +77,10 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       <img
         src={brokerImage}
         className="w-10 h-10 rounded-lg object-cover"
-        alt={broker.name}
+        alt={displayName}
       />
       <div className="ml-3 flex-1">
-        <h3 className="font-semibold">{broker.name}</h3>
+        <h3 className="font-semibold">{displayName}</h3>
         <div className="flex items-center gap-2 mt-1">
           {isLoading ? (
             <div className="text-xs text-gray-400">Loading features...</div>

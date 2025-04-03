@@ -8,6 +8,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
   const [functions, setFunctions] = useState<BrokerFunction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [brokerName, setBrokerName] = useState<string | null>(null);
 
   const fetchBrokerFunctions = useCallback(async () => {
     setIsLoading(true);
@@ -30,6 +31,11 @@ export const useBrokerFunctions = (brokerId?: number) => {
       
       // Cast the data to match our BrokerFunction type
       setFunctions(data as unknown as BrokerFunction[]);
+
+      // Extract broker name from the first function record
+      if (data && data.length > 0 && data[0].broker_name) {
+        setBrokerName(data[0].broker_name);
+      }
     } catch (err: any) {
       console.error("Error fetching broker functions:", err);
       setError(err.message);
@@ -45,6 +51,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
 
   return {
     functions,
+    brokerName,
     isLoading,
     error,
     refresh: fetchBrokerFunctions
