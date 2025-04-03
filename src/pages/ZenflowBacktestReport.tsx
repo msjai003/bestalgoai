@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -159,7 +160,7 @@ const ZenflowBacktestReport = () => {
 
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   const [activeTab, setActiveTab] = useState<string>('annual');
-  const [currentSection, setCurrentSection] = useState<'overview' | 'keyMetrics' | 'detailed'>('overview');
+  const [currentSection, setCurrentSection] = useState<'overview' | 'metrics' | 'detailed'>('overview');
   
   useEffect(() => {
     fetchZenflowBacktestResults();
@@ -180,8 +181,9 @@ const ZenflowBacktestReport = () => {
 
   const handleNextSection = () => {
     if (currentSection === 'overview') {
-      setCurrentSection('keyMetrics');
-    } else if (currentSection === 'keyMetrics') {
+      setCurrentSection('metrics');
+      setActiveTab('metrics');
+    } else if (currentSection === 'metrics') {
       setCurrentSection('detailed');
       setActiveTab('details');
     } else {
@@ -292,7 +294,8 @@ const ZenflowBacktestReport = () => {
         <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <div className="flex justify-between items-center mb-4">
             <TabsList className="bg-charcoalSecondary/50">
-              <TabsTrigger value="annual">Performance Analysis</TabsTrigger>
+              <TabsTrigger value="annual">Annual Data</TabsTrigger>
+              <TabsTrigger value="metrics">Performance Analysis</TabsTrigger>
               <TabsTrigger value="details">Detailed Metrics</TabsTrigger>
             </TabsList>
             <Button 
@@ -465,106 +468,129 @@ const ZenflowBacktestReport = () => {
                 </div>
               </>
             )}
+          </TabsContent>
 
-            {currentSection === 'keyMetrics' && (
-              <>
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-white">Key Performance Metrics</h2>
-                  <p className="text-sm text-gray-400">Summary of metrics from the {getStrategyDisplayName(strategyType)} backtest</p>
-                </div>
-                
-                {loading ? (
-                  <div className="flex justify-center items-center h-40">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
-                  </div>
-                ) : isEmptyMetrics ? (
-                  <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
-                    <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
-                    <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleRefresh}
-                      className="mt-4"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-5">
-                    <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden">
-                      <CardHeader className="pb-2 border-b border-gray-700/50">
-                        <CardTitle className="text-lg text-white">Performance Summary</CardTitle>
-                        <CardDescription>Key metrics at a glance</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <div className="p-4 space-y-1">
-                          <StatCard 
-                            label="Win %" 
-                            value={metrics.win_percentage || 'N/A'} 
-                            tooltip="Percentage of trades that resulted in profit"
-                          />
-                          <StatCard 
-                            label="Overall Profit" 
-                            value={formatCurrency(metrics.overall_profit)}
-                            percentValue={metrics.overall_profit_percentage}
-                            tooltip="Total profit generated" 
-                          />
-                          <StatCard 
-                            label="Max Drawdown" 
-                            value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
-                            percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
-                            isNegative
-                            tooltip="Maximum peak-to-trough decline"
-                          />
-                          <StatCard 
-                            label="No. of Trades" 
-                            value={metrics.number_of_trades || 'N/A'}
-                            tooltip="Total number of trades executed"
-                          />
-                          <StatCard 
-                            label="Avg. Profit per Trade" 
-                            value={formatCurrency(metrics.avg_profit_per_trade)}
-                            percentValue={metrics.avg_profit_per_trade_percentage}
-                            tooltip="Average profit per trade across all trades"
-                          />
-                          <StatCard 
-                            label="Reward to Risk Ratio" 
-                            value={metrics.reward_to_risk_ratio || 'N/A'}
-                            tooltip="Ratio of average profit to average loss"
-                          />
-                          <StatCard 
-                            label="Return/MaxDD" 
-                            value={metrics.return_max_dd || 'N/A'}
-                            tooltip="Overall return divided by maximum drawdown"
-                          />
-                          <StatCard 
-                            label="Max Win Streak" 
-                            value={metrics.max_win_streak || 'N/A'}
-                            tooltip="Longest consecutive winning trades"
-                          />
-                          <StatCard 
-                            label="Max Loss Streak" 
-                            value={metrics.max_losing_streak || 'N/A'}
-                            tooltip="Longest consecutive losing trades"
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <div className="flex justify-end mt-4">
-                      <Button 
-                        onClick={handleNextSection}
-                        className="flex items-center gap-2"
-                      >
-                        <span>Detailed Metrics</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
+          <TabsContent value="metrics" className="space-y-4">
+            <div className="mt-2 mb-4">
+              <h2 className="text-lg font-semibold text-white">Performance Analysis</h2>
+              <p className="text-sm text-gray-400">Key metrics from the {getStrategyDisplayName(strategyType)} backtest</p>
+            </div>
+            
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
+              </div>
+            ) : isEmptyMetrics ? (
+              <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
+                <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
+                <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  className="mt-4"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden animate-fade-in">
+                  <CardHeader className="pb-2 border-b border-gray-700/50">
+                    <CardTitle className="text-lg text-white">Performance Summary</CardTitle>
+                    <CardDescription>Key performance indicators at a glance</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="p-4 space-y-1">
+                      <StatCard 
+                        label="Win %" 
+                        value={metrics.win_percentage || 'N/A'} 
+                        tooltip="Percentage of trades that resulted in profit"
+                      />
+                      <StatCard 
+                        label="Overall Profit" 
+                        value={formatCurrency(metrics.overall_profit)}
+                        percentValue={metrics.overall_profit_percentage}
+                        tooltip="Total profit generated" 
+                      />
+                      <StatCard 
+                        label="Max Drawdown" 
+                        value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
+                        percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
+                        isNegative
+                        tooltip="Maximum peak-to-trough decline"
+                      />
+                      <StatCard 
+                        label="No. of Trades" 
+                        value={metrics.number_of_trades || 'N/A'}
+                        tooltip="Total number of trades executed"
+                      />
+                      <StatCard 
+                        label="Avg. Profit per Trade" 
+                        value={formatCurrency(metrics.avg_profit_per_trade)}
+                        percentValue={metrics.avg_profit_per_trade_percentage}
+                        tooltip="Average profit per trade across all trades"
+                      />
+                      <StatCard 
+                        label="Reward to Risk Ratio" 
+                        value={metrics.reward_to_risk_ratio || 'N/A'}
+                        tooltip="Ratio of average profit to average loss"
+                      />
                     </div>
-                  </div>
-                )}
-              </>
+                  </CardContent>
+                </Card>
+                
+                {/* Additional metrics in the Performance Analysis section */}
+                <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden animate-fade-in delay-100">
+                  <CardHeader className="pb-2 border-b border-gray-700/50">
+                    <CardTitle className="text-lg text-white">Trade Performance</CardTitle>
+                    <CardDescription>Statistics on winning and losing trades</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="p-4 space-y-1">
+                      <StatCard 
+                        label="Return/MaxDD" 
+                        value={metrics.return_max_dd || 'N/A'}
+                        tooltip="Overall return divided by maximum drawdown"
+                      />
+                      <StatCard 
+                        label="Max Win Streak" 
+                        value={metrics.max_win_streak || 'N/A'}
+                        tooltip="Longest consecutive winning trades"
+                      />
+                      <StatCard 
+                        label="Max Loss Streak" 
+                        value={metrics.max_losing_streak || 'N/A'}
+                        tooltip="Longest consecutive losing trades"
+                      />
+                      <StatCard 
+                        label="Avg. Profit on Winning Trades" 
+                        value={formatCurrency(metrics.avg_profit_on_winning_trades)}
+                        percentValue={metrics.avg_profit_on_winning_trades_percentage}
+                        tooltip="Average profit from profitable trades"
+                      />
+                      <StatCard 
+                        label="Avg. Loss on Losing Trades" 
+                        value={formatCurrency(Math.abs(metrics.avg_loss_on_losing_trades || 0))}
+                        percentValue={Math.abs(metrics.avg_loss_on_losing_trades_percentage || 0)}
+                        isNegative
+                        tooltip="Average loss from unprofitable trades"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="flex justify-end mt-4">
+                  <Button 
+                    onClick={handleNextSection}
+                    className="flex items-center gap-2"
+                  >
+                    <span>View Detailed Metrics</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
           </TabsContent>
 

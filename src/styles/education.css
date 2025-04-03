@@ -146,6 +146,19 @@
   animation: fadeIn 0.5s ease-out forwards;
 }
 
+/* Animation delays for staggered effects */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
 /* Slow ping animation for active chart dots */
 @keyframes ping-slow {
   0% {
