@@ -172,3 +172,15 @@
 .button-container .flex-1 {
   flex: 1;
 }
+
+/* Education page professional styles */
+.premium-card {
+  background-color: #1F1F1F;
+  border-radius: 1rem;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.premium-card:hover {
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+}

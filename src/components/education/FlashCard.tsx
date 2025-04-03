@@ -127,7 +127,7 @@ export const FlashCard = () => {
                   Flip to Answer
                 </Button>
                 
-                <div className="flex w-full gap-2">
+                <div className="button-container">
                   <Button 
                     variant="secondary" 
                     size="sm"
@@ -176,7 +176,7 @@ export const FlashCard = () => {
                   Flip to Question
                 </Button>
                 
-                <div className="flex w-full gap-2">
+                <div className="button-container">
                   <Button 
                     variant="secondary" 
                     size="sm"
