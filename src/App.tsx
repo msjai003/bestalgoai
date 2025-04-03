@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,6 +41,7 @@ import ColorTest from "./pages/ColorTest";
 import Education from "./pages/Education";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
+import ApiKeys from "./pages/ApiKeys";
 
 const queryClient = new QueryClient();
 
@@ -163,6 +163,7 @@ function AppRoutes() {
       <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
       <Route path="/price-admin" element={<PriceAdminPage />} />
+      <Route path="/api-keys" element={<ApiKeys />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
