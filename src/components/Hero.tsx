@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useRef, useState } from 'react';
 import { ChartLine, TrendingUp, Sparkles, ArrowRight, Copy, Key } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const Hero = () => {

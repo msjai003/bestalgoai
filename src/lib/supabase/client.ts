@@ -12,12 +12,12 @@ export const supabase = {
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
   },
-  from: (tableName) => ({
+  from: (tableName: string) => ({
     select: (query = '*') => ({
-      eq: (column, value) => ({
+      eq: (column: string, value: any) => ({
         maybeSingle: () => ({ data: null, error: null }),
-        order: (column, { ascending } = { ascending: false }) => ({
-          limit: (limit) => ({
+        order: (column: string, { ascending } = { ascending: false }) => ({
+          limit: (limit: number) => ({
             data: [],
             error: null
           }),
@@ -27,8 +27,8 @@ export const supabase = {
         data: [],
         error: null
       }),
-      order: (column, { ascending } = { ascending: false }) => ({
-        limit: (limit) => ({
+      order: (column: string, { ascending } = { ascending: false }) => ({
+        limit: (limit: number) => ({
           data: [],
           error: null
         }),
@@ -39,13 +39,14 @@ export const supabase = {
       data: [],
       error: null
     }),
-    insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ data: [], error: null }),
+    insert: (data: any) => ({ data: [], error: null }),
+    upsert: (data: any) => ({ data: [], error: null }),
+    update: (data: any) => ({ data: [], error: null }),
     delete: () => ({ data: [], error: null }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
-    from: (bucketName) => ({
+    from: (bucketName: string) => ({
       upload: async () => ({ data: null, error: null }),
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
     }),
