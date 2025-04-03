@@ -1,6 +1,6 @@
 
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +35,7 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
         {filteredBrokers.length > 0 ? (
           filteredBrokers.map((broker) => (
             <BrokerCard 
-              key={broker.id} 
+              key={`${broker.id}-card`} 
               broker={broker} 
               onSelect={onSelectBroker} 
             />
@@ -51,7 +51,12 @@ export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
 };
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
-  const { functions, isLoading } = useBrokerFunctions(broker.id);
+  const { functions, isLoading, refresh } = useBrokerFunctions(broker.id);
+  
+  // Refresh functions when component mounts
+  useEffect(() => {
+    refresh();
+  }, [broker.id]);
   
   const enabledFunctions = functions.filter(func => func.function_enabled);
   const premiumFunctions = functions.filter(func => func.is_premium && func.function_enabled);
