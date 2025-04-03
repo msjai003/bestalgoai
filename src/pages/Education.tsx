@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -18,7 +17,8 @@ import {
   ArrowRight,
   Award,
   Play,
-  LogIn
+  LogIn,
+  Loader
 } from 'lucide-react';
 import { FlashCard } from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
@@ -42,7 +42,9 @@ const Education = () => {
     progress,
     getStats,
     autoLaunchQuiz,
-    setAutoLaunchQuiz
+    setAutoLaunchQuiz,
+    usingRealData,
+    loadingQuizData
   } = useEducation();
   
   const { user } = useAuth();
@@ -51,22 +53,18 @@ const Education = () => {
   
   const stats = getStats();
   
-  // Create a handler to safely cast the string to Level type
   const handleLevelChange = (value: string) => {
     setCurrentLevel(value as Level);
   };
   
-  // Get current module data for the quiz
   const currentModuleData = educationData[currentLevel]?.find(m => m.id === activeQuizModule);
   
-  // Handle quiz launch
   const handleLaunchQuiz = (moduleId: string) => {
     setActiveQuizModule(moduleId);
     startQuiz();
     setQuizModalOpen(true);
   };
   
-  // Check if there's an auto-launch quiz
   useEffect(() => {
     if (autoLaunchQuiz) {
       setActiveQuizModule(autoLaunchQuiz);
@@ -79,7 +77,6 @@ const Education = () => {
       <Header />
       
       <main className="pt-16 pb-20 px-4">
-        {/* Hero section */}
         <section className="py-8 mb-6">
           <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-6">
             <div className="flex items-center justify-between mb-3">
@@ -107,7 +104,6 @@ const Education = () => {
             </p>
             
             {user ? (
-              /* Stats summary for logged in users */
               <div className="flex flex-wrap gap-4 mt-5">
                 <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
                   <CheckCircle className="text-cyan h-4 w-4 mr-2" />
@@ -132,7 +128,6 @@ const Education = () => {
                 )}
               </div>
             ) : (
-              /* Call to action for non-logged in users */
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link to="/auth?signup=true">
                   <Button className="bg-cyan text-charcoalPrimary hover:bg-cyan/90">
@@ -147,12 +142,10 @@ const Education = () => {
           </div>
         </section>
         
-        {/* Progress tracker - only show if logged in */}
         {user && (
           <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
         )}
         
-        {/* Level tabs */}
         <section className="mb-8">
           <Tabs defaultValue={currentLevel} onValueChange={handleLevelChange} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
@@ -253,7 +246,6 @@ const Education = () => {
           </Tabs>
         </section>
         
-        {/* Current flashcard - if logged in */}
         {user && (
           <section className="mb-10">
             <div className="flex items-center justify-between mb-4">
@@ -271,7 +263,6 @@ const Education = () => {
           </section>
         )}
         
-        {/* Leaderboard section - show for all users */}
         <Leaderboard showSignupPrompt={!user} />
       </main>
       
@@ -279,7 +270,7 @@ const Education = () => {
         <QuizModal
           open={quizModalOpen}
           onOpenChange={setQuizModalOpen}
-          quiz={currentModuleData.quiz}
+          quiz={usingRealData ? undefined : currentModuleData.quiz}
           moduleTitle={currentModuleData.title}
           moduleId={activeQuizModule}
           autoLaunch={!!autoLaunchQuiz}

@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  fetchUserEducationData,
+  markModuleCompleted,
+  markModuleViewed,
+  saveQuizResult,
+  saveEarnedBadge,
+  updateEducationProgress,
+  fetchModuleQuizData
+} from '@/adapters/educationAdapter';
 
 export type Level = 'basics' | 'intermediate' | 'pro';
 export type ModuleProgress = { [key: string]: boolean };
@@ -31,6 +41,8 @@ type QuizResults = {
 
 export const useEducation = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  
   const [currentLevel, setCurrentLevel] = useState<Level>(() => {
     const savedLevel = localStorage.getItem('education_currentLevel');
     return (savedLevel as Level) || 'basics';
@@ -156,6 +168,9 @@ export const useEducation = () => {
     };
   });
 
+  const [usingRealData, setUsingRealData] = useState<boolean>(false);
+  const [loadingQuizData, setLoadingQuizData] = useState<boolean>(false);
+
   const progress = {
     overall: Math.round(((completedModules.basics + completedModules.intermediate + completedModules.pro) / 45) * 100),
     basics: Math.round((completedModules.basics / 15) * 100),
@@ -185,19 +200,45 @@ export const useEducation = () => {
     badges
   ]);
 
+  useEffect(() => {
+    if (user) {
+      const loadUserData = async () => {
+        const userData = await fetchUserEducationData(user.id);
+        if (userData) {
+          setUsingRealData(true);
+        }
+      };
+      loadUserData();
+    }
+  }, [user]);
+
   const selectModule = (moduleId: string) => {
     setCurrentModule(moduleId);
     const savedCard = localStorage.getItem(`education_card_${moduleId}`);
     setCurrentCard(savedCard ? parseInt(savedCard, 10) : 0);
+    
+    if (user) {
+      updateEducationProgress(user.id, {
+        currentModule: moduleId
+      }).catch(error => console.error("Error updating module selection:", error));
+    }
   };
 
-  const markModuleViewed = (moduleId: string) => {
+  const markModuleViewedHandler = async (moduleId: string) => {
     if (moduleViews[moduleId]) return;
     
     setModuleViews(prev => ({
       ...prev,
       [moduleId]: true
     }));
+    
+    if (user) {
+      try {
+        await markModuleViewed(user.id, moduleId);
+      } catch (error) {
+        console.error("Error marking module as viewed:", error);
+      }
+    }
   };
 
   const nextCard = () => {
@@ -225,7 +266,22 @@ export const useEducation = () => {
     setQuizActive(true);
   };
 
-  const submitQuizAnswer = (
+  const fetchQuizData = async (moduleId: string) => {
+    if (!user) return null;
+    
+    setLoadingQuizData(true);
+    try {
+      const quizData = await fetchModuleQuizData(moduleId);
+      setLoadingQuizData(false);
+      return quizData;
+    } catch (error) {
+      console.error("Error fetching quiz data:", error);
+      setLoadingQuizData(false);
+      return null;
+    }
+  };
+
+  const submitQuizAnswer = async (
     moduleId: string, 
     isPassed: boolean, 
     score: number, 
@@ -303,6 +359,22 @@ export const useEducation = () => {
             description: "You've completed all modules in the Trading Academy!",
           });
         }
+        
+        if (user) {
+          try {
+            await saveQuizResult(user.id, {
+              moduleId,
+              score,
+              totalQuestions,
+              passed: isPassed,
+              timeSpent
+            });
+            
+            await markModuleCompleted(user.id, moduleId, currentLevel);
+          } catch (error) {
+            console.error("Error saving quiz completion:", error);
+          }
+        }
       }
       
       toast({
@@ -321,7 +393,7 @@ export const useEducation = () => {
     setAutoLaunchQuiz(null);
   };
 
-  const checkBadgeUnlocks = (level: Level, completedCount: number) => {
+  const checkBadgeUnlocks = async (level: Level, completedCount: number) => {
     const newBadges = [...badges];
     const completed = completedCount;
     
@@ -336,6 +408,14 @@ export const useEducation = () => {
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
         });
+        
+        if (user) {
+          try {
+            await saveEarnedBadge(user.id, badgeToUnlock.id);
+          } catch (error) {
+            console.error("Error saving earned badge:", error);
+          }
+        }
       }
     }
     
@@ -350,6 +430,14 @@ export const useEducation = () => {
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
         });
+        
+        if (user) {
+          try {
+            await saveEarnedBadge(user.id, badgeToUnlock.id);
+          } catch (error) {
+            console.error("Error saving earned badge:", error);
+          }
+        }
       }
     }
     
@@ -364,6 +452,14 @@ export const useEducation = () => {
           title: `Badge Unlocked: ${badgeToUnlock.name}`,
           description: badgeToUnlock.description,
         });
+        
+        if (user) {
+          try {
+            await saveEarnedBadge(user.id, badgeToUnlock.id);
+          } catch (error) {
+            console.error("Error saving earned badge:", error);
+          }
+        }
       }
     }
     
@@ -439,10 +535,13 @@ export const useEducation = () => {
     progress,
     getModuleStatus,
     moduleViews,
-    markModuleViewed,
+    markModuleViewed: markModuleViewedHandler,
     quizResults,
     getStats,
     autoLaunchQuiz,
-    setAutoLaunchQuiz
+    setAutoLaunchQuiz,
+    fetchQuizData,
+    loadingQuizData,
+    usingRealData
   };
 };

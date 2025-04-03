@@ -4,15 +4,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Quiz } from '@/data/educationData';
-import { useEducation } from '@/hooks/useEducation';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Quiz, QuizQuestion } from '@/data/educationData';
+import { useEducation } from '@/hooks/useEducation';
 
 interface QuizModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  quiz: Quiz;
+  quiz?: Quiz;
   moduleTitle: string;
   moduleId: string;
   autoLaunch?: boolean;
@@ -26,7 +26,13 @@ export const QuizModal = ({
   moduleId,
   autoLaunch = false 
 }: QuizModalProps) => {
-  const { submitQuizAnswer, markModuleViewed } = useEducation();
+  const { 
+    submitQuizAnswer, 
+    markModuleViewed, 
+    fetchQuizData, 
+    loadingQuizData 
+  } = useEducation();
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -35,9 +41,36 @@ export const QuizModal = ({
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   
-  const totalQuestions = quiz.questions.length;
-  const currentQuestionData = quiz.questions[currentQuestion];
+  // State for database quiz data
+  const [dbQuizData, setDbQuizData] = useState<{ questions: QuizQuestion[] } | null>(null);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  
+  // If we have quiz data from props or from database
+  const hasQuizData = quiz || (dbQuizData && dbQuizData.questions.length > 0);
+  
+  // Use database quiz data if available, otherwise use the quiz data from props
+  const currentQuizData = dbQuizData || (quiz ? { questions: quiz.questions } : null);
+  
+  // Only if we have quiz data
+  const totalQuestions = currentQuizData ? currentQuizData.questions.length : 0;
+  const currentQuestionData = currentQuizData && currentQuestion < totalQuestions 
+    ? currentQuizData.questions[currentQuestion] 
+    : null;
   const isLastQuestion = currentQuestion === totalQuestions - 1;
+  
+  // Fetch quiz data from database when modal opens
+  useEffect(() => {
+    const loadDbQuizData = async () => {
+      if (open && moduleId && !quiz) {
+        setIsLoadingQuiz(true);
+        const data = await fetchQuizData(moduleId);
+        setDbQuizData(data);
+        setIsLoadingQuiz(false);
+      }
+    };
+    
+    loadDbQuizData();
+  }, [open, moduleId, quiz, fetchQuizData]);
   
   // Start timer when quiz opens
   useEffect(() => {
@@ -57,6 +90,7 @@ export const QuizModal = ({
       setShowResults(false);
       setTimeSpent(0);
       setStartTime(null);
+      setDbQuizData(null);
     }
   }, [open, moduleId, markModuleViewed, startTime]);
   
@@ -94,7 +128,7 @@ export const QuizModal = ({
   };
   
   const handleSubmitAnswer = () => {
-    if (selectedAnswer === null) return;
+    if (selectedAnswer === null || !currentQuestionData) return;
     
     const isCorrect = selectedAnswer === currentQuestionData.correctAnswer;
     setIsAnswered(true);
@@ -130,6 +164,20 @@ export const QuizModal = ({
     return 'text-red-500';
   };
   
+  const renderLoadingState = () => (
+    <div className="flex flex-col items-center justify-center py-8">
+      <Loader className="h-8 w-8 animate-spin text-cyan mb-4" />
+      <p className="text-center">Loading quiz questions...</p>
+    </div>
+  );
+  
+  const renderNoQuestionsState = () => (
+    <div className="flex flex-col items-center justify-center py-8">
+      <p className="text-center mb-4">No quiz questions available for this module.</p>
+      <Button onClick={() => onOpenChange(false)}>Close</Button>
+    </div>
+  );
+  
   return (
     <Dialog open={open} onOpenChange={showResults ? () => {} : onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -137,7 +185,11 @@ export const QuizModal = ({
           <DialogTitle className="text-xl">{moduleTitle} Quiz</DialogTitle>
         </DialogHeader>
         
-        {!showResults ? (
+        {isLoadingQuiz || loadingQuizData ? (
+          renderLoadingState()
+        ) : !hasQuizData ? (
+          renderNoQuestionsState()
+        ) : !showResults ? (
           <>
             <div className="flex justify-between text-sm text-gray-400 mb-2">
               <span>Question {currentQuestion + 1} of {totalQuestions}</span>
@@ -149,47 +201,49 @@ export const QuizModal = ({
               className="h-1 mb-4" 
             />
             
-            <div className="premium-card p-4 mb-4">
-              <h3 className="text-lg mb-4">{currentQuestionData?.question}</h3>
-              
-              <RadioGroup 
-                value={selectedAnswer?.toString()} 
-                onValueChange={(value) => !isAnswered && setSelectedAnswer(Number(value))}
-                className="space-y-3"
-                disabled={isAnswered}
-              >
-                {currentQuestionData?.options.map((option, index) => (
-                  <div 
-                    key={index} 
-                    className={`flex items-center space-x-2 p-3 rounded-md border ${
-                      isAnswered && currentQuestionData.correctAnswer === index 
-                        ? 'border-green-500 bg-green-500/10' 
-                        : isAnswered && selectedAnswer === index 
-                          ? 'border-red-500 bg-red-500/10' 
-                          : 'border-gray-700'
-                    }`}
-                  >
-                    <RadioGroupItem 
-                      value={index.toString()} 
-                      id={`option-${index}`} 
-                      disabled={isAnswered}
-                    />
-                    <Label 
-                      htmlFor={`option-${index}`}
-                      className="flex-1 cursor-pointer"
+            {currentQuestionData && (
+              <div className="premium-card p-4 mb-4">
+                <h3 className="text-lg mb-4">{currentQuestionData?.question}</h3>
+                
+                <RadioGroup 
+                  value={selectedAnswer?.toString()} 
+                  onValueChange={(value) => !isAnswered && setSelectedAnswer(Number(value))}
+                  className="space-y-3"
+                  disabled={isAnswered}
+                >
+                  {currentQuestionData?.options.map((option, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-center space-x-2 p-3 rounded-md border ${
+                        isAnswered && currentQuestionData.correctAnswer === index 
+                          ? 'border-green-500 bg-green-500/10' 
+                          : isAnswered && selectedAnswer === index 
+                            ? 'border-red-500 bg-red-500/10' 
+                            : 'border-gray-700'
+                      }`}
                     >
-                      {option}
-                    </Label>
-                    {isAnswered && currentQuestionData.correctAnswer === index && (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    )}
-                    {isAnswered && selectedAnswer === index && currentQuestionData.correctAnswer !== index && (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
+                      <RadioGroupItem 
+                        value={index.toString()} 
+                        id={`option-${index}`} 
+                        disabled={isAnswered}
+                      />
+                      <Label 
+                        htmlFor={`option-${index}`}
+                        className="flex-1 cursor-pointer"
+                      >
+                        {option}
+                      </Label>
+                      {isAnswered && currentQuestionData.correctAnswer === index && (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      )}
+                      {isAnswered && selectedAnswer === index && currentQuestionData.correctAnswer !== index && (
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      )}
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
             
             <DialogFooter className="sm:justify-between">
               <Button 

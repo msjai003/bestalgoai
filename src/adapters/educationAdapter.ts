@@ -1,4 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { QuizQuestion, QuizAnswer } from '@/data/educationData';
 
 // Type for quiz result
 interface QuizResult {
@@ -349,5 +351,69 @@ export const updateUserProgress = async (userId: string, progressData: {
   } catch (error) {
     console.error('Error updating user progress:', error);
     return false;
+  }
+};
+
+// New function to fetch module quiz data from Supabase
+export const fetchModuleQuizData = async (moduleId: string): Promise<{
+  questions: QuizQuestion[];
+} | null> => {
+  try {
+    // Fetch questions for this module
+    const { data: questionsData, error: questionsError } = await supabase
+      .from('education_quiz_questions')
+      .select('*')
+      .eq('module_id', moduleId)
+      .order('order_index');
+      
+    if (questionsError) {
+      console.error('Error fetching quiz questions:', questionsError);
+      toast.error('Failed to load quiz questions');
+      return null;
+    }
+    
+    if (!questionsData || questionsData.length === 0) {
+      console.warn('No quiz questions found for module:', moduleId);
+      return null;
+    }
+    
+    // For each question, fetch its answers
+    const questions: QuizQuestion[] = [];
+    
+    for (const question of questionsData) {
+      const { data: answersData, error: answersError } = await supabase
+        .from('education_quiz_answers')
+        .select('*')
+        .eq('question_id', question.id)
+        .order('order_index');
+        
+      if (answersError) {
+        console.error('Error fetching answers:', answersError);
+        continue;
+      }
+      
+      if (!answersData || answersData.length === 0) {
+        console.warn('No answers found for question:', question.id);
+        continue;
+      }
+      
+      // Map the database answer format to our app answer format
+      const options = answersData.map(answer => answer.answer_text);
+      const correctAnswer = answersData.findIndex(answer => answer.is_correct);
+      
+      questions.push({
+        question: question.question,
+        options,
+        correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
+        explanation: question.explanation || ''
+      });
+    }
+    
+    return {
+      questions
+    };
+  } catch (error) {
+    console.error('Exception fetching quiz data:', error);
+    return null;
   }
 };
