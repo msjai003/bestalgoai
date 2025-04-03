@@ -42,6 +42,7 @@ import Education from "./pages/Education";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 import ApiKeys from "./pages/ApiKeys";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,11 @@ function AppRoutes() {
       <Route path="/education" element={<Education />} />
       
       {/* Protected routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
       <Route path="/overview" element={
         <ProtectedRoute>
           <Overview />
