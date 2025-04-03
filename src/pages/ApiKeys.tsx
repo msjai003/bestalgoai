@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ApiKeyInfo } from "@/types/broker";
 
 interface ApiKey {
   id: string;
@@ -59,9 +60,12 @@ const ApiKeys = () => {
       }
       
       // Map the database fields to our ApiKey interface
+      // Since the name field doesn't exist in the database,
+      // we'll create a default name based on creation date
       const formattedKeys = data?.map(key => ({
         id: key.id,
-        name: key.name || `Key ${new Date(key.created_at).toLocaleDateString()}`, // Provide a default name if not set
+        // Generate a name since the column doesn't exist in the database
+        name: `API Key ${new Date(key.created_at).toLocaleDateString()}`,
         api_key: key.api_key,
         created_at: key.created_at,
         last_used: key.last_used
@@ -110,12 +114,12 @@ const ApiKeys = () => {
       const newApiKey = generateApiKey();
       
       // Insert the new key into Supabase
+      // Note: We're not including the name field in the insert since it doesn't exist in the table
       const { data, error } = await supabase
         .from('user_api_keys')
         .insert({
           user_id: user.id,
           api_key: newApiKey,
-          name: newKeyName,
           is_active: true
         })
         .select('*')
@@ -128,7 +132,8 @@ const ApiKeys = () => {
       // Format the new key to match our ApiKey interface
       const formattedKey: ApiKey = {
         id: data.id,
-        name: data.name || newKeyName, // Use the provided name or fall back to newKeyName
+        // Use the name we've entered but it won't be saved to the database
+        name: newKeyName,
         api_key: data.api_key,
         created_at: data.created_at,
         last_used: data.last_used
