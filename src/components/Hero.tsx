@@ -1,11 +1,10 @@
+
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect, useRef, useState } from 'react';
-import { ChartLine, TrendingUp, Sparkles, ArrowRight, Copy, Key } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useRef } from 'react';
+import { ChartLine, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -13,9 +12,6 @@ export const Hero = () => {
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
-  const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
   
   const handleSignIn = () => {
     navigate('/auth');
@@ -27,65 +23,6 @@ export const Hero = () => {
     } else {
       navigate('/auth');
     }
-  };
-
-  const generateApiKey = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to generate an API key",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      // Generate a random API key with format: xxxx-xxxx-xxxx-xxxx
-      const key = Array(4).fill(0).map(() => 
-        Math.random().toString(36).substring(2, 6)
-      ).join('-');
-      
-      // Store the API key in Supabase if user is authenticated
-      if (user) {
-        const { error } = await supabase
-          .from('user_api_keys')
-          .upsert({ 
-            user_id: user.id, 
-            api_key: key,
-            created_at: new Date().toISOString()
-          });
-          
-        if (error) {
-          throw new Error(error.message);
-        }
-      }
-      
-      setApiKey(key);
-      toast({
-        title: "API Key Generated",
-        description: "Your API key was successfully generated"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate API key. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const copyApiKey = () => {
-    if (!apiKey) return;
-    
-    navigator.clipboard.writeText(apiKey).then(() => {
-      toast({
-        title: "Copied!",
-        description: "API key copied to clipboard"
-      });
-    });
   };
 
   useEffect(() => {
@@ -330,54 +267,6 @@ export const Hero = () => {
             Start Trading Now
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
-
-          {/* API Key Generation Section */}
-          <div className="mt-6 bg-charcoalSecondary/60 border border-cyan/20 rounded-xl p-4 backdrop-blur-sm max-w-lg mx-auto">
-            <div className="flex items-center mb-3">
-              <Key className="h-5 w-5 text-cyan mr-2" />
-              <h3 className="text-lg font-semibold text-white">API Integration</h3>
-            </div>
-            
-            <p className="text-sm text-gray-300 mb-4">
-              Generate an API key to integrate our trading algorithms with your custom applications
-            </p>
-            
-            {apiKey ? (
-              <div className="flex items-center justify-between bg-charcoalPrimary/70 border border-gray-700 rounded-lg p-3 mb-3">
-                <code className="text-cyan font-mono text-sm">{apiKey}</code>
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  onClick={copyApiKey}
-                  className="h-8 w-8 text-gray-400 hover:text-white"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto border-cyan/30 bg-cyan/5 text-cyan hover:bg-cyan/10"
-                onClick={generateApiKey}
-                disabled={isGenerating || !user}
-              >
-                {isGenerating ? (
-                  <>
-                    <span className="animate-spin mr-2">◌</span>
-                    Generating...
-                  </>
-                ) : (
-                  <>Generate API Key</>
-                )}
-              </Button>
-            )}
-            
-            {!user && (
-              <p className="text-xs text-amber-300/80 mt-2">
-                Please sign in to generate an API key
-              </p>
-            )}
-          </div>
         </div>
         
         <div className="premium-frame border-cyan/30 hover:border-cyan/60 transition-all duration-500 relative overflow-hidden">
