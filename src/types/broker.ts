@@ -28,3 +28,11 @@ export interface BrokerPermissions {
 }
 
 export type ConnectionStep = "selection" | "credentials" | "settings" | "success";
+
+export interface ApiKeyInfo {
+  id: string;
+  name: string;
+  api_key: string;
+  created_at: string;
+  last_used?: string;
+}

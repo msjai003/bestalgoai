@@ -128,7 +128,7 @@ const ApiKeys = () => {
       // Format the new key to match our ApiKey interface
       const formattedKey: ApiKey = {
         id: data.id,
-        name: data.name,
+        name: data.name || newKeyName, // Use the provided name or fall back to newKeyName
         api_key: data.api_key,
         created_at: data.created_at,
         last_used: data.last_used
