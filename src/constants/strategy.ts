@@ -22,7 +22,7 @@ export const indices = ["Nifty", "Sensex"];
 export const positionTypes = ["Buy", "Sell"];
 export const optionTypes = ["Call", "Put"];
 export const expiryTypes = ["Weekly", "Next Weekly", "Monthly"];
-export const brokers = ["Zerodha", "Aliceblue", "Angel One"];
+export const brokers = ["Zerodha", "Aliceblue", "Angel One", "5 Paisa", "Bigil"];
 export const highLowTypes = ["High", "Low"];
 
 export const strikeTypes = [

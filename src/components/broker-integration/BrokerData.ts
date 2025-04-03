@@ -56,6 +56,24 @@ export const brokers: Broker[] = [
     supportedAssets: ["Stocks", "Options", "Futures", "Commodities", "Currencies"],
     fees: "₹20 per order flat fee structure",
     apiRequired: true
+  },
+  {
+    id: 7,
+    name: "5 Paisa",
+    description: "Budget-friendly broker",
+    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg",
+    supportedAssets: ["Stocks", "Options", "Futures", "Commodities", "Currencies"],
+    fees: "₹10 per order flat fee structure",
+    apiRequired: true
+  },
+  {
+    id: 8,
+    name: "Bigil",
+    description: "New-age trading platform",
+    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg",
+    supportedAssets: ["Stocks", "Options", "Futures", "ETFs"],
+    fees: "₹15 per order or 0.03% (whichever is lower)",
+    apiRequired: true
   }
 ];
 
