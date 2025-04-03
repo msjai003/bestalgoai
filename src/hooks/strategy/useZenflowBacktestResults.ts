@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -152,6 +151,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         const { data: metricsData, error: metricsError } = await supabase
           .from(metricsTable as any)
           .select('*')
+          .order('created_at', { ascending: false }) // Get the most recent metrics
           .limit(1);
           
         if (metricsError) {
@@ -159,7 +159,7 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
         }
         
         if (metricsData && metricsData.length > 0) {
-          console.log(`Successfully fetched metrics for ${strategy}`);
+          console.log(`Successfully fetched metrics for ${strategy}:`, metricsData[0]);
           setMetrics(metricsData[0] as unknown as MetricsData);
         } else {
           console.log(`No ${strategy} metrics found in DB, using mock data`);
@@ -181,6 +181,8 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
       } else {
         setStrategyData(getMockDataForStrategy(strategy));
       }
+      
+      setMetrics(getMockMetricsForStrategy(strategy));
     } finally {
       setLoading(false);
     }
@@ -201,7 +203,6 @@ export const useZenflowBacktestResults = (strategy: StrategyType = 'zenflow') =>
   };
 };
 
-// Mock Zenflow data specifically
 const getMockZenflowData = (): StrategyDataRow[] => {
   return [
     { 

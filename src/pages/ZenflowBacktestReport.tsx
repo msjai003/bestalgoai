@@ -180,9 +180,14 @@ const ZenflowBacktestReport = () => {
   };
 
   const handleNextSection = () => {
+    // When "Key Performance Metrics" button is clicked in overview section,
+    // fetch the data again to ensure we have fresh metrics data
     if (currentSection === 'overview') {
       setCurrentSection('metrics');
       setActiveTab('metrics');
+      // Refresh data when moving to metrics view
+      fetchZenflowBacktestResults();
+      console.log("Fetching fresh metrics data from zenflow_metrics table");
     } else if (currentSection === 'metrics') {
       setCurrentSection('detailed');
       setActiveTab('details');
@@ -309,6 +314,7 @@ const ZenflowBacktestReport = () => {
             </Button>
           </div>
 
+          {/* Annual Data Tab */}
           <TabsContent value="annual" className="space-y-5">
             {currentSection === 'overview' && (
               <>
@@ -470,6 +476,7 @@ const ZenflowBacktestReport = () => {
             )}
           </TabsContent>
 
+          {/* Performance Analysis Tab */}
           <TabsContent value="metrics" className="space-y-4">
             <div className="mt-2 mb-4">
               <h2 className="text-lg font-semibold text-white">Performance Analysis</h2>
@@ -480,10 +487,9 @@ const ZenflowBacktestReport = () => {
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
               </div>
-            ) : isEmptyMetrics ? (
+            ) : !metrics || Object.keys(metrics).length === 0 ? (
               <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
                 <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
-                <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -491,11 +497,12 @@ const ZenflowBacktestReport = () => {
                   className="mt-4"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
+                  Try Again
                 </Button>
               </div>
             ) : (
               <div className="space-y-5">
+                {/* Performance Summary Card */}
                 <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden animate-fade-in">
                   <CardHeader className="pb-2 border-b border-gray-700/50">
                     <CardTitle className="text-lg text-white">Performance Summary</CardTitle>
@@ -541,7 +548,7 @@ const ZenflowBacktestReport = () => {
                   </CardContent>
                 </Card>
                 
-                {/* Additional metrics in the Performance Analysis section */}
+                {/* Trade Performance Card */}
                 <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden animate-fade-in delay-100">
                   <CardHeader className="pb-2 border-b border-gray-700/50">
                     <CardTitle className="text-lg text-white">Trade Performance</CardTitle>
@@ -634,6 +641,7 @@ const ZenflowBacktestReport = () => {
             )}
           </TabsContent>
 
+          {/* Detailed Metrics Tab */}
           <TabsContent value="details" className="space-y-4">
             <div className="mt-2 mb-4">
               <h2 className="text-lg font-semibold text-white">Detailed Performance Metrics</h2>
@@ -644,10 +652,9 @@ const ZenflowBacktestReport = () => {
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan"></div>
               </div>
-            ) : isEmptyMetrics ? (
+            ) : !metrics || Object.keys(metrics).length === 0 ? (
               <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
                 <p className="text-charcoalTextSecondary">No metrics data available for {getStrategyDisplayName(strategyType)}.</p>
-                <p className="text-charcoalTextSecondary mt-2">Use the Update button on the Velox Edge Data page to retrieve metrics.</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -655,7 +662,7 @@ const ZenflowBacktestReport = () => {
                   className="mt-4"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
+                  Try Again
                 </Button>
               </div>
             ) : (
