@@ -16,12 +16,25 @@ export type Flashcard = {
 };
 
 export type Quiz = {
-  questions: {
-    id: string;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-  }[];
+  questions: QuizQuestion[];
+};
+
+export type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+};
+
+export type QuizAnswer = {
+  id: string;
+  question_id: string;
+  answer_text: string;
+  is_correct: boolean;
+  order_index: number;
+  created_at?: string;
+  updated_at?: string;
 };
 
 // Create a large dataset with 100+ flashcards per level
