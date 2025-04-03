@@ -161,3 +161,8 @@
 .animate-ping-slow {
   animation: ping-slow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
+
+/* Stats card animations */
+.stats-card-appear {
+  animation: fadeIn 0.4s ease-out forwards;
+}

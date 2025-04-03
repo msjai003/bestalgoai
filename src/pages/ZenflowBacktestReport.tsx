@@ -31,6 +31,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -109,39 +114,33 @@ const StatCard = ({ label, value, percentValue, isNegative, tooltip }: {
     : 0;
     
   return (
-    <Card className="bg-charcoalSecondary/50 border-gray-700 h-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-gray-400 flex items-center">
-            {label}
-            {tooltip && (
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 ml-1 text-gray-500" />
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-charcoalPrimary border-gray-700 text-xs">
-                    {tooltip}
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
-            )}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-end flex-wrap">
-          <p className={`text-lg font-bold ${numValue > 0 ? (isNegative ? 'text-red-500' : 'text-green-500') : numValue < 0 ? (isNegative ? 'text-green-500' : 'text-red-500') : ''} truncate max-w-full break-words`}>
-            {value}
+    <div className="flex items-center justify-between border-b border-gray-700/50 py-2 last:border-b-0">
+      <div className="flex items-center">
+        <span className="text-gray-400 text-sm">{label}</span>
+        {tooltip && (
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 ml-1 text-gray-500" />
+              </TooltipTrigger>
+              <TooltipContent className="bg-charcoalPrimary border-gray-700 text-xs">
+                {tooltip}
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+        )}
+      </div>
+      <div className="flex items-center">
+        <p className={`font-semibold ${numValue > 0 ? (isNegative ? 'text-red-500' : 'text-green-500') : numValue < 0 ? (isNegative ? 'text-green-500' : 'text-red-500') : ''} text-right`}>
+          {value}
+        </p>
+        {percentValue !== undefined && (
+          <p className={`text-sm ml-2 ${numPercentValue > 0 ? (isNegative ? 'text-red-400' : 'text-green-400') : numPercentValue < 0 ? (isNegative ? 'text-green-400' : 'text-red-400') : ''}`}>
+            ({percentValue}%)
           </p>
-          {percentValue !== undefined && (
-            <p className={`text-sm ml-2 ${numPercentValue > 0 ? (isNegative ? 'text-red-400' : 'text-green-400') : numPercentValue < 0 ? (isNegative ? 'text-green-400' : 'text-red-400') : ''}`}>
-              ({percentValue}%)
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -494,66 +493,65 @@ const ZenflowBacktestReport = () => {
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                      <StatCard 
-                        label="Win %" 
-                        value={metrics.win_percentage || 'N/A'} 
-                        tooltip="Percentage of trades that resulted in profit"
-                      />
-                      <StatCard 
-                        label="Overall Profit" 
-                        value={formatCurrency(metrics.overall_profit)}
-                        percentValue={metrics.overall_profit_percentage}
-                        tooltip="Total profit generated" 
-                      />
-                      <StatCard 
-                        label="Max Drawdown" 
-                        value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
-                        percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
-                        isNegative
-                        tooltip="Maximum peak-to-trough decline"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                      <StatCard 
-                        label="No. of Trades" 
-                        value={metrics.number_of_trades || 'N/A'}
-                        tooltip="Total number of trades executed"
-                      />
-                      <StatCard 
-                        label="Avg. Profit per Trade" 
-                        value={formatCurrency(metrics.avg_profit_per_trade)}
-                        percentValue={metrics.avg_profit_per_trade_percentage}
-                        tooltip="Average profit per trade across all trades"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <StatCard 
-                        label="Reward to Risk Ratio" 
-                        value={metrics.reward_to_risk_ratio || 'N/A'}
-                        tooltip="Ratio of average profit to average loss"
-                      />
-                      <StatCard 
-                        label="Return/MaxDD" 
-                        value={metrics.return_max_dd || 'N/A'}
-                        tooltip="Overall return divided by maximum drawdown"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <StatCard 
-                        label="Max Win Streak" 
-                        value={metrics.max_win_streak || 'N/A'}
-                        tooltip="Longest consecutive winning trades"
-                      />
-                      <StatCard 
-                        label="Max Loss Streak" 
-                        value={metrics.max_losing_streak || 'N/A'}
-                        tooltip="Longest consecutive losing trades"
-                      />
-                    </div>
+                    <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden">
+                      <CardHeader className="pb-2 border-b border-gray-700/50">
+                        <CardTitle className="text-lg text-white">Performance Summary</CardTitle>
+                        <CardDescription>Key metrics at a glance</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="p-4 space-y-1">
+                          <StatCard 
+                            label="Win %" 
+                            value={metrics.win_percentage || 'N/A'} 
+                            tooltip="Percentage of trades that resulted in profit"
+                          />
+                          <StatCard 
+                            label="Overall Profit" 
+                            value={formatCurrency(metrics.overall_profit)}
+                            percentValue={metrics.overall_profit_percentage}
+                            tooltip="Total profit generated" 
+                          />
+                          <StatCard 
+                            label="Max Drawdown" 
+                            value={formatCurrency(Math.abs(metrics.max_drawdown || 0))}
+                            percentValue={Math.abs(metrics.max_drawdown_percentage || 0)}
+                            isNegative
+                            tooltip="Maximum peak-to-trough decline"
+                          />
+                          <StatCard 
+                            label="No. of Trades" 
+                            value={metrics.number_of_trades || 'N/A'}
+                            tooltip="Total number of trades executed"
+                          />
+                          <StatCard 
+                            label="Avg. Profit per Trade" 
+                            value={formatCurrency(metrics.avg_profit_per_trade)}
+                            percentValue={metrics.avg_profit_per_trade_percentage}
+                            tooltip="Average profit per trade across all trades"
+                          />
+                          <StatCard 
+                            label="Reward to Risk Ratio" 
+                            value={metrics.reward_to_risk_ratio || 'N/A'}
+                            tooltip="Ratio of average profit to average loss"
+                          />
+                          <StatCard 
+                            label="Return/MaxDD" 
+                            value={metrics.return_max_dd || 'N/A'}
+                            tooltip="Overall return divided by maximum drawdown"
+                          />
+                          <StatCard 
+                            label="Max Win Streak" 
+                            value={metrics.max_win_streak || 'N/A'}
+                            tooltip="Longest consecutive winning trades"
+                          />
+                          <StatCard 
+                            label="Max Loss Streak" 
+                            value={metrics.max_losing_streak || 'N/A'}
+                            tooltip="Longest consecutive losing trades"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
                     
                     <div className="flex justify-end mt-4">
                       <Button 
