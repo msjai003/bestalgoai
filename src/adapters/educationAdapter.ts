@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { QuizQuestion, QuizAnswer } from '@/data/educationData';
@@ -359,11 +360,32 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
+    // Fetch module's UUID from education_modules if moduleId is a string identifier
+    let actualModuleId = moduleId;
+    
+    // If moduleId is not a UUID (like "module1"), try to find the actual UUID
+    if (!moduleId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const { data: moduleData, error: moduleError } = await supabase
+        .from('education_modules')
+        .select('id')
+        .eq('id', moduleId)
+        .maybeSingle();
+      
+      if (moduleError || !moduleData) {
+        console.error('Error finding module by ID:', moduleError || 'Module not found');
+        return null;
+      }
+      
+      actualModuleId = moduleData.id;
+    }
+    
+    console.log('Fetching questions for module ID:', actualModuleId);
+    
     // Fetch questions for this module
     const { data: questionsData, error: questionsError } = await supabase
       .from('education_quiz_questions')
       .select('*')
-      .eq('module_id', moduleId)
+      .eq('module_id', actualModuleId)
       .order('order_index');
       
     if (questionsError) {
@@ -376,6 +398,8 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
       console.warn('No quiz questions found for module:', moduleId);
       return null;
     }
+    
+    console.log('Found questions for module:', questionsData.length);
     
     // For each question, fetch its answers
     const questions: QuizQuestion[] = [];
@@ -396,6 +420,8 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
         console.warn('No answers found for question:', question.id);
         continue;
       }
+      
+      console.log(`Found ${answersData.length} answers for question ${question.id}`);
       
       // Map the database answer format to our app answer format
       const options = answersData.map(answer => answer.answer_text);
