@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle } from 'lucide-react';
+import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { BrokerFunction } from '@/hooks/strategy/types';
@@ -208,6 +208,76 @@ const BrokerFunctionsAdmin = () => {
     }
   };
 
+  // Seed default functions for new brokers (5 Paisa and Bigil)
+  const seedDefaultFunctions = async () => {
+    try {
+      setLoading(true);
+      
+      // Define default functions for brokers
+      const defaultFunctions = [
+        { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker' },
+        { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders' },
+        { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders' },
+        { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions' },
+        { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data' },
+        { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions' }
+      ];
+      
+      // Check which brokers need default functions (specifically 5 Paisa and Bigil)
+      const targetBrokers = [
+        { id: 7, name: "5 Paisa" },
+        { id: 8, name: "Bigil" }
+      ];
+      
+      let addedCount = 0;
+      
+      for (const broker of targetBrokers) {
+        // Check if broker already has functions
+        const { data: existingFunctions } = await supabase
+          .from('brokers_functions')
+          .select('*')
+          .eq('broker_id', broker.id);
+          
+        if (!existingFunctions || existingFunctions.length === 0) {
+          // Add default functions for this broker
+          const functionsToAdd = defaultFunctions.map(func => ({
+            broker_id: broker.id,
+            broker_name: broker.name,
+            function_name: func.name,
+            function_description: func.description,
+            function_slug: func.slug,
+            function_enabled: true,
+            is_premium: func.slug === 'market_data', // Make market data premium as an example
+            broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
+          }));
+          
+          const { data, error } = await supabase
+            .from('brokers_functions')
+            .insert(functionsToAdd)
+            .select();
+            
+          if (error) throw error;
+          
+          if (data) {
+            addedCount += data.length;
+            // Update local state with new functions
+            setFunctions(prev => [...prev, ...data as BrokerFunction[]]);
+          }
+        }
+      }
+      
+      if (addedCount > 0) {
+        toast.success(`Added ${addedCount} default functions for new brokers`);
+      } else {
+        toast.info('All brokers already have functions configured');
+      }
+    } catch (error: any) {
+      toast.error(`Failed to seed default functions: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="container mx-auto p-4 max-w-7xl">
@@ -250,6 +320,15 @@ const BrokerFunctionsAdmin = () => {
             >
               <RefreshCw className="h-4 w-4" />
               Refresh
+            </Button>
+            
+            <Button 
+              onClick={seedDefaultFunctions} 
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Seed Default Functions
             </Button>
           </div>
         </div>
@@ -517,6 +596,7 @@ const BrokerFunctionsAdmin = () => {
             <li>Functions define what capabilities are available for each broker.</li>
             <li>Premium functions will be displayed with a special badge.</li>
             <li>You can enable or disable functions as needed.</li>
+            <li>Use the "Seed Default Functions" button to add standard functions to new brokers.</li>
           </ul>
         </div>
       </div>

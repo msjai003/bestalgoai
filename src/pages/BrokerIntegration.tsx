@@ -1,14 +1,80 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, HelpCircle } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
 import { brokers } from "@/components/broker-integration/BrokerData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
+
+  // Check for broker functions and initialize if needed
+  useEffect(() => {
+    const checkBrokerFunctions = async () => {
+      try {
+        // Check if 5 Paisa and Bigil have any functions
+        const { data, error } = await supabase
+          .from('brokers_functions')
+          .select('broker_id')
+          .in('broker_id', [7, 8]);
+        
+        if (error) {
+          console.error('Error checking broker functions:', error);
+          return;
+        }
+
+        // If no functions found for these brokers, add default ones
+        if (!data || data.length === 0) {
+          // Define default functions for brokers
+          const defaultFunctions = [
+            { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker' },
+            { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders' },
+            { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders' },
+            { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions' },
+            { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data' },
+            { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions' }
+          ];
+          
+          const newBrokers = [
+            { id: 7, name: "5 Paisa" },
+            { id: 8, name: "Bigil" }
+          ];
+          
+          for (const broker of newBrokers) {
+            // Add default functions for this broker
+            const functionsToAdd = defaultFunctions.map(func => ({
+              broker_id: broker.id,
+              broker_name: broker.name,
+              function_name: func.name,
+              function_description: func.description,
+              function_slug: func.slug,
+              function_enabled: true,
+              is_premium: func.slug === 'market_data', // Make market data premium as an example
+              broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
+            }));
+            
+            const { error: insertError } = await supabase
+              .from('brokers_functions')
+              .insert(functionsToAdd);
+              
+            if (insertError) {
+              console.error(`Error adding functions for ${broker.name}:`, insertError);
+            } else {
+              console.log(`Added default functions for ${broker.name}`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error initializing broker functions:', err);
+      }
+    };
+    
+    checkBrokerFunctions();
+  }, []);
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
