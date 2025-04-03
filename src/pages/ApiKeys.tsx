@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ApiKey {
   id: string;
   name: string;
-  key: string;
+  api_key: string;
   created_at: string;
   last_used?: string;
 }
@@ -47,26 +47,18 @@ const ApiKeys = () => {
 
     setIsLoading(true);
     try {
-      // In a real app, we would fetch from the database
-      // For now, we'll use mock data
-      const mockKeys: ApiKey[] = [
-        {
-          id: "1",
-          name: "Trading Bot Integration",
-          key: "trb_sk_" + generateRandomString(24),
-          created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          last_used: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "2",
-          name: "Mobile App",
-          key: "trb_sk_" + generateRandomString(24),
-          created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-          last_used: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
+      // Fetch API keys from Supabase
+      const { data, error } = await supabase
+        .from('user_api_keys')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (error) {
+        throw error;
+      }
       
-      setApiKeys(mockKeys);
+      setApiKeys(data || []);
     } catch (error) {
       console.error("Error fetching API keys:", error);
       toast.error("Failed to load API keys");
@@ -82,29 +74,57 @@ const ApiKeys = () => {
     }));
   };
 
+  const generateApiKey = () => {
+    // Generate a random API key with trb_sk_ prefix
+    const randomString = Array.from({ length: 24 }, () => 
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(
+        Math.floor(Math.random() * 62)
+      )
+    ).join('');
+    
+    return `trb_sk_${randomString}`;
+  };
+
   const handleCreateKey = async () => {
     if (!newKeyName.trim()) {
       toast.error("Please enter a name for your API key");
       return;
     }
+    
+    if (!user) {
+      toast.error("You must be logged in to create API keys");
+      return;
+    }
 
     setIsCreating(true);
     try {
-      const newKey: ApiKey = {
-        id: crypto.randomUUID(),
-        name: newKeyName,
-        key: "trb_sk_" + generateRandomString(24),
-        created_at: new Date().toISOString(),
-      };
+      const newApiKey = generateApiKey();
+      
+      // Insert the new key into Supabase
+      const { data, error } = await supabase
+        .from('user_api_keys')
+        .insert({
+          user_id: user.id,
+          api_key: newApiKey,
+          name: newKeyName,
+          is_active: true
+        })
+        .select('*')
+        .single();
 
-      setApiKeys([newKey, ...apiKeys]);
+      if (error) {
+        throw error;
+      }
+
+      // Add new key to state
+      setApiKeys([data, ...apiKeys]);
       setShowAddDialog(false);
       setNewKeyName("");
       
       // Show the newly created key as visible
       setVisibleKeys(prev => ({
         ...prev,
-        [newKey.id]: true
+        [data.id]: true
       }));
       
       toast.success("API key created successfully");
@@ -117,7 +137,24 @@ const ApiKeys = () => {
   };
 
   const handleDeleteKey = async (keyId: string) => {
+    if (!user) {
+      toast.error("You must be logged in to delete API keys");
+      return;
+    }
+
     try {
+      // Soft delete by setting is_active to false
+      const { error } = await supabase
+        .from('user_api_keys')
+        .update({ is_active: false })
+        .eq('id', keyId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update state to remove deleted key
       setApiKeys(apiKeys.filter(key => key.id !== keyId));
       toast.success("API key deleted");
     } catch (error) {
@@ -138,15 +175,6 @@ const ApiKeys = () => {
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const generateRandomString = (length: number) => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
   };
 
   return (
@@ -216,7 +244,7 @@ const ApiKeys = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 bg-gray-800/50 rounded-md py-1 px-2 max-w-full overflow-hidden">
                     <code className="text-xs truncate max-w-[220px]">
-                      {visibleKeys[key.id] ? key.key : '••••••••••••••••••••••••••'}
+                      {visibleKeys[key.id] ? key.api_key : '••••••••••••••••••••••••••'}
                     </code>
                     <Button 
                       variant="ghost" 
@@ -234,7 +262,7 @@ const ApiKeys = () => {
                       variant="ghost" 
                       size="sm" 
                       className="p-1 h-6 w-6 text-gray-400 hover:text-white"
-                      onClick={() => copyToClipboard(key.key)}
+                      onClick={() => copyToClipboard(key.api_key)}
                     >
                       <Copy className="w-3 h-3" />
                     </Button>
