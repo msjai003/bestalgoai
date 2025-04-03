@@ -159,6 +159,11 @@
   animation-delay: 0.3s;
 }
 
+/* Additional delay class for more staggered effects */
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
 /* Slow ping animation for active chart dots */
 @keyframes ping-slow {
   0% {

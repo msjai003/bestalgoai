@@ -580,6 +580,46 @@ const ZenflowBacktestReport = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Additional Statistics box - added from detailed metrics page */}
+                <Card className="bg-charcoalSecondary/50 border-gray-700 overflow-hidden animate-fade-in delay-200">
+                  <CardHeader className="pb-2 border-b border-gray-700/50">
+                    <CardTitle className="text-lg text-white">Additional Statistics</CardTitle>
+                    <CardDescription>Comprehensive performance data analysis</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-700">
+                      <div className="p-3 space-y-3">
+                        <div>
+                          <p className="text-xs text-gray-400">Duration of Max Drawdown</p>
+                          <p className="text-sm text-white">{metrics.drawdown_duration || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">Return/MaxDD</p>
+                          <p className="text-sm text-white">{metrics.return_max_dd || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">Reward to Risk Ratio</p>
+                          <p className="text-sm text-white">{metrics.reward_to_risk_ratio || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="p-3 space-y-3">
+                        <div>
+                          <p className="text-xs text-gray-400">Max Win Streak</p>
+                          <p className="text-sm text-white">{metrics.max_win_streak || 'N/A'} trades</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">Max Losing Streak</p>
+                          <p className="text-sm text-white">{metrics.max_losing_streak || 'N/A'} trades</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">Expectancy Ratio</p>
+                          <p className="text-sm text-white">{metrics.expectancy_ratio || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
                 
                 <div className="flex justify-end mt-4">
                   <Button 
