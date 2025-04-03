@@ -49,7 +49,7 @@ export const LevelBadges = ({ level, earnedBadges, canShare = true }: LevelBadge
         levelBadges.map(badge => (
           <div 
             key={badge.id} 
-            className="flex items-center gap-2 bg-charcoalPrimary px-3 py-1.5 rounded-lg border border-cyan/20 group relative hover:bg-charcoalPrimary/80 transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-cyan/10 px-3 py-1.5 rounded-full border border-cyan/20 group relative"
           >
             <span className="text-lg">{badge.image}</span>
             <span className="text-sm font-medium text-white">{badge.name}</span>
@@ -68,9 +68,7 @@ export const LevelBadges = ({ level, earnedBadges, canShare = true }: LevelBadge
           </div>
         ))
       ) : (
-        <div className="text-sm text-gray-400 bg-charcoalPrimary px-4 py-2 rounded-lg border border-gray-800/40">
-          Complete modules to earn badges
-        </div>
+        <div className="text-sm text-gray-400">Complete modules to earn badges</div>
       )}
     </div>
   );
