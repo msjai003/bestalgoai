@@ -9,8 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
-import StrategiesSection from "@/components/dashboard/StrategiesSection";
-import { mockPerformanceData, mockStrategies } from "@/components/dashboard/DashboardData";
+import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -49,16 +48,6 @@ const Dashboard = () => {
     }
   }, [user, navigate, toast]);
 
-  const handlePremiumClick = () => {
-    if (!hasPremium) {
-      toast({
-        title: "Premium Feature",
-        description: "Please upgrade to access premium strategies",
-      });
-      navigate('/pricing');
-    }
-  };
-
   if (user === null) {
     return (
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
@@ -79,11 +68,6 @@ const Dashboard = () => {
           currentValue={currentValue} 
         />
         <QuickAccessSection />
-        <StrategiesSection 
-          strategies={mockStrategies} 
-          hasPremium={hasPremium}
-          onPremiumClick={handlePremiumClick}
-        />
       </main>
       <BottomNav />
     </div>
