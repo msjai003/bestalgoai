@@ -63,7 +63,9 @@ export const QuizModal = ({
     const loadDbQuizData = async () => {
       if (open && moduleId && !quiz) {
         setIsLoadingQuiz(true);
+        console.log(`Loading quiz data for module: ${moduleId}`);
         const data = await fetchQuizData(moduleId);
+        console.log(`Received data for module ${moduleId}:`, data);
         setDbQuizData(data);
         setIsLoadingQuiz(false);
       }
@@ -242,6 +244,14 @@ export const QuizModal = ({
                     </div>
                   ))}
                 </RadioGroup>
+                
+                {isAnswered && currentQuestionData.explanation && (
+                  <div className="mt-4 p-3 bg-gray-800/50 rounded-md border border-gray-700">
+                    <p className="text-sm text-gray-300">
+                      <span className="font-semibold">Explanation:</span> {currentQuestionData.explanation}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             

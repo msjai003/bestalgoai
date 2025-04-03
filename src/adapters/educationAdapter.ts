@@ -355,15 +355,15 @@ export const updateUserProgress = async (userId: string, progressData: {
   }
 };
 
-// New function to fetch module quiz data from Supabase
+// Improved function to fetch module quiz data from Supabase
 export const fetchModuleQuizData = async (moduleId: string): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
-    // Fetch module's UUID from education_modules if moduleId is a string identifier
+    // Check if the moduleId is a standard ID format like "module1" or a UUID
     let actualModuleId = moduleId;
     
-    // If moduleId is not a UUID (like "module1"), try to find the actual UUID
+    // If moduleId is not a UUID (like "module1"), try to find the actual module
     if (!moduleId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
       const { data: moduleData, error: moduleError } = await supabase
         .from('education_modules')
@@ -371,12 +371,37 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
         .eq('id', moduleId)
         .maybeSingle();
       
-      if (moduleError || !moduleData) {
-        console.error('Error finding module by ID:', moduleError || 'Module not found');
+      if (moduleError) {
+        console.error('Error finding module by ID:', moduleError);
+        toast.error('Failed to find module');
         return null;
       }
       
-      actualModuleId = moduleData.id;
+      if (!moduleData) {
+        // If not found by id field, try looking up by order_index in basics level
+        // This is for backward compatibility with "module1", "module2" format
+        const moduleNumber = parseInt(moduleId.replace('module', '')) || 0;
+        if (moduleNumber > 0) {
+          const { data: indexModuleData, error: indexModuleError } = await supabase
+            .from('education_modules')
+            .select('id')
+            .eq('level', 'basics')
+            .eq('order_index', moduleNumber)
+            .maybeSingle();
+            
+          if (indexModuleError || !indexModuleData) {
+            console.error('Error finding module by index:', indexModuleError || 'Module not found');
+            return null;
+          }
+          
+          actualModuleId = indexModuleData.id;
+        } else {
+          console.warn('Module not found:', moduleId);
+          return null;
+        }
+      } else {
+        actualModuleId = moduleData.id;
+      }
     }
     
     console.log('Fetching questions for module ID:', actualModuleId);
@@ -399,7 +424,7 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
       return null;
     }
     
-    console.log('Found questions for module:', questionsData.length);
+    console.log(`Found ${questionsData.length} questions for module ${moduleId}`);
     
     // For each question, fetch its answers
     const questions: QuizQuestion[] = [];
@@ -412,12 +437,12 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
         .order('order_index');
         
       if (answersError) {
-        console.error('Error fetching answers:', answersError);
+        console.error(`Error fetching answers for question ${question.id}:`, answersError);
         continue;
       }
       
       if (!answersData || answersData.length === 0) {
-        console.warn('No answers found for question:', question.id);
+        console.warn(`No answers found for question: ${question.id}`);
         continue;
       }
       
