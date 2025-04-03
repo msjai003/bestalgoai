@@ -1,19 +1,56 @@
+import { Card, CardContent } from "@/components/ui/card"
+import { useEffect, useState } from "react"
 
-import React from "react";
-import Header from "@/components/Header";
-import { BottomNav } from "@/components/BottomNav";
+export default function Dashboard() {
+  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-const Dashboard = () => {
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then(res => res.json())
+      .then(data => {
+        setSummary(data)
+        setLoading(false)
+      })
+  }, [])
+
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
-      <Header />
-      <main className="pt-16 pb-20 px-4">
-        <h1 className="text-2xl font-bold text-white mt-4">Dashboard</h1>
-        <p className="text-gray-400 mt-2">Welcome to your dashboard</p>
-      </main>
-      <BottomNav />
-    </div>
-  );
-};
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+      {loading ? (
+        <p>Loading dashboard...</p>
+      ) : (
+        <>
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">Total PnL</h2>
+              <p className="text-xl font-bold text-green-600">
+                ₹{summary?.total_pnl.toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
 
-export default Dashboard;
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">Open Positions</h2>
+              <p className="text-xl font-bold">{summary?.open_positions}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">Strategies Deployed</h2>
+              <p className="text-xl font-bold">{summary?.strategies_active}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">Followed Traders</h2>
+              <p className="text-xl font-bold">{summary?.traders_followed}</p>
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
+  )
+}
