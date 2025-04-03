@@ -58,7 +58,16 @@ const ApiKeys = () => {
         throw error;
       }
       
-      setApiKeys(data || []);
+      // Map the database fields to our ApiKey interface
+      const formattedKeys = data?.map(key => ({
+        id: key.id,
+        name: key.name || `Key ${new Date(key.created_at).toLocaleDateString()}`, // Provide a default name if not set
+        api_key: key.api_key,
+        created_at: key.created_at,
+        last_used: key.last_used
+      })) || [];
+      
+      setApiKeys(formattedKeys);
     } catch (error) {
       console.error("Error fetching API keys:", error);
       toast.error("Failed to load API keys");
@@ -116,15 +125,24 @@ const ApiKeys = () => {
         throw error;
       }
 
+      // Format the new key to match our ApiKey interface
+      const formattedKey: ApiKey = {
+        id: data.id,
+        name: data.name,
+        api_key: data.api_key,
+        created_at: data.created_at,
+        last_used: data.last_used
+      };
+
       // Add new key to state
-      setApiKeys([data, ...apiKeys]);
+      setApiKeys([formattedKey, ...apiKeys]);
       setShowAddDialog(false);
       setNewKeyName("");
       
       // Show the newly created key as visible
       setVisibleKeys(prev => ({
         ...prev,
-        [data.id]: true
+        [formattedKey.id]: true
       }));
       
       toast.success("API key created successfully");
