@@ -1,22 +1,21 @@
-
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CredentialsForm } from "@/components/broker-integration/CredentialsForm";
 import { AccountSettings } from "@/components/broker-integration/AccountSettings";
 import { SuccessDialog } from "@/components/broker-integration/SuccessDialog";
 import { BrokerHeader } from "@/components/broker-integration/BrokerHeader";
-import { ConnectionStepActions } from "@/components/broker-integration/ConnectionStepActions";
 import { BrokerFunctions } from "@/components/broker-integration/BrokerFunctions";
 import { useBrokerConnection } from "@/hooks/useBrokerConnection";
 import { brokers, accountTypes } from "@/components/broker-integration/BrokerData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Broker } from "@/types/broker";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { brokerId } = location.state || {};
   
-  const selectedBroker = brokerId ? brokers.find(b => b.id === brokerId) : null;
+  const selectedBroker: Broker | null = brokerId ? brokers.find(b => b.id === brokerId) || null : null;
   const showApiFields = selectedBroker?.apiRequired || false;
 
   // Redirect if no broker was selected
@@ -115,7 +114,6 @@ const BrokerCredentials = () => {
     }
   };
 
-  // Customize button text based on connection status
   const getActionButtonText = () => {
     if (isConnected) {
       return "Update Credentials";

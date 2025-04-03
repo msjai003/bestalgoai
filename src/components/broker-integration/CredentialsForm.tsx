@@ -82,11 +82,11 @@ export const CredentialsForm = ({
           <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
             <div>
               <p className="text-gray-400">Supported Assets:</p>
-              <p>{selectedBroker.supportedAssets.join(", ")}</p>
+              <p>{selectedBroker.supportedAssets?.join(", ") || "Not specified"}</p>
             </div>
             <div>
               <p className="text-gray-400">Fee Structure:</p>
-              <p>{selectedBroker.fees}</p>
+              <p>{selectedBroker.fees || "Not specified"}</p>
             </div>
           </div>
         </div>

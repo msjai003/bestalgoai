@@ -4,8 +4,8 @@ export interface Broker {
   name: string;
   description: string;
   logo: string;
-  supportedAssets: string[];
-  fees: string;
+  supportedAssets?: string[];
+  fees?: string;
   apiRequired: boolean;
   requiresSecretKey?: boolean; // New field to mark brokers that need secret key
 }

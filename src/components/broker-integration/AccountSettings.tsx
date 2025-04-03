@@ -1,17 +1,16 @@
 
-import { ChevronLeft, Settings, Info, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Check, ChevronLeft, Shield } from "lucide-react";
 import { BrokerPermissions } from "@/types/broker";
+import { AccountType } from "./BrokerData";
 
 interface AccountSettingsProps {
   selectedAccount: string;
   setSelectedAccount: (account: string) => void;
   permissions: BrokerPermissions;
   setPermissions: (permissions: BrokerPermissions) => void;
-  accountTypes: string[];
+  accountTypes: AccountType[];
   onBack: () => void;
 }
 
@@ -32,84 +31,83 @@ export const AccountSettings = ({
         <h1 className="text-2xl font-bold">Account Settings</h1>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div>
-          <Label htmlFor="accountType" className="text-gray-300 flex items-center gap-2">
-            <Settings className="w-4 h-4" /> Select Account Type
-          </Label>
-          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-            <SelectTrigger className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100">
-              <SelectValue placeholder="Select account type" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
-              {accountTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="bg-gray-800/30 rounded-xl border border-gray-700 p-5">
-          <h3 className="font-semibold mb-4">Trading Permissions</h3>
-
-          <div className="flex items-start mb-3">
-            <div className="flex items-center h-5 mt-1">
-              <Checkbox
-                id="readOnly"
-                checked={permissions.readOnly}
-                onCheckedChange={(checked) =>
-                  setPermissions({ ...permissions, readOnly: checked === true })
-                }
-              />
-            </div>
-            <div className="ml-3">
-              <Label htmlFor="readOnly" className="text-gray-200">Read-only access</Label>
-              <p className="text-xs text-gray-400">
-                View positions, orders, and account information without making changes
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start">
-            <div className="flex items-center h-5 mt-1">
-              <Checkbox
-                id="trading"
-                checked={permissions.trading}
-                onCheckedChange={(checked) =>
-                  setPermissions({ ...permissions, trading: checked === true })
-                }
-              />
-            </div>
-            <div className="ml-3">
-              <Label htmlFor="trading" className="text-gray-200">Trading access</Label>
-              <p className="text-xs text-gray-400">
-                Allow the application to place orders and modify positions on your behalf
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-yellow-900/20 rounded-xl border border-yellow-800/50 p-4">
-          <div className="flex">
-            <Info className="w-5 h-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-yellow-500">Important Disclaimer</h4>
-              <p className="text-sm text-gray-300 mt-1">
-                By enabling trading access, you authorize BestAlgo to place orders through your broker on your behalf.
-                You remain responsible for all activity in your account.
-              </p>
-              <a
-                href="#"
-                className="text-pink-500 text-sm mt-2 flex items-center"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toast.info("Terms and conditions would open here");
-                }}
+          <h2 className="text-lg font-medium mb-3">Select Account Type</h2>
+          <RadioGroup
+            value={selectedAccount}
+            onValueChange={setSelectedAccount}
+            className="space-y-2"
+          >
+            {accountTypes.map((account) => (
+              <div
+                key={account.value}
+                className={`flex items-center p-3 rounded-lg border ${
+                  selectedAccount === account.value
+                    ? "border-pink-500 bg-pink-500/10"
+                    : "border-gray-700 bg-gray-800/30"
+                }`}
               >
-                <ExternalLink className="w-3 h-3 mr-1" /> Read full terms and conditions
-              </a>
+                <RadioGroupItem
+                  value={account.value}
+                  id={account.value}
+                  className="sr-only"
+                />
+                <Label
+                  htmlFor={account.value}
+                  className="flex items-center justify-between w-full cursor-pointer"
+                >
+                  <span>{account.label}</span>
+                  {selectedAccount === account.value && (
+                    <Check className="w-4 h-4 text-pink-500" />
+                  )}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-medium mb-3">Permissions</h2>
+          <div className="space-y-2">
+            <div
+              className={`flex items-center p-3 rounded-lg border ${
+                permissions.readOnly
+                  ? "border-pink-500 bg-pink-500/10"
+                  : "border-gray-700 bg-gray-800/30"
+              } cursor-pointer`}
+              onClick={() =>
+                setPermissions({ readOnly: true, trading: false })
+              }
+            >
+              <Shield className="w-5 h-5 mr-3 text-gray-400" />
+              <div className="flex-1">
+                <h3 className="font-medium">Read-Only Access</h3>
+                <p className="text-sm text-gray-400">
+                  Only allow viewing your portfolio and market data
+                </p>
+              </div>
+              {permissions.readOnly && <Check className="w-4 h-4 text-pink-500" />}
+            </div>
+
+            <div
+              className={`flex items-center p-3 rounded-lg border ${
+                permissions.trading
+                  ? "border-pink-500 bg-pink-500/10"
+                  : "border-gray-700 bg-gray-800/30"
+              } cursor-pointer`}
+              onClick={() =>
+                setPermissions({ readOnly: false, trading: true })
+              }
+            >
+              <Shield className="w-5 h-5 mr-3 text-emerald-500" />
+              <div className="flex-1">
+                <h3 className="font-medium">Full Trading Access</h3>
+                <p className="text-sm text-gray-400">
+                  Allow automated trading and order placement
+                </p>
+              </div>
+              {permissions.trading && <Check className="w-4 h-4 text-pink-500" />}
             </div>
           </div>
         </div>
