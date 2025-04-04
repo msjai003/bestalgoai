@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
@@ -206,6 +207,74 @@ export const useEducation = () => {
         const userData = await fetchUserEducationData(user.id);
         if (userData) {
           setUsingRealData(true);
+          
+          // If we have user data from the database, update local state
+          if (userData.progress) {
+            setCurrentLevel(userData.progress.current_level as Level || 'basics');
+            setCurrentModule(userData.progress.current_module || 'module1');
+            setCurrentCard(userData.progress.current_card || 0);
+          }
+          
+          // Update completed modules count
+          if (userData.completedModules && userData.completedModules.length > 0) {
+            const basicsCount = userData.completedModules.filter(m => m.level === 'basics').length;
+            const intermediateCount = userData.completedModules.filter(m => m.level === 'intermediate').length;
+            const proCount = userData.completedModules.filter(m => m.level === 'pro').length;
+            
+            setCompletedModules({
+              basics: basicsCount,
+              intermediate: intermediateCount,
+              pro: proCount
+            });
+            
+            // Update module progress based on completed modules
+            const newModuleProgress: ModuleProgress = {};
+            userData.completedModules.forEach(module => {
+              newModuleProgress[module.module_id] = true;
+            });
+            
+            setModuleProgress(newModuleProgress);
+          }
+          
+          // Update module views
+          if (userData.viewedModules && userData.viewedModules.length > 0) {
+            const newModuleViews: ModuleViews = {};
+            userData.viewedModules.forEach(view => {
+              newModuleViews[view.module_id] = true;
+            });
+            
+            setModuleViews(newModuleViews);
+          }
+          
+          // Update quiz results
+          if (userData.quizResults && userData.quizResults.length > 0) {
+            const newQuizResults: QuizResults = {};
+            userData.quizResults.forEach(result => {
+              newQuizResults[result.module_id] = {
+                completed: true,
+                passed: result.passed,
+                score: result.score,
+                totalQuestions: result.total_questions,
+                timeSpent: result.time_spent,
+                completedAt: result.completed_at
+              };
+            });
+            
+            setQuizResults(newQuizResults);
+          }
+          
+          // Update earned badges
+          if (userData.earnedBadges && userData.earnedBadges.length > 0) {
+            const earnedBadgeIds = userData.earnedBadges.map(badge => badge.badge_id);
+            
+            // Update badges state with unlocked status
+            setBadges(prevBadges => 
+              prevBadges.map(badge => ({
+                ...badge,
+                unlocked: earnedBadgeIds.includes(badge.id)
+              }))
+            );
+          }
         }
       };
       loadUserData();
