@@ -79,7 +79,8 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
-        const count = data && data.length > 0 ? parseInt(data[0].count) : 0;
+        // Check if data is an array and has items before accessing data[0]
+        const count = Array.isArray(data) && data.length > 0 ? parseInt(data[0].count) : 0;
         
         tableResults.push({
           name: tableName,

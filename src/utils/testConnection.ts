@@ -91,7 +91,8 @@ export const testTableAccess = async (tableName: string) => {
       };
     }
     
-    const result = data && data.length > 0 ? data[0].result : { exists: false };
+    // Check if data is an array before accessing its length
+    const result = Array.isArray(data) && data.length > 0 ? data[0].result : { exists: false };
     
     return {
       success: true,

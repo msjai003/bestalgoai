@@ -59,11 +59,14 @@ const DatabaseInfo = () => {
         throw new Error(`Error fetching data: ${fetchError.message}`);
       }
 
+      // Check if records is an array and has at least one item
+      const recordsData = Array.isArray(records) && records.length > 0 ? records[0].records : [];
+
       setResult({
         success: true,
         message: 'Sample data added successfully!',
         data: {
-          records: records && records.length > 0 ? records[0].records : []
+          records: recordsData
         }
       });
 
