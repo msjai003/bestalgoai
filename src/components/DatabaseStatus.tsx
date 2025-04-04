@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -27,10 +26,10 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection using get_all_tables function
+      // Test Supabase connection
       const { data, error } = await supabase
-        .rpc('get_all_tables')
-        .limit(1);
+        .from('_supabase_schema_information')
+        .select();
       
       if (error) {
         throw error;
@@ -63,11 +62,10 @@ const DatabaseStatus: React.FC = () => {
     
     for (const tableName of expectedTables) {
       try {
-        // Use execute_sql instead of direct rpc
+        // First check if the table exists
         const { data, error } = await supabase
-          .rpc('execute_sql', { 
-            query: `SELECT COUNT(*) FROM public.${tableName}` 
-          });
+          .from(tableName)
+          .select();
         
         if (error) {
           console.error(`Error checking table ${tableName}:`, error);
@@ -79,12 +77,11 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
-        // Check if data is an array and has items before accessing data[0]
-        const count = Array.isArray(data) && data.length > 0 ? parseInt(data[0].count) : 0;
+        const rowCount = typeof data === 'number' ? data : (data ? data.length : 0);
         
         tableResults.push({
           name: tableName,
-          rowCount: count,
+          rowCount,
           exists: true
         });
         
@@ -103,11 +100,9 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
-      // Use execute_sql instead of sample_query
       const { data, error } = await supabase
-        .rpc('execute_sql', { 
-          query: `SELECT * FROM public.${tableName} LIMIT 10` 
-        });
+        .from(tableName)
+        .select();
       
       if (error) {
         throw error;
@@ -117,7 +112,7 @@ const DatabaseStatus: React.FC = () => {
       
       toast({
         title: `Query successful`,
-        description: `Found records in ${tableName}. Check console for details.`,
+        description: `Found ${data.length} records in ${tableName}. Check console for details.`,
       });
     } catch (err: any) {
       toast({

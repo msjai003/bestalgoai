@@ -3,12 +3,12 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
-    // Use get_all_tables which is available
     const { data, error } = await supabase
-      .rpc('get_all_tables');
+      .from('signup')
+      .select();
     
     if (error) {
-      console.error('Error accessing Supabase tables:', error);
+      console.error('Error accessing Supabase table:', error);
       return {
         success: false,
         message: `Database access error: ${error.message}`,

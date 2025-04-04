@@ -1,13 +1,56 @@
 
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../integrations/supabase/types';
+// Mock Supabase client for frontend-only operation
+export const supabaseUrl = 'mock-url';
+export const supabaseAnonKey = 'mock-key';
 
-// Supabase configuration
-export const supabaseUrl = 'https://fzvrozrjtvflksumiqsk.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI';
-
-// Create a Supabase client with the Database type
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Create a mock client to maintain API compatibility
+export const supabase = {
+  auth: {
+    signUp: async ({ email, password, options } = { email: '', password: '', options: undefined }) => ({ data: null, error: null }),
+    signInWithPassword: async () => ({ data: { user: { id: 'mock-id', email: 'mock@email.com' } }, error: null }),
+    signOut: async () => ({ error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+  },
+  from: (tableName) => ({
+    select: (query = '*') => ({
+      eq: (column, value) => ({
+        maybeSingle: () => ({ data: null, error: null }),
+        order: (column, { ascending } = { ascending: false }) => ({
+          limit: (limit) => ({
+            data: [],
+            error: null
+          }),
+          data: [],
+          error: null
+        }),
+        data: [],
+        error: null
+      }),
+      order: (column, { ascending } = { ascending: false }) => ({
+        limit: (limit) => ({
+          data: [],
+          error: null
+        }),
+        data: [],
+        error: null
+      }),
+      count: () => ({ data: 0, error: null }),
+      data: [],
+      error: null
+    }),
+    insert: (data) => ({ data: [], error: null }),
+    update: (data) => ({ data: [], error: null }),
+    delete: () => ({ data: [], error: null }),
+    count: () => ({ data: 0, error: null }),
+  }),
+  storage: {
+    from: (bucketName) => ({
+      upload: async () => ({ data: null, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+    }),
+  },
+};
 
 // Get the current site URL for redirects
 export const getSiteUrl = () => {
@@ -15,4 +58,10 @@ export const getSiteUrl = () => {
     return window.location.origin;
   }
   return 'http://localhost:3000';
+};
+
+// Create a fallback client function
+export const createFallbackClient = () => {
+  console.log('Creating mock Supabase client');
+  return supabase;
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,57 +15,35 @@ const DatabaseInfo = () => {
     setError(null);
     
     try {
-      // Use execute_sql to add sample data
-      const { data: addResult, error: addError } = await supabase
-        .rpc('execute_sql', {
-          query: `
-            SELECT json_build_object(
-              'success', true,
-              'message', 'Sample data added successfully!',
-              'data', json_build_object(
-                'name', 'Sample User',
-                'email', 'sample@example.com',
-                'message', 'I am interested in algorithmic trading!'
-              )
-            ) as result
-          `
+      // Add sample signup
+      const { error: signupError } = await supabase
+        .from('signup')
+        .insert({
+          name: 'Sample User',
+          email: 'sample@example.com',
+          message: 'I am interested in algorithmic trading!'
         });
 
-      if (addError) {
-        throw new Error(`Error adding sample data: ${addError.message}`);
+      if (signupError) {
+        throw new Error(`Error adding sample signup: ${signupError.message}`);
       }
 
-      // Get the latest records using execute_sql
-      const { data: records, error: fetchError } = await supabase
-        .rpc('execute_sql', {
-          query: `
-            SELECT json_build_array(
-              json_build_object(
-                'id', 1,
-                'name', 'Sample User 1',
-                'created_at', now()
-              ),
-              json_build_object(
-                'id', 2,
-                'name', 'Sample User 2',
-                'created_at', now() - interval '1 day'
-              )
-            ) as records
-          `
-        });
+      // Get the latest signup records
+      const { data: signups, error: fetchError } = await supabase
+        .from('signup')
+        .select()
+        .order('created_at', { ascending: false })
+        .limit(5);
 
       if (fetchError) {
-        throw new Error(`Error fetching data: ${fetchError.message}`);
+        throw new Error(`Error fetching signup data: ${fetchError.message}`);
       }
-
-      // Check if records is an array and has at least one item
-      const recordsData = Array.isArray(records) && records.length > 0 ? records[0].records : [];
 
       setResult({
         success: true,
         message: 'Sample data added successfully!',
         data: {
-          records: recordsData
+          signups
         }
       });
 
@@ -116,12 +93,12 @@ const DatabaseInfo = () => {
               </AlertDescription>
             </Alert>
             
-            {result.data?.records && (
+            {result.data?.signups && (
               <div>
-                <h3 className="text-lg font-medium mb-2">Recent Records:</h3>
+                <h3 className="text-lg font-medium mb-2">Recent Signups:</h3>
                 <div className="bg-gray-900/50 p-4 rounded-lg overflow-x-auto">
                   <pre className="text-xs text-gray-300 whitespace-pre-wrap">
-                    {JSON.stringify(result.data.records, null, 2)}
+                    {JSON.stringify(result.data.signups, null, 2)}
                   </pre>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { QuizQuestion, QuizAnswer } from '@/data/educationData';
@@ -452,7 +453,6 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
       const correctAnswer = answersData.findIndex(answer => answer.is_correct);
       
       questions.push({
-        id: question.id,
         question: question.question,
         options,
         correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
@@ -466,83 +466,5 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
   } catch (error) {
     console.error('Exception fetching quiz data:', error);
     return null;
-  }
-};
-
-// Add function to create question and answers in Supabase
-export const createQuizQuestion = async (
-  moduleId: string, 
-  question: string, 
-  options: string[],
-  correctAnswerIndex: number,
-  explanation?: string
-): Promise<boolean> => {
-  try {
-    // First, create the question
-    const { data: questionData, error: questionError } = await supabase
-      .from('education_quiz_questions')
-      .insert({
-        module_id: moduleId,
-        question: question,
-        explanation: explanation || null,
-        order_index: 0 // Default order index
-      })
-      .select()
-      .single();
-    
-    if (questionError) {
-      console.error('Error creating quiz question:', questionError);
-      toast.error('Failed to create quiz question');
-      return false;
-    }
-    
-    // Now create answers for this question
-    for (let i = 0; i < options.length; i++) {
-      const { error: answerError } = await supabase
-        .from('education_quiz_answers')
-        .insert({
-          question_id: questionData.id,
-          answer_text: options[i],
-          is_correct: i === correctAnswerIndex,
-          order_index: i
-        });
-      
-      if (answerError) {
-        console.error(`Error creating answer ${i}:`, answerError);
-        toast.error(`Failed to create answer ${i + 1}`);
-        // Continue to try the other answers
-      }
-    }
-    
-    toast.success('Quiz question and answers created successfully');
-    return true;
-  } catch (error) {
-    console.error('Exception creating quiz question and answers:', error);
-    toast.error('Failed to create quiz question');
-    return false;
-  }
-};
-
-// Add function to delete quiz question and its answers
-export const deleteQuizQuestion = async (questionId: string): Promise<boolean> => {
-  try {
-    // Because of the foreign key constraint, deleting the question will delete all associated answers
-    const { error } = await supabase
-      .from('education_quiz_questions')
-      .delete()
-      .eq('id', questionId);
-    
-    if (error) {
-      console.error('Error deleting quiz question:', error);
-      toast.error('Failed to delete quiz question');
-      return false;
-    }
-    
-    toast.success('Quiz question deleted successfully');
-    return true;
-  } catch (error) {
-    console.error('Exception deleting quiz question:', error);
-    toast.error('Failed to delete quiz question');
-    return false;
   }
 };

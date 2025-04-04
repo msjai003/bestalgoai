@@ -61,7 +61,7 @@ export const QuizModal = ({
   // Fetch quiz data from database when modal opens
   useEffect(() => {
     const loadDbQuizData = async () => {
-      if (open && moduleId) {
+      if (open && moduleId && !quiz) {
         setIsLoadingQuiz(true);
         console.log(`Loading quiz data for module: ${moduleId}`);
         const data = await fetchQuizData(moduleId);
@@ -72,7 +72,7 @@ export const QuizModal = ({
     };
     
     loadDbQuizData();
-  }, [open, moduleId, fetchQuizData]);
+  }, [open, moduleId, quiz, fetchQuizData]);
   
   // Start timer when quiz opens
   useEffect(() => {
