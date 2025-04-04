@@ -172,7 +172,7 @@ export const educationData: Record<string, Module[]> = {
         },
         {
           id: 'card5',
-8 title: 'Primary vs. Secondary Markets',
+          title: 'Primary vs. Secondary Markets',
           question: 'What is the difference between primary and secondary stock markets?',
           answer: 'The primary market is where new securities are issued and sold for the first time (IPOs). The secondary market is where existing securities are traded among investors. Companies raise capital in the primary market, while investors trade with each other in the secondary market.'
         }
@@ -687,38 +687,3 @@ export const educationData: Record<string, Module[]> = {
       ],
       quiz: {
         questions: [
-          {
-            id: 'q1',
-            question: 'Which type of machine learning tries to maximize rewards through actions?',
-            options: ['Supervised learning', 'Unsupervised learning', 'Reinforcement learning', 'Transfer learning'],
-            correctAnswer: 2
-          },
-          {
-            id: 'q2',
-            question: 'What is a key challenge in applying machine learning to financial markets?',
-            options: ['Too little data', 'Non-stationarity of markets', 'Lack of computing power', 'Too few algorithms available'],
-            correctAnswer: 1
-          },
-          {
-            id: 'q3',
-            question: 'What is feature engineering in the context of trading algorithms?',
-            options: ['Building trading platforms', 'Creating meaningful inputs from raw market data', 'Engineering faster execution systems', 'Designing user interfaces'],
-            correctAnswer: 1
-          },
-          {
-            id: 'q4',
-            question: 'Which metric is most commonly used to evaluate risk-adjusted returns?',
-            options: ['Sharpe ratio', 'Accuracy', 'Standard deviation', 'F1 score'],
-            correctAnswer: 0
-          },
-          {
-            id: 'q5',
-            question: 'Which algorithm type is best for identifying different market regimes?',
-            options: ['Linear regression', 'Clustering algorithms', 'Simple moving averages', 'Bollinger bands'],
-            correctAnswer: 1
-          }
-        ]
-      }
-    }
-  ]
-};
