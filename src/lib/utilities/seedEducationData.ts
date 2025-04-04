@@ -1,7 +1,7 @@
 
 import { educationData } from "@/data/educationData";
 import { createQuizQuestion, createQuizAnswer } from "@/lib/services/educationService";
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 /**
