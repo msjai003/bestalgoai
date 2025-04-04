@@ -265,7 +265,7 @@ export const educationData: Record<string, Module[]> = {
           },
           {
             id: 'q3',
-1: 'What does a high debt-to-equity ratio indicate?',
+            question: 'What does a high debt-to-equity ratio indicate?',
             options: ['Strong financial position', 'High profitability', 'Low risk', 'Higher financial leverage and risk'],
             correctAnswer: 3
           },
@@ -680,7 +680,7 @@ export const educationData: Record<string, Module[]> = {
         },
         {
           id: 'card5',
-          title: 'Model Evaluation',
+ title: 'Model Evaluation',
           question: 'How are machine learning trading models evaluated?',
           answer: 'ML trading models are evaluated using: Traditional metrics (accuracy, precision, recall), Financial metrics (Sharpe ratio, drawdown, profit factor), Walk-forward testing, Monte Carlo simulations, Sensitivity analysis, and Out-of-sample testing to verify they generalize well to new market conditions. The ultimate test is consistent profitability with acceptable risk.'
         }
