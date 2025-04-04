@@ -15,7 +15,7 @@ import Registration from "./pages/Registration";
 import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
-import Overview from "./pages/Overview";
+import Dashboard from "./pages/Dashboard";
 import StrategyBuilder from "./pages/StrategyBuilder";
 import StrategySelection from "./pages/StrategySelection";
 import StrategyDetails from "./pages/StrategyDetails";
@@ -42,9 +42,6 @@ import Education from "./pages/Education";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 import ApiKeys from "./pages/ApiKeys";
-import Dashboard from "./pages/Dashboard";
-
-
 
 const queryClient = new QueryClient();
 
@@ -53,7 +50,6 @@ function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<Index />} />
-      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
@@ -72,11 +68,6 @@ function AppRoutes() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/overview" element={
-        <ProtectedRoute>
-          <Overview />
         </ProtectedRoute>
       } />
       <Route path="/onboarding" element={
@@ -173,13 +164,6 @@ function AppRoutes() {
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
       <Route path="/price-admin" element={<PriceAdminPage />} />
       <Route path="/api-keys" element={<ApiKeys />} />
-      
-      {/* Keep dashboard route temporarily for backward compatibility */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Overview />
-        </ProtectedRoute>
-      } />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

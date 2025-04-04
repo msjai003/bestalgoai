@@ -1,56 +1,77 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { useEffect, useState } from "react"
 
-export default function Dashboard() {
-  const [summary, setSummary] = useState(null)
-  const [loading, setLoading] = useState(true)
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Loader } from "lucide-react";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
+import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
+import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
+const Dashboard = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  
   useEffect(() => {
-    fetch("http://localhost:8000/api/dashboard")
-      .then(res => res.json())
-      .then(data => {
-        setSummary(data)
-        setLoading(false)
-      })
-  }, [])
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the dashboard.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+    } else {
+      const checkPremium = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+            setHasPremium(true);
+          }
+        } catch (error) {
+          console.error('Error checking premium status:', error);
+        }
+      };
+      checkPremium();
+    }
+  }, [user, navigate, toast]);
+
+  if (user === null) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-      {loading ? (
-        <p>Loading dashboard...</p>
-      ) : (
-        <>
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">Total PnL</h2>
-              <p className="text-xl font-bold text-green-600">
-                ₹{summary?.total_pnl.toFixed(2)}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">Open Positions</h2>
-              <p className="text-xl font-bold">{summary?.open_positions}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">Strategies Deployed</h2>
-              <p className="text-xl font-bold">{summary?.strategies_active}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">Followed Traders</h2>
-              <p className="text-xl font-bold">{summary?.traders_followed}</p>
-            </CardContent>
-          </Card>
-        </>
-      )}
+    <div className="bg-charcoalPrimary min-h-screen">
+      <Header />
+      <main className="pt-16 pb-20 px-4">
+        <PortfolioOverview 
+          performanceData={mockPerformanceData} 
+          currentValue={currentValue} 
+        />
+        <QuickAccessSection />
+      </main>
+      <BottomNav />
     </div>
-  )
-}
+  );
+};
+
+export default Dashboard;
