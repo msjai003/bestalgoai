@@ -1,4 +1,3 @@
-
 export type Module = {
   id: string;
   title: string;
@@ -16,15 +15,27 @@ export type Flashcard = {
 };
 
 export type Quiz = {
-  questions: {
-    id: string;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-  }[];
+  questions: QuizQuestion[];
 };
 
-// Create a large dataset with 100+ flashcards per level
+export interface QuizQuestion {
+  id?: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
+
+export type QuizAnswer = {
+  id?: string;
+  question_id?: string;
+  answer_text: string;
+  is_correct: boolean;
+  order_index?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export const educationData: Record<string, Module[]> = {
   basics: [
     {
@@ -161,7 +172,7 @@ export const educationData: Record<string, Module[]> = {
         },
         {
           id: 'card5',
-          title: 'Primary vs. Secondary Markets',
+8 title: 'Primary vs. Secondary Markets',
           question: 'What is the difference between primary and secondary stock markets?',
           answer: 'The primary market is where new securities are issued and sold for the first time (IPOs). The secondary market is where existing securities are traded among investors. Companies raise capital in the primary market, while investors trade with each other in the secondary market.'
         }
