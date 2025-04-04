@@ -1,3 +1,4 @@
+
 export type Module = {
   id: string;
   title: string;
@@ -172,7 +173,7 @@ export const educationData: Record<string, Module[]> = {
         },
         {
           id: 'card5',
-8 title: 'Primary vs. Secondary Markets',
+          title: 'Primary vs. Secondary Markets',
           question: 'What is the difference between primary and secondary stock markets?',
           answer: 'The primary market is where new securities are issued and sold for the first time (IPOs). The secondary market is where existing securities are traded among investors. Companies raise capital in the primary market, while investors trade with each other in the secondary market.'
         }
