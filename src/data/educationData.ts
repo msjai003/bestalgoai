@@ -1,3 +1,4 @@
+
 export type Module = {
   id: string;
   title: string;
@@ -18,24 +19,25 @@ export type Quiz = {
   questions: QuizQuestion[];
 };
 
-export interface QuizQuestion {
-  id?: string;
+export type QuizQuestion = {
+  id: string;
   question: string;
   options: string[];
   correctAnswer: number;
   explanation?: string;
-}
+};
 
 export type QuizAnswer = {
-  id?: string;
-  question_id?: string;
+  id: string;
+  question_id: string;
   answer_text: string;
   is_correct: boolean;
-  order_index?: number;
+  order_index: number;
   created_at?: string;
   updated_at?: string;
 };
 
+// Create a large dataset with 100+ flashcards per level
 export const educationData: Record<string, Module[]> = {
   basics: [
     {
@@ -680,7 +682,7 @@ export const educationData: Record<string, Module[]> = {
         },
         {
           id: 'card5',
- title: 'Model Evaluation',
+          title: 'Model Evaluation',
           question: 'How are machine learning trading models evaluated?',
           answer: 'ML trading models are evaluated using: Traditional metrics (accuracy, precision, recall), Financial metrics (Sharpe ratio, drawdown, profit factor), Walk-forward testing, Monte Carlo simulations, Sensitivity analysis, and Out-of-sample testing to verify they generalize well to new market conditions. The ultimate test is consistent profitability with acceptable risk.'
         }
