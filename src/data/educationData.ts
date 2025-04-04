@@ -265,7 +265,7 @@ export const educationData: Record<string, Module[]> = {
           },
           {
             id: 'q3',
-            question: 'What does a high debt-to-equity ratio indicate?',
+1: 'What does a high debt-to-equity ratio indicate?',
             options: ['Strong financial position', 'High profitability', 'Low risk', 'Higher financial leverage and risk'],
             correctAnswer: 3
           },
@@ -687,3 +687,38 @@ export const educationData: Record<string, Module[]> = {
       ],
       quiz: {
         questions: [
+          {
+            id: 'q1',
+            question: 'Which type of machine learning tries to maximize rewards through actions?',
+            options: ['Supervised learning', 'Unsupervised learning', 'Reinforcement learning', 'Transfer learning'],
+            correctAnswer: 2
+          },
+          {
+            id: 'q2',
+            question: 'What is a key challenge in applying machine learning to financial markets?',
+            options: ['Too little data', 'Non-stationarity of markets', 'Lack of computing power', 'Too few algorithms available'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q3',
+            question: 'What is feature engineering in the context of trading algorithms?',
+            options: ['Building trading platforms', 'Creating meaningful inputs from raw market data', 'Engineering faster execution systems', 'Designing user interfaces'],
+            correctAnswer: 1
+          },
+          {
+            id: 'q4',
+            question: 'Which metric is most commonly used to evaluate risk-adjusted returns?',
+            options: ['Sharpe ratio', 'Accuracy', 'Standard deviation', 'F1 score'],
+            correctAnswer: 0
+          },
+          {
+            id: 'q5',
+            question: 'Which algorithm type is best for identifying different market regimes?',
+            options: ['Linear regression', 'Clustering algorithms', 'Simple moving averages', 'Bollinger bands'],
+            correctAnswer: 1
+          }
+        ]
+      }
+    }
+  ]
+};
