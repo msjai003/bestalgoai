@@ -26,10 +26,10 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection
+      // Test Supabase connection - using a generic query instead of a specific table
       const { data, error } = await supabase
-        .from('_supabase_schema_information')
-        .select();
+        .rpc('get_all_tables')
+        .limit(1);
       
       if (error) {
         throw error;
@@ -62,10 +62,9 @@ const DatabaseStatus: React.FC = () => {
     
     for (const tableName of expectedTables) {
       try {
-        // First check if the table exists
-        const { data, error } = await supabase
-          .from(tableName)
-          .select();
+        // Use a safer approach with RPC call or handle dynamically
+        const { count, error } = await supabase
+          .rpc('get_row_count', { table_name: tableName });
         
         if (error) {
           console.error(`Error checking table ${tableName}:`, error);
@@ -77,11 +76,9 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
-        const rowCount = typeof data === 'number' ? data : (data ? data.length : 0);
-        
         tableResults.push({
           name: tableName,
-          rowCount,
+          rowCount: count || 0,
           exists: true
         });
         
@@ -100,9 +97,9 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
+      // Use a safer approach with RPC call
       const { data, error } = await supabase
-        .from(tableName)
-        .select();
+        .rpc('sample_query', { table_name: tableName });
       
       if (error) {
         throw error;
@@ -112,7 +109,7 @@ const DatabaseStatus: React.FC = () => {
       
       toast({
         title: `Query successful`,
-        description: `Found ${data.length} records in ${tableName}. Check console for details.`,
+        description: `Found records in ${tableName}. Check console for details.`,
       });
     } catch (err: any) {
       toast({

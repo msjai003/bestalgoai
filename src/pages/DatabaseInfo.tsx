@@ -15,35 +15,31 @@ const DatabaseInfo = () => {
     setError(null);
     
     try {
-      // Add sample signup
-      const { error: signupError } = await supabase
-        .from('signup')
-        .insert({
-          name: 'Sample User',
-          email: 'sample@example.com',
-          message: 'I am interested in algorithmic trading!'
+      // We'll use a custom function to add sample data
+      const { data: addResult, error: addError } = await supabase
+        .rpc('add_sample_data', {
+          sample_name: 'Sample User',
+          sample_email: 'sample@example.com',
+          sample_message: 'I am interested in algorithmic trading!'
         });
 
-      if (signupError) {
-        throw new Error(`Error adding sample signup: ${signupError.message}`);
+      if (addError) {
+        throw new Error(`Error adding sample data: ${addError.message}`);
       }
 
-      // Get the latest signup records
-      const { data: signups, error: fetchError } = await supabase
-        .from('signup')
-        .select()
-        .order('created_at', { ascending: false })
-        .limit(5);
+      // Get the latest records
+      const { data: records, error: fetchError } = await supabase
+        .rpc('get_latest_records', { limit_count: 5 });
 
       if (fetchError) {
-        throw new Error(`Error fetching signup data: ${fetchError.message}`);
+        throw new Error(`Error fetching data: ${fetchError.message}`);
       }
 
       setResult({
         success: true,
         message: 'Sample data added successfully!',
         data: {
-          signups
+          records
         }
       });
 
@@ -93,12 +89,12 @@ const DatabaseInfo = () => {
               </AlertDescription>
             </Alert>
             
-            {result.data?.signups && (
+            {result.data?.records && (
               <div>
-                <h3 className="text-lg font-medium mb-2">Recent Signups:</h3>
+                <h3 className="text-lg font-medium mb-2">Recent Records:</h3>
                 <div className="bg-gray-900/50 p-4 rounded-lg overflow-x-auto">
                   <pre className="text-xs text-gray-300 whitespace-pre-wrap">
-                    {JSON.stringify(result.data.signups, null, 2)}
+                    {JSON.stringify(result.data.records, null, 2)}
                   </pre>
                 </div>
               </div>

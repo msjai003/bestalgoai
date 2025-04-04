@@ -3,12 +3,12 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
+    // Use a safer approach with RPC call instead of direct table access
     const { data, error } = await supabase
-      .from('signup')
-      .select();
+      .rpc('get_all_tables');
     
     if (error) {
-      console.error('Error accessing Supabase table:', error);
+      console.error('Error accessing Supabase tables:', error);
       return {
         success: false,
         message: `Database access error: ${error.message}`,

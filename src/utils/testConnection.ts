@@ -5,8 +5,8 @@ export const testSupabaseConnection = async () => {
   try {
     const startTime = Date.now();
     
-    // Try to access the users table for a more complete connection test
-    const { data, error } = await supabase.from('users').select();
+    // Use RPC function instead of direct table access
+    const { data, error } = await supabase.rpc('get_all_tables');
     const endTime = Date.now();
     
     if (error) {
@@ -51,7 +51,8 @@ export const testSupabaseConnection = async () => {
 export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
-    const { data, error } = await supabase.from(tableName).select();
+    // Use RPC function with parameter
+    const { data, error } = await supabase.rpc('check_table_access', { table_name: tableName });
     
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);
