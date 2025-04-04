@@ -7,3 +7,6 @@ export * from './auth';
 
 // Export broker functions related utilities
 export * from '../broker-functions';
+
+// Export the education service for direct access
+export * from '../services/educationService';

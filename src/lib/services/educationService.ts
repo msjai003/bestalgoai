@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -231,6 +232,9 @@ export const getQuizQuestions = async (moduleId: string): Promise<QuizQuestion[]
 };
 
 export const createQuizQuestion = async (question: Omit<QuizQuestion, 'id' | 'created_at' | 'updated_at' | 'answers'>) => {
+  // Log the question being created
+  console.log('Creating quiz question:', question);
+  
   const { data, error } = await supabase
     .from('education_quiz_questions')
     .insert(question)
@@ -286,6 +290,9 @@ export const deleteQuizQuestion = async (id: string) => {
 
 // Answer functions
 export const createQuizAnswer = async (answer: Omit<QuizAnswer, 'id' | 'created_at' | 'updated_at'>) => {
+  // Log the answer being created
+  console.log('Creating quiz answer:', answer);
+  
   const { data, error } = await supabase
     .from('education_quiz_answers')
     .insert(answer)
