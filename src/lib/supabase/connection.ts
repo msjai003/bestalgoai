@@ -3,7 +3,7 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
-    // Use a safer approach with RPC call instead of direct table access
+    // Use get_all_tables which is available
     const { data, error } = await supabase
       .rpc('get_all_tables');
     

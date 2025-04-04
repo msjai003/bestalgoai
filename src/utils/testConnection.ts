@@ -5,7 +5,7 @@ export const testSupabaseConnection = async () => {
   try {
     const startTime = Date.now();
     
-    // Use RPC function instead of direct table access
+    // Use get_all_tables function which is supported
     const { data, error } = await supabase.rpc('get_all_tables');
     const endTime = Date.now();
     
@@ -51,8 +51,35 @@ export const testSupabaseConnection = async () => {
 export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
-    // Use RPC function with parameter
-    const { data, error } = await supabase.rpc('check_table_access', { table_name: tableName });
+    
+    // Use execute_sql instead of check_table_access
+    const { data, error } = await supabase.rpc('execute_sql', { 
+      query: `
+        WITH table_check AS (
+          SELECT EXISTS (
+            SELECT 1 FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = '${tableName}'
+          ) as exists
+        ),
+        sample_data AS (
+          SELECT * FROM public.${tableName} LIMIT 5
+        )
+        SELECT 
+          json_build_object(
+            'exists', (SELECT exists FROM table_check),
+            'count', CASE 
+              WHEN (SELECT exists FROM table_check) 
+              THEN (SELECT COUNT(*) FROM public.${tableName})
+              ELSE 0
+            END,
+            'sample', CASE 
+              WHEN (SELECT exists FROM table_check) 
+              THEN (SELECT COALESCE(jsonb_agg(s), '[]'::jsonb) FROM sample_data s)
+              ELSE '[]'::jsonb
+            END
+          ) as result
+      `
+    });
     
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);
@@ -64,10 +91,12 @@ export const testTableAccess = async (tableName: string) => {
       };
     }
     
+    const result = data && data.length > 0 ? data[0].result : { exists: false };
+    
     return {
       success: true,
       tableName,
-      data
+      data: result
     };
   } catch (error: any) {
     console.error(`Exception testing ${tableName} table access:`, error);

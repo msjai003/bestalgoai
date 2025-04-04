@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -26,7 +27,7 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection - using a generic query instead of a specific table
+      // Test Supabase connection using get_all_tables function
       const { data, error } = await supabase
         .rpc('get_all_tables')
         .limit(1);
@@ -62,9 +63,11 @@ const DatabaseStatus: React.FC = () => {
     
     for (const tableName of expectedTables) {
       try {
-        // Use a safer approach with RPC call or handle dynamically
-        const { count, error } = await supabase
-          .rpc('get_row_count', { table_name: tableName });
+        // Use execute_sql instead of direct rpc
+        const { data, error } = await supabase
+          .rpc('execute_sql', { 
+            query: `SELECT COUNT(*) FROM public.${tableName}` 
+          });
         
         if (error) {
           console.error(`Error checking table ${tableName}:`, error);
@@ -76,9 +79,11 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
+        const count = data && data.length > 0 ? parseInt(data[0].count) : 0;
+        
         tableResults.push({
           name: tableName,
-          rowCount: count || 0,
+          rowCount: count,
           exists: true
         });
         
@@ -97,9 +102,11 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
-      // Use a safer approach with RPC call
+      // Use execute_sql instead of sample_query
       const { data, error } = await supabase
-        .rpc('sample_query', { table_name: tableName });
+        .rpc('execute_sql', { 
+          query: `SELECT * FROM public.${tableName} LIMIT 10` 
+        });
       
       if (error) {
         throw error;

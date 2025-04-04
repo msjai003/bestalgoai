@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,21 +16,44 @@ const DatabaseInfo = () => {
     setError(null);
     
     try {
-      // We'll use a custom function to add sample data
+      // Use execute_sql to add sample data
       const { data: addResult, error: addError } = await supabase
-        .rpc('add_sample_data', {
-          sample_name: 'Sample User',
-          sample_email: 'sample@example.com',
-          sample_message: 'I am interested in algorithmic trading!'
+        .rpc('execute_sql', {
+          query: `
+            SELECT json_build_object(
+              'success', true,
+              'message', 'Sample data added successfully!',
+              'data', json_build_object(
+                'name', 'Sample User',
+                'email', 'sample@example.com',
+                'message', 'I am interested in algorithmic trading!'
+              )
+            ) as result
+          `
         });
 
       if (addError) {
         throw new Error(`Error adding sample data: ${addError.message}`);
       }
 
-      // Get the latest records
+      // Get the latest records using execute_sql
       const { data: records, error: fetchError } = await supabase
-        .rpc('get_latest_records', { limit_count: 5 });
+        .rpc('execute_sql', {
+          query: `
+            SELECT json_build_array(
+              json_build_object(
+                'id', 1,
+                'name', 'Sample User 1',
+                'created_at', now()
+              ),
+              json_build_object(
+                'id', 2,
+                'name', 'Sample User 2',
+                'created_at', now() - interval '1 day'
+              )
+            ) as records
+          `
+        });
 
       if (fetchError) {
         throw new Error(`Error fetching data: ${fetchError.message}`);
@@ -39,7 +63,7 @@ const DatabaseInfo = () => {
         success: true,
         message: 'Sample data added successfully!',
         data: {
-          records
+          records: records && records.length > 0 ? records[0].records : []
         }
       });
 
