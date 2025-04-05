@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ const BadgeManager = () => {
   // Dialogs state
   const [isBadgeFormOpen, setIsBadgeFormOpen] = useState(false);
   const [editingBadge, setEditingBadge] = useState<EducationBadge | null>(null);
-  const [deleteBadgeId, setDeleteBadgeId] = useState<number | null>(null);
+  const [deleteBadgeId, setDeleteBadgeId] = useState<string | null>(null);
 
   // Fetch badges
   const fetchBadges = async () => {

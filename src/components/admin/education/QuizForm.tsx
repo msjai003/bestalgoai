@@ -18,13 +18,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { 
-  QuizQuestion, 
-  QuizAnswer,
+  QuizQuestion,
   createQuizQuestion,
-  updateQuizQuestion,
-  createQuizAnswer,
-  updateQuizAnswer,
-  deleteQuizAnswer
+  updateQuizQuestion
 } from '@/lib/services/educationService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEducation } from '@/hooks/useEducation';
@@ -34,16 +30,14 @@ const questionSchema = z.object({
   explanation: z.string().optional().nullable(),
   order_index: z.number().int().min(0),
   level: z.enum(['basics', 'intermediate', 'pro']),
-  answers: z
+  options: z
     .array(
       z.object({
-        id: z.string().optional(),
-        answer_text: z.string().min(1, { message: 'Answer text is required' }),
+        text: z.string().min(1, { message: 'Option text is required' }),
         is_correct: z.boolean().default(false),
-        order_index: z.number().int().min(0),
       })
     )
-    .min(2, { message: 'At least 2 answers are required' })
+    .min(2, { message: 'At least 2 options are required' })
 });
 
 type QuestionFormData = z.infer<typeof questionSchema>;
@@ -59,89 +53,68 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { currentLevel } = useEducation();
   
-  const form = useForm<QuestionFormData>({
-    resolver: zodResolver(questionSchema),
-    defaultValues: question ? {
-      question: question.question,
-      explanation: question.explanation || '',
-      order_index: question.order_index,
-      level: question.level || currentLevel || 'basics',
-      answers: question.answers?.map(answer => ({
-        id: answer.id,
-        answer_text: answer.answer_text,
-        is_correct: answer.is_correct,
-        order_index: answer.order_index
-      })) || []
-    } : {
+  // Convert QuizQuestion to form data format
+  const getDefaultValues = (): QuestionFormData => {
+    if (question) {
+      return {
+        question: question.question,
+        explanation: question.explanation || '',
+        order_index: question.order_index || 0,
+        level: question.level,
+        options: question.options.map((text, index) => ({
+          text,
+          is_correct: index === question.correct_answer
+        }))
+      };
+    } 
+    
+    return {
       question: '',
       explanation: '',
       order_index: 0,
       level: currentLevel || 'basics',
-      answers: [
-        { answer_text: '', is_correct: false, order_index: 0 },
-        { answer_text: '', is_correct: false, order_index: 1 }
+      options: [
+        { text: '', is_correct: false },
+        { text: '', is_correct: false }
       ]
-    },
+    };
+  };
+  
+  const form = useForm<QuestionFormData>({
+    resolver: zodResolver(questionSchema),
+    defaultValues: getDefaultValues()
   });
 
   const handleSubmit = async (data: QuestionFormData) => {
     setIsSubmitting(true);
     try {
-      let questionId;
+      // Get the correct answer index
+      const correctAnswerIndex = data.options.findIndex(opt => opt.is_correct);
+      if (correctAnswerIndex === -1) {
+        form.setError('options', { 
+          message: 'You must select at least one correct answer' 
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
-      // Create or update the question
+      // Convert form data to QuizQuestion format
+      const questionData = {
+        module_id: moduleId,
+        question: data.question,
+        explanation: data.explanation || undefined,
+        order_index: data.order_index,
+        level: data.level,
+        options: data.options.map(opt => opt.text),
+        correct_answer: correctAnswerIndex
+      };
+      
       if (question) {
-        const updatedQuestion = await updateQuizQuestion(question.id, {
-          question: data.question,
-          explanation: data.explanation,
-          order_index: data.order_index,
-          level: data.level
-        });
-        questionId = updatedQuestion?.id;
+        // Update question
+        await updateQuizQuestion(question.id, questionData);
       } else {
-        const newQuestion = await createQuizQuestion({
-          module_id: moduleId,
-          question: data.question,
-          explanation: data.explanation,
-          order_index: data.order_index,
-          level: data.level
-        });
-        questionId = newQuestion?.id;
-      }
-      
-      if (!questionId) {
-        throw new Error('Failed to save question');
-      }
-      
-      // Handle answers
-      const existingAnswerIds = question?.answers?.map(a => a.id) || [];
-      const newAnswers = data.answers.filter(a => !a.id);
-      const updatedAnswers = data.answers.filter(a => a.id);
-      
-      // Delete answers that were removed
-      const answersToKeep = data.answers.filter(a => a.id).map(a => a.id);
-      const answersToDelete = existingAnswerIds.filter(id => !answersToKeep.includes(id));
-      
-      // Process deletes, updates, and creates
-      for (const id of answersToDelete) {
-        await deleteQuizAnswer(id!);
-      }
-      
-      for (const answer of updatedAnswers) {
-        await updateQuizAnswer(answer.id!, {
-          answer_text: answer.answer_text,
-          is_correct: answer.is_correct,
-          order_index: answer.order_index
-        });
-      }
-      
-      for (const answer of newAnswers) {
-        await createQuizAnswer({
-          question_id: questionId,
-          answer_text: answer.answer_text,
-          is_correct: answer.is_correct,
-          order_index: answer.order_index
-        });
+        // Create question
+        await createQuizQuestion(questionData);
       }
       
       onSuccess();
@@ -152,35 +125,36 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
     }
   };
 
-  const answers = form.watch('answers') || [];
+  const options = form.watch('options') || [];
   
-  const addAnswer = () => {
-    const currentAnswers = form.getValues('answers') || [];
-    form.setValue('answers', [
-      ...currentAnswers, 
-      { 
-        answer_text: '', 
-        is_correct: false, 
-        order_index: currentAnswers.length 
-      }
+  const addOption = () => {
+    const currentOptions = form.getValues('options') || [];
+    form.setValue('options', [
+      ...currentOptions, 
+      { text: '', is_correct: false }
     ]);
   };
   
-  const removeAnswer = (index: number) => {
-    const currentAnswers = form.getValues('answers') || [];
-    // Don't allow removal if only 2 answers remain
-    if (currentAnswers.length <= 2) return;
+  const removeOption = (index: number) => {
+    const currentOptions = form.getValues('options') || [];
+    // Don't allow removal if only 2 options remain
+    if (currentOptions.length <= 2) return;
     
-    const updatedAnswers = currentAnswers.filter((_, i) => i !== index);
-    // Update order_index values
-    updatedAnswers.forEach((answer, i) => {
-      answer.order_index = i;
-    });
-    
-    form.setValue('answers', updatedAnswers);
+    const updatedOptions = currentOptions.filter((_, i) => i !== index);
+    form.setValue('options', updatedOptions);
   };
 
-  const correctAnswersCount = answers.filter(a => a.is_correct).length;
+  // Ensure only one option is marked as correct
+  const handleCorrectChange = (index: number, checked: boolean) => {
+    if (checked) {
+      const currentOptions = form.getValues('options');
+      const updatedOptions = currentOptions.map((opt, i) => ({
+        ...opt,
+        is_correct: i === index
+      }));
+      form.setValue('options', updatedOptions);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -223,7 +197,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
                 <FormControl>
                   <Input 
                     type="number" 
-                    {...field} 
+                    value={field.value} 
                     onChange={e => field.onChange(parseInt(e.target.value))}
                     placeholder="Order index" 
                   />
@@ -262,40 +236,42 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
         
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <FormLabel className="text-base">Answers</FormLabel>
+            <FormLabel className="text-base">Options</FormLabel>
             <div className="space-x-2">
-              {correctAnswersCount === 0 && (
+              {!options.some(opt => opt.is_correct) && (
                 <Badge variant="destructive">No correct answer selected</Badge>
               )}
               <Button 
                 type="button" 
                 variant="outline" 
                 size="sm"
-                onClick={addAnswer}
+                onClick={addOption}
               >
-                <PlusCircle className="h-4 w-4 mr-1" /> Add Answer
+                <PlusCircle className="h-4 w-4 mr-1" /> Add Option
               </Button>
             </div>
           </div>
           
-          {form.formState.errors.answers?.message && (
+          {form.formState.errors.options?.message && (
             <p className="text-sm font-medium text-destructive">
-              {form.formState.errors.answers?.message}
+              {form.formState.errors.options?.message}
             </p>
           )}
           
           <div className="space-y-3">
-            {answers.map((_, index) => (
+            {options.map((_, index) => (
               <div key={index} className="flex gap-2 items-start">
                 <FormField
                   control={form.control}
-                  name={`answers.${index}.is_correct`}
+                  name={`options.${index}.is_correct`}
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-2 space-y-0 mt-3">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
-                          onCheckedChange={field.onChange}
+                          onCheckedChange={(checked) => {
+                            handleCorrectChange(index, checked as boolean);
+                          }}
                         />
                       </FormControl>
                     </FormItem>
@@ -304,30 +280,13 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
                 
                 <FormField
                   control={form.control}
-                  name={`answers.${index}.answer_text`}
+                  name={`options.${index}.text`}
                   render={({ field }) => (
                     <FormItem className="flex-grow">
                       <FormControl>
-                        <Input {...field} placeholder={`Answer ${index + 1}`} />
+                        <Input {...field} placeholder={`Option ${index + 1}`} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`answers.${index}.order_index`}
-                  render={({ field }) => (
-                    <FormItem className="w-16">
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={e => field.onChange(parseInt(e.target.value))}
-                          placeholder="#" 
-                        />
-                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -336,8 +295,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
                   type="button" 
                   variant="ghost" 
                   size="icon" 
-                  onClick={() => removeAnswer(index)}
-                  disabled={answers.length <= 2}
+                  onClick={() => removeOption(index)}
+                  disabled={options.length <= 2}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
