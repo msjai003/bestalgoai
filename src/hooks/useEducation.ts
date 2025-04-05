@@ -203,12 +203,25 @@ export const useEducation = () => {
   useEffect(() => {
     if (user) {
       const loadUserData = async () => {
-        const userData = await fetchUserEducationData(user.id);
-        if (userData) {
-          setUsingRealData(true);
+        try {
+          console.log("Attempting to load user education data for user:", user.id);
+          const userData = await fetchUserEducationData(user.id);
+          if (userData) {
+            console.log("User education data loaded successfully, enabling real data mode");
+            setUsingRealData(true);
+          } else {
+            console.log("No user education data found, falling back to local storage");
+            setUsingRealData(false);
+          }
+        } catch (error) {
+          console.error("Error loading user education data:", error);
+          setUsingRealData(false);
         }
       };
       loadUserData();
+    } else {
+      console.log("No user logged in, using local storage data");
+      setUsingRealData(false);
     }
   }, [user]);
 
@@ -271,7 +284,8 @@ export const useEducation = () => {
     
     setLoadingQuizData(true);
     try {
-      const quizData = await fetchModuleQuizData(moduleId);
+      console.log(`Fetching quiz data for module ${moduleId} in level ${currentLevel}`);
+      const quizData = await fetchModuleQuizData(moduleId, currentLevel);
       setLoadingQuizData(false);
       console.log('Fetched quiz data:', quizData);
       return quizData;
