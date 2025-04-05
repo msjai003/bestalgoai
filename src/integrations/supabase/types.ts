@@ -495,6 +495,7 @@ export type Database = {
           created_at: string | null
           explanation: string | null
           id: string
+          level: string
           module_id: string
           order_index: number
           question: string
@@ -504,6 +505,7 @@ export type Database = {
           created_at?: string | null
           explanation?: string | null
           id?: string
+          level?: string
           module_id: string
           order_index: number
           question: string
@@ -513,6 +515,7 @@ export type Database = {
           created_at?: string | null
           explanation?: string | null
           id?: string
+          level?: string
           module_id?: string
           order_index?: number
           question?: string

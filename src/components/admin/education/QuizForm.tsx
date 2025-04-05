@@ -26,11 +26,14 @@ import {
   updateQuizAnswer,
   deleteQuizAnswer
 } from '@/lib/services/educationService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useEducation } from '@/hooks/useEducation';
 
 const questionSchema = z.object({
   question: z.string().min(3, { message: 'Question is required' }),
   explanation: z.string().optional().nullable(),
   order_index: z.number().int().min(0),
+  level: z.enum(['basics', 'intermediate', 'pro']),
   answers: z
     .array(
       z.object({
@@ -54,6 +57,7 @@ interface QuizFormProps {
 
 const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { currentLevel } = useEducation();
   
   const form = useForm<QuestionFormData>({
     resolver: zodResolver(questionSchema),
@@ -61,6 +65,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
       question: question.question,
       explanation: question.explanation || '',
       order_index: question.order_index,
+      level: question.level || currentLevel || 'basics',
       answers: question.answers?.map(answer => ({
         id: answer.id,
         answer_text: answer.answer_text,
@@ -71,6 +76,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
       question: '',
       explanation: '',
       order_index: 0,
+      level: currentLevel || 'basics',
       answers: [
         { answer_text: '', is_correct: false, order_index: 0 },
         { answer_text: '', is_correct: false, order_index: 1 }
@@ -88,7 +94,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
         const updatedQuestion = await updateQuizQuestion(question.id, {
           question: data.question,
           explanation: data.explanation,
-          order_index: data.order_index
+          order_index: data.order_index,
+          level: data.level
         });
         questionId = updatedQuestion?.id;
       } else {
@@ -96,7 +103,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
           module_id: moduleId,
           question: data.question,
           explanation: data.explanation,
-          order_index: data.order_index
+          order_index: data.order_index,
+          level: data.level
         });
         questionId = newQuestion?.id;
       }
@@ -205,24 +213,52 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="order_index"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Order</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  onChange={e => field.onChange(parseInt(e.target.value))}
-                  placeholder="Order index" 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="order_index"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Order</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={e => field.onChange(parseInt(e.target.value))}
+                    placeholder="Order index" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="level"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Level</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="basics">Basics</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <div className="space-y-4">
           <div className="flex justify-between items-center">

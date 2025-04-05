@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -72,8 +71,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
                 });
                 setQuizQuestions(questionsWithIds);
               } else {
-                setLoadError('No quiz questions available for this module.');
-                toast.error('Could not load quiz questions.');
+                setLoadError(`No quiz questions available for this module in the ${currentLevel} level.`);
+                toast.error('Could not load quiz questions for this level.');
               }
             }
           } else {
@@ -184,8 +183,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
-          <DialogTitle className="sr-only">Quiz Loading</DialogTitle>
-          <DialogDescription className="sr-only">Loading quiz questions...</DialogDescription>
+          <DialogTitle>Quiz Loading</DialogTitle>
+          <DialogDescription>Loading quiz questions for {currentLevel} level...</DialogDescription>
           <div className="flex flex-col items-center justify-center py-8">
             <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
             <p className="mt-4 text-gray-300">Loading quiz...</p>
@@ -199,11 +198,11 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
-          <DialogTitle className="sr-only">Quiz Error</DialogTitle>
-          <DialogDescription className="sr-only">Error loading quiz questions</DialogDescription>
+          <DialogTitle>Quiz Error</DialogTitle>
+          <DialogDescription>Error loading quiz questions</DialogDescription>
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
-            <p className="mt-4 text-gray-300">{loadError || 'No quiz questions available for this module.'}</p>
+            <p className="mt-4 text-gray-300">{loadError || `No quiz questions available for this module in the ${currentLevel} level.`}</p>
             <Button className="mt-4" onClick={handleCloseQuiz}>Close</Button>
           </div>
         </DialogContent>
@@ -216,7 +215,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
         {!quizComplete ? (
           <>
-            <DialogTitle>{moduleTitle} Quiz</DialogTitle>
+            <DialogTitle>{moduleTitle} Quiz ({currentLevel})</DialogTitle>
             <DialogDescription className="text-gray-400">Question {currentQuestion + 1} of {quizQuestions.length}</DialogDescription>
             
             <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-6">

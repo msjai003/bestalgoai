@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -32,6 +33,7 @@ export interface QuizQuestion {
   question: string;
   explanation: string | null;
   order_index: number;
+  level: 'basics' | 'intermediate' | 'pro';
   created_at: string;
   updated_at: string;
   answers?: QuizAnswer[];
@@ -193,11 +195,12 @@ export const deleteEducationContent = async (id: string) => {
 };
 
 // Quiz functions
-export const getQuizQuestions = async (moduleId: string): Promise<QuizQuestion[]> => {
+export const getQuizQuestions = async (moduleId: string, level: 'basics' | 'intermediate' | 'pro' = 'basics'): Promise<QuizQuestion[]> => {
   const { data: questions, error: questionsError } = await supabase
     .from('education_quiz_questions')
     .select('*')
     .eq('module_id', moduleId)
+    .eq('level', level)
     .order('order_index');
   
   if (questionsError) {
