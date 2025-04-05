@@ -209,12 +209,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
         {!quizComplete ? (
           <>
-            <DialogTitle className="sr-only">{moduleTitle} Quiz</DialogTitle>
-            <DialogDescription className="sr-only">Quiz questions for {moduleTitle} module</DialogDescription>
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-white">{moduleTitle} Quiz</h2>
-              <p className="text-gray-400 text-sm">Question {currentQuestion + 1} of {quizQuestions.length}</p>
-            </div>
+            <DialogTitle>{moduleTitle} Quiz</DialogTitle>
+            <DialogDescription className="text-gray-400">Question {currentQuestion + 1} of {quizQuestions.length}</DialogDescription>
             
             <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-6">
               <div 
@@ -228,15 +224,13 @@ export const QuizModal: React.FC<QuizModalProps> = ({
               
               <div className="space-y-3">
                 {quizQuestions[currentQuestion]?.options.map((option, index) => (
-                  <button
+                  <div 
                     key={index}
                     onClick={() => handleOptionSelect(index)}
-                    className="w-full text-left"
-                    disabled={isAnswered}
-                    aria-pressed={selectedOption === index}
+                    className="w-full cursor-pointer"
                   >
                     <Card 
-                      className={`p-4 cursor-pointer border transition-colors ${
+                      className={`p-4 border transition-colors ${
                         selectedOption === index 
                           ? index === quizQuestions[currentQuestion]?.correctAnswer
                             ? 'bg-green-900/30 border-green-500'
@@ -262,7 +256,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
                         <span>{option}</span>
                       </div>
                     </Card>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -288,8 +282,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           </>
         ) : (
           <div className="text-center">
-            <DialogTitle className="sr-only">Quiz Results</DialogTitle>
-            <DialogDescription className="sr-only">Your quiz score and results</DialogDescription>
+            <DialogTitle>Quiz Results</DialogTitle>
+            <DialogDescription className="text-gray-300">Your quiz score and results</DialogDescription>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">Quiz Complete!</h2>
               <p className="text-gray-300">You scored:</p>
