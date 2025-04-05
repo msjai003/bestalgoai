@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { fetchAllQuizQuestions, createQuizQuestion, updateQuizQuestion, deleteQuizQuestion } from '@/lib/services/educationService';
+import { fetchAllQuizQuestions, createQuizQuestion, updateQuizQuestion, deleteQuizQuestion, Level } from '@/lib/services/educationService';
 import { QuizQuestion } from '@/lib/services/educationService';
 
 const AdminEducation = () => {
@@ -50,7 +50,7 @@ const AdminEducation = () => {
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [newQuestion, setNewQuestion] = useState<{
     module_id: string;
-    level: string;
+    level: Level;
     question: string;
     options: string[];
     correct_answer: number;
@@ -65,7 +65,7 @@ const AdminEducation = () => {
   });
   const [editingQuestion, setEditingQuestion] = useState<{
     module_id: string;
-    level: string;
+    level: Level;
     question: string;
     options: string[];
     correct_answer: number;
@@ -299,7 +299,7 @@ const AdminEducation = () => {
                         <label className="block text-sm font-medium mb-1">Level</label>
                         <Select
                           value={newQuestion.level}
-                          onValueChange={value => setNewQuestion({...newQuestion, level: value})}
+                          onValueChange={value => setNewQuestion({...newQuestion, level: value as Level})}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select level" />
@@ -440,7 +440,7 @@ const AdminEducation = () => {
                                   <label className="block text-sm font-medium mb-1">Level</label>
                                   <Select
                                     value={editingQuestion.level}
-                                    onValueChange={value => setEditingQuestion({...editingQuestion, level: value})}
+                                    onValueChange={value => setEditingQuestion({...editingQuestion, level: value as Level})}
                                   >
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select level" />

@@ -1,4 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export type Level = 'basics' | 'intermediate' | 'pro';
 
@@ -8,6 +10,8 @@ export interface EducationModule {
   description: string;
   level: Level;
   order_index: number;
+  estimated_time?: number;
+  is_active?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -20,6 +24,7 @@ export interface QuizQuestion {
   correct_answer: number;
   explanation?: string;
   level: Level;
+  order_index?: number;
 }
 
 export interface QuizAnswer {
@@ -28,6 +33,28 @@ export interface QuizAnswer {
   answer_text: string;
   is_correct: boolean;
   order_index: number;
+}
+
+export interface EducationContent {
+  id: string;
+  module_id: string;
+  title: string;
+  content: string;
+  content_type?: string;
+  media_url?: string;
+  order_index: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface EducationBadge {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  level: Level;
+  unlocked_by: string;
+  badge_id?: string;
 }
 
 // Module functions
@@ -40,6 +67,20 @@ export const fetchModules = async (level: Level): Promise<EducationModule[]> => 
     
   if (error) {
     console.error('Error fetching modules:', error);
+    return [];
+  }
+  
+  return data || [];
+};
+
+export const getEducationModules = async (): Promise<EducationModule[]> => {
+  const { data, error } = await supabase
+    .from('education_modules')
+    .select('*')
+    .order('order_index');
+    
+  if (error) {
+    console.error('Error fetching all modules:', error);
     return [];
   }
   
@@ -61,6 +102,8 @@ export const createModule = async (module: Omit<EducationModule, 'id' | 'created
   return data;
 };
 
+export const createEducationModule = createModule;
+
 export const updateModule = async (id: string, module: Partial<EducationModule>): Promise<EducationModule | null> => {
   const { data, error } = await supabase
     .from('education_modules')
@@ -77,6 +120,8 @@ export const updateModule = async (id: string, module: Partial<EducationModule>)
   return data;
 };
 
+export const updateEducationModule = updateModule;
+
 export const deleteModule = async (id: string): Promise<boolean> => {
   const { error } = await supabase
     .from('education_modules')
@@ -85,6 +130,71 @@ export const deleteModule = async (id: string): Promise<boolean> => {
     
   if (error) {
     console.error('Error deleting module:', error);
+    return false;
+  }
+  
+  return true;
+};
+
+export const deleteEducationModule = deleteModule;
+
+// Content functions
+export const getEducationContent = async (moduleId?: string): Promise<EducationContent[]> => {
+  let query = supabase.from('education_content').select('*').order('order_index');
+  
+  if (moduleId) {
+    query = query.eq('module_id', moduleId);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error('Error fetching content:', error);
+    return [];
+  }
+  
+  return data || [];
+};
+
+export const createEducationContent = async (content: Omit<EducationContent, 'id' | 'created_at' | 'updated_at'>): Promise<EducationContent | null> => {
+  const { data, error } = await supabase
+    .from('education_content')
+    .insert(content)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error creating content:', error);
+    return null;
+  }
+  
+  return data;
+};
+
+export const updateEducationContent = async (id: string, content: Partial<EducationContent>): Promise<EducationContent | null> => {
+  const { data, error } = await supabase
+    .from('education_content')
+    .update(content)
+    .eq('id', id)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error updating content:', error);
+    return null;
+  }
+  
+  return data;
+};
+
+export const deleteEducationContent = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('education_content')
+    .delete()
+    .eq('id', id);
+    
+  if (error) {
+    console.error('Error deleting content:', error);
     return false;
   }
   
@@ -104,7 +214,49 @@ export const fetchQuizQuestions = async (moduleId: string, level: Level): Promis
     return [];
   }
   
-  return data || [];
+  // Transform options from JSON to string[] if needed
+  return data ? data.map(q => ({
+    ...q,
+    options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
+  })) : [];
+};
+
+export const fetchAllQuizQuestions = async (): Promise<QuizQuestion[]> => {
+  const { data, error } = await supabase
+    .from('education_quiz_clients')
+    .select('*');
+    
+  if (error) {
+    console.error('Error fetching all quiz questions:', error);
+    return [];
+  }
+  
+  // Transform options from JSON to string[] if needed
+  return data ? data.map(q => ({
+    ...q,
+    options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
+  })) : [];
+};
+
+export const getQuizQuestions = async (moduleId?: string): Promise<QuizQuestion[]> => {
+  let query = supabase.from('education_quiz_clients').select('*');
+  
+  if (moduleId) {
+    query = query.eq('module_id', moduleId);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error('Error fetching quiz questions:', error);
+    return [];
+  }
+  
+  // Transform options from JSON to string[] if needed
+  return data ? data.map(q => ({
+    ...q,
+    options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
+  })) : [];
 };
 
 export const createQuizQuestion = async (question: {
@@ -114,10 +266,17 @@ export const createQuizQuestion = async (question: {
   options: string[];
   correct_answer: number;
   explanation?: string;
+  order_index?: number;
 }): Promise<QuizQuestion | null> => {
+  // Ensure options is stored as JSON
+  const preparedQuestion = {
+    ...question,
+    options: question.options
+  };
+  
   const { data, error } = await supabase
     .from('education_quiz_clients')
-    .insert(question)
+    .insert(preparedQuestion)
     .select()
     .single();
     
@@ -126,13 +285,20 @@ export const createQuizQuestion = async (question: {
     return null;
   }
   
-  return data;
+  // Transform options from JSON to string[] for return
+  return {
+    ...data,
+    options: Array.isArray(data.options) ? data.options : JSON.parse(data.options as unknown as string)
+  };
 };
 
 export const updateQuizQuestion = async (id: string, question: Partial<QuizQuestion>): Promise<QuizQuestion | null> => {
+  // Prepare the question for update
+  const preparedQuestion: any = { ...question };
+  
   const { data, error } = await supabase
     .from('education_quiz_clients')
-    .update(question)
+    .update(preparedQuestion)
     .eq('id', id)
     .select()
     .single();
@@ -142,7 +308,11 @@ export const updateQuizQuestion = async (id: string, question: Partial<QuizQuest
     return null;
   }
   
-  return data;
+  // Transform options from JSON to string[] for return
+  return {
+    ...data,
+    options: Array.isArray(data.options) ? data.options : JSON.parse(data.options as unknown as string)
+  };
 };
 
 export const deleteQuizQuestion = async (id: string): Promise<boolean> => {
@@ -159,52 +329,61 @@ export const deleteQuizQuestion = async (id: string): Promise<boolean> => {
   return true;
 };
 
-// Placeholder functions for compatibility with existing code
-export const createQuizAnswer = async (answer: {
-  question_id: string;
-  answer_text: string;
-  is_correct: boolean;
-  order_index: number;
-}): Promise<QuizAnswer | null> => {
-  // Since we're not using separate answer records, just return null
-  console.log('createQuizAnswer called but not implemented for the quiz_clients table', answer);
-  return null;
+// Badge functions
+export const getEducationBadges = async (): Promise<EducationBadge[]> => {
+  const { data, error } = await supabase
+    .from('education_badges')
+    .select('*');
+    
+  if (error) {
+    console.error('Error fetching badges:', error);
+    return [];
+  }
+  
+  return data || [];
 };
 
-export const updateQuizAnswer = async (id: string, answer: Partial<QuizAnswer>): Promise<QuizAnswer | null> => {
-  // Since we're not using separate answer records, just return null
-  console.log('updateQuizAnswer called but not implemented for the quiz_clients table', id, answer);
-  return null;
+export const createEducationBadge = async (badge: Omit<EducationBadge, 'id'>): Promise<EducationBadge | null> => {
+  const { data, error } = await supabase
+    .from('education_badges')
+    .insert(badge)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error creating badge:', error);
+    return null;
+  }
+  
+  return data;
 };
 
-export const deleteQuizAnswer = async (id: string): Promise<boolean> => {
-  // Since we're not using separate answer records, just return true
-  console.log('deleteQuizAnswer called but not implemented for the quiz_clients table', id);
-  return true;
+export const updateEducationBadge = async (id: string, badge: Partial<EducationBadge>): Promise<EducationBadge | null> => {
+  const { data, error } = await supabase
+    .from('education_badges')
+    .update(badge)
+    .eq('id', id)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error updating badge:', error);
+    return null;
+  }
+  
+  return data;
 };
 
-// Badge functions (placeholder stubs for compatibility)
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  level: Level;
-  unlocked_by: string;
-}
-
-export const fetchBadges = async (): Promise<Badge[]> => {
-  return [];
-};
-
-export const createBadge = async (badge: Omit<Badge, 'id' | 'created_at' | 'updated_at'>): Promise<Badge | null> => {
-  return null;
-};
-
-export const updateBadge = async (id: string, badge: Partial<Badge>): Promise<Badge | null> => {
-  return null;
-};
-
-export const deleteBadge = async (id: string): Promise<boolean> => {
+export const deleteEducationBadge = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('education_badges')
+    .delete()
+    .eq('id', id);
+    
+  if (error) {
+    console.error('Error deleting badge:', error);
+    return false;
+  }
+  
   return true;
 };
