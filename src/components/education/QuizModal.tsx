@@ -54,6 +54,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         try {
           // If using real Supabase data
           if (usingRealData) {
+            console.log(`Fetching quiz data for module ${moduleId} at level ${currentLevel}`);
             const data = await fetchModuleQuizData(moduleId, currentLevel);
             
             if (data && data.questions && data.questions.length > 0) {
@@ -62,7 +63,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
             } else {
               // Fallback to local data if no questions from Supabase
               console.log('No questions from Supabase, falling back to local data');
-              if (quiz && quiz.questions) {
+              if (quiz && quiz.questions && quiz.questions.length > 0) {
                 const questionsWithIds = quiz.questions.map(q => {
                   if (!q.id) {
                     return { ...q, id: uuidv4() };
@@ -77,7 +78,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
             }
           } else {
             // Using local data
-            if (quiz && quiz.questions) {
+            if (quiz && quiz.questions && quiz.questions.length > 0) {
               const questionsWithIds = quiz.questions.map(q => {
                 if (!q.id) {
                   return { ...q, id: uuidv4() };
@@ -85,6 +86,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
                 return q;
               });
               setQuizQuestions(questionsWithIds);
+              console.log('Using local quiz data:', questionsWithIds);
             } else {
               setLoadError('No quiz questions available for this module.');
             }
@@ -95,7 +97,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           toast.error('Failed to load quiz data.');
           
           // Fallback to local data on error
-          if (quiz && quiz.questions) {
+          if (quiz && quiz.questions && quiz.questions.length > 0) {
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
                 return { ...q, id: uuidv4() };
@@ -226,10 +228,10 @@ export const QuizModal: React.FC<QuizModalProps> = ({
             </div>
             
             <div className="mb-6">
-              <p className="text-white font-medium mb-4">{quizQuestions[currentQuestion]?.question}</p>
+              <p className="text-white font-medium mb-4">{quizQuestions[currentQuestion]?.question || 'No question available'}</p>
               
               <div className="space-y-3">
-                {quizQuestions[currentQuestion]?.options.map((option, index) => (
+                {quizQuestions[currentQuestion]?.options?.map((option, index) => (
                   <div 
                     key={index}
                     onClick={() => handleOptionSelect(index)}

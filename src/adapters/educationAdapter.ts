@@ -186,7 +186,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     
     if (questionsError) {
       console.error('Error fetching quiz questions:', questionsError);
-      return null;
+      return { questions: [] }; // Return empty array instead of null to avoid errors
     }
     
     if (!questionsData || questionsData.length === 0) {
@@ -202,33 +202,40 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
       }
       
       // Format answers from the nested query
-      const answers = (question.education_quiz_answers || []).map((answer: any) => ({
-        id: answer.id,
-        answer_text: answer.answer_text,
-        is_correct: answer.is_correct,
-        order_index: answer.order_index,
-        question_id: question.id
-      }));
+      const answers = (question.education_quiz_answers || []).sort((a, b) => a.order_index - b.order_index);
+      
+      // If we have no answers, don't process this question
+      if (answers.length === 0) {
+        console.warn(`Question ${question.id} has no answers`);
+        return null;
+      }
+      
+      // Format the options array
+      const options = answers.map(a => a.answer_text);
       
       // Get the index of the correct answer for our frontend format
-      const correctAnswer = answers.findIndex((a: any) => a.is_correct);
+      const correctAnswer = answers.findIndex(a => a.is_correct);
       
       // Format the question object
       return {
         id: question.id,
         question: question.question,
         explanation: question.explanation,
-        options: answers.map((a: any) => a.answer_text),
+        options: options,
         correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
-        level: question.level
+        level: question.level || moduleLevel // Fallback to requested level if not specified
       };
     }).filter(Boolean) as QuizQuestion[];
     
     console.log(`Found ${questions.length} quiz questions for this module and level`);
+    if (questions.length > 0) {
+      console.log('Sample question:', questions[0]);
+    }
+    
     return { questions };
     
   } catch (error) {
     console.error('Error in fetchModuleQuizData:', error);
-    return null;
+    return { questions: [] }; // Return empty array instead of null to avoid errors
   }
 };
