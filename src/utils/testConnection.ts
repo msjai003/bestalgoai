@@ -6,7 +6,10 @@ export const testSupabaseConnection = async () => {
     const startTime = Date.now();
     
     // Try to access the users table for a more complete connection test
-    const { data, error } = await supabase.from('users').select();
+    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
+      query: 'SELECT count(*) FROM user_profiles LIMIT 10'
+    });
+    
     const endTime = Date.now();
     
     if (error) {
@@ -33,7 +36,7 @@ export const testSupabaseConnection = async () => {
     
     return {
       success: true,
-      data,
+      data: queryResult,
       authData,
       latency: endTime - startTime
     };
@@ -51,8 +54,17 @@ export const testSupabaseConnection = async () => {
 export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
-    const { data, error } = await supabase.from(tableName).select();
     
+    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
+      query: `SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = '${tableName}'
+      ) as "exists", (
+        SELECT count(*) FROM "${tableName}" LIMIT 1
+      ) as "count"`
+    });
+
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);
       return {
@@ -63,10 +75,26 @@ export const testTableAccess = async (tableName: string) => {
       };
     }
     
+    let tableData = null;
+    let tableExists = false;
+    let recordCount = 0;
+    
+    if (queryResult && typeof queryResult === 'object') {
+      // Try to parse the result which should be an array with one object
+      if (Array.isArray(queryResult) && queryResult.length > 0) {
+        const result = queryResult[0];
+        if (result && typeof result === 'object') {
+          tableExists = result.exists === true;
+          recordCount = result.count ? Number(result.count) : 0;
+        }
+      }
+    }
+    
     return {
       success: true,
       tableName,
-      data
+      exists: tableExists,
+      count: recordCount
     };
   } catch (error: any) {
     console.error(`Exception testing ${tableName} table access:`, error);

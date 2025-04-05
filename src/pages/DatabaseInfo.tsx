@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,28 +16,30 @@ const DatabaseInfo = () => {
     setError(null);
     
     try {
-      // Add sample signup
-      const { error: signupError } = await supabase
-        .from('signup')
-        .insert({
-          name: 'Sample User',
-          email: 'sample@example.com',
-          message: 'I am interested in algorithmic trading!'
-        });
+      // Add sample signup using execute_sql
+      const { data: insertResult, error: insertError } = await supabase.rpc('execute_sql', {
+        query: `INSERT INTO signup (name, email, message) 
+                VALUES ('Sample User', 'sample@example.com', 'I am interested in algorithmic trading!') 
+                RETURNING *`
+      });
 
-      if (signupError) {
-        throw new Error(`Error adding sample signup: ${signupError.message}`);
+      if (insertError) {
+        throw new Error(`Error adding sample signup: ${insertError.message}`);
       }
 
       // Get the latest signup records
-      const { data: signups, error: fetchError } = await supabase
-        .from('signup')
-        .select()
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const { data: signupsResult, error: fetchError } = await supabase.rpc('execute_sql', {
+        query: `SELECT * FROM signup ORDER BY created_at DESC LIMIT 5`
+      });
 
       if (fetchError) {
         throw new Error(`Error fetching signup data: ${fetchError.message}`);
+      }
+
+      // Process the results
+      let signups = [];
+      if (signupsResult && Array.isArray(signupsResult)) {
+        signups = signupsResult;
       }
 
       setResult({

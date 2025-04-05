@@ -3,9 +3,9 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
-    const { data, error } = await supabase
-      .from('signup')
-      .select();
+    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
+      query: 'SELECT * FROM signup LIMIT 5'
+    });
     
     if (error) {
       console.error('Error accessing Supabase table:', error);
@@ -19,7 +19,7 @@ export async function testTableAccess() {
     return {
       success: true,
       message: 'Successfully connected to Supabase',
-      data
+      data: queryResult
     };
   } catch (error) {
     console.error('Exception during Supabase table access:', error);
