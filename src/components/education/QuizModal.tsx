@@ -29,7 +29,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     submitQuizAnswer, 
     startQuiz, 
     setAutoLaunchQuiz, 
-    currentLevel 
+    currentLevel,
+    fetchQuizData
   } = useEducation();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -49,8 +50,15 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         setLoadError(null);
         
         try {
-          // Just use local data since Supabase tables are removed
-          if (quiz && quiz.questions && quiz.questions.length > 0) {
+          // First, try to fetch data from Supabase
+          const supabaseQuizData = await fetchQuizData(moduleId, currentLevel);
+          
+          if (supabaseQuizData && supabaseQuizData.questions && supabaseQuizData.questions.length > 0) {
+            // If we have questions from Supabase, use them
+            console.log('Using quiz data from Supabase:', supabaseQuizData.questions);
+            setQuizQuestions(supabaseQuizData.questions);
+          } else if (quiz && quiz.questions && quiz.questions.length > 0) {
+            // Fall back to local data if Supabase returned no questions
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
                 return { ...q, id: uuidv4() };
@@ -58,7 +66,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
               return q;
             });
             setQuizQuestions(questionsWithIds);
-            console.log('Using local quiz data:', questionsWithIds);
+            console.log('Falling back to local quiz data:', questionsWithIds);
           } else {
             setLoadError('No quiz questions available for this module.');
           }
@@ -73,7 +81,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     };
     
     loadQuizData();
-  }, [moduleId, open, quiz, currentLevel]);
+  }, [moduleId, open, quiz, currentLevel, fetchQuizData]);
   
   useEffect(() => {
     if (open) {
@@ -149,7 +157,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           <DialogDescription>Loading quiz questions for {currentLevel} level...</DialogDescription>
           <div className="flex flex-col items-center justify-center py-8">
             <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
-            <p className="mt-4 text-gray-300">Loading quiz...</p>
+            <p className="mt-4 text-gray-300">Loading quiz from database...</p>
           </div>
         </DialogContent>
       </Dialog>

@@ -8,7 +8,8 @@ import {
   markModuleViewed,
   saveQuizResult,
   saveEarnedBadge,
-  updateEducationProgress
+  updateEducationProgress,
+  fetchModuleQuizData
 } from '@/adapters/educationAdapter';
 
 export type Level = 'basics' | 'intermediate' | 'pro';
@@ -204,8 +205,7 @@ export const useEducation = () => {
       const loadUserData = async () => {
         try {
           console.log("Attempting to load user education data for user:", user.id);
-          console.log("Education tables are removed, using local storage data");
-          setUsingRealData(false);
+          setUsingRealData(true);
         } catch (error) {
           console.error("Error loading user education data:", error);
           setUsingRealData(false);
@@ -273,9 +273,16 @@ export const useEducation = () => {
   };
 
   const fetchQuizData = async (moduleId: string) => {
-    setLoadingQuizData(false);
-    console.log('Education tables removed, not fetching quiz data from Supabase');
-    return null;
+    setLoadingQuizData(true);
+    try {
+      const quizData = await fetchModuleQuizData(moduleId, currentLevel);
+      setLoadingQuizData(false);
+      return quizData;
+    } catch (error) {
+      console.error("Error fetching quiz data:", error);
+      setLoadingQuizData(false);
+      return null;
+    }
   };
 
   const completeQuiz = async (quizResult: {
@@ -558,6 +565,6 @@ export const useEducation = () => {
     setAutoLaunchQuiz,
     fetchQuizData,
     loadingQuizData,
-    usingRealData: false
+    usingRealData
   };
 };

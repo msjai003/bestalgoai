@@ -408,6 +408,42 @@ export type Database = {
         }
         Relationships: []
       }
+      education_quiz_clients: {
+        Row: {
+          correct_answer: number
+          created_at: string | null
+          explanation: string | null
+          id: string
+          level: string
+          module_id: string
+          options: Json
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          level: string
+          module_id: string
+          options: Json
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          level?: string
+          module_id?: string
+          options?: Json
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       evercrest_metrics: {
         Row: {
           avg_loss_on_losing_trades: number | null
