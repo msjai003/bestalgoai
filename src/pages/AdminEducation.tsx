@@ -18,7 +18,8 @@ import {
   Edit, 
   Trash2, 
   Save, 
-  X 
+  X, 
+  Check
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +38,7 @@ import {
 } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface QuizQuestion {
   id?: string;
@@ -70,7 +72,7 @@ const AdminEducation = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('education_quiz_clients')
+        .from('education_quiz_clients' as any)
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -78,7 +80,7 @@ const AdminEducation = () => {
         throw error;
       }
       
-      setQuizQuestions(data || []);
+      setQuizQuestions(data as unknown as QuizQuestion[] || []);
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
       toast({
@@ -135,7 +137,7 @@ const AdminEducation = () => {
 
     try {
       const { error } = await supabase
-        .from('education_quiz_clients')
+        .from('education_quiz_clients' as any)
         .insert({
           module_id: newQuestion.module_id,
           level: newQuestion.level,
@@ -187,7 +189,7 @@ const AdminEducation = () => {
     
     try {
       const { error } = await supabase
-        .from('education_quiz_clients')
+        .from('education_quiz_clients' as any)
         .update({
           module_id: editingQuestion.module_id,
           level: editingQuestion.level,
@@ -224,7 +226,7 @@ const AdminEducation = () => {
     
     try {
       const { error } = await supabase
-        .from('education_quiz_clients')
+        .from('education_quiz_clients' as any)
         .delete()
         .eq('id', id);
       

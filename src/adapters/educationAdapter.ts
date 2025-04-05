@@ -81,8 +81,9 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
   try {
     console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
     
+    // Use a type assertion to tell TypeScript that we're accessing the education_quiz_clients table
     const { data, error } = await supabase
-      .from('education_quiz_clients')
+      .from('education_quiz_clients' as any)
       .select('*')
       .eq('module_id', moduleId)
       .eq('level', level);
@@ -99,11 +100,11 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     
     // Transform the database format to match the expected QuizQuestion format
     const questions = data.map(item => ({
-      id: item.id,
-      question: item.question,
-      options: Array.isArray(item.options) ? item.options : JSON.parse(item.options),
-      correctAnswer: item.correct_answer,
-      explanation: item.explanation || ''
+      id: item.id as string,
+      question: item.question as string,
+      options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
+      correctAnswer: item.correct_answer as number,
+      explanation: item.explanation as string || ''
     }));
     
     console.log(`Found ${questions.length} quiz questions from database`);
