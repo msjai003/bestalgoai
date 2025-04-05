@@ -356,24 +356,25 @@ export const updateUserProgress = async (userId: string, progressData: {
 };
 
 // Improved function to fetch module quiz data from Supabase
-export const fetchModuleQuizData = async (moduleId: string): Promise<{
+export const fetchModuleQuizData = async (moduleId: string, level?: string): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
-    console.log('Fetching quiz data for module:', moduleId);
+    console.log('Fetching quiz data for module:', moduleId, 'level:', level);
     
     // Check if the moduleId is a standard ID format like "module1" or a UUID
     let actualModuleId = moduleId;
+    let moduleLevel = level || 'basics'; // Default to basics if no level specified
     
     // If moduleId is not a UUID (like "module1"), try to find the actual module
     if (!moduleId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
       const moduleNumber = parseInt(moduleId.replace('module', '')) || 1;
-      console.log(`Looking for module with order_index ${moduleNumber} in level 'basics'`);
+      console.log(`Looking for module with order_index ${moduleNumber} in level '${moduleLevel}'`);
       
       const { data: moduleData, error: moduleError } = await supabase
         .from('education_modules')
         .select('id')
-        .eq('level', 'basics')
+        .eq('level', moduleLevel)
         .eq('order_index', moduleNumber)
         .maybeSingle();
       

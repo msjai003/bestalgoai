@@ -27,7 +27,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   moduleId,
   autoLaunch = false
 }) => {
-  const { submitQuizAnswer, startQuiz, setAutoLaunchQuiz, usingRealData, loadingQuizData } = useEducation();
+  const { 
+    submitQuizAnswer, 
+    startQuiz, 
+    setAutoLaunchQuiz, 
+    usingRealData, 
+    loadingQuizData, 
+    currentLevel 
+  } = useEducation();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -48,7 +55,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         try {
           // If using real Supabase data
           if (usingRealData) {
-            const data = await fetchModuleQuizData(moduleId);
+            const data = await fetchModuleQuizData(moduleId, currentLevel);
             
             if (data && data.questions && data.questions.length > 0) {
               console.log('Loaded quiz questions from Supabase:', data.questions);
@@ -105,7 +112,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     };
     
     loadQuizData();
-  }, [moduleId, open, quiz, usingRealData]);
+  }, [moduleId, open, quiz, usingRealData, currentLevel]);
   
   useEffect(() => {
     if (open) {
