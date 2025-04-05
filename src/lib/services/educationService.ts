@@ -70,7 +70,7 @@ export const fetchModules = async (level: Level): Promise<EducationModule[]> => 
     return [];
   }
   
-  return data || [];
+  return data as EducationModule[] || [];
 };
 
 export const getEducationModules = async (): Promise<EducationModule[]> => {
@@ -84,7 +84,7 @@ export const getEducationModules = async (): Promise<EducationModule[]> => {
     return [];
   }
   
-  return data || [];
+  return data as EducationModule[] || [];
 };
 
 export const createModule = async (module: Omit<EducationModule, 'id' | 'created_at' | 'updated_at'>): Promise<EducationModule | null> => {
@@ -99,7 +99,7 @@ export const createModule = async (module: Omit<EducationModule, 'id' | 'created
     return null;
   }
   
-  return data;
+  return data as EducationModule;
 };
 
 export const createEducationModule = createModule;
@@ -117,7 +117,7 @@ export const updateModule = async (id: string, module: Partial<EducationModule>)
     return null;
   }
   
-  return data;
+  return data as EducationModule;
 };
 
 export const updateEducationModule = updateModule;
@@ -153,7 +153,7 @@ export const getEducationContent = async (moduleId?: string): Promise<EducationC
     return [];
   }
   
-  return data || [];
+  return data as EducationContent[] || [];
 };
 
 export const createEducationContent = async (content: Omit<EducationContent, 'id' | 'created_at' | 'updated_at'>): Promise<EducationContent | null> => {
@@ -168,7 +168,7 @@ export const createEducationContent = async (content: Omit<EducationContent, 'id
     return null;
   }
   
-  return data;
+  return data as EducationContent;
 };
 
 export const updateEducationContent = async (id: string, content: Partial<EducationContent>): Promise<EducationContent | null> => {
@@ -184,7 +184,7 @@ export const updateEducationContent = async (id: string, content: Partial<Educat
     return null;
   }
   
-  return data;
+  return data as EducationContent;
 };
 
 export const deleteEducationContent = async (id: string): Promise<boolean> => {
@@ -217,8 +217,9 @@ export const fetchQuizQuestions = async (moduleId: string, level: Level): Promis
   // Transform options from JSON to string[] if needed
   return data ? data.map(q => ({
     ...q,
+    level: q.level as Level,
     options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
-  })) : [];
+  })) as QuizQuestion[] : [];
 };
 
 export const fetchAllQuizQuestions = async (): Promise<QuizQuestion[]> => {
@@ -234,8 +235,9 @@ export const fetchAllQuizQuestions = async (): Promise<QuizQuestion[]> => {
   // Transform options from JSON to string[] if needed
   return data ? data.map(q => ({
     ...q,
+    level: q.level as Level,
     options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
-  })) : [];
+  })) as QuizQuestion[] : [];
 };
 
 export const getQuizQuestions = async (moduleId?: string): Promise<QuizQuestion[]> => {
@@ -255,8 +257,9 @@ export const getQuizQuestions = async (moduleId?: string): Promise<QuizQuestion[
   // Transform options from JSON to string[] if needed
   return data ? data.map(q => ({
     ...q,
+    level: q.level as Level,
     options: Array.isArray(q.options) ? q.options : JSON.parse(q.options as unknown as string)
-  })) : [];
+  })) as QuizQuestion[] : [];
 };
 
 export const createQuizQuestion = async (question: {
@@ -288,8 +291,9 @@ export const createQuizQuestion = async (question: {
   // Transform options from JSON to string[] for return
   return {
     ...data,
+    level: data.level as Level,
     options: Array.isArray(data.options) ? data.options : JSON.parse(data.options as unknown as string)
-  };
+  } as QuizQuestion;
 };
 
 export const updateQuizQuestion = async (id: string, question: Partial<QuizQuestion>): Promise<QuizQuestion | null> => {
@@ -311,8 +315,9 @@ export const updateQuizQuestion = async (id: string, question: Partial<QuizQuest
   // Transform options from JSON to string[] for return
   return {
     ...data,
+    level: data.level as Level,
     options: Array.isArray(data.options) ? data.options : JSON.parse(data.options as unknown as string)
-  };
+  } as QuizQuestion;
 };
 
 export const deleteQuizQuestion = async (id: string): Promise<boolean> => {
@@ -323,6 +328,52 @@ export const deleteQuizQuestion = async (id: string): Promise<boolean> => {
     
   if (error) {
     console.error('Error deleting quiz question:', error);
+    return false;
+  }
+  
+  return true;
+};
+
+// Quiz Answer functions for QuizForm.tsx
+export const createQuizAnswer = async (answer: Omit<QuizAnswer, 'id'>): Promise<QuizAnswer | null> => {
+  const { data, error } = await supabase
+    .from('education_quiz_answers')
+    .insert(answer)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error creating quiz answer:', error);
+    return null;
+  }
+  
+  return data as QuizAnswer;
+};
+
+export const updateQuizAnswer = async (id: string, answer: Partial<QuizAnswer>): Promise<QuizAnswer | null> => {
+  const { data, error } = await supabase
+    .from('education_quiz_answers')
+    .update(answer)
+    .eq('id', id)
+    .select()
+    .single();
+    
+  if (error) {
+    console.error('Error updating quiz answer:', error);
+    return null;
+  }
+  
+  return data as QuizAnswer;
+};
+
+export const deleteQuizAnswer = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('education_quiz_answers')
+    .delete()
+    .eq('id', id);
+    
+  if (error) {
+    console.error('Error deleting quiz answer:', error);
     return false;
   }
   
@@ -340,13 +391,24 @@ export const getEducationBadges = async (): Promise<EducationBadge[]> => {
     return [];
   }
   
-  return data || [];
+  return data.map(badge => ({
+    ...badge,
+    id: String(badge.id),
+    level: badge.level as Level
+  })) as EducationBadge[] || [];
 };
 
 export const createEducationBadge = async (badge: Omit<EducationBadge, 'id'>): Promise<EducationBadge | null> => {
   const { data, error } = await supabase
     .from('education_badges')
-    .insert(badge)
+    .insert({
+      name: badge.name,
+      description: badge.description,
+      image: badge.image,
+      level: badge.level,
+      unlocked_by: badge.unlocked_by,
+      badge_id: badge.badge_id || `badge_${Date.now()}`
+    })
     .select()
     .single();
     
@@ -355,14 +417,28 @@ export const createEducationBadge = async (badge: Omit<EducationBadge, 'id'>): P
     return null;
   }
   
-  return data;
+  return {
+    ...data,
+    id: String(data.id),
+    level: data.level as Level
+  } as EducationBadge;
 };
 
 export const updateEducationBadge = async (id: string, badge: Partial<EducationBadge>): Promise<EducationBadge | null> => {
+  // Convert string id to number for database
+  const numericId = parseInt(id, 10);
+  
   const { data, error } = await supabase
     .from('education_badges')
-    .update(badge)
-    .eq('id', id)
+    .update({
+      name: badge.name,
+      description: badge.description,
+      image: badge.image,
+      level: badge.level,
+      unlocked_by: badge.unlocked_by,
+      badge_id: badge.badge_id
+    })
+    .eq('id', numericId)
     .select()
     .single();
     
@@ -371,14 +447,21 @@ export const updateEducationBadge = async (id: string, badge: Partial<EducationB
     return null;
   }
   
-  return data;
+  return {
+    ...data,
+    id: String(data.id),
+    level: data.level as Level
+  } as EducationBadge;
 };
 
 export const deleteEducationBadge = async (id: string): Promise<boolean> => {
+  // Convert string id to number for database
+  const numericId = parseInt(id, 10);
+  
   const { error } = await supabase
     .from('education_badges')
     .delete()
-    .eq('id', id);
+    .eq('id', numericId);
     
   if (error) {
     console.error('Error deleting badge:', error);

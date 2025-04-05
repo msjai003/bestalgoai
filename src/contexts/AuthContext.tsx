@@ -24,8 +24,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Using a module-level variable to track toast status
-// This ensures it persists between renders but resets on page refresh
 let logoutToastShown = false;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -33,7 +31,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [googleUserDetails, setGoogleUserDetails] = useState<GoogleUserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Reset the toast flag when the component mounts
   useEffect(() => {
     logoutToastShown = false;
     
@@ -51,7 +48,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: data.session.user.email || '',
           });
           
-          // Fetch Google user details if available
           fetchUserGoogleDetails();
         }
       } catch (error) {
@@ -73,10 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: session.user.email || '',
           });
           
-          // Fetch Google user details when auth state changes
           fetchUserGoogleDetails();
           
-          // If this is a Google sign-in, save the user details to our table
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
             console.log('Google sign-in detected, saving user details');
             handleGoogleSignIn(session.user);
@@ -94,14 +88,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // New function to handle Google sign-in
   const handleGoogleSignIn = async (user: any) => {
     try {
       if (!user || !user.id) return;
       
       console.log('Handling Google sign-in for user:', user.id);
       
-      // Extract Google data from user metadata
       const googleData = {
         email: user.email || '',
         google_id: user.user_metadata?.sub,
@@ -114,12 +106,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log('Saving Google user data:', googleData);
       
-      // Save the Google user details
       const success = await saveGoogleUserDetails(user.id, googleData);
       
       if (success) {
         console.log('Google user details saved successfully');
-        // Update local state with the Google user details
         setGoogleUserDetails({
           id: user.id,
           ...googleData
@@ -132,7 +122,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Function to fetch Google user details
   const fetchUserGoogleDetails = async () => {
     if (!user) return;
     
@@ -152,9 +141,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Fix the conflict with the name fetchGoogleUserDetails by using a different implementation name
   const fetchGoogleUserDetails = async () => {
     await fetchUserGoogleDetails();
+  };
+
+  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+    if (!mobileNumber) return;
+    
+    try {
+      console.log(`Preparing to send welcome SMS to ${mobileNumber}`);
+      
+      const formattedMobile = mobileNumber.replace(/\D/g, '');
+      
+      const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
+        body: JSON.stringify({
+          userId,
+          fullName,
+          mobileNumber: formattedMobile
+        })
+      });
+      
+      if (error) {
+        console.error("Error calling send-welcome-sms function:", error);
+      } else {
+        console.log("SMS function response:", data);
+      }
+    } catch (error) {
+      console.error("Exception sending welcome SMS:", error);
+    }
   };
 
   const signInWithGoogle = async () => {
@@ -179,19 +193,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
       
-      // If it's a redirect, we don't need to do anything here
-      // The auth callback will handle the redirect
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
-        // We can manually redirect if needed
         window.location.href = data.url;
         return { error: null };
       }
       
-      // If we reach here without a URL, something went wrong but no error was thrown
       console.warn('No redirect URL received from Supabase Google auth');
       
-      // As a fallback, try mock auth
       console.log('Falling back to mock Google auth');
       const mockResult = await mockSignInWithGoogle();
       
@@ -209,7 +218,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         toast.success('Google login successful! (mock)');
         
-        // Handle Google sign-in to save user details
         await handleGoogleSignIn(mockResult.data.user);
         
         return { error: null, data: { user } };
@@ -240,7 +248,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Passwords do not match') };
       }
 
-      // First check if email already exists in user_profiles
       try {
         const { data: existingProfiles, error: profileCheckError } = await supabase
           .from('user_profiles')
@@ -256,7 +263,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (checkError) {
         console.error('Exception during profile check:', checkError);
-        // Continue with signup attempt even if check fails
       }
 
       const { data, error } = await supabase.auth.signUp({
@@ -274,7 +280,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         console.error('Error during signup:', error);
         
-        // Detect if the error is about email already in use
         if (error.message?.includes("already registered") || 
             error.message?.includes("already exists") ||
             error.message?.includes("already in use")) {
@@ -306,6 +311,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
           if (profileError) {
             console.error('Error creating profile for new user:', profileError);
+          } else {
+            if (userData.mobileNumber) {
+              await sendWelcomeSMS(
+                data.user.id,
+                userData.fullName,
+                userData.mobileNumber
+              );
+            }
           }
         } catch (profileInsertError) {
           console.error('Exception during profile creation:', profileInsertError);
@@ -376,9 +389,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else if (!logoutToastShown) {
-          // Only show the toast if it hasn't been shown already
           toast.success('Successfully signed out');
-          // Mark toast as shown to prevent duplicates
           logoutToastShown = true;
         }
       } else {
@@ -399,9 +410,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Request OTP for password reset via email
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        // This redirects the user back to the app after clicking the reset link in the email
         redirectTo: window.location.origin + '/forgot-password',
       });
 

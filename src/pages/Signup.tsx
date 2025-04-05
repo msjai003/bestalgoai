@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -34,6 +36,33 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
+
+  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+    try {
+      console.log(`Preparing to send welcome SMS to ${mobileNumber} for user ${fullName}`);
+      
+      // Ensure the mobile number is properly formatted
+      const formattedMobile = mobileNumber.replace(/\D/g, '');
+      
+      // Call the edge function to send SMS
+      const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
+        body: JSON.stringify({
+          userId,
+          fullName,
+          mobileNumber: formattedMobile
+        })
+      });
+      
+      if (error) {
+        console.error("Error calling send-welcome-sms function:", error);
+        return;
+      }
+      
+      console.log("SMS function response:", data);
+    } catch (error) {
+      console.error("Exception sending welcome SMS:", error);
+    }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,18 +94,23 @@ const Signup = () => {
         tradingExperience: tradingExperience
       };
       
-      const { error } = await signUp(email, password, confirmPassword, userData);
+      const { error, data } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
         setErrorMessage(error.message || 'Error creating account');
+        setIsLoading(false);
         return;
+      }
+      
+      // If signup was successful and we have a user ID, send the welcome SMS
+      if (data?.user?.id) {
+        await sendWelcomeSMS(data.user.id, name, mobileNumber);
       }
       
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'Error creating account');
-    } finally {
       setIsLoading(false);
     }
   };

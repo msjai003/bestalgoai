@@ -56,6 +56,35 @@ const GoogleRegistration = () => {
     navigate('/auth');
   };
 
+  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+    try {
+      if (!mobileNumber) return; // Skip if no mobile number
+      
+      console.log(`Preparing to send welcome SMS to ${mobileNumber}`);
+      
+      // Ensure the mobile number is properly formatted
+      const formattedMobile = mobileNumber.replace(/\D/g, '');
+      
+      // Call the edge function to send SMS
+      const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
+        body: JSON.stringify({
+          userId,
+          fullName,
+          mobileNumber: formattedMobile
+        })
+      });
+      
+      if (error) {
+        console.error("Error calling send-welcome-sms function:", error);
+        return;
+      }
+      
+      console.log("SMS function response:", data);
+    } catch (error) {
+      console.error("Exception sending welcome SMS:", error);
+    }
+  };
+
   const validateForm = () => {
     if (!formData.fullName || !formData.email) {
       setErrorMessage('Please fill in your name and email');
@@ -126,6 +155,11 @@ const GoogleRegistration = () => {
             setIsLoading(false);
             return;
           }
+        }
+        
+        // Send welcome SMS if mobile number is provided
+        if (formData.mobile) {
+          await sendWelcomeSMS(user.id, formData.fullName, formData.mobile);
         }
         
         toast.success('Profile created successfully!');
