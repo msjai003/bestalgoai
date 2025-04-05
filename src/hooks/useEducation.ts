@@ -273,10 +273,16 @@ export const useEducation = () => {
     try {
       const quizData = await fetchModuleQuizData(moduleId);
       setLoadingQuizData(false);
+      console.log('Fetched quiz data:', quizData);
       return quizData;
     } catch (error) {
       console.error("Error fetching quiz data:", error);
       setLoadingQuizData(false);
+      toast({
+        title: "Error fetching quiz",
+        description: "There was a problem loading the quiz. Please try again later.",
+        variant: "destructive"
+      });
       return null;
     }
   };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -36,17 +37,40 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   const [quizStartTime, setQuizStartTime] = useState(0);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   useEffect(() => {
     const loadQuizData = async () => {
-      if (usingRealData && open) {
+      if (open) {
         setLoading(true);
+        setLoadError(null);
+        
         try {
-          const data = await fetchModuleQuizData(moduleId);
-          if (data && data.questions && data.questions.length > 0) {
-            setQuizQuestions(data.questions);
+          // If using real Supabase data
+          if (usingRealData) {
+            const data = await fetchModuleQuizData(moduleId);
+            
+            if (data && data.questions && data.questions.length > 0) {
+              console.log('Loaded quiz questions from Supabase:', data.questions);
+              setQuizQuestions(data.questions);
+            } else {
+              // Fallback to local data if no questions from Supabase
+              console.log('No questions from Supabase, falling back to local data');
+              if (quiz && quiz.questions) {
+                const questionsWithIds = quiz.questions.map(q => {
+                  if (!q.id) {
+                    return { ...q, id: uuidv4() };
+                  }
+                  return q;
+                });
+                setQuizQuestions(questionsWithIds);
+              } else {
+                setLoadError('No quiz questions available for this module.');
+                toast.error('Could not load quiz questions.');
+              }
+            }
           } else {
-            toast.error('Could not load quiz questions. Using backup data.');
+            // Using local data
             if (quiz && quiz.questions) {
               const questionsWithIds = quiz.questions.map(q => {
                 if (!q.id) {
@@ -56,14 +80,15 @@ export const QuizModal: React.FC<QuizModalProps> = ({
               });
               setQuizQuestions(questionsWithIds);
             } else {
-              toast.error('No quiz questions available.');
-              onOpenChange(false);
+              setLoadError('No quiz questions available for this module.');
             }
           }
         } catch (error) {
           console.error('Error loading quiz data:', error);
+          setLoadError('Failed to load quiz data. Please try again later.');
           toast.error('Failed to load quiz data.');
           
+          // Fallback to local data on error
           if (quiz && quiz.questions) {
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
@@ -76,17 +101,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         } finally {
           setLoading(false);
         }
-      } else if (quiz && quiz.questions) {
-        const questionsWithIds = quiz.questions.map(q => {
-          if (!q.id) {
-            return { ...q, id: uuidv4() };
-          }
-          return q;
-        });
-        setQuizQuestions(questionsWithIds);
-        setLoading(false);
-      } else {
-        setLoading(false);
       }
     };
     
@@ -172,13 +186,13 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     );
   }
   
-  if (quizQuestions.length === 0) {
+  if (loadError || quizQuestions.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
-            <p className="mt-4 text-gray-300">No quiz questions available for this module.</p>
+            <p className="mt-4 text-gray-300">{loadError || 'No quiz questions available for this module.'}</p>
             <Button className="mt-4" onClick={handleCloseQuiz}>Close</Button>
           </div>
         </DialogContent>

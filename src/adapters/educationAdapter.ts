@@ -360,6 +360,8 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
+    console.log('Fetching quiz data for module:', moduleId);
+    
     // Check if the moduleId is a standard ID format like "module1" or a UUID
     let actualModuleId = moduleId;
     
@@ -368,39 +370,33 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
       const { data: moduleData, error: moduleError } = await supabase
         .from('education_modules')
         .select('id')
-        .eq('id', moduleId)
+        .eq('level', 'basics')
+        .eq('order_index', parseInt(moduleId.replace('module', '')) || 1)
         .maybeSingle();
       
       if (moduleError) {
-        console.error('Error finding module by ID:', moduleError);
+        console.error('Error finding module by order index:', moduleError);
         toast.error('Failed to find module');
         return null;
       }
       
-      if (!moduleData) {
-        // If not found by id field, try looking up by order_index in basics level
-        // This is for backward compatibility with "module1", "module2" format
-        const moduleNumber = parseInt(moduleId.replace('module', '')) || 0;
-        if (moduleNumber > 0) {
-          const { data: indexModuleData, error: indexModuleError } = await supabase
-            .from('education_modules')
-            .select('id')
-            .eq('level', 'basics')
-            .eq('order_index', moduleNumber)
-            .maybeSingle();
-            
-          if (indexModuleError || !indexModuleData) {
-            console.error('Error finding module by index:', indexModuleError || 'Module not found');
-            return null;
-          }
+      if (moduleData) {
+        actualModuleId = moduleData.id;
+        console.log('Found module ID by order index:', actualModuleId);
+      } else {
+        // If still not found, try direct lookup
+        const { data: directModule, error: directError } = await supabase
+          .from('education_modules')
+          .select('id')
+          .eq('id', moduleId)
+          .maybeSingle();
           
-          actualModuleId = indexModuleData.id;
-        } else {
-          console.warn('Module not found:', moduleId);
+        if (directError || !directModule) {
+          console.error('Module not found:', moduleId);
           return null;
         }
-      } else {
-        actualModuleId = moduleData.id;
+          
+        actualModuleId = directModule.id;
       }
     }
     
