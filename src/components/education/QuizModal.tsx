@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Check, X, ChevronRight, Award, RefreshCw } from 'lucide-react';
@@ -177,6 +177,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+          <DialogTitle className="sr-only">Quiz Loading</DialogTitle>
           <div className="flex flex-col items-center justify-center py-8">
             <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
             <p className="mt-4 text-gray-300">Loading quiz...</p>
@@ -190,6 +191,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+          <DialogTitle className="sr-only">Quiz Error</DialogTitle>
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
             <p className="mt-4 text-gray-300">{loadError || 'No quiz questions available for this module.'}</p>
@@ -205,6 +207,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
         {!quizComplete ? (
           <>
+            <DialogTitle className="sr-only">{moduleTitle} Quiz</DialogTitle>
             <div className="mb-4">
               <h2 className="text-lg font-bold text-white">{moduleTitle} Quiz</h2>
               <p className="text-gray-400 text-sm">Question {currentQuestion + 1} of {quizQuestions.length}</p>
@@ -276,6 +279,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           </>
         ) : (
           <div className="text-center">
+            <DialogTitle className="sr-only">Quiz Results</DialogTitle>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">Quiz Complete!</h2>
               <p className="text-gray-300">You scored:</p>
