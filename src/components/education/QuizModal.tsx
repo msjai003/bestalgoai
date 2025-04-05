@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Check, X, ChevronRight, Award, RefreshCw } from 'lucide-react';
@@ -178,6 +178,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
           <DialogTitle className="sr-only">Quiz Loading</DialogTitle>
+          <DialogDescription className="sr-only">Loading quiz questions...</DialogDescription>
           <div className="flex flex-col items-center justify-center py-8">
             <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
             <p className="mt-4 text-gray-300">Loading quiz...</p>
@@ -192,6 +193,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
           <DialogTitle className="sr-only">Quiz Error</DialogTitle>
+          <DialogDescription className="sr-only">Error loading quiz questions</DialogDescription>
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
             <p className="mt-4 text-gray-300">{loadError || 'No quiz questions available for this module.'}</p>
@@ -208,6 +210,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         {!quizComplete ? (
           <>
             <DialogTitle className="sr-only">{moduleTitle} Quiz</DialogTitle>
+            <DialogDescription className="sr-only">Quiz questions for {moduleTitle} module</DialogDescription>
             <div className="mb-4">
               <h2 className="text-lg font-bold text-white">{moduleTitle} Quiz</h2>
               <p className="text-gray-400 text-sm">Question {currentQuestion + 1} of {quizQuestions.length}</p>
@@ -225,35 +228,41 @@ export const QuizModal: React.FC<QuizModalProps> = ({
               
               <div className="space-y-3">
                 {quizQuestions[currentQuestion]?.options.map((option, index) => (
-                  <Card 
+                  <button
                     key={index}
-                    className={`p-4 cursor-pointer border transition-colors ${
-                      selectedOption === index 
-                        ? index === quizQuestions[currentQuestion]?.correctAnswer
-                          ? 'bg-green-900/30 border-green-500'
-                          : 'bg-red-900/30 border-red-500'
-                        : 'bg-charcoalPrimary border-gray-700 hover:border-gray-500'
-                    }`}
                     onClick={() => handleOptionSelect(index)}
+                    className="w-full text-left"
+                    disabled={isAnswered}
+                    aria-pressed={selectedOption === index}
                   >
-                    <div className="flex items-center">
-                      <div className={`w-5 h-5 rounded-full border mr-3 flex items-center justify-center ${
+                    <Card 
+                      className={`p-4 cursor-pointer border transition-colors ${
                         selectedOption === index 
                           ? index === quizQuestions[currentQuestion]?.correctAnswer
-                            ? 'border-green-500 bg-green-500/20' 
-                            : 'border-red-500 bg-red-500/20'
-                          : 'border-gray-500'
-                      }`}>
-                        {isAnswered && index === quizQuestions[currentQuestion]?.correctAnswer && (
-                          <Check className="h-3 w-3 text-green-500" />
-                        )}
-                        {isAnswered && selectedOption === index && index !== quizQuestions[currentQuestion]?.correctAnswer && (
-                          <X className="h-3 w-3 text-red-500" />
-                        )}
+                            ? 'bg-green-900/30 border-green-500'
+                            : 'bg-red-900/30 border-red-500'
+                          : 'bg-charcoalPrimary border-gray-700 hover:border-gray-500'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-5 h-5 rounded-full border mr-3 flex items-center justify-center ${
+                          selectedOption === index 
+                            ? index === quizQuestions[currentQuestion]?.correctAnswer
+                              ? 'border-green-500 bg-green-500/20' 
+                              : 'border-red-500 bg-red-500/20'
+                            : 'border-gray-500'
+                        }`}>
+                          {isAnswered && index === quizQuestions[currentQuestion]?.correctAnswer && (
+                            <Check className="h-3 w-3 text-green-500" />
+                          )}
+                          {isAnswered && selectedOption === index && index !== quizQuestions[currentQuestion]?.correctAnswer && (
+                            <X className="h-3 w-3 text-red-500" />
+                          )}
+                        </div>
+                        <span>{option}</span>
                       </div>
-                      <span>{option}</span>
-                    </div>
-                  </Card>
+                    </Card>
+                  </button>
                 ))}
               </div>
             </div>
@@ -280,6 +289,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         ) : (
           <div className="text-center">
             <DialogTitle className="sr-only">Quiz Results</DialogTitle>
+            <DialogDescription className="sr-only">Your quiz score and results</DialogDescription>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">Quiz Complete!</h2>
               <p className="text-gray-300">You scored:</p>
