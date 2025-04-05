@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -52,7 +51,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         
         try {
           // First, try to fetch data from Supabase
-          const supabaseQuizData = await fetchQuizData(moduleId, currentLevel);
+          const supabaseQuizData = await fetchQuizData(moduleId);
           
           if (supabaseQuizData && supabaseQuizData.questions && supabaseQuizData.questions.length > 0) {
             // If we have questions from Supabase, use them
@@ -150,41 +149,21 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return !!question.explanation && question.explanation.trim() !== '';
   };
   
-  if (loading) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
-          <DialogTitle>Quiz Loading</DialogTitle>
-          <DialogDescription>Loading quiz questions for {currentLevel} level...</DialogDescription>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+        {loading ? (
           <div className="flex flex-col items-center justify-center py-8">
             <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
             <p className="mt-4 text-gray-300">Loading quiz from database...</p>
           </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-  
-  if (loadError || quizQuestions.length === 0) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
-          <DialogTitle>Quiz Error</DialogTitle>
-          <DialogDescription>Error loading quiz questions</DialogDescription>
+        ) : loadError || quizQuestions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
             <p className="mt-4 text-gray-300">{loadError || `No quiz questions available for this module in the ${currentLevel} level.`}</p>
             <Button className="mt-4" onClick={() => onOpenChange(false)}>Close</Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-  
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
-        {!quizComplete ? (
+        ) : !quizComplete ? (
           <>
             <DialogTitle>{moduleTitle} Quiz ({currentLevel})</DialogTitle>
             <DialogDescription className="text-gray-400">Question {currentQuestion + 1} of {quizQuestions.length}</DialogDescription>

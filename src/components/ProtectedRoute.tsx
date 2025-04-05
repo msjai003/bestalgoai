@@ -1,35 +1,41 @@
 
-import React, { useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader } from 'lucide-react';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
+export interface ProtectedRouteProps {
+  children: ReactNode;
+  allowedRoles?: string[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  allowedRoles = ['user']
+}) => {
   const { user, isLoading } = useAuth();
-  const location = useLocation();
 
-  // While still checking authentication status, show loading
+  // If authentication is still loading, show nothing or a loader
   if (isLoading) {
-    return (
-      <div className="bg-charcoalPrimary min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
-          <p className="text-charcoalTextPrimary">Verifying authentication...</p>
-        </div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
-  // If not authenticated, redirect to login
+  // If no user is logged in, redirect to login
   if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return <Navigate to="/auth" replace />;
   }
 
-  // If authenticated, render the protected content
+  // If roles are specified, check if user has the required role
+  // This is a simplified implementation since we don't have a proper role system yet
+  if (allowedRoles.includes('admin')) {
+    // For now, we'll just check by user email to determine admin status
+    // In a real application, you'd check against a roles table or similar
+    const isAdmin = user.email === 'admin@example.com'; // Replace with your admin check logic
+    if (!isAdmin) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+  }
+
+  // If all checks pass, render the protected content
   return <>{children}</>;
 };
 

@@ -272,10 +272,10 @@ export const useEducation = () => {
     setQuizActive(true);
   };
 
-  const fetchQuizData = async (moduleId: string, level: string = '') => {
+  const fetchQuizData = async (moduleId: string) => {
     setLoadingQuizData(true);
     try {
-      const quizLevel = level || currentLevel;
+      const quizLevel = currentLevel;
       const quizData = await fetchModuleQuizData(moduleId, quizLevel);
       setLoadingQuizData(false);
       return quizData;

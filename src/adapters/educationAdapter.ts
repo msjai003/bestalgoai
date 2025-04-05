@@ -95,7 +95,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     };
     
     const { data, error } = await supabase
-      .from('education_quiz_clients' as any)
+      .from('education_quiz_clients')
       .select('*')
       .eq('module_id', moduleId)
       .eq('level', level);
@@ -111,7 +111,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     }
     
     // Transform the database format to match the expected QuizQuestion format with proper typing
-    const questions = (data as QuizClientData[]).map(item => ({
+    const questions = (data as unknown as QuizClientData[]).map(item => ({
       id: item.id,
       question: item.question,
       options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),

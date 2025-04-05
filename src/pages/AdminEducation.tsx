@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Tabs, 
@@ -36,17 +35,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-
-// Define the quiz question interface
-interface QuizQuestion {
-  id?: string;
-  module_id: string;
-  level: string;
-  question: string;
-  options: string[];
-  correct_answer: number;
-  explanation?: string;
-}
+import { fetchAllQuizQuestions, createQuizQuestion, updateQuizQuestion, deleteQuizQuestion } from '@/lib/services/educationService';
+import { QuizQuestion } from '@/lib/services/educationService';
 
 const AdminEducation = () => {
   const { user } = useAuth();
@@ -58,7 +48,14 @@ const AdminEducation = () => {
   // State for quiz question editing
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
-  const [newQuestion, setNewQuestion] = useState<QuizQuestion>({
+  const [newQuestion, setNewQuestion] = useState<{
+    module_id: string;
+    level: string;
+    question: string;
+    options: string[];
+    correct_answer: number;
+    explanation?: string;
+  }>({
     module_id: '',
     level: 'basics',
     question: '',
@@ -66,7 +63,14 @@ const AdminEducation = () => {
     correct_answer: 0,
     explanation: ''
   });
-  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion>({
+  const [editingQuestion, setEditingQuestion] = useState<{
+    module_id: string;
+    level: string;
+    question: string;
+    options: string[];
+    correct_answer: number;
+    explanation?: string;
+  }>({
     module_id: '',
     level: 'basics',
     question: '',
@@ -79,40 +83,8 @@ const AdminEducation = () => {
   const fetchQuizQuestions = async () => {
     setLoading(true);
     try {
-      // Define the type for the quiz data from Supabase
-      type QuizClientData = {
-        id: string;
-        module_id: string;
-        level: string;
-        question: string;
-        options: string | string[];
-        correct_answer: number;
-        explanation?: string;
-        created_at?: string;
-        updated_at?: string;
-      };
-      
-      const { data, error } = await supabase
-        .from('education_quiz_clients' as any)
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Transform the data to match our QuizQuestion interface
-      const formattedQuestions = (data || []).map((item: any) => ({
-        id: item.id,
-        module_id: item.module_id,
-        level: item.level,
-        question: item.question,
-        options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
-        correct_answer: item.correct_answer,
-        explanation: item.explanation
-      }));
-      
-      setQuizQuestions(formattedQuestions);
+      const questions = await fetchAllQuizQuestions();
+      setQuizQuestions(questions);
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
       toast({
@@ -174,21 +146,9 @@ const AdminEducation = () => {
     }
 
     try {
-      // Format the options for storage
-      const formattedOptions = JSON.stringify(newQuestion.options);
+      const success = await createQuizQuestion(newQuestion);
       
-      const { error } = await supabase
-        .from('education_quiz_clients' as any)
-        .insert({
-          module_id: newQuestion.module_id,
-          level: newQuestion.level,
-          question: newQuestion.question,
-          options: formattedOptions,
-          correct_answer: newQuestion.correct_answer,
-          explanation: newQuestion.explanation
-        });
-      
-      if (error) throw error;
+      if (!success) throw new Error("Failed to create question");
       
       toast({
         title: 'Success',
@@ -223,22 +183,9 @@ const AdminEducation = () => {
     if (!editingQuestionId) return;
     
     try {
-      // Format the options for storage
-      const formattedOptions = JSON.stringify(editingQuestion.options);
+      const success = await updateQuizQuestion(editingQuestionId, editingQuestion);
       
-      const { error } = await supabase
-        .from('education_quiz_clients' as any)
-        .update({
-          module_id: editingQuestion.module_id,
-          level: editingQuestion.level,
-          question: editingQuestion.question,
-          options: formattedOptions,
-          correct_answer: editingQuestion.correct_answer,
-          explanation: editingQuestion.explanation
-        })
-        .eq('id', editingQuestionId);
-      
-      if (error) throw error;
+      if (!success) throw new Error("Failed to update question");
       
       toast({
         title: 'Success',
@@ -263,12 +210,9 @@ const AdminEducation = () => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
     try {
-      const { error } = await supabase
-        .from('education_quiz_clients' as any)
-        .delete()
-        .eq('id', id);
+      const success = await deleteQuizQuestion(id);
       
-      if (error) throw error;
+      if (!success) throw new Error("Failed to delete question");
       
       toast({
         title: 'Success',
