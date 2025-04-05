@@ -8,9 +8,10 @@ import {
   TabsTrigger 
 } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon, Book, Award } from 'lucide-react';
+import { InfoIcon, Book, Award, Database, ArrowUpDown } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const AdminEducation = () => {
   const { user } = useAuth();
@@ -33,12 +34,13 @@ const AdminEducation = () => {
             </p>
           </div>
           
-          <Alert className="mb-6 bg-amber-900/20 border-amber-800 text-amber-100">
-            <InfoIcon className="h-4 w-4 text-amber-500" />
+          <Alert className="mb-6 bg-red-900/20 border-red-800 text-red-100">
+            <Database className="h-4 w-4 text-red-500" />
             <AlertTitle>Database Tables Removed</AlertTitle>
             <AlertDescription>
-              The education tables (education_modules, education_quiz_questions, education_quiz_answers) have been removed from the database. 
-              This admin panel is currently non-functional. The app is using local data for education content.
+              The core education tables (education_modules, education_quiz_questions, education_quiz_answers) have been 
+              completely removed from the database. This admin panel is non-functional. The app is now using local data 
+              for education content.
             </AlertDescription>
           </Alert>
           
@@ -55,14 +57,42 @@ const AdminEducation = () => {
             </TabsList>
             
             <TabsContent value="modules">
-              <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700 text-center">
-                <p className="text-gray-300">Education module management is unavailable because required database tables have been removed.</p>
+              <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="text-center mb-6">
+                  <Database className="h-12 w-12 text-red-500 mx-auto mb-3" />
+                  <h3 className="text-xl font-semibold mb-2">Database Tables Removed</h3>
+                  <p className="text-gray-300 max-w-md mx-auto">
+                    Education module management is unavailable because required database tables have been removed.
+                    The application now uses local static data.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 className="font-medium mb-2 flex items-center"><ArrowUpDown className="h-4 w-4 mr-2 text-amber-500" /> Missing Tables</h4>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• education_modules</li>
+                      <li>• education_quiz_questions</li>
+                      <li>• education_quiz_answers</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 className="font-medium mb-2 flex items-center"><InfoIcon className="h-4 w-4 mr-2 text-cyan" /> Alternative</h4>
+                    <p className="text-sm text-gray-400">
+                      All education content is now served from local static data in src/data/educationData.ts
+                    </p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
             
             <TabsContent value="badges">
               <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700 text-center">
-                <p className="text-gray-300">Badge management is unavailable because required database tables have been removed.</p>
+                <p className="text-gray-300 mb-4">Badge management functionality is unavailable because required database tables have been removed.</p>
+                <Button variant="outline" className="border-cyan text-cyan hover:bg-cyan/10" disabled>
+                  View Remaining Database Tables
+                </Button>
               </div>
             </TabsContent>
           </Tabs>
