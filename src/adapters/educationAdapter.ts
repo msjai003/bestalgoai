@@ -81,19 +81,6 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
   try {
     console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
     
-    // Properly type the query response
-    type QuizClientData = {
-      id: string;
-      module_id: string;
-      level: string;
-      question: string;
-      options: string | string[];
-      correct_answer: number;
-      explanation?: string;
-      created_at?: string;
-      updated_at?: string;
-    };
-    
     const { data, error } = await supabase
       .from('education_quiz_clients')
       .select('*')
@@ -110,8 +97,8 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
       return { questions: [] };
     }
     
-    // Transform the database format to match the expected QuizQuestion format with proper typing
-    const questions = (data as unknown as QuizClientData[]).map(item => ({
+    // Transform the database format to match the expected QuizQuestion format
+    const questions = data.map(item => ({
       id: item.id,
       question: item.question,
       options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
