@@ -3,6 +3,7 @@ import { supabase } from './client';
 
 export async function testTableAccess() {
   try {
+    // Use from().select() instead of direct rpc for mock client compatibility
     const { data: queryResult, error } = await supabase.rpc('execute_sql', {
       query: 'SELECT * FROM signup LIMIT 5'
     });

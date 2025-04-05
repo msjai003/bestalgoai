@@ -79,14 +79,12 @@ export const testTableAccess = async (tableName: string) => {
     let tableExists = false;
     let recordCount = 0;
     
-    if (queryResult && typeof queryResult === 'object') {
+    if (queryResult && Array.isArray(queryResult) && queryResult.length > 0) {
       // Try to parse the result which should be an array with one object
-      if (Array.isArray(queryResult) && queryResult.length > 0) {
-        const result = queryResult[0];
-        if (result && typeof result === 'object') {
-          tableExists = result.exists === true;
-          recordCount = result.count ? Number(result.count) : 0;
-        }
+      const result = queryResult[0];
+      if (result && typeof result === 'object') {
+        tableExists = result.exists === true;
+        recordCount = result.count ? Number(result.count) : 0;
       }
     }
     

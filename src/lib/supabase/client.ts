@@ -50,6 +50,14 @@ export const supabase = {
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
     }),
   },
+  rpc: (functionName, params = {}) => {
+    // Mock implementation of rpc function
+    console.log(`Mock RPC call to ${functionName} with params:`, params);
+    return {
+      data: [],
+      error: null
+    };
+  },
 };
 
 // Get the current site URL for redirects
