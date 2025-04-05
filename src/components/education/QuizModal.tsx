@@ -5,9 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Check, X, ChevronRight, Award, RefreshCw } from 'lucide-react';
 import { useEducation } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
-import { fetchModuleQuizData } from '@/adapters/educationAdapter';
-import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'sonner';
 
 interface QuizModalProps {
   open: boolean;
@@ -30,8 +29,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     submitQuizAnswer, 
     startQuiz, 
     setAutoLaunchQuiz, 
-    usingRealData, 
-    loadingQuizData, 
     currentLevel 
   } = useEducation();
   
@@ -52,51 +49,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         setLoadError(null);
         
         try {
-          // If using real Supabase data
-          if (usingRealData) {
-            console.log(`Fetching quiz data for module ${moduleId} at level ${currentLevel}`);
-            const data = await fetchModuleQuizData(moduleId, currentLevel);
-            
-            if (data && data.questions && data.questions.length > 0) {
-              console.log('Loaded quiz questions from Supabase:', data.questions);
-              setQuizQuestions(data.questions);
-            } else {
-              // Fallback to local data if no questions from Supabase
-              console.log('No questions from Supabase, falling back to local data');
-              if (quiz && quiz.questions && quiz.questions.length > 0) {
-                const questionsWithIds = quiz.questions.map(q => {
-                  if (!q.id) {
-                    return { ...q, id: uuidv4() };
-                  }
-                  return q;
-                });
-                setQuizQuestions(questionsWithIds);
-              } else {
-                setLoadError(`No quiz questions available for this module in the ${currentLevel} level.`);
-                toast.error('Could not load quiz questions for this level.');
-              }
-            }
-          } else {
-            // Using local data
-            if (quiz && quiz.questions && quiz.questions.length > 0) {
-              const questionsWithIds = quiz.questions.map(q => {
-                if (!q.id) {
-                  return { ...q, id: uuidv4() };
-                }
-                return q;
-              });
-              setQuizQuestions(questionsWithIds);
-              console.log('Using local quiz data:', questionsWithIds);
-            } else {
-              setLoadError('No quiz questions available for this module.');
-            }
-          }
-        } catch (error) {
-          console.error('Error loading quiz data:', error);
-          setLoadError('Failed to load quiz data. Please try again later.');
-          toast.error('Failed to load quiz data.');
-          
-          // Fallback to local data on error
+          // Just use local data since Supabase tables are removed
           if (quiz && quiz.questions && quiz.questions.length > 0) {
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
@@ -105,7 +58,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({
               return q;
             });
             setQuizQuestions(questionsWithIds);
+            console.log('Using local quiz data:', questionsWithIds);
+          } else {
+            setLoadError('No quiz questions available for this module.');
           }
+        } catch (error) {
+          console.error('Error loading quiz data:', error);
+          setLoadError('Failed to load quiz data. Please try again later.');
+          toast.error('Failed to load quiz data.');
         } finally {
           setLoading(false);
         }
@@ -113,7 +73,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     };
     
     loadQuizData();
-  }, [moduleId, open, quiz, usingRealData, currentLevel]);
+  }, [moduleId, open, quiz, currentLevel]);
   
   useEffect(() => {
     if (open) {
@@ -181,7 +141,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     return !!question.explanation && question.explanation.trim() !== '';
   };
   
-  if (loading || loadingQuizData) {
+  if (loading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
@@ -5,18 +6,9 @@ import { QuizQuestion } from '@/data/educationData';
 // Function to fetch user education data
 export const fetchUserEducationData = async (userId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('user_education_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    
-    if (error) {
-      console.error("Error fetching user education data:", error);
-      return null;
-    }
-    
-    return data;
+    // Since the tables are removed, simply return null to fall back to local data
+    console.log("Education tables removed from Supabase, using local data");
+    return null;
   } catch (error) {
     console.error("Error fetching user education data:", error);
     return null;
@@ -26,15 +18,8 @@ export const fetchUserEducationData = async (userId: string) => {
 // Function to mark a module as viewed
 export const markModuleViewed = async (userId: string, moduleId: string) => {
   try {
-    const { error } = await supabase
-      .from('user_module_views')
-      .insert([
-        { user_id: userId, module_id: moduleId }
-      ]);
-    
-    if (error) {
-      console.error("Error marking module as viewed:", error);
-    }
+    console.log("Education tables removed from Supabase, marking module viewed locally only");
+    // No operation needed since tables are removed
   } catch (error) {
     console.error("Error marking module as viewed:", error);
   }
@@ -43,15 +28,8 @@ export const markModuleViewed = async (userId: string, moduleId: string) => {
 // Function to mark a module as completed
 export const markModuleCompleted = async (userId: string, moduleId: string, level: Level) => {
   try {
-    const { error } = await supabase
-      .from('user_completed_modules')
-      .insert([
-        { user_id: userId, module_id: moduleId, level: level }
-      ]);
-    
-    if (error) {
-      console.error("Error marking module as completed:", error);
-    }
+    console.log("Education tables removed from Supabase, marking module completed locally only");
+    // No operation needed since tables are removed
   } catch (error) {
     console.error("Error marking module as completed:", error);
   }
@@ -66,24 +44,8 @@ export const saveQuizResult = async (userId: string, quizResult: {
   timeSpent: number;
 }) => {
   try {
-    const { moduleId, score, totalQuestions, passed, timeSpent } = quizResult;
-    
-    const { error } = await supabase
-      .from('user_quiz_results')
-      .insert([
-        { 
-          user_id: userId, 
-          module_id: moduleId, 
-          score: score, 
-          total_questions: totalQuestions,
-          passed: passed,
-          time_spent: timeSpent
-        }
-      ]);
-    
-    if (error) {
-      console.error("Error saving quiz result:", error);
-    }
+    console.log("Education tables removed from Supabase, saving quiz result locally only", quizResult);
+    // No operation needed since tables are removed
   } catch (error) {
     console.error("Error saving quiz result:", error);
   }
@@ -92,15 +54,8 @@ export const saveQuizResult = async (userId: string, quizResult: {
 // Function to save earned badge
 export const saveEarnedBadge = async (userId: string, badgeId: string) => {
   try {
-    const { error } = await supabase
-      .from('user_earned_badges')
-      .insert([
-        { user_id: userId, badge_id: badgeId }
-      ]);
-    
-    if (error) {
-      console.error("Error saving earned badge:", error);
-    }
+    console.log("Education tables removed from Supabase, saving badge locally only");
+    // No operation needed since tables are removed
   } catch (error) {
     console.error("Error saving earned badge:", error);
   }
@@ -112,127 +67,22 @@ export const updateEducationProgress = async (userId: string, progress: {
   currentCard?: number;
 }) => {
   try {
-    const { currentModule } = progress;
-    
-    const { error } = await supabase
-      .from('user_education_progress')
-      .update({ current_module: currentModule })
-      .eq('user_id', userId);
-    
-    if (error) {
-      console.error("Error updating education progress:", error);
-    }
+    console.log("Education tables removed from Supabase, updating progress locally only", progress);
+    // No operation needed since tables are removed
   } catch (error) {
     console.error("Error updating education progress:", error);
   }
 };
 
-// Improved function to fetch module quiz data from Supabase
+// Updated function to fetch module quiz data
 export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
-    console.log('Fetching quiz data for module:', moduleId, 'level:', level);
+    console.log('Supabase education tables removed. Using local data for quiz:', moduleId, 'level:', level);
     
-    // Check if the moduleId is a standard ID format like "module1" or a UUID
-    let actualModuleId = moduleId;
-    let moduleLevel = level || 'basics'; // Default to basics if no level specified
-    
-    // If moduleId is not a UUID (like "module1"), try to find the actual module
-    if (!moduleId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      const moduleNumber = parseInt(moduleId.replace('module', '')) || 1;
-      console.log(`Looking for module with order_index ${moduleNumber} in level '${moduleLevel}'`);
-      
-      const { data: moduleData, error: moduleError } = await supabase
-        .from('education_modules')
-        .select('id')
-        .eq('level', moduleLevel)
-        .eq('order_index', moduleNumber)
-        .maybeSingle();
-      
-      if (moduleError) {
-        console.error('Error finding module ID:', moduleError);
-        return null;
-      }
-      
-      if (moduleData) {
-        actualModuleId = moduleData.id;
-        console.log(`Found module ID: ${actualModuleId}`);
-      } else {
-        console.warn('Module not found, using original ID');
-      }
-    }
-    
-    // Now get the questions for this module and level
-    const { data: questionsData, error: questionsError } = await supabase
-      .from('education_quiz_questions')
-      .select(`
-        id,
-        question,
-        explanation,
-        order_index,
-        level,
-        education_quiz_answers (
-          id,
-          answer_text,
-          is_correct,
-          order_index
-        )
-      `)
-      .eq('module_id', actualModuleId)
-      .eq('level', moduleLevel)
-      .order('order_index');
-    
-    if (questionsError) {
-      console.error('Error fetching quiz questions:', questionsError);
-      return { questions: [] }; // Return empty array instead of null to avoid errors
-    }
-    
-    if (!questionsData || questionsData.length === 0) {
-      console.log('No quiz questions found for this module and level');
-      return { questions: [] };
-    }
-    
-    // Format the data to match our expected structure
-    const questions = questionsData.map(question => {
-      if (!question || !question.education_quiz_answers) {
-        console.error('Invalid question data:', question);
-        return null;
-      }
-      
-      // Format answers from the nested query
-      const answers = (question.education_quiz_answers || []).sort((a, b) => a.order_index - b.order_index);
-      
-      // If we have no answers, don't process this question
-      if (answers.length === 0) {
-        console.warn(`Question ${question.id} has no answers`);
-        return null;
-      }
-      
-      // Format the options array
-      const options = answers.map(a => a.answer_text);
-      
-      // Get the index of the correct answer for our frontend format
-      const correctAnswer = answers.findIndex(a => a.is_correct);
-      
-      // Format the question object
-      return {
-        id: question.id,
-        question: question.question,
-        explanation: question.explanation,
-        options: options,
-        correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
-        level: question.level || moduleLevel // Fallback to requested level if not specified
-      };
-    }).filter(Boolean) as QuizQuestion[];
-    
-    console.log(`Found ${questions.length} quiz questions for this module and level`);
-    if (questions.length > 0) {
-      console.log('Sample question:', questions[0]);
-    }
-    
-    return { questions };
-    
+    // Since tables have been removed, return null to signal we should fall back to local data
+    return { questions: [] };
   } catch (error) {
     console.error('Error in fetchModuleQuizData:', error);
     return { questions: [] }; // Return empty array instead of null to avoid errors

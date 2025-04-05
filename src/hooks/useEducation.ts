@@ -8,8 +8,7 @@ import {
   markModuleViewed,
   saveQuizResult,
   saveEarnedBadge,
-  updateEducationProgress,
-  fetchModuleQuizData
+  updateEducationProgress
 } from '@/adapters/educationAdapter';
 
 export type Level = 'basics' | 'intermediate' | 'pro';
@@ -205,14 +204,8 @@ export const useEducation = () => {
       const loadUserData = async () => {
         try {
           console.log("Attempting to load user education data for user:", user.id);
-          const userData = await fetchUserEducationData(user.id);
-          if (userData) {
-            console.log("User education data loaded successfully, enabling real data mode");
-            setUsingRealData(true);
-          } else {
-            console.log("No user education data found, falling back to local storage");
-            setUsingRealData(false);
-          }
+          console.log("Education tables are removed, using local storage data");
+          setUsingRealData(false);
         } catch (error) {
           console.error("Error loading user education data:", error);
           setUsingRealData(false);
@@ -280,25 +273,9 @@ export const useEducation = () => {
   };
 
   const fetchQuizData = async (moduleId: string) => {
-    if (!user) return null;
-    
-    setLoadingQuizData(true);
-    try {
-      console.log(`Fetching quiz data for module ${moduleId} in level ${currentLevel}`);
-      const quizData = await fetchModuleQuizData(moduleId, currentLevel);
-      setLoadingQuizData(false);
-      console.log('Fetched quiz data:', quizData);
-      return quizData;
-    } catch (error) {
-      console.error("Error fetching quiz data:", error);
-      setLoadingQuizData(false);
-      toast({
-        title: "Error fetching quiz",
-        description: "There was a problem loading the quiz. Please try again later.",
-        variant: "destructive"
-      });
-      return null;
-    }
+    setLoadingQuizData(false);
+    console.log('Education tables removed, not fetching quiz data from Supabase');
+    return null;
   };
 
   const completeQuiz = async (quizResult: {
@@ -581,6 +558,6 @@ export const useEducation = () => {
     setAutoLaunchQuiz,
     fetchQuizData,
     loadingQuizData,
-    usingRealData
+    usingRealData: false
   };
 };
