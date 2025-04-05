@@ -1,353 +1,330 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { CheckCircle, XCircle, Loader } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Quiz, QuizQuestion } from '@/data/educationData';
+import { Card } from '@/components/ui/card';
+import { Check, X, ChevronRight, Award, RefreshCw } from 'lucide-react';
 import { useEducation } from '@/hooks/useEducation';
+import { QuizQuestion } from '@/data/educationData';
+import { fetchModuleQuizData } from '@/adapters/educationAdapter';
+import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
 interface QuizModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  quiz?: Quiz;
+  quiz?: { questions: QuizQuestion[] };
   moduleTitle: string;
   moduleId: string;
   autoLaunch?: boolean;
 }
 
-export const QuizModal = ({ 
-  open, 
-  onOpenChange, 
-  quiz, 
-  moduleTitle, 
+export const QuizModal: React.FC<QuizModalProps> = ({
+  open,
+  onOpenChange,
+  quiz,
+  moduleTitle,
   moduleId,
-  autoLaunch = false 
-}: QuizModalProps) => {
-  const { 
-    submitQuizAnswer, 
-    markModuleViewed, 
-    fetchQuizData, 
-    loadingQuizData 
-  } = useEducation();
+  autoLaunch = false
+}) => {
+  const { completeQuiz, startQuiz, isQuizActive, setAutoLaunchQuiz, usingRealData, loadingQuizData } = useEducation();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [showResults, setShowResults] = useState(false);
-  const [timeSpent, setTimeSpent] = useState(0);
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const [quizComplete, setQuizComplete] = useState(false);
+  const [quizStartTime, setQuizStartTime] = useState(0);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // State for database quiz data
-  const [dbQuizData, setDbQuizData] = useState<{ questions: QuizQuestion[] } | null>(null);
-  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  
-  // If we have quiz data from props or from database
-  const hasQuizData = quiz || (dbQuizData && dbQuizData.questions.length > 0);
-  
-  // Use database quiz data if available, otherwise use the quiz data from props
-  const currentQuizData = dbQuizData || (quiz ? { questions: quiz.questions } : null);
-  
-  // Only if we have quiz data
-  const totalQuestions = currentQuizData ? currentQuizData.questions.length : 0;
-  const currentQuestionData = currentQuizData && currentQuestion < totalQuestions 
-    ? currentQuizData.questions[currentQuestion] 
-    : null;
-  const isLastQuestion = currentQuestion === totalQuestions - 1;
-  
-  // Fetch quiz data from database when modal opens
+  // Fetch real quiz data if we're using the Supabase data source
   useEffect(() => {
-    const loadDbQuizData = async () => {
-      if (open && moduleId && !quiz) {
-        setIsLoadingQuiz(true);
-        setFetchError(null);
-        
+    const loadQuizData = async () => {
+      if (usingRealData && open) {
+        setLoading(true);
         try {
-          console.log(`Loading quiz data for module: ${moduleId}`);
-          
-          // Use the mock data for non-UUID module IDs (like "module1")
-          // This is a workaround for the database expecting UUIDs
-          if (!isValidUUID(moduleId)) {
-            console.log(`Module ID "${moduleId}" is not a UUID, using mock data instead`);
-            if (quiz) {
-              setDbQuizData({ questions: quiz.questions });
+          const data = await fetchModuleQuizData(moduleId);
+          if (data && data.questions && data.questions.length > 0) {
+            setQuizQuestions(data.questions);
+          } else {
+            // Fallback to static data if no real data available
+            toast.error('Could not load quiz questions. Using backup data.');
+            if (quiz && quiz.questions) {
+              // Ensure each question has an ID even in backup data
+              const questionsWithIds = quiz.questions.map(q => {
+                if (!q.id) {
+                  return { ...q, id: uuidv4() };
+                }
+                return q;
+              });
+              setQuizQuestions(questionsWithIds);
+            } else {
+              toast.error('No quiz questions available.');
+              onOpenChange(false);
             }
-            setIsLoadingQuiz(false);
-            return;
           }
-          
-          const data = await fetchQuizData(moduleId);
-          console.log(`Received data for module ${moduleId}:`, data);
-          setDbQuizData(data);
         } catch (error) {
-          console.error(`Error fetching quiz for module ${moduleId}:`, error);
-          setFetchError(`Failed to load quiz: ${(error as Error).message}`);
+          console.error('Error loading quiz data:', error);
+          toast.error('Failed to load quiz data.');
+          
+          // Fallback to static data
+          if (quiz && quiz.questions) {
+            // Ensure each question has an ID even in backup data
+            const questionsWithIds = quiz.questions.map(q => {
+              if (!q.id) {
+                return { ...q, id: uuidv4() };
+              }
+              return q;
+            });
+            setQuizQuestions(questionsWithIds);
+          }
         } finally {
-          setIsLoadingQuiz(false);
+          setLoading(false);
         }
+      } else if (quiz && quiz.questions) {
+        // Using static data
+        // Ensure each question has an ID
+        const questionsWithIds = quiz.questions.map(q => {
+          if (!q.id) {
+            return { ...q, id: uuidv4() };
+          }
+          return q;
+        });
+        setQuizQuestions(questionsWithIds);
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
     };
     
-    loadDbQuizData();
-  }, [open, moduleId, quiz, fetchQuizData]);
+    loadQuizData();
+  }, [moduleId, open, quiz, usingRealData]);
   
-  // Helper function to check if a string is a valid UUID
-  const isValidUUID = (id: string): boolean => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(id);
-  };
-  
-  // Start timer when quiz opens
+  // Reset quiz state when opened
   useEffect(() => {
-    if (open && !startTime) {
-      setStartTime(Date.now());
-      
-      // Mark the module as viewed when the quiz starts
-      markModuleViewed(moduleId);
-    }
-    
-    if (!open) {
-      // Reset state when modal closes
+    if (open) {
       setCurrentQuestion(0);
-      setSelectedAnswer(null);
+      setSelectedOption(null);
       setIsAnswered(false);
       setCorrectAnswers(0);
-      setShowResults(false);
-      setTimeSpent(0);
-      setStartTime(null);
-      setDbQuizData(null);
-      setFetchError(null);
-    }
-  }, [open, moduleId, markModuleViewed, startTime]);
-  
-  // Update time spent every second
-  useEffect(() => {
-    let timer: any;
-    
-    if (open && startTime && !showResults) {
-      timer = setInterval(() => {
-        setTimeSpent(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    }
-    
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [open, startTime, showResults]);
-  
-  const handleNext = () => {
-    if (isLastQuestion && isAnswered) {
-      // Calculate total time spent
-      if (startTime) {
-        const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
-        setTimeSpent(totalSeconds);
-      }
+      setQuizComplete(false);
+      setQuizStartTime(Date.now());
       
-      // Show final results
-      setShowResults(true);
-    } else if (isAnswered) {
-      // Move to next question
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedAnswer(null);
+      // Start the quiz in the education context
+      startQuiz();
+    } else if (autoLaunch) {
+      // Clear autoLaunch when modal is closed
+      setAutoLaunchQuiz(null);
+    }
+  }, [open, autoLaunch, setAutoLaunchQuiz, startQuiz]);
+  
+  const handleOptionSelect = (index: number) => {
+    if (!isAnswered) {
+      setSelectedOption(index);
+      setIsAnswered(true);
+      
+      // Check if answer is correct
+      const currentQuestionData = quizQuestions[currentQuestion];
+      if (currentQuestionData && index === currentQuestionData.correctAnswer) {
+        setCorrectAnswers(prev => prev + 1);
+      }
+    }
+  };
+  
+  const handleNextQuestion = () => {
+    if (currentQuestion < quizQuestions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+      setSelectedOption(null);
       setIsAnswered(false);
+    } else {
+      // Quiz complete
+      setQuizComplete(true);
+      
+      // Calculate time spent in seconds
+      const timeSpent = Math.floor((Date.now() - quizStartTime) / 1000);
+      
+      // Calculate score percentage
+      const score = Math.round((correctAnswers / quizQuestions.length) * 100);
+      
+      // Determine if passed (>= 70% is passing)
+      const passed = score >= 70;
+      
+      // Send completion data
+      completeQuiz({
+        moduleId,
+        score,
+        totalQuestions: quizQuestions.length,
+        passed,
+        timeSpent
+      });
     }
   };
   
-  const handleSubmitAnswer = () => {
-    if (selectedAnswer === null || !currentQuestionData) return;
-    
-    const isCorrect = selectedAnswer === currentQuestionData.correctAnswer;
-    setIsAnswered(true);
-    
-    if (isCorrect) {
-      setCorrectAnswers((prev) => prev + 1);
-    }
+  const handleRestartQuiz = () => {
+    setCurrentQuestion(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setCorrectAnswers(0);
+    setQuizComplete(false);
+    setQuizStartTime(Date.now());
   };
   
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-  
-  const handleFinishQuiz = () => {
-    const isPassed = correctAnswers / totalQuestions >= 0.7; // 70% passing threshold
-    submitQuizAnswer(moduleId, isPassed, correctAnswers, totalQuestions, timeSpent);
+  const handleCloseQuiz = () => {
     onOpenChange(false);
   };
   
-  const handleClose = () => {
-    // Only allow closing if the quiz is not completed yet
-    if (!showResults) {
-      onOpenChange(false);
-    }
+  // Helper function to determine if a question has an explanation
+  const hasExplanation = (question: QuizQuestion) => {
+    return !!question.explanation && question.explanation.trim() !== '';
   };
   
-  const getScoreColor = (score: number): string => {
-    const percentage = score / totalQuestions;
-    if (percentage >= 0.8) return 'text-green-500';
-    if (percentage >= 0.7) return 'text-cyan';
-    return 'text-red-500';
-  };
+  if (loading || loadingQuizData) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+          <div className="flex flex-col items-center justify-center py-8">
+            <RefreshCw className="animate-spin h-8 w-8 text-cyan" />
+            <p className="mt-4 text-gray-300">Loading quiz...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   
-  const renderLoadingState = () => (
-    <div className="flex flex-col items-center justify-center py-8">
-      <Loader className="h-8 w-8 animate-spin text-cyan mb-4" />
-      <p className="text-center">Loading quiz questions...</p>
-    </div>
-  );
-  
-  const renderErrorState = () => (
-    <div className="flex flex-col items-center justify-center py-8">
-      <XCircle className="h-8 w-8 text-red-500 mb-4" />
-      <p className="text-center mb-1 text-red-400">{fetchError}</p>
-      <p className="text-center text-sm text-gray-400 mb-4">Using fallback quiz data instead.</p>
-      <Button onClick={() => onOpenChange(false)}>Close</Button>
-    </div>
-  );
-  
-  const renderNoQuestionsState = () => (
-    <div className="flex flex-col items-center justify-center py-8">
-      <p className="text-center mb-4">No quiz questions available for this module.</p>
-      <Button onClick={() => onOpenChange(false)}>Close</Button>
-    </div>
-  );
+  if (quizQuestions.length === 0) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+          <div className="flex flex-col items-center justify-center py-8">
+            <X className="h-8 w-8 text-red-400" />
+            <p className="mt-4 text-gray-300">No quiz questions available for this module.</p>
+            <Button className="mt-4" onClick={handleCloseQuiz}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   
   return (
-    <Dialog open={open} onOpenChange={showResults ? () => {} : onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl">{moduleTitle} Quiz</DialogTitle>
-        </DialogHeader>
-        
-        {isLoadingQuiz || loadingQuizData ? (
-          renderLoadingState()
-        ) : fetchError ? (
-          renderErrorState()
-        ) : !hasQuizData ? (
-          renderNoQuestionsState()
-        ) : !showResults ? (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md sm:max-w-lg">
+        {!quizComplete ? (
           <>
-            <div className="flex justify-between text-sm text-gray-400 mb-2">
-              <span>Question {currentQuestion + 1} of {totalQuestions}</span>
-              <span>{correctAnswers} correct so far • {formatTime(timeSpent)}</span>
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-white">{moduleTitle} Quiz</h2>
+              <p className="text-gray-400 text-sm">Question {currentQuestion + 1} of {quizQuestions.length}</p>
             </div>
             
-            <Progress 
-              value={(currentQuestion / totalQuestions) * 100} 
-              className="h-1 mb-4" 
-            />
+            <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-6">
+              <div 
+                className="bg-cyan h-2 rounded-full" 
+                style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
+              ></div>
+            </div>
             
-            {currentQuestionData && (
-              <div className="premium-card p-4 mb-4">
-                <h3 className="text-lg mb-4">{currentQuestionData?.question}</h3>
-                
-                <RadioGroup 
-                  value={selectedAnswer?.toString()} 
-                  onValueChange={(value) => !isAnswered && setSelectedAnswer(Number(value))}
-                  className="space-y-3"
-                  disabled={isAnswered}
-                >
-                  {currentQuestionData?.options.map((option, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-center space-x-2 p-3 rounded-md border ${
-                        isAnswered && currentQuestionData.correctAnswer === index 
-                          ? 'border-green-500 bg-green-500/10' 
-                          : isAnswered && selectedAnswer === index 
-                            ? 'border-red-500 bg-red-500/10' 
-                            : 'border-gray-700'
-                      }`}
-                    >
-                      <RadioGroupItem 
-                        value={index.toString()} 
-                        id={`option-${index}`} 
-                        disabled={isAnswered}
-                      />
-                      <Label 
-                        htmlFor={`option-${index}`}
-                        className="flex-1 cursor-pointer"
-                      >
-                        {option}
-                      </Label>
-                      {isAnswered && currentQuestionData.correctAnswer === index && (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      )}
-                      {isAnswered && selectedAnswer === index && currentQuestionData.correctAnswer !== index && (
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      )}
+            <div className="mb-6">
+              <p className="text-white font-medium mb-4">{quizQuestions[currentQuestion]?.question}</p>
+              
+              <div className="space-y-3">
+                {quizQuestions[currentQuestion]?.options.map((option, index) => (
+                  <Card 
+                    key={index}
+                    className={`p-4 cursor-pointer border transition-colors ${
+                      selectedOption === index 
+                        ? index === quizQuestions[currentQuestion]?.correctAnswer
+                          ? 'bg-green-900/30 border-green-500'
+                          : 'bg-red-900/30 border-red-500'
+                        : 'bg-charcoalPrimary border-gray-700 hover:border-gray-500'
+                    }`}
+                    onClick={() => handleOptionSelect(index)}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-5 h-5 rounded-full border mr-3 flex items-center justify-center ${
+                        selectedOption === index 
+                          ? index === quizQuestions[currentQuestion]?.correctAnswer
+                            ? 'border-green-500 bg-green-500/20' 
+                            : 'border-red-500 bg-red-500/20'
+                          : 'border-gray-500'
+                      }`}>
+                        {isAnswered && index === quizQuestions[currentQuestion]?.correctAnswer && (
+                          <Check className="h-3 w-3 text-green-500" />
+                        )}
+                        {isAnswered && selectedOption === index && index !== quizQuestions[currentQuestion]?.correctAnswer && (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                      </div>
+                      <span>{option}</span>
                     </div>
-                  ))}
-                </RadioGroup>
-                
-                {isAnswered && currentQuestionData.explanation && (
-                  <div className="mt-4 p-3 bg-gray-800/50 rounded-md border border-gray-700">
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold">Explanation:</span> {currentQuestionData.explanation}
-                    </p>
-                  </div>
-                )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+            
+            {isAnswered && hasExplanation(quizQuestions[currentQuestion]) && (
+              <Card className="p-4 mb-6 bg-blue-900/20 border-blue-700">
+                <p className="text-sm text-blue-100">
+                  <span className="font-bold">Explanation:</span> {quizQuestions[currentQuestion]?.explanation}
+                </p>
+              </Card>
+            )}
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleNextQuestion}
+                disabled={!isAnswered}
+                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 flex items-center"
+              >
+                {currentQuestion < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-white mb-2">Quiz Complete!</h2>
+              <p className="text-gray-300">You scored:</p>
+              <div className="text-4xl font-bold text-cyan my-2">
+                {Math.round((correctAnswers / quizQuestions.length) * 100)}%
+              </div>
+              <p className="text-gray-300">
+                {correctAnswers} out of {quizQuestions.length} questions correct
+              </p>
+            </div>
+            
+            {correctAnswers / quizQuestions.length >= 0.7 ? (
+              <div className="bg-green-900/20 border border-green-700 rounded-lg p-4 mb-6">
+                <div className="flex justify-center mb-2">
+                  <Award className="h-8 w-8 text-yellow-400" />
+                </div>
+                <p className="text-green-300 font-medium">
+                  Congratulations! You've passed this quiz.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-orange-900/20 border border-orange-700 rounded-lg p-4 mb-6">
+                <p className="text-orange-300">
+                  You need 70% to pass. Keep studying and try again!
+                </p>
               </div>
             )}
             
-            <DialogFooter className="sm:justify-between">
+            <div className="flex justify-between">
               <Button 
                 variant="outline" 
-                onClick={handleClose}
+                onClick={handleRestartQuiz}
+                className="border-gray-600 text-gray-300 hover:text-white"
               >
-                Exit Quiz
+                Restart Quiz
               </Button>
-              <div className="flex gap-2">
-                {!isAnswered ? (
-                  <Button 
-                    onClick={handleSubmitAnswer}
-                    disabled={selectedAnswer === null}
-                  >
-                    Submit Answer
-                  </Button>
-                ) : (
-                  <Button onClick={handleNext}>
-                    {isLastQuestion ? 'Show Results' : 'Next Question'}
-                  </Button>
-                )}
-              </div>
-            </DialogFooter>
-          </>
-        ) : (
-          <div className="flex flex-col items-center text-center py-4">
-            <div className={`text-xl font-bold mb-2 ${
-              correctAnswers / totalQuestions >= 0.7 ? 'text-green-500' : 'text-red-500'
-            }`}>
-              {correctAnswers / totalQuestions >= 0.7 ? 'Congratulations!' : 'Almost there!'}
+              <Button 
+                onClick={handleCloseQuiz}
+                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90"
+              >
+                Continue
+              </Button>
             </div>
-            <p className="text-lg mb-4">
-              You scored {correctAnswers} out of {totalQuestions}
-              {correctAnswers / totalQuestions >= 0.7 ? 
-                ' and passed the quiz!' : 
-                '. You need 70% to pass.'}
-            </p>
-            <div className="w-full bg-gray-700 rounded-full h-4 mb-2">
-              <div 
-                className={`h-4 rounded-full ${
-                  correctAnswers / totalQuestions >= 0.7 ? 'bg-green-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${(correctAnswers / totalQuestions) * 100}%` }}
-              ></div>
-            </div>
-            <div className="text-sm text-gray-400 mb-6">
-              Time spent: {formatTime(timeSpent)}
-            </div>
-            <Button 
-              onClick={handleFinishQuiz} 
-              variant={correctAnswers / totalQuestions >= 0.7 ? 'default' : 'outline'}
-              className="w-full"
-            >
-              {correctAnswers / totalQuestions >= 0.7 ? 'Complete Module' : 'Try Again'}
-            </Button>
           </div>
         )}
       </DialogContent>

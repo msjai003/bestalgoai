@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { QuizQuestion, QuizAnswer } from '@/data/educationData';
+import { v4 as uuidv4 } from 'uuid';
 
 // Type for quiz result
 interface QuizResult {
@@ -453,6 +453,7 @@ export const fetchModuleQuizData = async (moduleId: string): Promise<{
       const correctAnswer = answersData.findIndex(answer => answer.is_correct);
       
       questions.push({
+        id: question.id,  // Make sure we include the id from the database
         question: question.question,
         options,
         correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
