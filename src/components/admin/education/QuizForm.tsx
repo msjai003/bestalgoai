@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -53,7 +52,6 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { currentLevel } = useEducation();
   
-  // Convert QuizQuestion to form data format
   const getDefaultValues = (): QuestionFormData => {
     if (question) {
       return {
@@ -79,7 +77,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
       ]
     };
   };
-  
+
   const form = useForm<QuestionFormData>({
     resolver: zodResolver(questionSchema),
     defaultValues: getDefaultValues()
@@ -88,7 +86,6 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
   const handleSubmit = async (data: QuestionFormData) => {
     setIsSubmitting(true);
     try {
-      // Get the correct answer index
       const correctAnswerIndex = data.options.findIndex(opt => opt.is_correct);
       if (correctAnswerIndex === -1) {
         form.setError('options', { 
@@ -98,7 +95,6 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
         return;
       }
       
-      // Convert form data to QuizQuestion format
       const questionData = {
         module_id: moduleId,
         question: data.question,
@@ -110,10 +106,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
       };
       
       if (question) {
-        // Update question
         await updateQuizQuestion(question.id, questionData);
       } else {
-        // Create question
         await createQuizQuestion(questionData);
       }
       
@@ -137,14 +131,12 @@ const QuizForm: React.FC<QuizFormProps> = ({ moduleId, question, onSuccess, onCa
   
   const removeOption = (index: number) => {
     const currentOptions = form.getValues('options') || [];
-    // Don't allow removal if only 2 options remain
     if (currentOptions.length <= 2) return;
     
     const updatedOptions = currentOptions.filter((_, i) => i !== index);
     form.setValue('options', updatedOptions);
   };
 
-  // Ensure only one option is marked as correct
   const handleCorrectChange = (index: number, checked: boolean) => {
     if (checked) {
       const currentOptions = form.getValues('options');

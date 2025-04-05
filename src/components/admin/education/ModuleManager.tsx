@@ -52,7 +52,6 @@ const ModuleManager = () => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Dialogs state
   const [isModuleFormOpen, setIsModuleFormOpen] = useState(false);
   const [isContentFormOpen, setIsContentFormOpen] = useState(false);
   const [isQuizFormOpen, setIsQuizFormOpen] = useState(false);
@@ -63,50 +62,40 @@ const ModuleManager = () => {
   const [deleteContentId, setDeleteContentId] = useState<string | null>(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
 
-  // Fetch modules
   const fetchModules = async () => {
     setIsLoading(true);
     const modulesData = await getEducationModules();
     setModules(modulesData);
     setIsLoading(false);
     
-    // Select first module if none selected
     if (modulesData.length > 0 && !selectedModule) {
       handleModuleSelect(modulesData[0]);
     } else if (selectedModule) {
-      // Refresh selected module data
       const refreshedModule = modulesData.find(m => m.id === selectedModule.id);
       if (refreshedModule) {
         setSelectedModule(refreshedModule);
       } else if (modulesData.length > 0) {
-        // Selected module was deleted, select the first one
-        handleModuleSelect(modulesData[0]);
-      } else {
         setSelectedModule(null);
       }
     }
   };
-  
-  // Handle module selection
+
   const handleModuleSelect = async (module: EducationModule) => {
     setSelectedModule(module);
     
-    // Fetch content and questions for selected module
     const contentsData = await getEducationContent(module.id);
     setContents(contentsData);
     
     const questionsData = await getQuizQuestions(module.id);
     setQuestions(questionsData);
   };
-  
-  // Handle module creation/edit
+
   const handleModuleFormSuccess = () => {
     setIsModuleFormOpen(false);
     setEditingModule(null);
     fetchModules();
   };
-  
-  // Handle module deletion
+
   const handleModuleDelete = async () => {
     if (deleteModuleId) {
       const success = await deleteEducationModule(deleteModuleId);
@@ -119,8 +108,7 @@ const ModuleManager = () => {
       setDeleteModuleId(null);
     }
   };
-  
-  // Handle content creation/edit
+
   const handleContentFormSuccess = () => {
     setIsContentFormOpen(false);
     setEditingContent(null);
@@ -128,8 +116,7 @@ const ModuleManager = () => {
       getEducationContent(selectedModule.id).then(data => setContents(data));
     }
   };
-  
-  // Handle content deletion
+
   const handleContentDelete = async () => {
     if (deleteContentId) {
       const success = await deleteEducationContent(deleteContentId);
@@ -139,8 +126,7 @@ const ModuleManager = () => {
       setDeleteContentId(null);
     }
   };
-  
-  // Handle quiz question creation/edit
+
   const handleQuizFormSuccess = () => {
     setIsQuizFormOpen(false);
     setEditingQuestion(null);
@@ -148,8 +134,7 @@ const ModuleManager = () => {
       getQuizQuestions(selectedModule.id).then(data => setQuestions(data));
     }
   };
-  
-  // Handle quiz question deletion
+
   const handleQuestionDelete = async () => {
     if (deleteQuestionId) {
       const success = await deleteQuizQuestion(deleteQuestionId);
@@ -159,8 +144,7 @@ const ModuleManager = () => {
       setDeleteQuestionId(null);
     }
   };
-  
-  // Initial data fetch
+
   useEffect(() => {
     fetchModules();
   }, []);
@@ -195,7 +179,6 @@ const ModuleManager = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Module list */}
           <div className="lg:col-span-1">
             <ScrollArea className="h-[70vh] pr-4">
               <div className="space-y-2">
@@ -249,7 +232,6 @@ const ModuleManager = () => {
             </ScrollArea>
           </div>
           
-          {/* Module content */}
           <div className="lg:col-span-3">
             {selectedModule ? (
               <Card>
@@ -369,27 +351,27 @@ const ModuleManager = () => {
                                       <div className="flex items-center gap-2">
                                         <span className="text-sm text-muted-foreground">#{question.order_index}</span>
                                         <Badge variant="outline" className="text-xs">
-                                          {question.answers?.length || 0} answers
+                                          {question.options?.length || 0} options
                                         </Badge>
                                       </div>
                                       <h4 className="font-semibold mt-1">{question.question}</h4>
                                       
-                                      {question.answers && question.answers.length > 0 && (
+                                      {question.options && question.options.length > 0 && (
                                         <div className="mt-2 space-y-1">
-                                          {question.answers.slice(0, 2).map((answer, index) => (
+                                          {question.options.slice(0, 2).map((option, index) => (
                                             <div 
-                                              key={answer.id} 
+                                              key={index} 
                                               className={`text-xs px-2 py-1 rounded-sm ${
-                                                answer.is_correct ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' : 'bg-muted'
+                                                index === question.correct_answer ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' : 'bg-muted'
                                               }`}
                                             >
-                                              {answer.answer_text}
-                                              {answer.is_correct && ' ✓'}
+                                              {option}
+                                              {index === question.correct_answer && ' ✓'}
                                             </div>
                                           ))}
-                                          {question.answers.length > 2 && (
+                                          {question.options.length > 2 && (
                                             <div className="text-xs text-muted-foreground">
-                                              + {question.answers.length - 2} more answers
+                                              + {question.options.length - 2} more options
                                             </div>
                                           )}
                                         </div>
@@ -439,7 +421,6 @@ const ModuleManager = () => {
         </div>
       )}
       
-      {/* Module Form Dialog */}
       <Dialog open={isModuleFormOpen} onOpenChange={setIsModuleFormOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -453,7 +434,6 @@ const ModuleManager = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Content Form Dialog */}
       <Dialog open={isContentFormOpen} onOpenChange={setIsContentFormOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -470,7 +450,6 @@ const ModuleManager = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Quiz Form Dialog */}
       <Dialog open={isQuizFormOpen} onOpenChange={setIsQuizFormOpen}>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
@@ -487,7 +466,6 @@ const ModuleManager = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Module Alert Dialog */}
       <AlertDialog 
         open={!!deleteModuleId} 
         onOpenChange={(open) => !open && setDeleteModuleId(null)}
@@ -509,7 +487,6 @@ const ModuleManager = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Delete Content Alert Dialog */}
       <AlertDialog 
         open={!!deleteContentId} 
         onOpenChange={(open) => !open && setDeleteContentId(null)}
@@ -530,7 +507,6 @@ const ModuleManager = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Delete Question Alert Dialog */}
       <AlertDialog 
         open={!!deleteQuestionId} 
         onOpenChange={(open) => !open && setDeleteQuestionId(null)}
