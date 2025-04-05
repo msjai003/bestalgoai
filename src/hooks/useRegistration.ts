@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -54,19 +53,15 @@ export const useRegistration = () => {
     }
   };
 
-  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+  const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
-      console.log(`Preparing to send welcome SMS to ${mobileNumber}`);
-      
-      // Ensure the mobile number is properly formatted (should already be from RegistrationStepOne)
-      const formattedMobile = mobileNumber.replace(/\D/g, '');
+      console.log(`Preparing to send welcome SMS to user ${userId}`);
       
       // Call the edge function to send SMS
       const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
         body: JSON.stringify({
           userId,
-          fullName,
-          mobileNumber: formattedMobile
+          fullName
         })
       });
       
@@ -137,12 +132,11 @@ export const useRegistration = () => {
       console.log("Registration successful, displaying success messages");
       toast.success("Account created successfully! Please check your email inbox.");
       
-      // Send welcome SMS if we have a user ID and mobile number
+      // Send welcome SMS if we have a user ID
       if (result.data?.user?.id) {
         await sendWelcomeSMS(
           result.data.user.id,
-          state.formData.fullName,
-          state.formData.mobile
+          state.formData.fullName
         );
       }
       

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,19 +36,15 @@ const Signup = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
-  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+  const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
-      console.log(`Preparing to send welcome SMS to ${mobileNumber} for user ${fullName}`);
+      console.log(`Preparing to send welcome SMS to user ${userId}`);
       
-      // Ensure the mobile number is properly formatted
-      const formattedMobile = mobileNumber.replace(/\D/g, '');
-      
-      // Call the edge function to send SMS
+      // Call the edge function to send SMS - mobile number will be retrieved from user_profiles
       const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
         body: JSON.stringify({
           userId,
-          fullName,
-          mobileNumber: formattedMobile
+          fullName
         })
       });
       
@@ -104,7 +99,7 @@ const Signup = () => {
       
       // If signup was successful and we have a user ID, send the welcome SMS
       if (data?.user?.id) {
-        await sendWelcomeSMS(data.user.id, name, mobileNumber);
+        await sendWelcomeSMS(data.user.id, name);
       }
       
       navigate('/dashboard');

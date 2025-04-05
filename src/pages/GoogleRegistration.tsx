@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +26,6 @@ const GoogleRegistration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pre-fill form with Google data if available
     if (googleUserDetails) {
       const fullName = googleUserDetails.given_name && googleUserDetails.family_name 
         ? `${googleUserDetails.given_name} ${googleUserDetails.family_name}`
@@ -46,7 +44,6 @@ const GoogleRegistration = () => {
       ...prev,
       [field]: value
     }));
-    // Clear error when user makes changes
     if (errorMessage) {
       setErrorMessage(null);
     }
@@ -56,21 +53,14 @@ const GoogleRegistration = () => {
     navigate('/auth');
   };
 
-  const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
+  const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
-      if (!mobileNumber) return; // Skip if no mobile number
+      console.log(`Preparing to send welcome SMS to user ${userId}`);
       
-      console.log(`Preparing to send welcome SMS to ${mobileNumber}`);
-      
-      // Ensure the mobile number is properly formatted
-      const formattedMobile = mobileNumber.replace(/\D/g, '');
-      
-      // Call the edge function to send SMS
       const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
         body: JSON.stringify({
           userId,
-          fullName,
-          mobileNumber: formattedMobile
+          fullName
         })
       });
       
@@ -110,9 +100,7 @@ const GoogleRegistration = () => {
     setIsLoading(true);
 
     try {
-      // Update user profile with the additional information
       if (user) {
-        // First check if a profile already exists for this user
         const { data: existingProfile } = await supabase
           .from('user_profiles')
           .select('id')
@@ -120,7 +108,6 @@ const GoogleRegistration = () => {
           .maybeSingle();
           
         if (existingProfile) {
-          // Update existing profile
           const { error: updateError } = await supabase
             .from('user_profiles')
             .update({
@@ -138,7 +125,6 @@ const GoogleRegistration = () => {
             return;
           }
         } else {
-          // Insert new profile
           const { error: insertError } = await supabase
             .from('user_profiles')
             .insert({
@@ -157,10 +143,7 @@ const GoogleRegistration = () => {
           }
         }
         
-        // Send welcome SMS if mobile number is provided
-        if (formData.mobile) {
-          await sendWelcomeSMS(user.id, formData.fullName, formData.mobile);
-        }
+        await sendWelcomeSMS(user.id, formData.fullName);
         
         toast.success('Profile created successfully!');
         navigate('/dashboard');

@@ -22,20 +22,59 @@ serve(async (req) => {
 
   try {
     // Get the request body
-    const { fullName, mobileNumber, userId } = await req.json()
+    const { userId, fullName } = await req.json()
     
-    console.log(`Received request to send SMS to: ${mobileNumber} for user: ${fullName} (${userId})`)
+    console.log(`Received request to send SMS for user: ${fullName} (${userId})`)
     
     // Validate input
-    if (!fullName || !mobileNumber || !userId) {
+    if (!fullName || !userId) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Missing required parameters: fullName, mobileNumber, or userId' 
+          error: 'Missing required parameters: fullName or userId' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
+    
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+    
+    // Fetch the user's mobile number from user_profiles
+    const { data: userData, error: userError } = await supabaseClient
+      .from('user_profiles')
+      .select('mobile_number')
+      .eq('id', userId)
+      .single()
+    
+    if (userError || !userData) {
+      console.error("Error fetching user profile:", userError)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: userError ? userError.message : 'User profile not found' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      )
+    }
+    
+    const mobileNumber = userData.mobile_number
+    
+    if (!mobileNumber) {
+      console.log(`No mobile number found for user: ${userId}`)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'No mobile number found for user' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+    
+    console.log(`Found mobile number: ${mobileNumber} for user: ${userId}`)
     
     // Ensure mobile number has country code
     let formattedNumber = mobileNumber
@@ -62,12 +101,6 @@ serve(async (req) => {
     const responseText = await response.text()
     
     console.log(`SMS API Response: ${responseText}`)
-    
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
     
     // Log the SMS delivery in the database
     const { data: logData, error: logError } = await supabaseClient
