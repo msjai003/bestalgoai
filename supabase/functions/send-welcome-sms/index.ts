@@ -7,12 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// This API key is for a public service and is safe to expose
-const API_BASE_URL = 'http://smvsms.smvnetwork.in/http-tokenkeyapi.php'
-const AUTH_KEY = '3330494e464f4341503130301738306627'
-const SENDER_ID = 'INFCTP'
-const ROUTE = '1'
-const TEMPLATE_ID = '1007454955787835764'
+// SMS API Configuration
+const API_KEY = "3330494e464f4341503130301738306627"
+const SENDER_ID = "INFCTP"
+const TEMPLATE_ID = "1007454955787835764"
+const ROUTE = "1"
+const API_BASE_URL = "http://smvsms.smvnetwork.in/http-tokenkeyapi.php"
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -53,7 +53,7 @@ serve(async (req) => {
     const encodedMessage = encodeURIComponent(message)
     
     // Construct the SMS API URL
-    const url = `${API_BASE_URL}?authentic-key=${AUTH_KEY}&senderid=${SENDER_ID}&route=${ROUTE}&number=${formattedNumber}&message=${encodedMessage}&templateid=${TEMPLATE_ID}`
+    const url = `${API_BASE_URL}?authentic-key=${API_KEY}&senderid=${SENDER_ID}&route=${ROUTE}&number=${formattedNumber}&message=${encodedMessage}&templateid=${TEMPLATE_ID}`
     
     console.log(`Sending SMS request to URL (truncated): ${url.substring(0, 100)}...`)
     
