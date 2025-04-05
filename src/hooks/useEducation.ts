@@ -281,18 +281,20 @@ export const useEducation = () => {
     }
   };
 
-  const submitQuizAnswer = async (
+  const completeQuiz = async (quizResult: {
     moduleId: string, 
-    isPassed: boolean, 
+    passed: boolean, 
     score: number, 
     totalQuestions: number, 
     timeSpent: number
-  ) => {
+  }) => {
+    const { moduleId, passed, score, totalQuestions, timeSpent } = quizResult;
+    
     setQuizResults(prev => ({
       ...prev,
       [moduleId]: {
         completed: true,
-        passed: isPassed,
+        passed,
         score,
         totalQuestions,
         timeSpent,
@@ -300,7 +302,7 @@ export const useEducation = () => {
       }
     }));
     
-    if (isPassed) {
+    if (passed) {
       if (!moduleProgress[moduleId]) {
         setModuleProgress(prev => ({
           ...prev,
@@ -366,7 +368,7 @@ export const useEducation = () => {
               moduleId,
               score,
               totalQuestions,
-              passed: isPassed,
+              passed,
               timeSpent
             });
             
@@ -391,6 +393,22 @@ export const useEducation = () => {
     
     setQuizActive(false);
     setAutoLaunchQuiz(null);
+  };
+
+  const submitQuizAnswer = (
+    moduleId: string, 
+    passed: boolean, 
+    score: number, 
+    totalQuestions: number, 
+    timeSpent: number
+  ) => {
+    return completeQuiz({
+      moduleId,
+      passed,
+      score,
+      totalQuestions,
+      timeSpent
+    });
   };
 
   const checkBadgeUnlocks = async (level: Level, completedCount: number) => {
@@ -530,6 +548,7 @@ export const useEducation = () => {
     earnedBadges,
     quizActive,
     startQuiz,
+    completeQuiz,
     submitQuizAnswer,
     completedModules,
     progress,

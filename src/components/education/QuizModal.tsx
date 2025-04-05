@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   moduleId,
   autoLaunch = false
 }) => {
-  const { completeQuiz, startQuiz, isQuizActive, setAutoLaunchQuiz, usingRealData, loadingQuizData } = useEducation();
+  const { submitQuizAnswer, startQuiz, setAutoLaunchQuiz, usingRealData, loadingQuizData } = useEducation();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -38,7 +37,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Fetch real quiz data if we're using the Supabase data source
   useEffect(() => {
     const loadQuizData = async () => {
       if (usingRealData && open) {
@@ -48,10 +46,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           if (data && data.questions && data.questions.length > 0) {
             setQuizQuestions(data.questions);
           } else {
-            // Fallback to static data if no real data available
             toast.error('Could not load quiz questions. Using backup data.');
             if (quiz && quiz.questions) {
-              // Ensure each question has an ID even in backup data
               const questionsWithIds = quiz.questions.map(q => {
                 if (!q.id) {
                   return { ...q, id: uuidv4() };
@@ -68,9 +64,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           console.error('Error loading quiz data:', error);
           toast.error('Failed to load quiz data.');
           
-          // Fallback to static data
           if (quiz && quiz.questions) {
-            // Ensure each question has an ID even in backup data
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
                 return { ...q, id: uuidv4() };
@@ -83,8 +77,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           setLoading(false);
         }
       } else if (quiz && quiz.questions) {
-        // Using static data
-        // Ensure each question has an ID
         const questionsWithIds = quiz.questions.map(q => {
           if (!q.id) {
             return { ...q, id: uuidv4() };
@@ -101,7 +93,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     loadQuizData();
   }, [moduleId, open, quiz, usingRealData]);
   
-  // Reset quiz state when opened
   useEffect(() => {
     if (open) {
       setCurrentQuestion(0);
@@ -111,10 +102,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       setQuizComplete(false);
       setQuizStartTime(Date.now());
       
-      // Start the quiz in the education context
       startQuiz();
     } else if (autoLaunch) {
-      // Clear autoLaunch when modal is closed
       setAutoLaunchQuiz(null);
     }
   }, [open, autoLaunch, setAutoLaunchQuiz, startQuiz]);
@@ -124,7 +113,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       setSelectedOption(index);
       setIsAnswered(true);
       
-      // Check if answer is correct
       const currentQuestionData = quizQuestions[currentQuestion];
       if (currentQuestionData && index === currentQuestionData.correctAnswer) {
         setCorrectAnswers(prev => prev + 1);
@@ -138,26 +126,19 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
-      // Quiz complete
       setQuizComplete(true);
       
-      // Calculate time spent in seconds
       const timeSpent = Math.floor((Date.now() - quizStartTime) / 1000);
-      
-      // Calculate score percentage
       const score = Math.round((correctAnswers / quizQuestions.length) * 100);
-      
-      // Determine if passed (>= 70% is passing)
       const passed = score >= 70;
       
-      // Send completion data
-      completeQuiz({
+      submitQuizAnswer(
         moduleId,
-        score,
-        totalQuestions: quizQuestions.length,
         passed,
+        score,
+        quizQuestions.length,
         timeSpent
-      });
+      );
     }
   };
   
@@ -174,7 +155,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     onOpenChange(false);
   };
   
-  // Helper function to determine if a question has an explanation
   const hasExplanation = (question: QuizQuestion) => {
     return !!question.explanation && question.explanation.trim() !== '';
   };
