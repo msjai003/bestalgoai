@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
@@ -128,7 +129,7 @@ export const updateEducationProgress = async (userId: string, progress: {
 };
 
 // Improved function to fetch module quiz data from Supabase
-export const fetchModuleQuizData = async (moduleId: string, level?: string): Promise<{
+export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
@@ -195,8 +196,13 @@ export const fetchModuleQuizData = async (moduleId: string, level?: string): Pro
     
     // Format the data to match our expected structure
     const questions = questionsData.map(question => {
+      if (!question || !question.education_quiz_answers) {
+        console.error('Invalid question data:', question);
+        return null;
+      }
+      
       // Format answers from the nested query
-      const answers = question.education_quiz_answers.map((answer: any) => ({
+      const answers = (question.education_quiz_answers || []).map((answer: any) => ({
         id: answer.id,
         answer_text: answer.answer_text,
         is_correct: answer.is_correct,
@@ -216,7 +222,7 @@ export const fetchModuleQuizData = async (moduleId: string, level?: string): Pro
         correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
         level: question.level
       };
-    });
+    }).filter(Boolean) as QuizQuestion[];
     
     console.log(`Found ${questions.length} quiz questions for this module and level`);
     return { questions };
