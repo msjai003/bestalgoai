@@ -205,7 +205,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           <div className="flex flex-col items-center justify-center py-8">
             <X className="h-8 w-8 text-red-400" />
             <p className="mt-4 text-gray-300">{loadError || `No quiz questions available for this module in the ${currentLevel} level.`}</p>
-            <Button className="mt-4" onClick={handleCloseQuiz}>Close</Button>
+            <Button className="mt-4" onClick={() => onOpenChange(false)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>
