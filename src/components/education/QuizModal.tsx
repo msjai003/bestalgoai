@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         
         try {
           // First, try to fetch data from Supabase
-          const supabaseQuizData = await fetchQuizData(moduleId);
+          const supabaseQuizData = await fetchQuizData(moduleId, currentLevel);
           
           if (supabaseQuizData && supabaseQuizData.questions && supabaseQuizData.questions.length > 0) {
             // If we have questions from Supabase, use them

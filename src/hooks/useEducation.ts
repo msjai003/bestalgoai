@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
@@ -273,10 +272,11 @@ export const useEducation = () => {
     setQuizActive(true);
   };
 
-  const fetchQuizData = async (moduleId: string) => {
+  const fetchQuizData = async (moduleId: string, level: string = '') => {
     setLoadingQuizData(true);
     try {
-      const quizData = await fetchModuleQuizData(moduleId, currentLevel);
+      const quizLevel = level || currentLevel;
+      const quizData = await fetchModuleQuizData(moduleId, quizLevel);
       setLoadingQuizData(false);
       return quizData;
     } catch (error) {

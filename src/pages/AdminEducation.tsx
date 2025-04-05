@@ -1,20 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
-import { BottomNav } from '@/components/BottomNav';
 import { 
   Tabs, 
   TabsContent, 
   TabsList, 
   TabsTrigger 
-} from "@/components/ui/tabs";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+} from '@/components/ui/tabs';
 import { 
-  InfoIcon, 
-  Book, 
-  Award, 
-  Database, 
-  ArrowUpDown, 
-  Plus, 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  CardFooter 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { 
   Edit, 
   Trash2, 
   Save, 
@@ -23,23 +26,18 @@ import {
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
+// Define the quiz question interface
 interface QuizQuestion {
   id?: string;
   module_id: string;
@@ -53,24 +51,47 @@ interface QuizQuestion {
 const AdminEducation = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(true); // In a real scenario, you'd fetch this from Supabase
+  const [activeTab, setActiveTab] = useState('quiz-questions');
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // State for quiz question editing
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [newQuestion, setNewQuestion] = useState<QuizQuestion>({
-    module_id: 'module1',
+    module_id: '',
     level: 'basics',
     question: '',
     options: ['', '', '', ''],
     correct_answer: 0,
     explanation: ''
   });
-  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion>({
+    module_id: '',
+    level: 'basics',
+    question: '',
+    options: ['', '', '', ''],
+    correct_answer: 0,
+    explanation: ''
+  });
+  
   // Fetch quiz questions
   const fetchQuizQuestions = async () => {
     setLoading(true);
     try {
+      // Define the type for the quiz data from Supabase
+      type QuizClientData = {
+        id: string;
+        module_id: string;
+        level: string;
+        question: string;
+        options: string | string[];
+        correct_answer: number;
+        explanation?: string;
+        created_at?: string;
+        updated_at?: string;
+      };
+      
       const { data, error } = await supabase
         .from('education_quiz_clients' as any)
         .select('*')
@@ -80,69 +101,89 @@ const AdminEducation = () => {
         throw error;
       }
       
-      setQuizQuestions(data as unknown as QuizQuestion[] || []);
+      // Transform the data to match our QuizQuestion interface
+      const formattedQuestions = (data || []).map((item: any) => ({
+        id: item.id,
+        module_id: item.module_id,
+        level: item.level,
+        question: item.question,
+        options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
+        correct_answer: item.correct_answer,
+        explanation: item.explanation
+      }));
+      
+      setQuizQuestions(formattedQuestions);
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
       toast({
-        title: "Error",
-        description: "Failed to load quiz questions",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch quiz questions. Please try again.',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
-    fetchQuizQuestions();
-  }, []);
-
-  // Handle input changes for new question
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewQuestion(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (user && activeTab === 'quiz-questions') {
+      fetchQuizQuestions();
+    }
+  }, [user, activeTab]);
+  
+  // Reset the form for adding a new question
+  const resetQuestionForm = () => {
+    setNewQuestion({
+      module_id: '',
+      level: 'basics',
+      question: '',
+      options: ['', '', '', ''],
+      correct_answer: 0,
+      explanation: ''
+    });
   };
-
-  // Handle option changes
-  const handleOptionChange = (index: number, value: string) => {
-    const updatedOptions = [...newQuestion.options];
-    updatedOptions[index] = value;
-    setNewQuestion(prev => ({
-      ...prev,
-      options: updatedOptions
-    }));
+  
+  // Handle quiz question option change
+  const handleOptionChange = (index: number, value: string, isNewQuestion: boolean) => {
+    if (isNewQuestion) {
+      const updatedOptions = [...newQuestion.options];
+      updatedOptions[index] = value;
+      setNewQuestion({
+        ...newQuestion,
+        options: updatedOptions
+      });
+    } else {
+      const updatedOptions = [...editingQuestion.options];
+      updatedOptions[index] = value;
+      setEditingQuestion({
+        ...editingQuestion,
+        options: updatedOptions
+      });
+    }
   };
-
-  // Handle select changes
-  const handleSelectChange = (field: string, value: string) => {
-    setNewQuestion(prev => ({
-      ...prev,
-      [field]: field === 'correct_answer' ? parseInt(value) : value
-    }));
-  };
-
-  // Save a new quiz question
-  const saveQuizQuestion = async () => {
-    if (!newQuestion.question || !newQuestion.options.every(opt => opt.trim() !== '')) {
+  
+  // Add a new quiz question
+  const handleAddQuestion = async () => {
+    if (!newQuestion.module_id || !newQuestion.question || newQuestion.options.some(opt => !opt)) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in all fields including all options",
-        variant: "destructive"
+        title: 'Validation Error',
+        description: 'Please fill in all required fields including all options',
+        variant: 'destructive'
       });
       return;
     }
 
     try {
+      // Format the options for storage
+      const formattedOptions = JSON.stringify(newQuestion.options);
+      
       const { error } = await supabase
         .from('education_quiz_clients' as any)
         .insert({
           module_id: newQuestion.module_id,
           level: newQuestion.level,
           question: newQuestion.question,
-          options: newQuestion.options,
+          options: formattedOptions,
           correct_answer: newQuestion.correct_answer,
           explanation: newQuestion.explanation
         });
@@ -150,78 +191,75 @@ const AdminEducation = () => {
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Quiz question added successfully"
+        title: 'Success',
+        description: 'Quiz question added successfully!'
       });
       
-      // Reset form and refresh questions
-      setNewQuestion({
-        module_id: 'module1',
-        level: 'basics',
-        question: '',
-        options: ['', '', '', ''],
-        correct_answer: 0,
-        explanation: ''
-      });
+      // Reset form and fetch updated questions
+      setIsAddingQuestion(false);
+      resetQuestionForm();
       fetchQuizQuestions();
     } catch (error) {
-      console.error('Error saving quiz question:', error);
+      console.error('Error adding quiz question:', error);
       toast({
-        title: "Error",
-        description: "Failed to save quiz question",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to add quiz question. Please try again.',
+        variant: 'destructive'
       });
     }
   };
-
-  // Edit a question
-  const handleEdit = (question: QuizQuestion) => {
+  
+  // Start editing a question
+  const handleEditQuestion = (question: QuizQuestion) => {
+    setEditingQuestionId(question.id || null);
     setEditingQuestion({
       ...question,
-      options: Array.isArray(question.options) ? question.options : JSON.parse(question.options as unknown as string)
+      options: [...question.options]
     });
-    setIsEditing(true);
   };
-
-  // Update edited question
-  const updateQuizQuestion = async () => {
-    if (!editingQuestion) return;
+  
+  // Update a quiz question
+  const handleUpdateQuestion = async () => {
+    if (!editingQuestionId) return;
     
     try {
+      // Format the options for storage
+      const formattedOptions = JSON.stringify(editingQuestion.options);
+      
       const { error } = await supabase
         .from('education_quiz_clients' as any)
         .update({
           module_id: editingQuestion.module_id,
           level: editingQuestion.level,
           question: editingQuestion.question,
-          options: editingQuestion.options,
+          options: formattedOptions,
           correct_answer: editingQuestion.correct_answer,
           explanation: editingQuestion.explanation
         })
-        .eq('id', editingQuestion.id);
+        .eq('id', editingQuestionId);
       
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Quiz question updated successfully"
+        title: 'Success',
+        description: 'Quiz question updated successfully!'
       });
       
-      setIsEditing(false);
-      setEditingQuestion(null);
+      // Reset editing state and fetch updated questions
+      setEditingQuestionId(null);
       fetchQuizQuestions();
     } catch (error) {
       console.error('Error updating quiz question:', error);
       toast({
-        title: "Error",
-        description: "Failed to update quiz question",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to update quiz question. Please try again.',
+        variant: 'destructive'
       });
     }
   };
-
-  // Delete a question
-  const deleteQuizQuestion = async (id: string) => {
+  
+  // Delete a quiz question
+  const handleDeleteQuestion = async (id: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
     try {
@@ -233,427 +271,339 @@ const AdminEducation = () => {
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Quiz question deleted successfully"
+        title: 'Success',
+        description: 'Quiz question deleted successfully!'
       });
       
+      // Fetch updated questions
       fetchQuizQuestions();
     } catch (error) {
       console.error('Error deleting quiz question:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete quiz question",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to delete quiz question. Please try again.',
+        variant: 'destructive'
       });
     }
   };
-
-  // Handle input changes for editing
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editingQuestion) return;
-    
-    const { name, value } = e.target;
-    setEditingQuestion(prev => ({
-      ...prev!,
-      [name]: value
-    }));
+  
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
   };
-
-  // Handle option changes for editing
-  const handleEditOptionChange = (index: number, value: string) => {
-    if (!editingQuestion) return;
-    
-    const updatedOptions = [...editingQuestion.options];
-    updatedOptions[index] = value;
-    setEditingQuestion(prev => ({
-      ...prev!,
-      options: updatedOptions
-    }));
+  
+  // Cancel adding
+  const handleCancelAdd = () => {
+    setIsAddingQuestion(false);
+    resetQuestionForm();
   };
-
-  // Handle select changes for editing
-  const handleEditSelectChange = (field: string, value: string) => {
-    if (!editingQuestion) return;
-    
-    setEditingQuestion(prev => ({
-      ...prev!,
-      [field]: field === 'correct_answer' ? parseInt(value) : value
-    }));
-  };
-
+  
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-900 text-white">
-        <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
-          <div className="flex items-center justify-between px-4 h-16">
-            <h1 className="text-lg font-semibold">Education Management</h1>
+    <ProtectedRoute allowedRoles={['admin']}>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 className="text-xl font-bold">Education Admin Panel</h1>
+            <div>
+              <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Logged in as:</span>
+              <span className="text-sm font-medium">{user?.email}</span>
+            </div>
           </div>
         </header>
 
-        <main className="pt-20 px-4 pb-24">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">Education Content Management</h2>
-            <p className="text-gray-400">
-              Manage education modules, content, quiz questions, and badges. All changes will immediately reflect in the user-facing education section.
-            </p>
-          </div>
-          
-          <Alert className="mb-6 bg-blue-900/20 border-blue-800 text-blue-100">
-            <Database className="h-4 w-4 text-blue-500" />
-            <AlertTitle>New Quiz Questions Table</AlertTitle>
-            <AlertDescription>
-              The education_quiz_clients table has been created to store quiz questions. You can now manage quiz questions 
-              directly in the database. The education section will fetch questions from this table.
-            </AlertDescription>
-          </Alert>
-          
-          <Tabs defaultValue="modules" className="space-y-6">
-            <TabsList className="grid grid-cols-3 w-full max-w-md">
-              <TabsTrigger value="modules" className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
-                <span>Modules & Content</span>
-              </TabsTrigger>
-              <TabsTrigger value="badges" className="flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                <span>Badges</span>
-              </TabsTrigger>
-              <TabsTrigger value="questions" className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
-                <span>Quiz Questions</span>
-              </TabsTrigger>
+        <main className="container mx-auto px-4 py-8 pt-24 pb-16">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="w-full">
+              <TabsTrigger value="quiz-questions" className="flex-1">Quiz Questions</TabsTrigger>
+              <TabsTrigger value="modules" className="flex-1">Modules</TabsTrigger>
+              <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
+              <TabsTrigger value="badges" className="flex-1">Badges</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="modules">
-              <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-                <div className="text-center mb-6">
-                  <Database className="h-12 w-12 text-red-500 mx-auto mb-3" />
-                  <h3 className="text-xl font-semibold mb-2">Database Tables Removed</h3>
-                  <p className="text-gray-300 max-w-md mx-auto">
-                    Education module management is unavailable because required database tables have been removed.
-                    The application now uses local static data.
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <h4 className="font-medium mb-2 flex items-center"><ArrowUpDown className="h-4 w-4 mr-2 text-amber-500" /> Missing Tables</h4>
-                    <ul className="text-sm text-gray-400 space-y-1">
-                      <li>• education_modules</li>
-                      <li>• education_quiz_questions</li>
-                      <li>• education_quiz_answers</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <h4 className="font-medium mb-2 flex items-center"><InfoIcon className="h-4 w-4 mr-2 text-cyan" /> Alternative</h4>
-                    <p className="text-sm text-gray-400">
-                      All education content is now served from local static data in src/data/educationData.ts
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="badges">
-              <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700 text-center">
-                <p className="text-gray-300 mb-4">Badge management functionality is unavailable because required database tables have been removed.</p>
-                <Button variant="outline" className="border-cyan text-cyan hover:bg-cyan/10" disabled>
-                  View Remaining Database Tables
+            {/* Quiz Questions Tab */}
+            <TabsContent value="quiz-questions" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Quiz Questions</h2>
+                <Button 
+                  onClick={() => {
+                    setIsAddingQuestion(true);
+                    resetQuestionForm();
+                  }}
+                  disabled={isAddingQuestion}
+                >
+                  Add New Question
                 </Button>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="questions">
-              <div className="space-y-6">
-                {isEditing ? (
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle>Edit Quiz Question</CardTitle>
-                      <CardDescription className="text-gray-400">Update the question details</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-module-id">Module ID</Label>
-                          <Select 
-                            value={editingQuestion?.module_id} 
-                            onValueChange={(value) => handleEditSelectChange('module_id', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Module" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 15 }, (_, i) => (
-                                <SelectItem key={i} value={`module${i + 1}`}>Module {i + 1}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-level">Level</Label>
-                          <Select 
-                            value={editingQuestion?.level} 
-                            onValueChange={(value) => handleEditSelectChange('level', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="basics">Basics</SelectItem>
-                              <SelectItem value="intermediate">Intermediate</SelectItem>
-                              <SelectItem value="pro">Pro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-question">Question</Label>
-                        <Textarea 
-                          id="edit-question" 
-                          name="question" 
-                          value={editingQuestion?.question || ''} 
-                          onChange={handleEditInputChange} 
-                          rows={3}
-                          className="bg-gray-700 border-gray-600"
+              
+              {isAddingQuestion && (
+                <Card className="mb-6 border-2 border-blue-500">
+                  <CardHeader>
+                    <CardTitle>Add New Quiz Question</CardTitle>
+                    <CardDescription>Create a new quiz question for a module</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Module ID</label>
+                        <Input 
+                          placeholder="e.g., module1"
+                          value={newQuestion.module_id}
+                          onChange={e => setNewQuestion({...newQuestion, module_id: e.target.value})}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label>Options (select correct one)</Label>
-                        {editingQuestion?.options.map((option, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={option}
-                              onChange={(e) => handleEditOptionChange(index, e.target.value)}
-                              className="bg-gray-700 border-gray-600 flex-1"
-                              placeholder={`Option ${index + 1}`}
-                            />
-                            <Button
-                              type="button"
-                              variant={editingQuestion.correct_answer === index ? "default" : "outline"}
-                              className={editingQuestion.correct_answer === index ? "bg-green-600 hover:bg-green-700" : ""}
-                              onClick={() => handleEditSelectChange('correct_answer', index.toString())}
-                              size="sm"
-                            >
-                              {editingQuestion.correct_answer === index ? <Check className="h-4 w-4" /> : "Set Correct"}
-                            </Button>
-                          </div>
-                        ))}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Level</label>
+                        <Select
+                          value={newQuestion.level}
+                          onValueChange={value => setNewQuestion({...newQuestion, level: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="basics">Basics</SelectItem>
+                            <SelectItem value="intermediate">Intermediate</SelectItem>
+                            <SelectItem value="pro">Pro</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Question</label>
+                      <Textarea 
+                        placeholder="Enter the question here"
+                        value={newQuestion.question}
+                        onChange={e => setNewQuestion({...newQuestion, question: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Options</label>
                       <div className="space-y-2">
-                        <Label htmlFor="edit-explanation">Explanation (Optional)</Label>
-                        <Textarea 
-                          id="edit-explanation" 
-                          name="explanation" 
-                          value={editingQuestion?.explanation || ''} 
-                          onChange={handleEditInputChange} 
-                          rows={2}
-                          className="bg-gray-700 border-gray-600"
-                          placeholder="Explain why the correct answer is right (optional)"
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <Button 
-                        variant="outline" 
-                        className="border-gray-600"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditingQuestion(null);
-                        }}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={updateQuizQuestion}
-                        className="bg-cyan text-gray-900 hover:bg-cyan/90"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Update Question
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ) : (
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle>Add New Quiz Question</CardTitle>
-                      <CardDescription className="text-gray-400">Create a new quiz question for modules</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="module-id">Module ID</Label>
-                          <Select 
-                            value={newQuestion.module_id} 
-                            onValueChange={(value) => handleSelectChange('module_id', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Module" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 15 }, (_, i) => (
-                                <SelectItem key={i} value={`module${i + 1}`}>Module {i + 1}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="level">Level</Label>
-                          <Select 
-                            value={newQuestion.level} 
-                            onValueChange={(value) => handleSelectChange('level', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="basics">Basics</SelectItem>
-                              <SelectItem value="intermediate">Intermediate</SelectItem>
-                              <SelectItem value="pro">Pro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="question">Question</Label>
-                        <Textarea 
-                          id="question" 
-                          name="question" 
-                          value={newQuestion.question} 
-                          onChange={handleInputChange} 
-                          rows={3}
-                          className="bg-gray-700 border-gray-600"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Options (select correct one)</Label>
                         {newQuestion.options.map((option, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <Input
-                              value={option}
-                              onChange={(e) => handleOptionChange(index, e.target.value)}
-                              className="bg-gray-700 border-gray-600 flex-1"
-                              placeholder={`Option ${index + 1}`}
-                            />
-                            <Button
-                              type="button"
-                              variant={newQuestion.correct_answer === index ? "default" : "outline"}
-                              className={newQuestion.correct_answer === index ? "bg-green-600 hover:bg-green-700" : ""}
-                              onClick={() => handleSelectChange('correct_answer', index.toString())}
-                              size="sm"
-                            >
-                              {newQuestion.correct_answer === index ? <Check className="h-4 w-4" /> : "Set Correct"}
-                            </Button>
+                            <div className="flex-grow">
+                              <Input 
+                                placeholder={`Option ${index + 1}`}
+                                value={option}
+                                onChange={e => handleOptionChange(index, e.target.value, true)}
+                              />
+                            </div>
+                            <div className="flex items-center">
+                              <input 
+                                type="radio" 
+                                name="correct-option-new" 
+                                checked={newQuestion.correct_answer === index}
+                                onChange={() => setNewQuestion({...newQuestion, correct_answer: index})}
+                                className="mr-1" 
+                              />
+                              <label className="text-sm">Correct</label>
+                            </div>
                           </div>
                         ))}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="explanation">Explanation (Optional)</Label>
-                        <Textarea 
-                          id="explanation" 
-                          name="explanation" 
-                          value={newQuestion.explanation || ''} 
-                          onChange={handleInputChange} 
-                          rows={2}
-                          className="bg-gray-700 border-gray-600"
-                          placeholder="Explain why the correct answer is right (optional)"
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        onClick={saveQuizQuestion}
-                        className="bg-cyan text-gray-900 hover:bg-cyan/90 w-full"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Question
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                )}
-                
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Explanation (Optional)</label>
+                      <Textarea 
+                        placeholder="Provide explanation for the correct answer"
+                        value={newQuestion.explanation || ''}
+                        onChange={e => setNewQuestion({...newQuestion, explanation: e.target.value})}
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleCancelAdd}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAddQuestion}>
+                      Save Question
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
+              
+              {loading ? (
+                <div className="flex justify-center p-8">
+                  <p>Loading quiz questions...</p>
+                </div>
+              ) : (
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold">Existing Quiz Questions</h3>
-                  
-                  {loading ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">Loading questions...</p>
-                    </div>
-                  ) : quizQuestions.length === 0 ? (
-                    <div className="text-center py-8 bg-gray-800/50 rounded-lg border border-gray-700">
-                      <p className="text-gray-400">No quiz questions found. Add some using the form above!</p>
-                    </div>
+                  {quizQuestions.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <p>No quiz questions found. Create your first question!</p>
+                      </CardContent>
+                    </Card>
                   ) : (
-                    <div className="grid gap-4">
-                      {quizQuestions.map((question) => (
-                        <Card key={question.id} className="bg-gray-800 border-gray-700">
-                          <CardHeader className="pb-2">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge className="bg-blue-600">{question.level}</Badge>
-                                  <Badge className="bg-gray-600">Module {question.module_id.replace('module', '')}</Badge>
-                                </div>
-                                <CardTitle className="text-md">{question.question}</CardTitle>
+                    quizQuestions.map(question => (
+                      <Card key={question.id} className={editingQuestionId === question.id ? 'border-2 border-blue-500' : ''}>
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>
+                                {editingQuestionId === question.id ? (
+                                  <Input 
+                                    value={editingQuestion.question}
+                                    onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})}
+                                    className="text-lg font-bold"
+                                  />
+                                ) : (
+                                  question.question
+                                )}
+                              </CardTitle>
+                              <CardDescription className="flex mt-1 gap-2">
+                                <Badge variant="outline">{question.module_id}</Badge>
+                                <Badge variant="secondary">{question.level}</Badge>
+                              </CardDescription>
+                            </div>
+                            
+                            {editingQuestionId === question.id ? (
+                              <div className="flex space-x-2">
+                                <Button size="sm" variant="ghost" onClick={handleCancelEdit}>
+                                  <X className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="default" onClick={handleUpdateQuestion}>
+                                  <Save className="h-4 w-4" />
+                                </Button>
                               </div>
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleEdit(question)}
-                                >
+                            ) : (
+                              <div className="flex space-x-2">
+                                <Button size="sm" variant="ghost" onClick={() => handleEditQuestion(question)}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="h-8 w-8 p-0 border-red-800 text-red-500 hover:bg-red-900/20"
-                                  onClick={() => question.id && deleteQuizQuestion(question.id)}
-                                >
+                                <Button size="sm" variant="destructive" onClick={() => handleDeleteQuestion(question.id || '')}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              {Array.isArray(question.options) ? (
-                                question.options.map((option, index) => (
-                                  <div 
-                                    key={index} 
-                                    className={`p-2 rounded ${index === question.correct_answer ? 'bg-green-900/30 border border-green-800' : 'bg-gray-700'}`}
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          {editingQuestionId === question.id ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Module ID</label>
+                                  <Input 
+                                    value={editingQuestion.module_id}
+                                    onChange={e => setEditingQuestion({...editingQuestion, module_id: e.target.value})}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Level</label>
+                                  <Select
+                                    value={editingQuestion.level}
+                                    onValueChange={value => setEditingQuestion({...editingQuestion, level: value})}
                                   >
-                                    {index === question.correct_answer && (
-                                      <Check className="h-4 w-4 text-green-500 inline mr-2" />
-                                    )}
-                                    {option}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-red-400">Options format error</p>
-                              )}
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="basics">Basics</SelectItem>
+                                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                                      <SelectItem value="pro">Pro</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Options</label>
+                                <div className="space-y-2">
+                                  {editingQuestion.options.map((option, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                      <div className="flex-grow">
+                                        <Input 
+                                          value={option}
+                                          onChange={e => handleOptionChange(index, e.target.value, false)}
+                                        />
+                                      </div>
+                                      <div className="flex items-center">
+                                        <input 
+                                          type="radio" 
+                                          name="correct-option-edit" 
+                                          checked={editingQuestion.correct_answer === index}
+                                          onChange={() => setEditingQuestion({...editingQuestion, correct_answer: index})}
+                                          className="mr-1" 
+                                        />
+                                        <label className="text-sm">Correct</label>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Explanation</label>
+                                <Textarea 
+                                  value={editingQuestion.explanation || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <h3 className="text-sm font-medium mb-2">Options:</h3>
+                              <ul className="space-y-1">
+                                {question.options.map((option, index) => (
+                                  <li key={index} className="flex items-center">
+                                    <span className={`w-6 h-6 flex items-center justify-center rounded-full mr-2 text-xs ${
+                                      index === question.correct_answer ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700'
+                                    }`}>
+                                      {index === question.correct_answer && <Check className="h-3.5 w-3.5" />}
+                                    </span>
+                                    <span className={index === question.correct_answer ? 'font-semibold' : ''}>
+                                      {option}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
                               
                               {question.explanation && (
-                                <div className="mt-3 p-3 bg-blue-900/20 border border-blue-800 rounded">
-                                  <p className="text-sm text-blue-100">
+                                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                                  <p className="text-sm">
                                     <span className="font-semibold">Explanation:</span> {question.explanation}
                                   </p>
                                 </div>
                               )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))
                   )}
                 </div>
+              )}
+            </TabsContent>
+            
+            {/* Placeholder for Modules Tab */}
+            <TabsContent value="modules">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Modules Management</h2>
               </div>
+              <p>Coming soon. Module management functionality will be implemented here.</p>
+            </TabsContent>
+            
+            {/* Placeholder for Content Tab */}
+            <TabsContent value="content">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Content Management</h2>
+              </div>
+              <p>Coming soon. Content management functionality will be implemented here.</p>
+            </TabsContent>
+            
+            {/* Placeholder for Badges Tab */}
+            <TabsContent value="badges">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Badges Management</h2>
+              </div>
+              <p>Coming soon. Badge management functionality will be implemented here.</p>
             </TabsContent>
           </Tabs>
         </main>
-        
-        <BottomNav />
       </div>
     </ProtectedRoute>
   );
