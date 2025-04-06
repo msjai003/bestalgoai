@@ -288,11 +288,11 @@ export const useEducation = () => {
     try {
       console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
       
-      const { data, error } = await supabase
-        .from('education_quiz_clients')
-        .select('id, question, options, correct_answer, explanation')
-        .eq('module_id', moduleId)
-        .eq('level', level);
+      const { data, error } = await supabase.rpc('execute_sql', {
+        query: `SELECT id, question, options, correct_answer, explanation 
+                FROM education_quiz_clients 
+                WHERE module_id = '${moduleId}' AND level = '${level}'`
+      });
       
       if (error) {
         console.error('Error fetching quiz questions:', error);

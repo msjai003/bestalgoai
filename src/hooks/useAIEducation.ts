@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { educationData } from '@/data/educationData';
 import { Level, QuizQuestion } from '@/hooks/useEducation';
@@ -7,11 +6,11 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Flashcard {
-  front: string;
-  back: string;
   title?: string;
   question?: string;
   answer?: string;
+  front: string;
+  back: string;
 }
 
 interface AIModule {
@@ -42,7 +41,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
   const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useAuth();
 
-  // Fetch user profile data to personalize content recommendations
   const fetchUserProfile = async (userId: string) => {
     if (!userId) return null;
     
@@ -65,7 +63,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
     }
   };
 
-  // Analyze user quiz results to identify strengths and weaknesses
   const analyzeUserPerformance = async (userId: string) => {
     if (!userId) return null;
     
@@ -79,9 +76,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
         console.error("Error fetching quiz results:", error);
         return null;
       }
-      
-      // Basic performance analysis
-      if (!data || data.length === 0) return { needsReview: [], strengths: [] };
       
       const moduleScores: Record<string, { attempts: number, avgScore: number }> = {};
       
@@ -117,7 +111,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
       if (useRealData) {
         console.log("Fetching AI-enhanced modules for level:", level);
         
-        // Get user profile and performance data for personalization
         let profile = null;
         let performance = null;
         
@@ -126,7 +119,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
           performance = await analyzeUserPerformance(userId);
         }
         
-        // First check if we have cached modules in Supabase
         if (!forceRefresh) {
           const { data: cachedModules, error: fetchError } = await supabase
             .from('ai_modules')
@@ -143,16 +135,12 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
           }
         }
         
-        // If no cache or force refresh, generate new modules
-        // Simulate AI-enhanced modules based on user level and performance
         const baseModules = educationData[level];
         
         const enhancedModules: AIModule[] = baseModules.map(module => {
-          // Check if this module needs review based on performance
           const needsReview = performance?.needsReview.includes(module.id) || false;
           const isStrength = performance?.strengths.includes(module.id) || false;
           
-          // Determine difficulty adaptive to user level
           let difficultyLabel = '';
           let difficultyClass = '';
           
@@ -167,7 +155,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
             difficultyClass = 'text-cyan';
           }
           
-          // Create personalized title and description
           const personalizedTitle = needsReview 
             ? `Review: ${module.title}` 
             : `AI-Enhanced: ${module.title}`;
@@ -180,7 +167,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
             ? Math.round(module.estimatedTime * 0.7) // Review is quicker
             : module.estimatedTime;
             
-          // Enhanced flashcards with more detailed content
           const enhancedFlashcards = module.flashcards.map(card => ({
             front: card.front,
             back: card.back,
@@ -189,7 +175,6 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
             answer: card.answer
           }));
           
-          // Enhanced quiz if available
           const enhancedQuiz = module.quiz ? {
             ...module.quiz,
             questions: module.quiz.questions.map(q => ({
@@ -216,14 +201,12 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
           };
         });
         
-        // Sort modules: needs review first, then recommended, then mastered
         const sortedModules = [
           ...enhancedModules.filter(m => m.needsReview),
           ...enhancedModules.filter(m => m.isRecommended),
           ...enhancedModules.filter(m => m.isStrength)
         ];
         
-        // Save the newly generated modules to Supabase
         if (useRealData) {
           const { error: insertError } = await supabase
             .from('ai_modules')
@@ -239,11 +222,9 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
           }
         }
         
-        // Use a more realistic delay to avoid race conditions
         await new Promise(resolve => setTimeout(resolve, 800));
         setModules(sortedModules);
       } else {
-        // If not using real data, return empty array to fallback to standard modules
         setModules([]);
       }
     } catch (err) {
