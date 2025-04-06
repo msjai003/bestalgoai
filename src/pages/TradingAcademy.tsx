@@ -14,7 +14,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { AcademyHeader } from '@/components/education/AcademyHeader';
 import { AcademyLevelTabs } from '@/components/education/AcademyLevelTabs';
-import { CurrentStudyMaterial } from '@/components/education/CurrentStudyMaterial';
 import { useQuiz } from '@/hooks/useQuiz';
 import { useBookmarks } from '@/hooks/useBookmarks';
 
@@ -105,14 +104,6 @@ const TradingAcademy = () => {
             onToggleBookmark={toggleBookmark}
             onLaunchQuiz={launchQuiz}
           />
-          
-          {user && (
-            <CurrentStudyMaterial
-              currentModule={currentModule}
-              onLaunchQuiz={launchQuiz}
-              isLoadingQuiz={isLoadingQuiz}
-            />
-          )}
           
           <Leaderboard showSignupPrompt={!user} isDarkMode={isDarkMode} />
         </main>

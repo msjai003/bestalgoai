@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase/client';
 import {
   fetchUserEducationData,
   markModuleCompleted,
@@ -22,6 +24,14 @@ export type Badge = {
   image: string;
   level: Level;
   unlocked: boolean;
+};
+
+export type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
 };
 
 type ModuleViews = {
