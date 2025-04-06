@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -90,9 +89,10 @@ const Learn2Earn = () => {
   useEffect(() => {
     if (autoLaunchQuiz) {
       setActiveQuizModule(autoLaunchQuiz);
+      startQuiz();
       setQuizModalOpen(true);
     }
-  }, [autoLaunchQuiz]);
+  }, [autoLaunchQuiz, startQuiz]);
   
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white">
@@ -216,7 +216,7 @@ const Learn2Earn = () => {
                     currentModule={currentModule} 
                     completedModules={completedModules[currentLevel]}
                     onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                    modules={aiModules.length > 0 ? aiModules : undefined}
                   />
                 </TabsContent>
                 
@@ -244,7 +244,7 @@ const Learn2Earn = () => {
                     currentModule={currentModule} 
                     completedModules={completedModules[currentLevel]}
                     onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                    modules={aiModules.length > 0 ? aiModules : undefined}
                   />
                 </TabsContent>
                 
@@ -272,7 +272,7 @@ const Learn2Earn = () => {
                     currentModule={currentModule} 
                     completedModules={completedModules[currentLevel]}
                     onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                    modules={aiModules.length > 0 ? aiModules : undefined}
                   />
                 </TabsContent>
               </>

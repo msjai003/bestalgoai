@@ -61,12 +61,25 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
   };
   
   const handleQuizClick = (moduleId: string) => {
+    if (loadingQuizModule) return; // Prevent multiple clicks during loading
+    
     setLoadingQuizModule(moduleId);
     
     // Call onLaunchQuiz with a slight delay to show loading state
     setTimeout(() => {
-      onLaunchQuiz(moduleId);
-      setLoadingQuizModule(null);
+      try {
+        onLaunchQuiz(moduleId);
+      } catch (error) {
+        console.error("Error launching quiz:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load quiz. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        // Always clear loading state, even if there was an error
+        setLoadingQuizModule(null);
+      }
     }, 300);
   };
   
@@ -179,7 +192,8 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
                   className={cn(
                     "w-full",
                     isLocked || (!isCompleted && !isActive) ? 'opacity-50 cursor-not-allowed' : '',
-                    quizResult?.passed ? 'border-green-500 text-green-500 hover:bg-green-500/10' : ''
+                    quizResult?.passed ? 'border-green-500 text-green-500 hover:bg-green-500/10' : '',
+                    isLoadingQuiz ? 'cursor-not-allowed opacity-80' : ''
                   )}
                   onClick={() => !isLocked && !isLoadingQuiz && handleQuizClick(module.id)}
                   disabled={isLocked || (!isCompleted && !isActive) || isLoadingQuiz}

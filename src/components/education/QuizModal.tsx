@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
   useEffect(() => {
     const loadQuizData = async () => {
@@ -51,15 +51,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         setLoadError(null);
         
         try {
-          // First, try to fetch data from Supabase
+          console.log(`Attempt ${loadAttempts + 1} to load quiz data for module ${moduleId}`);
           const supabaseQuizData = await fetchQuizData(moduleId);
           
           if (supabaseQuizData && supabaseQuizData.questions && supabaseQuizData.questions.length > 0) {
-            // If we have questions from Supabase, use them
+            console.log('Found', supabaseQuizData.questions.length, 'quiz questions from database');
             console.log('Using quiz data from Supabase:', supabaseQuizData.questions);
             setQuizQuestions(supabaseQuizData.questions);
           } else if (quiz && quiz.questions && quiz.questions.length > 0) {
-            // Fall back to local data if Supabase returned no questions
             const questionsWithIds = quiz.questions.map(q => {
               if (!q.id) {
                 return { ...q, id: uuidv4() };
@@ -74,7 +73,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({
         } catch (error) {
           console.error('Error loading quiz data:', error);
           setLoadError('Failed to load quiz data. Please try again later.');
-          toast.error('Failed to load quiz data.');
+          
+          if (loadAttempts < 2) {
+            setTimeout(() => {
+              setLoadAttempts(prevAttempts => prevAttempts + 1);
+            }, 1000);
+          } else {
+            toast.error('Failed to load quiz data after multiple attempts.');
+          }
         } finally {
           setLoading(false);
         }
@@ -82,7 +88,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     };
     
     loadQuizData();
-  }, [moduleId, open, quiz, currentLevel, fetchQuizData]);
+  }, [moduleId, open, quiz, currentLevel, fetchQuizData, loadAttempts]);
   
   useEffect(() => {
     if (open) {
@@ -92,6 +98,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
       setCorrectAnswers(0);
       setQuizComplete(false);
       setQuizStartTime(Date.now());
+      setLoadAttempts(0);
       
       startQuiz();
     } else if (autoLaunch) {
