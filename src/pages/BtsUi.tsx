@@ -15,15 +15,21 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-// Define a type for trade log data
+// Define a type for the trade log data that matches the actual data structure in pnl_logs
 interface TradeLog {
   id: string;
-  timestamp: string;
-  email: string;
+  created_at: string;
+  client_name: string;
   symbol: string;
   side: string;
   pnl: number;
-  // Add any other fields that might be in your trade_logs table
+  strategy_id?: number;
+  price?: number;
+  alert_time?: string;
+  date?: string;
+  client_id?: number;
+  status?: string;
+  qty?: number;
 }
 
 export default function BtsUi() {
@@ -61,9 +67,9 @@ export default function BtsUi() {
     setError(null);
     
     try {
-      // Use a more type-safe approach with explicit table typing
+      // Use the correct table name that exists in your Supabase schema
       let query = supabase
-        .from('pnl_logs') // Use a table that exists in your schema
+        .from('pnl_logs')
         .select('*');
 
       if (session?.user?.email) {
@@ -74,13 +80,14 @@ export default function BtsUi() {
       if (startDate) query = query.gte('created_at', startDate);
       if (endDate) query = query.lte('created_at', endDate);
 
-      const { data, error } = await query;
+      const { data, error: queryError } = await query;
       
-      if (error) {
-        console.error('Error fetching data:', error);
+      if (queryError) {
+        console.error('Error fetching data:', queryError);
         setError('Failed to fetch trade data. Please try again later.');
       } else {
-        setUserData(data || []);
+        // Cast the data to match our TradeLog interface
+        setUserData(data as TradeLog[] || []);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
