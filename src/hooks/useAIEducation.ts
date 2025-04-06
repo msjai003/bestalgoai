@@ -4,22 +4,30 @@ import { educationData } from '@/data/educationData';
 import { Level, QuizQuestion } from '@/hooks/useEducation';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Flashcard {
+  front: string;
+  back: string;
+}
 
 interface AIModule {
   id: string;
   title: string;
   description: string;
   estimatedTime: number;
-  flashcards: Array<{
-    front: string;
-    back: string;
-  }>;
+  flashcards: Flashcard[];
   quiz?: {
     questions: QuizQuestion[];
   };
   content?: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
   recommendedNext?: string[];
+  difficultyLabel?: string;
+  difficultyClass?: string;
+  isRecommended?: boolean;
+  needsReview?: boolean;
+  isStrength?: boolean;
 }
 
 // Return the same shape as educationData modules
@@ -29,6 +37,7 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const { user } = useAuth();
 
   // Fetch user profile data to personalize content recommendations
   const fetchUserProfile = async (userId: string) => {
@@ -39,7 +48,7 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
         
       if (error) {
         console.error("Error fetching user profile:", error);
@@ -135,7 +144,7 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
         // Simulate AI-enhanced modules based on user level and performance
         const baseModules = educationData[level];
         
-        const enhancedModules = baseModules.map(module => {
+        const enhancedModules: AIModule[] = baseModules.map(module => {
           // Check if this module needs review based on performance
           const needsReview = performance?.needsReview.includes(module.id) || false;
           const isStrength = performance?.strengths.includes(module.id) || false;
@@ -243,16 +252,19 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
   };
   
   useEffect(() => {
-    const { user } = require('@/contexts/AuthContext');
-    fetchAIModules(currentLevel, false, user?.id);
-  }, [currentLevel, useRealData]);
+    if (user) {
+      fetchAIModules(currentLevel, false, user.id);
+    } else {
+      console.log("No user logged in, using local storage data");
+      fetchAIModules(currentLevel, false);
+    }
+  }, [currentLevel, useRealData, user]);
 
   const regenerateModules = async () => {
     if (regenerating) return;
     
     setRegenerating(true);
     try {
-      const { user } = require('@/contexts/AuthContext');
       await fetchAIModules(currentLevel, true, user?.id);
       toast({
         title: "Modules Regenerated",
