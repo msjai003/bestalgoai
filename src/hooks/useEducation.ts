@@ -288,7 +288,6 @@ export const useEducation = () => {
     try {
       console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
       
-      // Using a more stable selector pattern to prevent unnecessary refetches
       const { data, error } = await supabase
         .from('education_quiz_clients')
         .select('id, question, options, correct_answer, explanation')
@@ -305,7 +304,6 @@ export const useEducation = () => {
         return { questions: [] };
       }
       
-      // Transform the database format to match the expected QuizQuestion format
       const questions = data.map(item => ({
         id: item.id,
         question: item.question,
