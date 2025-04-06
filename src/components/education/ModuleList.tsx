@@ -15,12 +15,13 @@ interface ModuleListProps {
   currentModule: string;
   completedModules: number;
   onLaunchQuiz: (moduleId: string) => void;
+  modules?: any[]; // Optional modules to override the default ones
 }
 
-export const ModuleList = ({ level, currentModule, completedModules, onLaunchQuiz }: ModuleListProps) => {
+export const ModuleList = ({ level, currentModule, completedModules, onLaunchQuiz, modules }: ModuleListProps) => {
   const { selectModule, getModuleStatus, moduleProgress, quizResults } = useEducation();
   const { toast } = useToast();
-  const modules = educationData[level];
+  const moduleSource = modules || educationData[level];
   
   const handleShare = (moduleTitle: string) => {
     const shareText = `I'm learning about "${moduleTitle}" in the Trading Academy! Join me to master trading from basics to pro.`;
@@ -60,7 +61,7 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {modules.map((module, index) => {
+      {moduleSource.map((module, index) => {
         const { isCompleted, isLocked, isActive } = getModuleStatus(module.id, index);
         const quizResult = quizResults[module.id];
         

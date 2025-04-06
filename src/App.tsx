@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,6 +44,7 @@ import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 import ApiKeys from "./pages/ApiKeys";
 import BtsUi from "./pages/BtsUi";
+import Learn2Earn from "./pages/Learn2Earn";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +66,7 @@ function AppRoutes() {
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
       <Route path="/education" element={<Education />} />
+      <Route path="/learn2earn" element={<Learn2Earn />} />
       <Route path="/bts-ui" element={<BtsUi />} />
       
       {/* Protected routes */}

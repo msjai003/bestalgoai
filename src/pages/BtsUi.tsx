@@ -15,12 +15,25 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
+// Define a type for trade log data
+interface TradeLog {
+  id: string;
+  timestamp: string;
+  email: string;
+  symbol: string;
+  side: string;
+  pnl: number;
+  // Add any other fields that might be in your trade_logs table
+}
+
 export default function BtsUi() {
-  const [session, setSession] = useState(null);
-  const [userData, setUserData] = useState([]);
+  const [session, setSession] = useState<any>(null);
+  const [userData, setUserData] = useState<TradeLog[]>([]);
   const [strategyFilter, setStrategyFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -44,26 +57,47 @@ export default function BtsUi() {
   }, [session, strategyFilter, startDate, endDate]);
 
   const fetchTrades = async () => {
-    let query = supabase
-      .from('trade_logs')
-      .select('*')
-      .eq('email', session?.user?.email);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Use a more type-safe approach with explicit table typing
+      let query = supabase
+        .from('pnl_logs') // Use a table that exists in your schema
+        .select('*');
 
-    if (strategyFilter) query = query.eq('strategy', strategyFilter);
-    if (startDate) query = query.gte('timestamp', startDate);
-    if (endDate) query = query.lte('timestamp', endDate);
+      if (session?.user?.email) {
+        query = query.eq('client_name', session.user.email);
+      }
+      
+      if (strategyFilter) query = query.eq('strategy_id', strategyFilter);
+      if (startDate) query = query.gte('created_at', startDate);
+      if (endDate) query = query.lte('created_at', endDate);
 
-    const { data, error } = await query;
-    if (error) console.error(error);
-    else setUserData(data || []);
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch trade data. Please try again later.');
+      } else {
+        setUserData(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Transform the data for the equity chart
   const equityData = userData.map((row, idx) => ({
-    time: format(new Date(row.timestamp), 'HH:mm'),
-    pnl: row.pnl,
-    equity: userData.slice(0, idx + 1).reduce((acc, cur, i) => acc + Number(userData[i].pnl), 0),
+    time: row.created_at ? format(new Date(row.created_at), 'HH:mm') : `Trade ${idx + 1}`,
+    pnl: Number(row.pnl) || 0,
+    equity: userData.slice(0, idx + 1).reduce((acc, cur) => acc + (Number(cur.pnl) || 0), 0),
   }));
 
+  // Calculate drawdown data
   const drawdownData = equityData.map((row, idx) => {
     const peak = Math.max(...equityData.slice(0, idx + 1).map(d => d.equity));
     return {
@@ -78,7 +112,7 @@ export default function BtsUi() {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <Input 
-          placeholder="Strategy Name" 
+          placeholder="Strategy ID" 
           value={strategyFilter} 
           onChange={(e) => setStrategyFilter(e.target.value)} 
           className="bg-charcoalSecondary border-gray-700"
@@ -95,10 +129,25 @@ export default function BtsUi() {
           onChange={(e) => setEndDate(e.target.value)} 
           className="bg-charcoalSecondary border-gray-700"
         />
-        <Button onClick={fetchTrades} variant="cyan">Apply Filters</Button>
+        <Button onClick={fetchTrades} variant="default" className="bg-cyan hover:bg-cyan/90">Apply Filters</Button>
       </div>
 
-      {session ? (
+      {error && (
+        <Card className="bg-charcoalSecondary border border-red-500/30 mb-6">
+          <CardContent className="pt-6">
+            <p className="text-red-400">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading ? (
+        <Card className="bg-charcoalSecondary border border-gray-700 mb-6">
+          <CardContent className="flex justify-center items-center p-12">
+            <div className="animate-spin h-8 w-8 border-4 border-cyan border-t-transparent rounded-full"></div>
+            <span className="ml-3 text-gray-400">Loading data...</span>
+          </CardContent>
+        </Card>
+      ) : session ? (
         <div className="grid gap-6">
           <Card className="bg-charcoalSecondary border border-gray-700">
             <CardContent className="pt-6">
@@ -189,11 +238,11 @@ export default function BtsUi() {
                     {userData.length > 0 ? (
                       userData.map((trade, idx) => (
                         <tr key={idx} className="border-t border-gray-700 hover:bg-gray-800/40">
-                          <td className="py-2 px-4">{format(new Date(trade.timestamp), 'HH:mm:ss')}</td>
-                          <td className="py-2 px-4">{trade.symbol}</td>
-                          <td className="py-2 px-4">{trade.side}</td>
+                          <td className="py-2 px-4">{trade.created_at ? format(new Date(trade.created_at), 'HH:mm:ss') : 'N/A'}</td>
+                          <td className="py-2 px-4">{trade.symbol || 'N/A'}</td>
+                          <td className="py-2 px-4">{trade.side || 'N/A'}</td>
                           <td className={`py-2 px-4 ${Number(trade.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {Number(trade.pnl).toFixed(2)}
+                            {Number(trade.pnl || 0).toFixed(2)}
                           </td>
                         </tr>
                       ))
@@ -213,7 +262,7 @@ export default function BtsUi() {
       ) : (
         <Card className="bg-charcoalSecondary border border-gray-700">
           <CardContent className="p-6">
-            <p className="text-charcoalDanger">Please log in to view your backtest results.</p>
+            <p className="text-red-400">Please log in to view your backtest results.</p>
           </CardContent>
         </Card>
       )}
