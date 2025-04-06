@@ -9,6 +9,9 @@ import { useAuth } from '@/contexts/AuthContext';
 interface Flashcard {
   front: string;
   back: string;
+  title?: string;
+  question?: string;
+  answer?: string;
 }
 
 interface AIModule {
@@ -180,9 +183,10 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
           // Enhanced flashcards with more detailed content
           const enhancedFlashcards = module.flashcards.map(card => ({
             front: card.front,
-            back: needsReview 
-              ? `${card.back} (Focus on understanding this concept)` 
-              : `${card.back} (AI-optimized explanation)`
+            back: card.back,
+            title: card.title,
+            question: card.question,
+            answer: card.answer
           }));
           
           // Enhanced quiz if available
