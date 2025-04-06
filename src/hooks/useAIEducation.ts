@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { educationData } from '@/data/educationData';
 import { Level } from '@/hooks/useEducation';
@@ -17,11 +16,21 @@ export const useAIEducation = (currentLevel: Level, useRealData: boolean = false
 
     try {
       if (useRealData) {
-        // Simulate AI-enhanced modules by adding "AI" to titles
+        // Simulate AI-enhanced modules by adding "AI" to titles and preserving all original data
         const enhancedModules = educationData[currentLevel].map(module => ({
           ...module,
           title: `AI-Enhanced: ${module.title}`,
           description: `AI personalized learning: ${module.description}`,
+          // Make sure to include the quiz data from the original module
+          quiz: module.quiz ? {
+            ...module.quiz,
+            questions: module.quiz.questions.map(q => ({
+              ...q,
+              // Add some AI context to the questions but keep the same structure
+              question: q.question,
+              explanation: q.explanation ? `${q.explanation} (AI optimized)` : 'AI optimized explanation'
+            }))
+          } : undefined
         }));
         
         // Simulate an API delay

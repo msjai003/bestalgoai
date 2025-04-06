@@ -32,6 +32,7 @@ import { useEducation, Level } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 const Learn2Earn = () => {
   const { 
@@ -52,9 +53,10 @@ const Learn2Earn = () => {
   const { user } = useAuth();
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [activeQuizModule, setActiveQuizModule] = useState<string>(currentModule);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   
   const stats = getStats();
-  const { modules: aiModules } = useAIEducation(currentLevel, user && usingRealData);
+  const { modules: aiModules, loading: aiModulesLoading } = useAIEducation(currentLevel, user && usingRealData);
   
   const handleLevelChange = (value: string) => {
     setCurrentLevel(value as Level);
@@ -64,9 +66,25 @@ const Learn2Earn = () => {
   const currentModuleData = moduleSource?.find(m => m.id === activeQuizModule);
   
   const handleLaunchQuiz = (moduleId: string) => {
-    setActiveQuizModule(moduleId);
-    startQuiz();
-    setQuizModalOpen(true);
+    try {
+      setIsLoadingQuiz(true);
+      setActiveQuizModule(moduleId);
+      startQuiz();
+      
+      // Add a small delay to ensure data is ready
+      setTimeout(() => {
+        setQuizModalOpen(true);
+        setIsLoadingQuiz(false);
+      }, 300);
+    } catch (error) {
+      console.error("Error launching quiz:", error);
+      toast({
+        title: "Error launching quiz",
+        description: "There was a problem starting the quiz. Please try again.",
+        variant: "destructive"
+      });
+      setIsLoadingQuiz(false);
+    }
   };
   
   useEffect(() => {
@@ -86,7 +104,7 @@ const Learn2Earn = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 <GraduationCap className="text-cyan mr-2 h-6 w-6" />
-                <h2 className="text-cyan text-xl font-bold">Trading Academy</h2>
+                <h2 className="text-cyan text-xl font-bold">AI Trading Academy</h2>
               </div>
               
               {!user && (
@@ -100,11 +118,11 @@ const Learn2Earn = () => {
             </div>
             
             <h1 className="text-2xl font-bold mb-3">
-              <span className="text-cyan">Master Trading</span> from Basics to Pro
+              <span className="text-cyan">Personalized Learning</span> with AI
             </h1>
             
             <p className="text-gray-300 mb-4">
-              Interactive flashcards, quizzes, and personalized learning paths
+              AI-enhanced trading education tailored to your learning style
             </p>
             
             {user ? (
@@ -167,89 +185,98 @@ const Learn2Earn = () => {
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="basics">
-              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                <div className="flex items-center mb-3">
-                  <BookOpen className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg font-bold">Trading Basics</h2>
-                </div>
-                <p className="text-gray-300 text-sm mb-4">
-                  Master the fundamentals of trading, market mechanics, and essential terminology.
-                </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                  <span>{completedModules.basics} of 15 modules completed</span>
-                </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.basics / 15) * 100}%` }}></div>
-                </div>
-                <LevelBadges level="basics" earnedBadges={earnedBadges} />
+            {aiModulesLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader className="animate-spin h-8 w-8 text-cyan mr-2" />
+                <span>Loading AI-enhanced modules...</span>
               </div>
-              
-              <ModuleList 
-                level={currentLevel} 
-                currentModule={currentModule} 
-                completedModules={completedModules[currentLevel]}
-                onLaunchQuiz={handleLaunchQuiz}
-                modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
-              />
-            </TabsContent>
-            
-            <TabsContent value="intermediate">
-              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                <div className="flex items-center mb-3">
-                  <Brain className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg font-bold">Intermediate Trading</h2>
-                </div>
-                <p className="text-gray-300 text-sm mb-4">
-                  Advanced trading strategies, technical analysis, and risk management techniques.
-                </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                  <span>{completedModules.intermediate} of 15 modules completed</span>
-                </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.intermediate / 15) * 100}%` }}></div>
-                </div>
-                <LevelBadges level="intermediate" earnedBadges={earnedBadges} />
-              </div>
-              
-              <ModuleList 
-                level={currentLevel} 
-                currentModule={currentModule} 
-                completedModules={completedModules[currentLevel]}
-                onLaunchQuiz={handleLaunchQuiz}
-                modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
-              />
-            </TabsContent>
-            
-            <TabsContent value="pro">
-              <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                <div className="flex items-center mb-3">
-                  <Infinity className="h-5 w-5 text-cyan mr-2" />
-                  <h2 className="text-lg font-bold">Professional Algo Trading</h2>
-                </div>
-                <p className="text-gray-300 text-sm mb-4">
-                  Algorithmic trading, quantitative analysis, and automated strategy development.
-                </p>
-                <div className="flex items-center text-sm text-gray-300 mb-2">
-                  <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                  <span>{completedModules.pro} of 15 modules completed</span>
-                </div>
-                <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                  <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.pro / 15) * 100}%` }}></div>
-                </div>
-                <LevelBadges level="pro" earnedBadges={earnedBadges} />
-              </div>
-              
-              <ModuleList 
-                level={currentLevel} 
-                currentModule={currentModule} 
-                completedModules={completedModules[currentLevel]}
-                onLaunchQuiz={handleLaunchQuiz}
-                modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
-              />
-            </TabsContent>
+            ) : (
+              <>
+                <TabsContent value="basics">
+                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
+                    <div className="flex items-center mb-3">
+                      <BookOpen className="h-5 w-5 text-cyan mr-2" />
+                      <h2 className="text-lg font-bold">Trading Basics</h2>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Master the fundamentals of trading, market mechanics, and essential terminology.
+                    </p>
+                    <div className="flex items-center text-sm text-gray-300 mb-2">
+                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                      <span>{completedModules.basics} of 15 modules completed</span>
+                    </div>
+                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
+                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.basics / 15) * 100}%` }}></div>
+                    </div>
+                    <LevelBadges level="basics" earnedBadges={earnedBadges} />
+                  </div>
+                  
+                  <ModuleList 
+                    level={currentLevel} 
+                    currentModule={currentModule} 
+                    completedModules={completedModules[currentLevel]}
+                    onLaunchQuiz={handleLaunchQuiz}
+                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="intermediate">
+                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
+                    <div className="flex items-center mb-3">
+                      <Brain className="h-5 w-5 text-cyan mr-2" />
+                      <h2 className="text-lg font-bold">Intermediate Trading</h2>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Advanced trading strategies, technical analysis, and risk management techniques.
+                    </p>
+                    <div className="flex items-center text-sm text-gray-300 mb-2">
+                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                      <span>{completedModules.intermediate} of 15 modules completed</span>
+                    </div>
+                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
+                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.intermediate / 15) * 100}%` }}></div>
+                    </div>
+                    <LevelBadges level="intermediate" earnedBadges={earnedBadges} />
+                  </div>
+                  
+                  <ModuleList 
+                    level={currentLevel} 
+                    currentModule={currentModule} 
+                    completedModules={completedModules[currentLevel]}
+                    onLaunchQuiz={handleLaunchQuiz}
+                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="pro">
+                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
+                    <div className="flex items-center mb-3">
+                      <Infinity className="h-5 w-5 text-cyan mr-2" />
+                      <h2 className="text-lg font-bold">Professional Algo Trading</h2>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Algorithmic trading, quantitative analysis, and automated strategy development.
+                    </p>
+                    <div className="flex items-center text-sm text-gray-300 mb-2">
+                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
+                      <span>{completedModules.pro} of 15 modules completed</span>
+                    </div>
+                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
+                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.pro / 15) * 100}%` }}></div>
+                    </div>
+                    <LevelBadges level="pro" earnedBadges={earnedBadges} />
+                  </div>
+                  
+                  <ModuleList 
+                    level={currentLevel} 
+                    currentModule={currentModule} 
+                    completedModules={completedModules[currentLevel]}
+                    onLaunchQuiz={handleLaunchQuiz}
+                    modules={aiModules.length > 0 ? aiModules : educationData[currentLevel]}
+                  />
+                </TabsContent>
+              </>
+            )}
           </Tabs>
         </section>
         
@@ -261,8 +288,14 @@ const Learn2Earn = () => {
                 className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 text-xs flex items-center" 
                 size="sm" 
                 onClick={() => handleLaunchQuiz(currentModule)}
+                disabled={isLoadingQuiz}
               >
-                <Play className="h-3.5 w-3.5 mr-1.5" /> Take Quiz
+                {isLoadingQuiz ? (
+                  <Loader className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                )}
+                {isLoadingQuiz ? 'Loading...' : 'Take Quiz'}
               </Button>
             </div>
             

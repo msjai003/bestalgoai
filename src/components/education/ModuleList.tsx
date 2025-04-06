@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, CheckCircle, Lock, Share, Clock, Award, X } from 'lucide-react';
+import { BookOpen, CheckCircle, Lock, Share, Clock, Award, X, Loader } from 'lucide-react';
 import { useEducation } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
 import { Level } from '@/hooks/useEducation';
@@ -21,6 +21,7 @@ interface ModuleListProps {
 export const ModuleList = ({ level, currentModule, completedModules, onLaunchQuiz, modules }: ModuleListProps) => {
   const { selectModule, getModuleStatus, moduleProgress, quizResults } = useEducation();
   const { toast } = useToast();
+  const [loadingQuizModule, setLoadingQuizModule] = React.useState<string | null>(null);
   const moduleSource = modules || educationData[level];
   
   const handleShare = (moduleTitle: string) => {
@@ -59,11 +60,22 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
     }
   };
   
+  const handleQuizClick = (moduleId: string) => {
+    setLoadingQuizModule(moduleId);
+    
+    // Call onLaunchQuiz with a slight delay to show loading state
+    setTimeout(() => {
+      onLaunchQuiz(moduleId);
+      setLoadingQuizModule(null);
+    }, 300);
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {moduleSource.map((module, index) => {
         const { isCompleted, isLocked, isActive } = getModuleStatus(module.id, index);
         const quizResult = quizResults[module.id];
+        const isLoadingQuiz = loadingQuizModule === module.id;
         
         return (
           <Card 
@@ -156,7 +168,7 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
                     isLocked ? 'opacity-50 cursor-not-allowed' : ''
                   )}
                   onClick={() => !isLocked && selectModule(module.id)}
-                  disabled={isLocked}
+                  disabled={isLocked || isLoadingQuiz}
                 >
                   {isActive ? 'Continue' : isLocked ? 'Locked' : isCompleted ? 'Review' : 'Start'}
                 </Button>
@@ -169,10 +181,21 @@ export const ModuleList = ({ level, currentModule, completedModules, onLaunchQui
                     isLocked || (!isCompleted && !isActive) ? 'opacity-50 cursor-not-allowed' : '',
                     quizResult?.passed ? 'border-green-500 text-green-500 hover:bg-green-500/10' : ''
                   )}
-                  onClick={() => !isLocked && onLaunchQuiz(module.id)}
-                  disabled={isLocked || (!isCompleted && !isActive)}
+                  onClick={() => !isLocked && !isLoadingQuiz && handleQuizClick(module.id)}
+                  disabled={isLocked || (!isCompleted && !isActive) || isLoadingQuiz}
                 >
-                  {quizResult?.passed ? 'Retake Quiz' : quizResult ? 'Try Again' : 'Take Quiz'}
+                  {isLoadingQuiz ? (
+                    <>
+                      <Loader className="h-3 w-3 mr-1 animate-spin" />
+                      <span>Loading...</span>
+                    </>
+                  ) : quizResult?.passed ? (
+                    'Retake Quiz'
+                  ) : quizResult ? (
+                    'Try Again'
+                  ) : (
+                    'Take Quiz'
+                  )}
                 </Button>
               </div>
             </CardContent>
