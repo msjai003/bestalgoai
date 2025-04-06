@@ -1,10 +1,9 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
@@ -44,8 +43,6 @@ import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 import ApiKeys from "./pages/ApiKeys";
 import BtsUi from "./pages/BtsUi";
-import Learn2Earn from "./pages/Learn2Earn";
-import TradingAcademy from "./pages/TradingAcademy";
 
 const queryClient = new QueryClient();
 
@@ -67,8 +64,6 @@ function AppRoutes() {
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
       <Route path="/education" element={<Education />} />
-      <Route path="/learn2earn" element={<Learn2Earn />} />
-      <Route path="/trading-academy" element={<TradingAcademy />} />
       <Route path="/bts-ui" element={<BtsUi />} />
       
       {/* Protected routes */}

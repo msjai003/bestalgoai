@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { educationData } from '@/data/educationData';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase/client';
 import {
   fetchUserEducationData,
   markModuleCompleted,
@@ -23,14 +22,6 @@ export type Badge = {
   image: string;
   level: Level;
   unlocked: boolean;
-};
-
-export type QuizQuestion = {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation?: string;
 };
 
 type ModuleViews = {
@@ -281,44 +272,17 @@ export const useEducation = () => {
     setQuizActive(true);
   };
 
-  const fetchQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
-    questions: QuizQuestion[];
-  } | null> => {
+  const fetchQuizData = async (moduleId: string) => {
     setLoadingQuizData(true);
     try {
-      console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
-      
-      const { data, error } = await supabase.rpc('execute_sql', {
-        query: `SELECT id, question, options, correct_answer, explanation 
-                FROM education_quiz_clients 
-                WHERE module_id = '${moduleId}' AND level = '${level}'`
-      });
-      
-      if (error) {
-        console.error('Error fetching quiz questions:', error);
-        return { questions: [] };
-      }
-      
-      if (!data || data.length === 0) {
-        console.log('No quiz questions found for this module, falling back to local data');
-        return { questions: [] };
-      }
-      
-      const questions = data.map(item => ({
-        id: item.id,
-        question: item.question,
-        options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
-        correctAnswer: item.correct_answer,
-        explanation: item.explanation || ''
-      }));
-      
-      console.log(`Found ${questions.length} quiz questions from database`);
-      return { questions };
-    } catch (error) {
-      console.error('Error in fetchQuizData:', error);
-      return { questions: [] };
-    } finally {
+      const quizLevel = currentLevel;
+      const quizData = await fetchModuleQuizData(moduleId, quizLevel);
       setLoadingQuizData(false);
+      return quizData;
+    } catch (error) {
+      console.error("Error fetching quiz data:", error);
+      setLoadingQuizData(false);
+      return null;
     }
   };
 

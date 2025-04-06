@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, Lock, Info } from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -124,28 +125,30 @@ const FunctionCard = ({ func }: { func: BrokerFunction }) => {
           </div>
         </div>
         
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="h-6 w-6 flex items-center justify-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="h-6 w-6 flex items-center justify-center">
+                {func.function_enabled ? 
+                  (func.is_premium ? 
+                    <Lock className="h-5 w-5 text-amber-400" /> : 
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : 
+                  <XCircle className="h-5 w-5 text-gray-500" />
+                }
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
               {func.function_enabled ? 
                 (func.is_premium ? 
-                  <Lock className="h-5 w-5 text-amber-400" /> : 
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  "Premium feature - Requires subscription" : 
+                  "Available"
                 ) : 
-                <XCircle className="h-5 w-5 text-gray-500" />
+                "Currently unavailable"
               }
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            {func.function_enabled ? 
-              (func.is_premium ? 
-                "Premium feature - Requires subscription" : 
-                "Available"
-              ) : 
-              "Currently unavailable"
-            }
-          </TooltipContent>
-        </Tooltip>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
