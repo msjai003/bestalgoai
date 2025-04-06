@@ -76,7 +76,7 @@ export default function BtsUi() {
         query = query.eq('client_name', session.user.email);
       }
       
-      if (strategyFilter) query = query.eq('strategy_id', strategyFilter);
+      if (strategyFilter) query = query.eq('strategy_id', parseInt(strategyFilter));
       if (startDate) query = query.gte('created_at', startDate);
       if (endDate) query = query.lte('created_at', endDate);
 
