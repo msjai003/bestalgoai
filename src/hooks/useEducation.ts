@@ -272,17 +272,46 @@ export const useEducation = () => {
     setQuizActive(true);
   };
 
-  const fetchQuizData = async (moduleId: string) => {
+  const fetchQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
+    questions: QuizQuestion[];
+  } | null> => {
     setLoadingQuizData(true);
     try {
-      const quizLevel = currentLevel;
-      const quizData = await fetchModuleQuizData(moduleId, quizLevel);
-      setLoadingQuizData(false);
-      return quizData;
+      console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
+      
+      // Using a more stable selector pattern to prevent unnecessary refetches
+      const { data, error } = await supabase
+        .from('education_quiz_clients')
+        .select('id, question, options, correct_answer, explanation')
+        .eq('module_id', moduleId)
+        .eq('level', level);
+      
+      if (error) {
+        console.error('Error fetching quiz questions:', error);
+        return { questions: [] };
+      }
+      
+      if (!data || data.length === 0) {
+        console.log('No quiz questions found for this module, falling back to local data');
+        return { questions: [] };
+      }
+      
+      // Transform the database format to match the expected QuizQuestion format
+      const questions = data.map(item => ({
+        id: item.id,
+        question: item.question,
+        options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
+        correctAnswer: item.correct_answer,
+        explanation: item.explanation || ''
+      }));
+      
+      console.log(`Found ${questions.length} quiz questions from database`);
+      return { questions };
     } catch (error) {
-      console.error("Error fetching quiz data:", error);
+      console.error('Error in fetchQuizData:', error);
+      return { questions: [] };
+    } finally {
       setLoadingQuizData(false);
-      return null;
     }
   };
 

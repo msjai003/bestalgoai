@@ -50,12 +50,20 @@ export const QuizModal: React.FC<QuizModalProps> = ({
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // Quiz timer
   const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [dataFetched, setDataFetched] = useState(false); // Flag to track if data has been fetched
   
   useEffect(() => {
+    // Reset dataFetched flag when modal is closed
+    if (!open) {
+      setDataFetched(false);
+    }
+    
     const loadQuizData = async () => {
-      if (open) {
+      // Only fetch data if modal is open and data hasn't been fetched yet
+      if (open && !dataFetched) {
         setLoading(true);
         setLoadError(null);
+        setDataFetched(true); // Mark data as being fetched
         
         try {
           console.log(`Attempt ${loadAttempts + 1} to load quiz data for module ${moduleId}`);
@@ -84,6 +92,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
           if (loadAttempts < 2) {
             setTimeout(() => {
               setLoadAttempts(prevAttempts => prevAttempts + 1);
+              setDataFetched(false); // Reset flag to allow another attempt
             }, 1000);
           } else {
             toast.error('Failed to load quiz data after multiple attempts.');
@@ -95,7 +104,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({
     };
     
     loadQuizData();
-  }, [moduleId, open, quiz, currentLevel, fetchQuizData, loadAttempts]);
+  }, [moduleId, open, quiz, currentLevel, fetchQuizData, loadAttempts, dataFetched]);
   
   useEffect(() => {
     if (open) {
