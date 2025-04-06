@@ -42,7 +42,6 @@ import Education from "./pages/Education";
 import ZenflowBacktest from "./pages/ZenflowBacktest";
 import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
 import ApiKeys from "./pages/ApiKeys";
-import BtsUi from "./pages/BtsUi";
 
 const queryClient = new QueryClient();
 
@@ -64,7 +63,6 @@ function AppRoutes() {
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
       <Route path="/education" element={<Education />} />
-      <Route path="/bts-ui" element={<BtsUi />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={
