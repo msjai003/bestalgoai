@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
 import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
@@ -14,6 +13,7 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -50,8 +50,8 @@ const StrategySelection = () => {
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
       <Header />
-      <TooltipProvider>
-        <main className="pt-14 pb-16 flex-1 overflow-hidden">
+      <main className="pt-14 pb-16 flex-1 overflow-hidden">
+        <TooltipProvider>
           <section className="px-4 py-4 h-full flex flex-col">
             <div className="premium-card p-5 mb-5 relative overflow-hidden bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/80 rounded-xl border border-gray-700/50 shadow-lg hover:shadow-xl hover:border-gray-600/60 transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan/20 to-cyan/5 rounded-full -mr-20 -mt-20 blur-3xl z-0"></div>
@@ -92,8 +92,8 @@ const StrategySelection = () => {
               )}
             </div>
           </section>
-        </main>
-      </TooltipProvider>
+        </TooltipProvider>
+      </main>
       
       <TradingModeConfirmationDialog 
         open={confirmDialogOpen}

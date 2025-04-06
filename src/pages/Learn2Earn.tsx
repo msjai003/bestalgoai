@@ -1,325 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { useAIEducation } from '@/hooks/useAIEducation';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Trophy, 
-  CheckCircle, 
-  Clock, 
-  ChevronRight, 
-  Brain, 
-  Lightbulb, 
-  Infinity,
-  ArrowRight,
-  Award,
-  Play,
-  LogIn,
-  Loader
-} from 'lucide-react';
-import { FlashCard } from '@/components/education/FlashCard';
-import { ModuleList } from '@/components/education/ModuleList';
-import { ProgressTracker } from '@/components/education/ProgressTracker';
-import { LevelBadges } from '@/components/education/LevelBadges';
-import { Leaderboard } from '@/components/education/Leaderboard';
-import { QuizModal } from '@/components/education/QuizModal';
-import { useEducation, Level } from '@/hooks/useEducation';
-import { educationData } from '@/data/educationData';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { BottomNav } from '@/components/BottomNav';
+import Header from '@/components/Header';
 
 const Learn2Earn = () => {
-  const { 
-    currentLevel, 
-    currentModule,
-    setCurrentLevel,
-    completedModules,
-    earnedBadges,
-    startQuiz,
-    progress,
-    getStats,
-    autoLaunchQuiz,
-    setAutoLaunchQuiz,
-    usingRealData,
-    loadingQuizData
-  } = useEducation();
-  
-  const { user } = useAuth();
-  const [quizModalOpen, setQuizModalOpen] = useState(false);
-  const [activeQuizModule, setActiveQuizModule] = useState<string>(currentModule);
-  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
-  
-  const stats = getStats();
-  const { modules: aiModules, loading: aiModulesLoading } = useAIEducation(currentLevel, user && usingRealData);
-  
-  const handleLevelChange = (value: string) => {
-    setCurrentLevel(value as Level);
-  };
-  
-  const moduleSource = aiModules.length > 0 ? aiModules : educationData[currentLevel];
-  const currentModuleData = moduleSource?.find(m => m.id === activeQuizModule);
-  
-  const handleLaunchQuiz = (moduleId: string) => {
-    try {
-      setIsLoadingQuiz(true);
-      setActiveQuizModule(moduleId);
-      startQuiz();
-      
-      // Add a small delay to ensure data is ready
-      setTimeout(() => {
-        setQuizModalOpen(true);
-        setIsLoadingQuiz(false);
-      }, 300);
-    } catch (error) {
-      console.error("Error launching quiz:", error);
-      toast({
-        title: "Error launching quiz",
-        description: "There was a problem starting the quiz. Please try again.",
-        variant: "destructive"
-      });
-      setIsLoadingQuiz(false);
-    }
-  };
-  
-  useEffect(() => {
-    if (autoLaunchQuiz) {
-      setActiveQuizModule(autoLaunchQuiz);
-      startQuiz();
-      setQuizModalOpen(true);
-    }
-  }, [autoLaunchQuiz, startQuiz]);
-  
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-white">
+    <div className="bg-charcoalPrimary min-h-screen flex flex-col">
       <Header />
-      
-      <main className="pt-16 pb-20 px-4">
-        <section className="py-8 mb-6">
-          <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center">
-                <GraduationCap className="text-cyan mr-2 h-6 w-6" />
-                <h2 className="text-cyan text-xl font-bold">AI Trading Academy</h2>
-              </div>
-              
-              {!user && (
-                <Link to="/auth">
-                  <Button variant="outline" size="sm" className="border-cyan/30 text-cyan hover:bg-cyan/10">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Button>
-                </Link>
-              )}
-            </div>
-            
-            <h1 className="text-2xl font-bold mb-3">
-              <span className="text-cyan">Personalized Learning</span> with AI
-            </h1>
-            
-            <p className="text-gray-300 mb-4">
-              AI-enhanced trading education tailored to your learning style
-            </p>
-            
-            {user ? (
-              <div className="flex flex-wrap gap-4 mt-5">
-                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                  <CheckCircle className="text-cyan h-4 w-4 mr-2" />
-                  <span className="text-sm">{stats.completedCount}/{stats.totalModules} Modules</span>
-                </div>
-                
-                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                  <Trophy className="text-cyan h-4 w-4 mr-2" />
-                  <span className="text-sm">{stats.quizzesTaken} Quizzes</span>
-                </div>
-                
-                <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                  <Award className="text-cyan h-4 w-4 mr-2" />
-                  <span className="text-sm">{stats.badgesEarned} Badges</span>
-                </div>
-                
-                {stats.averageScore > 0 && (
-                  <div className="bg-charcoalPrimary rounded-lg px-4 py-2 flex items-center">
-                    <Brain className="text-cyan h-4 w-4 mr-2" />
-                    <span className="text-sm">{stats.averageScore}% Score</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link to="/auth?signup=true">
-                  <Button className="bg-cyan text-charcoalPrimary hover:bg-cyan/90">
-                    Create Free Account
-                  </Button>
-                </Link>
-                <Button variant="outline" className="border-white/20">
-                  Explore Modules
-                </Button>
-              </div>
-            )}
+      <TooltipProvider>
+        <main className="flex-1 pt-16 pb-20 px-4 max-w-4xl mx-auto w-full">
+          <div className="py-6">
+            <h1 className="text-2xl font-bold text-white mb-2">Learn & Earn</h1>
+            <p className="text-gray-400">Master trading and earn rewards while learning</p>
           </div>
-        </section>
-        
-        {user && (
-          <ProgressTracker progress={progress} earnedBadges={earnedBadges} />
-        )}
-        
-        <section className="mb-8">
-          <Tabs defaultValue={currentLevel} onValueChange={handleLevelChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
-              <TabsTrigger value="basics" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
-                <BookOpen className="h-4 w-4" />
-                <span>Basics</span>
-              </TabsTrigger>
-              <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
-                <Brain className="h-4 w-4" />
-                <span>Intermediate</span>
-              </TabsTrigger>
-              <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
-                <Infinity className="h-4 w-4" />
-                <span>Pro</span>
-              </TabsTrigger>
-            </TabsList>
+          
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-gradient-to-br from-cyan/20 to-cyan/5 border-cyan/30">
+              <CardContent className="p-5">
+                <h2 className="text-xl font-bold text-white mb-2">Trading Academy</h2>
+                <p className="text-gray-300 mb-4">
+                  Learn through interactive modules, quizzes, and personalized study paths.
+                </p>
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-400">
+                    <span className="block">✓ 30+ Lessons</span>
+                    <span className="block">✓ Earn certificates</span>
+                  </div>
+                  <Link to="/trading-academy">
+                    <Button variant="default" className="bg-cyan text-charcoalPrimary hover:bg-cyan/90">
+                      Start Learning
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
             
-            {aiModulesLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader className="animate-spin h-8 w-8 text-cyan mr-2" />
-                <span>Loading AI-enhanced modules...</span>
-              </div>
-            ) : (
-              <>
-                <TabsContent value="basics">
-                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                    <div className="flex items-center mb-3">
-                      <BookOpen className="h-5 w-5 text-cyan mr-2" />
-                      <h2 className="text-lg font-bold">Trading Basics</h2>
-                    </div>
-                    <p className="text-gray-300 text-sm mb-4">
-                      Master the fundamentals of trading, market mechanics, and essential terminology.
-                    </p>
-                    <div className="flex items-center text-sm text-gray-300 mb-2">
-                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                      <span>{completedModules.basics} of 15 modules completed</span>
-                    </div>
-                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.basics / 15) * 100}%` }}></div>
-                    </div>
-                    <LevelBadges level="basics" earnedBadges={earnedBadges} />
+            <Card className="bg-gradient-to-br from-purple-500/20 to-purple-500/5 border-purple-500/30">
+              <CardContent className="p-5">
+                <h2 className="text-xl font-bold text-white mb-2">Trading Challenges</h2>
+                <p className="text-gray-300 mb-4">
+                  Put your skills to the test with real market simulations and competitions.
+                </p>
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-400">
+                    <span className="block">✓ Win prizes</span>
+                    <span className="block">✓ Leaderboards</span>
                   </div>
-                  
-                  <ModuleList 
-                    level={currentLevel} 
-                    currentModule={currentModule} 
-                    completedModules={completedModules[currentLevel]}
-                    onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : undefined}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="intermediate">
-                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                    <div className="flex items-center mb-3">
-                      <Brain className="h-5 w-5 text-cyan mr-2" />
-                      <h2 className="text-lg font-bold">Intermediate Trading</h2>
+                  <Button variant="outline" className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10">
+                    Coming Soon
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mt-8">
+            <h2 className="text-xl font-bold text-white mb-4">Featured Courses</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {featuredCourses.map((course) => (
+                <Card key={course.id} className="bg-charcoalSecondary border-gray-700">
+                  <CardContent className="p-4">
+                    <h3 className="font-bold text-white">{course.title}</h3>
+                    <p className="text-xs text-gray-400 mt-1 mb-2">{course.description}</p>
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-xs text-gray-400">{course.modules} modules</span>
+                      <Link to="/trading-academy">
+                        <Button variant="outline" size="sm" className="text-xs h-8 text-cyan border-cyan/20 hover:bg-cyan/10">
+                          View Course
+                        </Button>
+                      </Link>
                     </div>
-                    <p className="text-gray-300 text-sm mb-4">
-                      Advanced trading strategies, technical analysis, and risk management techniques.
-                    </p>
-                    <div className="flex items-center text-sm text-gray-300 mb-2">
-                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                      <span>{completedModules.intermediate} of 15 modules completed</span>
-                    </div>
-                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.intermediate / 15) * 100}%` }}></div>
-                    </div>
-                    <LevelBadges level="intermediate" earnedBadges={earnedBadges} />
-                  </div>
-                  
-                  <ModuleList 
-                    level={currentLevel} 
-                    currentModule={currentModule} 
-                    completedModules={completedModules[currentLevel]}
-                    onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : undefined}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="pro">
-                  <div className="bg-charcoalSecondary rounded-xl border border-gray-800/40 p-5 mb-6">
-                    <div className="flex items-center mb-3">
-                      <Infinity className="h-5 w-5 text-cyan mr-2" />
-                      <h2 className="text-lg font-bold">Professional Algo Trading</h2>
-                    </div>
-                    <p className="text-gray-300 text-sm mb-4">
-                      Algorithmic trading, quantitative analysis, and automated strategy development.
-                    </p>
-                    <div className="flex items-center text-sm text-gray-300 mb-2">
-                      <CheckCircle className="h-4 w-4 text-cyan mr-1" />
-                      <span>{completedModules.pro} of 15 modules completed</span>
-                    </div>
-                    <div className="w-full bg-charcoalPrimary rounded-full h-2 mb-4">
-                      <div className="bg-cyan h-2 rounded-full" style={{ width: `${(completedModules.pro / 15) * 100}%` }}></div>
-                    </div>
-                    <LevelBadges level="pro" earnedBadges={earnedBadges} />
-                  </div>
-                  
-                  <ModuleList 
-                    level={currentLevel} 
-                    currentModule={currentModule} 
-                    completedModules={completedModules[currentLevel]}
-                    onLaunchQuiz={handleLaunchQuiz}
-                    modules={aiModules.length > 0 ? aiModules : undefined}
-                  />
-                </TabsContent>
-              </>
-            )}
-          </Tabs>
-        </section>
-        
-        {user && (
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Current Study Material</h2>
-              <Button 
-                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 text-xs flex items-center" 
-                size="sm" 
-                onClick={() => handleLaunchQuiz(currentModule)}
-                disabled={isLoadingQuiz}
-              >
-                {isLoadingQuiz ? (
-                  <Loader className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <Play className="h-3.5 w-3.5 mr-1.5" />
-                )}
-                {isLoadingQuiz ? 'Loading...' : 'Take Quiz'}
-              </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            
-            <FlashCard />
-          </section>
-        )}
-        
-        <Leaderboard showSignupPrompt={!user} />
-      </main>
-      
-      {currentModuleData && (
-        <QuizModal
-          open={quizModalOpen}
-          onOpenChange={setQuizModalOpen}
-          quiz={usingRealData ? undefined : currentModuleData.quiz}
-          moduleTitle={currentModuleData.title}
-          moduleId={activeQuizModule}
-          autoLaunch={!!autoLaunchQuiz}
-        />
-      )}
-      
+          </div>
+          
+          <div className="mt-8">
+            <Card className="bg-charcoalSecondary border-gray-700">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row items-center justify-between">
+                  <div className="mb-4 md:mb-0">
+                    <h2 className="text-xl font-bold text-white">Join our Learning Community</h2>
+                    <p className="text-gray-400 mt-1">Connect with other traders, share insights, and grow together</p>
+                  </div>
+                  <Button className="bg-gradient-to-r from-cyan to-blue-500 text-charcoalPrimary hover:from-cyan/90 hover:to-blue-500/90">
+                    Join Community
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </TooltipProvider>
       <BottomNav />
     </div>
   );
 };
+
+const featuredCourses = [
+  {
+    id: 1,
+    title: "Trading Fundamentals",
+    description: "Learn the basics of market structure and order types",
+    modules: 8
+  },
+  {
+    id: 2,
+    title: "Technical Analysis",
+    description: "Master chart patterns and technical indicators",
+    modules: 12
+  },
+  {
+    id: 3,
+    title: "Risk Management",
+    description: "Protect your capital with proper risk strategies",
+    modules: 6
+  }
+];
 
 export default Learn2Earn;

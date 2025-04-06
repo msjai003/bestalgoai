@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
 import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 
 interface StrategyCardProps {
@@ -72,59 +72,55 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               </h3>
             </div>
             <div className="flex gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md`}
-                      onClick={toggleWishlist}
-                    >
-                      <HeartIcon 
-                        size={24} 
-                        className={`${strategy.isWishlisted ? "fill-red-400 filter drop-shadow-[0_0_3px_rgba(244,67,54,0.7)]" : ""} transform transition-all duration-300 hover:scale-110`} 
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md`}
+                    onClick={toggleWishlist}
+                  >
+                    <HeartIcon 
+                      size={24} 
+                      className={`${strategy.isWishlisted ? "fill-red-400 filter drop-shadow-[0_0_3px_rgba(244,67,54,0.7)]" : ""} transform transition-all duration-300 hover:scale-110`} 
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</p>
+                </TooltipContent>
+              </Tooltip>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost" 
-                      size="icon"
-                      onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
-                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
-                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
-                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
-                    >
-                      {!canAccess ? (
-                        <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
-                      ) : (
-                        strategy.isLive ? 
-                          <StopCircleIcon size={24} className="cursor-pointer" /> : 
-                          <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost" 
+                    size="icon"
+                    onClick={toggleLiveMode}
+                    className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                      transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
+                      flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
+                    aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
+                  >
                     {!canAccess ? (
-                      <p>Unlock this premium strategy</p>
-                    ) : strategy.isLive ? (
-                      <p>Disable live trading</p>
+                      <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                     ) : (
-                      <p>Enable live trading</p>
+                      strategy.isLive ? 
+                        <StopCircleIcon size={24} className="cursor-pointer" /> : 
+                        <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
                     )}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {!canAccess ? (
+                    <p>Unlock this premium strategy</p>
+                  ) : strategy.isLive ? (
+                    <p>Disable live trading</p>
+                  ) : (
+                    <p>Enable live trading</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
           

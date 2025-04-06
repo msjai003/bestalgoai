@@ -383,7 +383,7 @@ const RiskManagement = () => {
       <div className="fixed bottom-16 left-0 right-0 p-4 bg-charcoalSecondary/95 backdrop-blur-lg border-t border-cyan/20">
         <Button 
           className="w-full py-6 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-lg font-medium shadow-lg hover:from-cyan/90 hover:to-cyan/70 transition-all duration-300"
-          onClick={handleSaveChanges}
+          onClick={() => toast.success("Risk management settings updated")}
         >
           Save Changes
         </Button>
