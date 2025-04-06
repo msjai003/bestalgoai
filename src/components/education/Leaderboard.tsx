@@ -65,9 +65,10 @@ const topUsers: LeaderboardUser[] = [
 
 interface LeaderboardProps {
   showSignupPrompt?: boolean;
+  isDarkMode?: boolean;
 }
 
-export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
+export const Leaderboard = ({ showSignupPrompt = false, isDarkMode = true }: LeaderboardProps) => {
   const handleInviteFriends = () => {
     const inviteText = "Join me on Trading Academy to learn trading from basics to pro! Check it out:";
     
@@ -88,13 +89,13 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
     <div className="mb-10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-cyan" />
+          <Users className={`h-5 w-5 ${isDarkMode ? 'text-cyan' : 'text-blue-500'}`} />
           <h2 className="text-xl font-bold">Top Learners</h2>
         </div>
         <Button 
           variant="outline" 
           size="sm" 
-          className="text-xs border-cyan/40 text-cyan hover:bg-cyan/10"
+          className={`text-xs ${isDarkMode ? 'border-cyan/40 text-cyan hover:bg-cyan/10' : 'border-blue-300 text-blue-500 hover:bg-blue-50'}`}
           onClick={handleInviteFriends}
         >
           <Share className="h-3.5 w-3.5 mr-1" />
@@ -102,17 +103,17 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
         </Button>
       </div>
       
-      <div className="premium-card p-4 md:p-6">
+      <div className={`${isDarkMode ? 'premium-card' : 'bg-white shadow-md border border-gray-200'} p-4 md:p-6 rounded-xl`}>
         {showSignupPrompt && (
-          <div className="bg-gradient-to-r from-cyan/20 to-cyan/10 p-4 rounded-lg mb-6 border border-cyan/30">
+          <div className={`${isDarkMode ? 'bg-gradient-to-r from-cyan/20 to-cyan/10 border border-cyan/30' : 'bg-blue-50 border border-blue-100'} p-4 rounded-lg mb-6`}>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold mb-1">Join our learning community</h3>
-                <p className="text-sm text-gray-300">Track your progress, earn badges and compete with other traders</p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Track your progress, earn badges and compete with other traders</p>
               </div>
               <Link to="/auth">
                 <Button 
-                  className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary" 
+                  className={isDarkMode ? 'bg-cyan hover:bg-cyan/80 text-charcoalPrimary' : 'bg-blue-500 hover:bg-blue-600 text-white'} 
                   size="sm"
                 >
                   Sign Up
@@ -124,10 +125,10 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
 
         <div className="grid gap-4 md:grid-cols-3">
           {topUsers.map((user, index) => (
-            <div key={user.id} className="flex flex-col bg-charcoalSecondary/60 rounded-xl p-4 border border-cyan/10 hover:border-cyan/30 transition-colors">
+            <div key={user.id} className={`flex flex-col ${isDarkMode ? 'bg-charcoalSecondary/60 border border-cyan/10 hover:border-cyan/30' : 'bg-gray-50 border border-gray-200 hover:border-blue-200'} rounded-xl p-4 transition-colors`}>
               {/* User info */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-full bg-cyan/10 flex items-center justify-center text-xl border border-cyan/20">
+                <div className={`h-10 w-10 rounded-full ${isDarkMode ? 'bg-cyan/10 border border-cyan/20' : 'bg-blue-100 border border-blue-200'} flex items-center justify-center text-xl`}>
                   {user.avatar}
                 </div>
                 <div>
@@ -139,7 +140,7 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
                       </Badge>
                     )}
                   </div>
-                  <div className="text-xs text-gray-400 flex items-center gap-2">
+                  <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} flex items-center gap-2`}>
                     <span>{user.completedModules} modules completed</span>
                     <span>•</span>
                     <span>{user.badgeCount} badges</span>
@@ -149,19 +150,19 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
               
               {/* User badges */}
               <div className="mt-2">
-                <h4 className="text-xs uppercase text-gray-400 mb-2">Recent Achievements</h4>
+                <h4 className={`text-xs uppercase ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-2`}>Recent Achievements</h4>
                 <div className="flex flex-wrap gap-1">
                   {user.earnedBadges.slice(-3).map(badge => (
                     <div 
                       key={badge.id}
-                      className="w-8 h-8 flex items-center justify-center bg-cyan/10 rounded-full border border-cyan/20"
+                      className={`w-8 h-8 flex items-center justify-center ${isDarkMode ? 'bg-cyan/10 border border-cyan/20' : 'bg-blue-100 border border-blue-200'} rounded-full`}
                       title={badge.name}
                     >
                       {badge.image}
                     </div>
                   ))}
                   {user.earnedBadges.length > 3 && (
-                    <div className="w-8 h-8 flex items-center justify-center bg-charcoalPrimary rounded-full border border-cyan/10">
+                    <div className={`w-8 h-8 flex items-center justify-center ${isDarkMode ? 'bg-charcoalPrimary border border-cyan/10' : 'bg-gray-200 border border-gray-300'} rounded-full`}>
                       <span className="text-xs">+{user.earnedBadges.length - 3}</span>
                     </div>
                   )}
@@ -172,7 +173,7 @@ export const Leaderboard = ({ showSignupPrompt = false }: LeaderboardProps) => {
         </div>
         
         <div className="mt-4 text-center">
-          <Button variant="outline" className="text-sm">
+          <Button variant="outline" className={`text-sm ${isDarkMode ? '' : 'border-gray-300'}`}>
             View Full Leaderboard
           </Button>
         </div>
