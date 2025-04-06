@@ -3,14 +3,14 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { QuizModal } from '@/components/education/QuizModal';
-import { useEducation, Level } from '@/hooks/useEducation';
+import { useEducation } from '@/hooks/useEducation';
 import { useAIEducation } from '@/hooks/useAIEducation';
 import { educationData } from '@/data/educationData';
 import { useAuth } from '@/contexts/AuthContext';
 import { AiCoachTip } from '@/components/education/AiCoachTip';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { Leaderboard } from '@/components/education/Leaderboard';
-import { CheckCircle, Trophy, Award, Brain } from 'lucide-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { AcademyHeader } from '@/components/education/AcademyHeader';
 import { AcademyLevelTabs } from '@/components/education/AcademyLevelTabs';
@@ -137,7 +137,9 @@ const TradingAcademy = () => {
   
   return (
     <ThemeProvider>
-      <TradingAcademyContent />
+      <TooltipProvider>
+        <TradingAcademyContent />
+      </TooltipProvider>
     </ThemeProvider>
   );
 };
