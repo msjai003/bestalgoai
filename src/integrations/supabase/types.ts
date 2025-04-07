@@ -186,6 +186,36 @@ export type Database = {
         }
         Relationships: []
       }
+      basics_question_answers: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          display_order: number
+          id: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       broker_credentials: {
         Row: {
           accesstoken: string | null
@@ -369,78 +399,6 @@ export type Database = {
           level?: string
           name?: string
           unlocked_by?: string
-        }
-        Relationships: []
-      }
-      education_content: {
-        Row: {
-          content: string
-          content_type: string | null
-          created_at: string | null
-          id: string
-          media_url: string | null
-          module_id: string
-          order_index: number
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          content: string
-          content_type?: string | null
-          created_at?: string | null
-          id?: string
-          media_url?: string | null
-          module_id: string
-          order_index: number
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          content?: string
-          content_type?: string | null
-          created_at?: string | null
-          id?: string
-          media_url?: string | null
-          module_id?: string
-          order_index?: number
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      education_quiz_clients: {
-        Row: {
-          correct_answer: number
-          created_at: string | null
-          explanation: string | null
-          id: string
-          level: string
-          module_id: string
-          options: Json
-          question: string
-          updated_at: string | null
-        }
-        Insert: {
-          correct_answer: number
-          created_at?: string | null
-          explanation?: string | null
-          id?: string
-          level: string
-          module_id: string
-          options: Json
-          question: string
-          updated_at?: string | null
-        }
-        Update: {
-          correct_answer?: number
-          created_at?: string | null
-          explanation?: string | null
-          id?: string
-          level?: string
-          module_id?: string
-          options?: Json
-          question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1122,102 +1080,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_completed_modules: {
-        Row: {
-          completed_at: string | null
-          id: string
-          level: string
-          module_id: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          id?: string
-          level: string
-          module_id: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          id?: string
-          level?: string
-          module_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_earned_badges: {
-        Row: {
-          badge_id: string
-          earned_at: string | null
-          id: string
-          user_id: string
-        }
-        Insert: {
-          badge_id: string
-          earned_at?: string | null
-          id?: string
-          user_id: string
-        }
-        Update: {
-          badge_id?: string
-          earned_at?: string | null
-          id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_education_progress: {
-        Row: {
-          created_at: string | null
-          current_card: number
-          current_level: string
-          current_module: string
-          id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          current_card?: number
-          current_level?: string
-          current_module?: string
-          id?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          current_card?: number
-          current_level?: string
-          current_module?: string
-          id?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_module_views: {
-        Row: {
-          id: string
-          module_id: string
-          user_id: string
-          viewed_at: string | null
-        }
-        Insert: {
-          id?: string
-          module_id: string
-          user_id: string
-          viewed_at?: string | null
-        }
-        Update: {
-          id?: string
-          module_id?: string
-          user_id?: string
-          viewed_at?: string | null
-        }
-        Relationships: []
-      }
       user_profiles: {
         Row: {
           created_at: string | null
@@ -1248,39 +1110,6 @@ export type Database = {
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      user_quiz_results: {
-        Row: {
-          completed_at: string | null
-          id: string
-          module_id: string
-          passed: boolean
-          score: number
-          time_spent: number
-          total_questions: number
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          id?: string
-          module_id: string
-          passed?: boolean
-          score: number
-          time_spent: number
-          total_questions: number
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          id?: string
-          module_id?: string
-          passed?: boolean
-          score?: number
-          time_spent?: number
-          total_questions?: number
-          user_id?: string
         }
         Relationships: []
       }

@@ -1,14 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Sparkles, Trophy, ArrowRight, Lock } from 'lucide-react';
+import { BookOpen, Sparkles, Trophy, ArrowRight, Lock, X } from 'lucide-react';
+import BasicQuestionsSection from '@/components/classes/BasicQuestionsSection';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 const Classes = () => {
+  const [showBasicQuestions, setShowBasicQuestions] = useState(false);
+
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white">
       <Header />
@@ -70,7 +74,11 @@ const Classes = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full group" variant="outline">
+                <Button 
+                  className="w-full group" 
+                  variant="outline"
+                  onClick={() => setShowBasicQuestions(true)}
+                >
                   Start Learning
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -186,6 +194,35 @@ const Classes = () => {
             </Card>
           </div>
         </section>
+        
+        {/* Dialog for Basic Questions */}
+        <Dialog open={showBasicQuestions} onOpenChange={setShowBasicQuestions}>
+          <DialogContent className="bg-charcoalPrimary text-white border border-gray-800 max-w-4xl w-[90vw] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-xl font-bold">
+                  <span className="text-cyan">Basic Trading</span> Learning Module
+                </DialogTitle>
+                <DialogClose asChild>
+                  <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DialogClose>
+              </div>
+              <DialogDescription className="text-gray-400">
+                Flip through these questions to test your trading knowledge. Click on a question to reveal its answer.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <BasicQuestionsSection />
+            
+            <div className="mt-6 flex justify-end">
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
       
       <BottomNav />
