@@ -10,52 +10,52 @@ const QuickAccessSection = () => {
       <h2 className="text-xl font-semibold text-white mb-4">Quick Access</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         <QuickAccessItem
-          icon={<TrendingUp className="h-5 w-5 text-cyan" />}
-          title="Trading"
-          description="View live trading strategies"
-          linkTo="/live-trading"
+          icon={TrendingUp}
+          text="Trading"
+          route="/live-trading"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<BarChart className="h-5 w-5 text-cyan" />}
-          title="Backtest"
-          description="Analyze strategy performance"
-          linkTo="/zenflow-backtest"
+          icon={BarChart}
+          text="Backtest"
+          route="/zenflow-backtest"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<BookOpen className="h-5 w-5 text-cyan" />}
-          title="Education"
-          description="Learn trading concepts"
-          linkTo="/education"
+          icon={BookOpen}
+          text="Education"
+          route="/education"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<School className="h-5 w-5 text-cyan" />}
-          title="Classes"
-          description="Trading masterclasses"
-          linkTo="/education"
+          icon={School}
+          text="Classes"
+          route="/education"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<Workflow className="h-5 w-5 text-cyan" />}
-          title="Strategies"
-          description="Browse trading strategies"
-          linkTo="/strategy-selection"
+          icon={Workflow}
+          text="Strategies"
+          route="/strategy-selection"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<Heart className="h-5 w-5 text-cyan" />}
-          title="Wishlist"
-          description="Saved strategies"
-          linkTo="/strategy-management"
+          icon={Heart}
+          text="Wishlist"
+          route="/strategy-management"
+          className=""
         />
         
         <QuickAccessItem
-          icon={<BookText className="h-5 w-5 text-cyan" />}
-          title="Brokers"
-          description="Manage broker connections"
-          linkTo="/broker-integration"
+          icon={BookText}
+          text="Brokers"
+          route="/broker-integration"
+          className=""
         />
       </div>
     </section>
