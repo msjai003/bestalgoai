@@ -1,9 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { QuizQuestion } from '@/hooks/useEducation';
-
-// Define Level type locally to avoid circular imports
-type Level = 'basics' | 'intermediate' | 'pro';
+import { QuizQuestion, Level } from '@/hooks/useEducation';
 
 // Function to fetch user education data
 export const fetchUserEducationData = async (userId: string) => {

@@ -85,7 +85,7 @@ export const useEducation = () => {
       // const { data, error } = await supabase.from('education').select('*');
       
       // For now, just set the mock data directly
-      const mockEducationItems = [];
+      const mockEducationItems: EducationItem[] = [];
       setEducationItems(mockEducationItems);
       
       // Calculate the progress based on local data
