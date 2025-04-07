@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { BookOpen, Sparkles, Trophy, ArrowRight, Lock } from 'lucide-react';
 
 const Classes = () => {
