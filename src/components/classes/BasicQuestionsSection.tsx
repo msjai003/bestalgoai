@@ -21,9 +21,10 @@ const BasicQuestionsSection = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        // Use a more explicit type with the from method
         const { data, error } = await supabase
           .from('basics_question_answers')
-          .select('*')
+          .select('id, question, answer, category, display_order')
           .eq('category', 'basic')
           .order('display_order', { ascending: true });
 
@@ -31,7 +32,8 @@ const BasicQuestionsSection = () => {
           throw error;
         }
 
-        setQuestions(data || []);
+        // Safely cast the data to our Question type
+        setQuestions(data as Question[] || []);
       } catch (err) {
         console.error('Error fetching questions:', err);
         setError('Failed to load questions. Please try again later.');
