@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { fetchIntermediateQuizQuestions } from '@/adapters/educationAdapter';
 import { Check, X, RefreshCw, ArrowLeft, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface QuizQuestion {
   id: number;
@@ -64,9 +62,9 @@ const IntermediateQuiz = () => {
       
       if (index === correctOptionIndex) {
         setCorrectAnswers(prev => prev + 1);
-        toast.success('Correct answer!');
+        // Toast removed
       } else {
-        toast.error('Incorrect answer!');
+        // Toast removed
       }
     }
   };
