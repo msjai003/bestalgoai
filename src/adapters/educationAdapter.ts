@@ -74,18 +74,18 @@ export const updateEducationProgress = async (userId: string, progress: {
   }
 };
 
-// Updated function to fetch module quiz data from the new education_quiz_clients table
+// Updated function to fetch module quiz data - using the basics_question_answers table instead
 export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
-    console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
+    console.log('Fetching quiz data for module:', moduleId, 'level:', level);
     
+    // Use the basics_question_answers table since that's what we've created
     const { data, error } = await supabase
-      .from('education_quiz_clients')
-      .select('*')
-      .eq('module_id', moduleId)
-      .eq('level', level);
+      .from('basics_question_answers')
+      .select('id, question, answer, category, display_order')
+      .eq('category', level);
     
     if (error) {
       console.error('Error fetching quiz questions:', error);
@@ -97,13 +97,13 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
       return { questions: [] };
     }
     
-    // Transform the database format to match the expected QuizQuestion format
-    const questions = data.map(item => ({
+    // Transform the data from basics_question_answers to match QuizQuestion format
+    const questions: QuizQuestion[] = data.map(item => ({
       id: item.id,
       question: item.question,
-      options: Array.isArray(item.options) ? item.options : JSON.parse(item.options as string),
-      correctAnswer: item.correct_answer,
-      explanation: item.explanation || ''
+      options: [item.answer, "Option 2", "Option 3", "Option 4"], // Create fake options with the correct answer
+      correctAnswer: 0, // First option (the actual answer) is always correct
+      explanation: "Explanation: " + item.answer
     }));
     
     console.log(`Found ${questions.length} quiz questions from database`);
