@@ -1,7 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Level } from '@/hooks/useEducation';
-import { QuizQuestion } from '@/data/educationData';
+import { QuizQuestion } from '@/hooks/useEducation';
+
+// Define Level type locally to avoid circular imports
+type Level = 'basics' | 'intermediate' | 'pro';
 
 // Function to fetch user education data
 export const fetchUserEducationData = async (userId: string) => {
@@ -81,11 +83,10 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
   try {
     console.log('Fetching quiz data from education_quiz_clients table for module:', moduleId, 'level:', level);
     
-    const { data, error } = await supabase
-      .from('education_quiz_clients')
-      .select('*')
-      .eq('module_id', moduleId)
-      .eq('level', level);
+    // Use a raw SQL query through execute_sql instead of direct table access
+    const { data, error } = await supabase.rpc('execute_sql', {
+      query: `SELECT * FROM education_quiz_clients WHERE module_id = '${moduleId}' AND level = '${level}'`
+    });
     
     if (error) {
       console.error('Error fetching quiz questions:', error);
