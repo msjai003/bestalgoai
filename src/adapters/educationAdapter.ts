@@ -81,7 +81,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
   try {
     console.log('Fetching quiz data for module:', moduleId, 'level:', level);
     
-    // Use the basics_question_answers table since that's what we've created
+    // Use the basics_question_answers table with the now integer ID
     const { data, error } = await supabase
       .from('basics_question_answers')
       .select('id, question, answer, category, display_order')
@@ -98,8 +98,9 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     }
     
     // Transform the data from basics_question_answers to match QuizQuestion format
+    // Make sure to convert the integer ID to a string to match the QuizQuestion type
     const questions: QuizQuestion[] = data.map(item => ({
-      id: item.id,
+      id: String(item.id), // Convert integer ID to string to match QuizQuestion type
       question: item.question,
       options: [item.answer, "Option 2", "Option 3", "Option 4"], // Create fake options with the correct answer
       correctAnswer: 0, // First option (the actual answer) is always correct

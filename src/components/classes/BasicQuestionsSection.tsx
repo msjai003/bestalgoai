@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Question {
-  id: string;
+  id: string | number;  // Updated to accept both string and number for compatibility
   question: string;
   answer: string;
   category: string;

@@ -192,7 +192,7 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
-          id: string
+          id: number
           question: string
           updated_at: string
         }
@@ -201,7 +201,7 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          id?: string
+          id?: number
           question: string
           updated_at?: string
         }
@@ -210,7 +210,7 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          id?: string
+          id?: number
           question?: string
           updated_at?: string
         }
