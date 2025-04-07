@@ -74,16 +74,55 @@ export const updateEducationProgress = async (userId: string, progress: {
   }
 };
 
-// Updated function to fetch module quiz data - using the basics_question_answers table instead
+// Function to fetch questions by level (basics or intermediate)
+export const fetchQuestionsByLevel = async (level: string): Promise<{
+  questions: { id: number | string; question: string; answer: string; display_order: number }[];
+} | null> => {
+  try {
+    console.log(`Fetching ${level} questions`);
+    
+    let table = 'basics_question_answers';
+    if (level === 'intermediate') {
+      table = 'intermediate_questions_answers';
+    }
+    
+    const { data, error } = await supabase
+      .from(table)
+      .select('id, question, answer, display_order')
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error(`Error fetching ${level} questions:`, error);
+      return { questions: [] };
+    }
+    
+    if (!data || data.length === 0) {
+      console.log(`No ${level} questions found`);
+      return { questions: [] };
+    }
+    
+    console.log(`Found ${data.length} ${level} questions`);
+    return { questions: data };
+  } catch (error) {
+    console.error(`Error in fetchQuestionsByLevel:`, error);
+    return { questions: [] };
+  }
+};
+
+// Updated function to fetch module quiz data - using the basics_question_answers table with the now integer ID
 export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
     console.log('Fetching quiz data for module:', moduleId, 'level:', level);
     
-    // Use the basics_question_answers table with the now integer ID
+    let table = 'basics_question_answers';
+    if (level === 'intermediate') {
+      table = 'intermediate_questions_answers';
+    }
+    
     const { data, error } = await supabase
-      .from('basics_question_answers')
+      .from(table)
       .select('id, question, answer, category, display_order')
       .eq('category', level);
     
@@ -97,7 +136,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
       return { questions: [] };
     }
     
-    // Transform the data from basics_question_answers to match QuizQuestion format
+    // Transform the data to match QuizQuestion format
     // Make sure to convert the integer ID to a string to match the QuizQuestion type
     const questions: QuizQuestion[] = data.map(item => ({
       id: String(item.id), // Convert integer ID to string to match QuizQuestion type

@@ -588,6 +588,36 @@ export type Database = {
         }
         Relationships: []
       }
+      intermediate_questions_answers: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          display_order: number
+          id: number
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       novaglide_metrics: {
         Row: {
           avg_loss_on_losing_trades: number | null
