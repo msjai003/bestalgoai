@@ -81,13 +81,13 @@ export const fetchQuestionsByLevel = async (level: string): Promise<{
   try {
     console.log(`Fetching ${level} questions`);
     
-    let table = 'basics_question_answers';
-    if (level === 'intermediate') {
-      table = 'intermediate_questions_answers';
-    }
+    // Use a type-safe table name based on the level
+    const tableName = level === 'intermediate' 
+      ? 'intermediate_questions_answers' 
+      : 'basics_question_answers';
     
     const { data, error } = await supabase
-      .from(table)
+      .from(tableName)
       .select('id, question, answer, display_order')
       .order('display_order', { ascending: true });
     
@@ -109,20 +109,20 @@ export const fetchQuestionsByLevel = async (level: string): Promise<{
   }
 };
 
-// Updated function to fetch module quiz data - using the basics_question_answers table with the now integer ID
+// Updated function to fetch module quiz data - using the dedicated tables for questions
 export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
   try {
     console.log('Fetching quiz data for module:', moduleId, 'level:', level);
     
-    let table = 'basics_question_answers';
-    if (level === 'intermediate') {
-      table = 'intermediate_questions_answers';
-    }
+    // Use a type-safe table name based on the level
+    const tableName = level === 'intermediate' 
+      ? 'intermediate_questions_answers' 
+      : 'basics_question_answers';
     
     const { data, error } = await supabase
-      .from(table)
+      .from(tableName)
       .select('id, question, answer, category, display_order')
       .eq('category', level);
     

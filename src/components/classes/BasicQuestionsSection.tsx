@@ -1,15 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import QuestionCard from './QuestionCard';
 import { Button } from '@/components/ui/button';
+import { fetchQuestionsByLevel } from '@/adapters/educationAdapter';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Question {
   id: string | number;  // Updated to accept both string and number for compatibility
   question: string;
   answer: string;
-  category: string;
+  category?: string;
   display_order: number;
 }
 
@@ -21,19 +21,14 @@ const BasicQuestionsSection = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        // Use a more explicit type with the from method
-        const { data, error } = await supabase
-          .from('basics_question_answers')
-          .select('id, question, answer, category, display_order')
-          .eq('category', 'basic')
-          .order('display_order', { ascending: true });
-
-        if (error) {
-          throw error;
+        setLoading(true);
+        const result = await fetchQuestionsByLevel('basic');
+        
+        if (result && result.questions.length > 0) {
+          setQuestions(result.questions);
+        } else {
+          setError('No questions available at the moment.');
         }
-
-        // Safely cast the data to our Question type
-        setQuestions(data as Question[] || []);
       } catch (err) {
         console.error('Error fetching questions:', err);
         setError('Failed to load questions. Please try again later.');
