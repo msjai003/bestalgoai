@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Brain, ArrowLeft } from 'lucide-react';
+import { BookOpen, Brain, Infinity } from 'lucide-react';
 import BasicQuestionsSection from '@/components/classes/BasicQuestionsSection';
 import IntermediateQuestionsSection from '@/components/classes/IntermediateQuestionsSection';
+import ProQuestionsSection from '@/components/classes/ProQuestionsSection';
 
 const Classes = () => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -21,7 +22,7 @@ const Classes = () => {
         </div>
         
         <Tabs defaultValue="basic" onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-charcoalSecondary border border-gray-800/40">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
             <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
               <BookOpen className="h-4 w-4" />
               <span>Basic</span>
@@ -29,6 +30,10 @@ const Classes = () => {
             <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
               <Brain className="h-4 w-4" />
               <span>Intermediate</span>
+            </TabsTrigger>
+            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+              <Infinity className="h-4 w-4" />
+              <span>Pro</span>
             </TabsTrigger>
           </TabsList>
           
@@ -38,6 +43,10 @@ const Classes = () => {
           
           <TabsContent value="intermediate">
             <IntermediateQuestionsSection />
+          </TabsContent>
+          
+          <TabsContent value="pro">
+            <ProQuestionsSection />
           </TabsContent>
         </Tabs>
       </main>

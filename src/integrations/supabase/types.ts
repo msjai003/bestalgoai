@@ -909,6 +909,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_questions_answers: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          display_order: number
+          id: number
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       send_message: {
         Row: {
           created_at: string | null

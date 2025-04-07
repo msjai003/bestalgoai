@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
@@ -74,7 +73,7 @@ export const updateEducationProgress = async (userId: string, progress: {
   }
 };
 
-// Function to fetch questions by level (basics or intermediate)
+// Function to fetch questions by level (basics, intermediate, or pro)
 export const fetchQuestionsByLevel = async (level: string): Promise<{
   questions: { id: number | string; question: string; answer: string; display_order: number }[];
 } | null> => {
@@ -82,9 +81,13 @@ export const fetchQuestionsByLevel = async (level: string): Promise<{
     console.log(`Fetching ${level} questions`);
     
     // Use a type-safe table name based on the level
-    const tableName = level === 'intermediate' 
-      ? 'intermediate_questions_answers' 
-      : 'basics_question_answers';
+    let tableName = 'basics_question_answers';
+    
+    if (level === 'intermediate') {
+      tableName = 'intermediate_questions_answers';
+    } else if (level === 'pro') {
+      tableName = 'pro_questions_answers';
+    }
     
     const { data, error } = await supabase
       .from(tableName)
@@ -109,7 +112,7 @@ export const fetchQuestionsByLevel = async (level: string): Promise<{
   }
 };
 
-// Updated function to fetch module quiz data - using the dedicated tables for questions
+// Function to fetch module quiz data - using the dedicated tables for questions
 export const fetchModuleQuizData = async (moduleId: string, level: string = 'basics'): Promise<{
   questions: QuizQuestion[];
 } | null> => {
