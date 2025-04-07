@@ -26,10 +26,10 @@ export const BottomNav = () => {
           />
           
           <NavItem 
-            to="/education" 
+            to="/classes" 
             icon="fa-graduation-cap" 
             label="Classes" 
-            isActive={location.pathname === '/education'}
+            isActive={location.pathname === '/classes'}
           />
           
           <NavItem 

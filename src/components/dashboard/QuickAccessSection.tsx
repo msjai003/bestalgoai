@@ -33,7 +33,7 @@ const QuickAccessSection = () => {
         <QuickAccessItem
           icon={School}
           text="Classes"
-          route="/education"
+          route="/classes"
           className=""
         />
         
