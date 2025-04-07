@@ -19,17 +19,10 @@ export const BottomNav = () => {
           />
           
           <NavItem 
-            to="/education" 
-            icon="fa-graduation-cap" 
-            label="Classes" 
-            isActive={location.pathname === '/education'}
-          />
-          
-          <NavItem 
-            to="/strategy-selection" 
+            to="/strategy-management" 
             icon="fa-chart-simple" 
             label="Wishlist" 
-            isActive={location.pathname === '/strategy-selection'}
+            isActive={location.pathname === '/strategy-management'}
           />
           
           <NavItem 
@@ -37,13 +30,6 @@ export const BottomNav = () => {
             icon="fa-chart-line" 
             label="Trading" 
             isActive={location.pathname === '/live-trading'}
-          />
-          
-          <NavItem 
-            to="/backtest-report" 
-            icon="fa-chart-column" 
-            label="Backtest" 
-            isActive={['/backtest-report', '/zenflow-backtest', '/zenflow-backtest-report', '/backtest'].includes(location.pathname)}
           />
           
           <NavItem 
@@ -73,7 +59,7 @@ const NavItem = ({
     <Link 
       to={to} 
       className={cn(
-        "flex flex-col items-center w-14 transition-all duration-300",
+        "flex flex-col items-center w-16 transition-all duration-300",
         isActive ? "scale-100" : "opacity-80 hover:opacity-100"
       )}
     >
@@ -90,7 +76,7 @@ const NavItem = ({
         )}></i>
       </div>
       <span className={cn(
-        "text-[9px] font-medium tracking-wide transition-all duration-300",
+        "text-[10px] font-medium tracking-wide transition-all duration-300",
         isActive ? "text-cyan" : "text-gray-300"
       )}>
         {label}
