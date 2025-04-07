@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
@@ -161,7 +160,7 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
   }
 };
 
-// New function to fetch basic quiz multiple-choice questions
+// Function to fetch basic quiz multiple-choice questions
 export const fetchBasicQuizQuestions = async (): Promise<{
   questions: {
     id: number;
@@ -202,6 +201,50 @@ export const fetchBasicQuizQuestions = async (): Promise<{
     return { questions };
   } catch (error) {
     console.error('Error in fetchBasicQuizQuestions:', error);
+    return { questions: [] };
+  }
+};
+
+// Function to fetch intermediate quiz multiple-choice questions
+export const fetchIntermediateQuizQuestions = async (): Promise<{
+  questions: {
+    id: number;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+  }[];
+}> => {
+  try {
+    console.log('Fetching intermediate quiz questions');
+    
+    // Using any to bypass TypeScript errors since intermediate_quiz is not in types
+    const { data, error } = await (supabase as any)
+      .from('intermediate_quiz')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching intermediate quiz questions:', error);
+      return { questions: [] };
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No intermediate quiz questions found');
+      return { questions: [] };
+    }
+    
+    // Transform the data to the format we need
+    const questions = data.map((item: any) => ({
+      id: item.id,
+      question: item.question,
+      options: [item.option_a, item.option_b, item.option_c, item.option_d],
+      correctAnswer: item.correct_answer
+    }));
+    
+    console.log(`Found ${questions.length} intermediate quiz questions`);
+    return { questions };
+  } catch (error) {
+    console.error('Error in fetchIntermediateQuizQuestions:', error);
     return { questions: [] };
   }
 };
