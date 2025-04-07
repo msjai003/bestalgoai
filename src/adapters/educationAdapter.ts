@@ -248,3 +248,47 @@ export const fetchIntermediateQuizQuestions = async (): Promise<{
     return { questions: [] };
   }
 };
+
+// Function to fetch pro quiz multiple-choice questions
+export const fetchProQuizQuestions = async (): Promise<{
+  questions: {
+    id: number;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+  }[];
+}> => {
+  try {
+    console.log('Fetching pro quiz questions');
+    
+    // Using any to bypass TypeScript errors since pro_quiz is not in types
+    const { data, error } = await (supabase as any)
+      .from('pro_quiz')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching pro quiz questions:', error);
+      return { questions: [] };
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No pro quiz questions found');
+      return { questions: [] };
+    }
+    
+    // Transform the data to the format we need
+    const questions = data.map((item: any) => ({
+      id: item.id,
+      question: item.question,
+      options: [item.option_a, item.option_b, item.option_c, item.option_d],
+      correctAnswer: item.correct_answer
+    }));
+    
+    console.log(`Found ${questions.length} pro quiz questions`);
+    return { questions };
+  } catch (error) {
+    console.error('Error in fetchProQuizQuestions:', error);
+    return { questions: [] };
+  }
+};

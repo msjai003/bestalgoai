@@ -1017,6 +1017,45 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_quiz: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          display_order: number
+          id: number
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          display_order?: number
+          id?: number
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       send_message: {
         Row: {
           created_at: string | null
