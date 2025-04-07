@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';
@@ -153,6 +154,49 @@ export const fetchModuleQuizData = async (moduleId: string, level: string = 'bas
     return { questions };
   } catch (error) {
     console.error('Error in fetchModuleQuizData:', error);
+    return { questions: [] };
+  }
+};
+
+// New function to fetch basic quiz multiple-choice questions
+export const fetchBasicQuizQuestions = async (): Promise<{
+  questions: {
+    id: number;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+  }[];
+}> => {
+  try {
+    console.log('Fetching basic quiz questions');
+    
+    const { data, error } = await supabase
+      .from('basic_quiz')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching basic quiz questions:', error);
+      return { questions: [] };
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No basic quiz questions found');
+      return { questions: [] };
+    }
+    
+    // Transform the data to the format we need
+    const questions = data.map(item => ({
+      id: item.id,
+      question: item.question,
+      options: [item.option_a, item.option_b, item.option_c, item.option_d],
+      correctAnswer: item.correct_answer
+    }));
+    
+    console.log(`Found ${questions.length} basic quiz questions`);
+    return { questions };
+  } catch (error) {
+    console.error('Error in fetchBasicQuizQuestions:', error);
     return { questions: [] };
   }
 };
