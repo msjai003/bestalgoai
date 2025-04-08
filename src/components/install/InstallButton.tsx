@@ -10,9 +10,18 @@ interface InstallButtonProps {
   isAndroid: boolean;
   deferredPrompt: BeforeInstallPromptEvent | null;
   className?: string;
+  children?: React.ReactNode;
+  onClick?: () => void;
 }
 
-const InstallButton = ({ isIOS, isAndroid, deferredPrompt, className = '' }: InstallButtonProps) => {
+const InstallButton = ({ 
+  isIOS, 
+  isAndroid, 
+  deferredPrompt, 
+  className = '', 
+  children, 
+  onClick 
+}: InstallButtonProps) => {
   const handleInstallClick = async () => {
     if (!deferredPrompt && !isIOS && !isAndroid) return;
     
@@ -55,7 +64,21 @@ const InstallButton = ({ isIOS, isAndroid, deferredPrompt, className = '' }: Ins
         duration: 8000
       });
     }
+
+    // Call the onClick handler if provided
+    if (onClick) onClick();
   };
+
+  if (children) {
+    return (
+      <div 
+        onClick={handleInstallClick}
+        className={`cursor-pointer ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
 
   return (
     <Button

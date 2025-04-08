@@ -12,10 +12,9 @@ const AndroidInstallInstructions = () => {
         <li>Tap the menu button <span id="android-menu-button" className="inline-block animate-pulse-slow">
           <MoreVertical className="h-4 w-4 inline text-blue-400" />
         </span> in your browser</li>
-        <li>Look for "Install app" or "Add to Home screen"</li>
-        <li>Follow the on-screen instructions to complete installation</li>
-        <li>Once installed, find the app on your home screen</li>
-        <li>Open the app directly from your home screen for the full experience</li>
+        <li>Select "Install app" or "Add to Home screen"</li>
+        <li>Tap "Install" in the popup dialog</li>
+        <li>Once installed, find and open BestAlgo.ai from your home screen</li>
       </ol>
       <div className="mt-2 mb-2">
         <img src="/android-install-guide.png" alt="Android installation guide" className="rounded-md w-full max-w-[200px] mx-auto" onError={(e) => {
