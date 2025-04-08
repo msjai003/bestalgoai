@@ -25,10 +25,10 @@ const InstallButton = ({ isIOS, isAndroid, deferredPrompt }: InstallButtonProps)
         
         if (choiceResult.outcome === 'accepted') {
           console.log('User accepted the install prompt');
-          toast.success("Installation started");
+          toast.success("Installation started! You'll find the app on your home screen soon.");
         } else {
           console.log('User dismissed the install prompt');
-          toast.info("Installation declined");
+          toast.info("Installation declined. You can install later from the menu.");
         }
         
         // Clear the saved prompt since it can't be used again
@@ -47,7 +47,10 @@ const InstallButton = ({ isIOS, isAndroid, deferredPrompt }: InstallButtonProps)
       });
     } else if (isAndroid) {
       // For Android without install prompt
-      toast.info("To install: tap the menu button (⋮) and select 'Add to Home screen'", {
+      const menuButton = document.getElementById('android-menu-button');
+      if (menuButton) menuButton.classList.add('animate-pulse');
+      
+      toast.info("To install: tap the menu button and select 'Add to Home screen'", {
         duration: 8000
       });
     }
@@ -59,7 +62,7 @@ const InstallButton = ({ isIOS, isAndroid, deferredPrompt }: InstallButtonProps)
       className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity"
     >
       <Download className="mr-2 h-4 w-4" />
-      {isIOS ? "Got it" : isAndroid ? "Install App" : "Install App"}
+      {isIOS ? "Install on iOS" : isAndroid ? "Install on Android" : "Install App"}
     </Button>
   );
 };

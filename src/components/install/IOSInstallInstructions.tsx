@@ -14,6 +14,7 @@ const IOSInstallInstructions = () => {
         </span></li>
         <li>Scroll and select "Add to Home Screen"</li>
         <li>Tap "Add" in the top right corner</li>
+        <li>Find the app on your home screen</li>
       </ol>
       <div className="mt-2 mb-2">
         <img src="/ios-install-guide.png" alt="iOS installation guide" className="rounded-md w-full max-w-[200px] mx-auto" onError={(e) => {
