@@ -23,10 +23,19 @@
   ],
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#111827",
   "background_color": "#111827",
-  "orientation": "portrait",
   "description": "AI-powered algo trading platform for the Indian market",
   "categories": ["finance", "trading", "investment"],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot1.png",
+      "type": "image/png",
+      "sizes": "1080x2340",
+      "form_factor": "narrow"
+    }
+  ]
 }

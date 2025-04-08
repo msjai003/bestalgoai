@@ -1,49 +1,13 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Index from "./pages/Index";
-import Pricing from "./pages/Pricing";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-import Support from "./pages/Support";
-import Auth from "./pages/Auth";
-import Registration from "./pages/Registration";
-import Signup from "./pages/Signup";
-import Onboarding from "./pages/Onboarding";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
-import StrategyBuilder from "./pages/StrategyBuilder";
-import StrategySelection from "./pages/StrategySelection";
-import StrategyDetails from "./pages/StrategyDetails";
-import StrategyManagement from "./pages/StrategyManagement";
-import BacktestReport from "./pages/BacktestReport";
-import LiveTrading from "./pages/LiveTrading";
-import Alerts from "./pages/Alerts";
-import Settings from "./pages/Settings";
-import Notifications from "./pages/Notifications";
-import Subscription from "./pages/Subscription";
-import CommunityLearning from "./pages/CommunityLearning";
-import Logout from "./pages/Logout";
-import RiskManagement from "./pages/RiskManagement";
-import BrokerIntegration from "./pages/BrokerIntegration";
-import BrokerCredentials from "./pages/BrokerCredentials";
-import Terms from "./pages/Terms";
-import ForgotPassword from "./pages/ForgotPassword";
-import AuthCallback from "./pages/AuthCallback";
-import CustomStrategyAdmin from "./pages/CustomStrategyAdmin";
-import StrategyConfigAdmin from "./pages/StrategyConfigAdmin";
-import PriceAdminPage from "./pages/PriceAdminPage";
-import ColorTest from "./pages/ColorTest";
-import Education from "./pages/Education";
-import Classes from "./pages/Classes";
-import ZenflowBacktest from "./pages/ZenflowBacktest";
-import ZenflowBacktestReport from "./pages/ZenflowBacktestReport";
-import ApiKeys from "./pages/ApiKeys";
+import InstallPrompt from "@/components/InstallPrompt";
+import { initializeCapacitor } from "@/services/capacitorService";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +138,17 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    // Initialize Capacitor when the app starts
+    const platform = window.navigator.userAgent;
+    const isNative = platform.includes('android') || platform.includes('ios');
+    
+    if (isNative) {
+      initializeCapacitor()
+        .catch(err => console.error('Failed to initialize capacitor:', err));
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -182,6 +157,7 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
+            <InstallPrompt />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
