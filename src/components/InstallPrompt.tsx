@@ -1,8 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X, Share2 } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { BeforeInstallPromptEvent } from '@/types/installation';
+import IOSInstallInstructions from './install/IOSInstallInstructions';
+import AndroidInstallInstructions from './install/AndroidInstallInstructions';
+import GenericInstallInstructions from './install/GenericInstallInstructions';
+import InstallButton from './install/InstallButton';
 
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -89,48 +94,6 @@ const InstallPrompt = () => {
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!window.deferredInstallPrompt && !isIOS && !isAndroid) return;
-    
-    if (window.deferredInstallPrompt) {
-      try {
-        // Show the install prompt
-        window.deferredInstallPrompt.prompt();
-        
-        // Wait for the user to respond to the prompt
-        const choiceResult = await window.deferredInstallPrompt.userChoice;
-        
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-          toast.success("Installation started");
-        } else {
-          console.log('User dismissed the install prompt');
-          toast.info("Installation declined");
-        }
-        
-        // Clear the saved prompt since it can't be used again
-        window.deferredInstallPrompt = null;
-        setIsInstallable(false);
-      } catch (error) {
-        console.error('Error during installation:', error);
-        toast.error("Installation failed. Please try again.");
-      }
-    } else if (isIOS) {
-      // For iOS, provide more visible instructions with animation
-      const shareButton = document.getElementById('ios-share-button');
-      if (shareButton) shareButton.classList.add('animate-pulse');
-      
-      toast.info("To install: tap the share button and select 'Add to Home Screen'", {
-        duration: 8000
-      });
-    } else if (isAndroid) {
-      // For Android without install prompt
-      toast.info("To install: tap the menu button (⋮) and select 'Add to Home screen'", {
-        duration: 8000
-      });
-    }
-  };
-
   const dismissPrompt = () => {
     setShowPrompt(false);
     // Save in localStorage that user has dismissed the prompt
@@ -156,47 +119,18 @@ const InstallPrompt = () => {
       </div>
       
       {isIOS ? (
-        <div>
-          <p className="text-gray-300 text-sm mb-3">
-            Add this app to your home screen for the best experience:
-          </p>
-          <ol className="text-gray-300 text-xs space-y-1 mb-3 list-decimal ml-4">
-            <li>Tap the share button <span id="ios-share-button" className="inline-block animate-pulse-slow">
-              <Share2 className="h-4 w-4 inline text-blue-400" />
-            </span></li>
-            <li>Scroll and select "Add to Home Screen"</li>
-            <li>Tap "Add" in the top right corner</li>
-          </ol>
-          <div className="mt-2 mb-2">
-            <img src="/ios-install-guide.png" alt="iOS installation guide" className="rounded-md w-full max-w-[200px] mx-auto" onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }} />
-          </div>
-        </div>
+        <IOSInstallInstructions />
       ) : isAndroid ? (
-        <div>
-          <p className="text-gray-300 text-sm mb-3">
-            Add this app to your home screen for the best experience:
-          </p>
-          <ol className="text-gray-300 text-xs space-y-1 mb-3 list-decimal ml-4">
-            <li>Tap the menu button (⋮) in your browser</li>
-            <li>Select "Add to Home screen" or "Install app"</li>
-            <li>Confirm by tapping "Add" or "Install"</li>
-          </ol>
-        </div>
+        <AndroidInstallInstructions />
       ) : (
-        <p className="text-gray-300 text-sm mb-3">
-          Install our app for faster access and a better experience offline!
-        </p>
+        <GenericInstallInstructions />
       )}
       
-      <Button
-        onClick={handleInstallClick}
-        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity"
-      >
-        <Download className="mr-2 h-4 w-4" />
-        {isIOS ? "Got it" : isAndroid ? "Install App" : "Install App"}
-      </Button>
+      <InstallButton 
+        isIOS={isIOS} 
+        isAndroid={isAndroid} 
+        deferredPrompt={window.deferredInstallPrompt} 
+      />
     </div>
   );
 };
