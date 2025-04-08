@@ -1,17 +1,74 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Download } from 'lucide-react';
+import { BeforeInstallPromptEvent } from '@/types/installation';
+import { toast } from 'sonner';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isInstallable, setIsInstallable] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
   
+  useEffect(() => {
+    // Check if app is already installed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                          (window.navigator as any).standalone || 
+                          document.referrer.includes('android-app://');
+    
+    if (isStandalone) {
+      setIsInstallable(false);
+      return;
+    }
+    
+    // Handle the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Store the event for later use
+      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check for iOS
+    const userAgent = navigator.userAgent || '';
+    const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    
+    if (isIOSDevice && !isStandalone) {
+      setIsInstallable(true);
+    }
+
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
+      // Clear the prompt
+      window.deferredInstallPrompt = null;
+      setIsInstallable(false);
+      // Show success message
+      toast.success("App installed successfully!");
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', () => {});
+    };
+  }, []);
+  
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+  
+  const handleInstallClick = () => {
+    // Using the global showInstallPrompt function
+    if (window.showInstallPrompt) {
+      window.showInstallPrompt();
+    } else {
+      toast.error("Installation not available at the moment");
+    }
   };
   
   const navigation = [
@@ -28,7 +85,6 @@ const Header = () => {
   };
 
   return (
-    
     <header className="relative z-10 bg-charcoalSecondary border-b border-white/5">
       <nav className="container mx-auto px-4 flex items-center justify-between py-3">
         <div className="flex items-center">
@@ -54,7 +110,19 @@ const Header = () => {
           </div>
         </div>
         
-        <div className="flex items-center">
+        <div className="flex items-center space-x-2">
+          {isInstallable && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-charcoalSecondary border-cyan/30 text-cyan rounded-full shadow-glow hover:bg-charcoalSecondary/80 hover:border-cyan/60"
+              onClick={handleInstallClick}
+              title="Install App"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
+          
           {user ? (
             <Link to="/dashboard">
               <Button variant="gradient" className="hidden md:block">
@@ -100,6 +168,19 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {isInstallable && (
+              <button
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
+                onClick={() => {
+                  handleInstallClick();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Install App <Download className="h-4 w-4 inline ml-1" />
+              </button>
+            )}
+            
             {user ? (
               <Link
                 to="/dashboard"

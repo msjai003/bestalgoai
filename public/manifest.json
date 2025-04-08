@@ -45,6 +45,13 @@
       "description": "View your trading dashboard",
       "url": "/dashboard",
       "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Strategies",
+      "short_name": "Strategies",
+      "description": "Browse trading strategies",
+      "url": "/strategy",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
     }
   ]
 }
