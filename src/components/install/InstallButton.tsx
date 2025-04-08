@@ -9,16 +9,17 @@ interface InstallButtonProps {
   isIOS: boolean;
   isAndroid: boolean;
   deferredPrompt: BeforeInstallPromptEvent | null;
+  className?: string;
 }
 
-const InstallButton = ({ isIOS, isAndroid, deferredPrompt }: InstallButtonProps) => {
+const InstallButton = ({ isIOS, isAndroid, deferredPrompt, className = '' }: InstallButtonProps) => {
   const handleInstallClick = async () => {
     if (!deferredPrompt && !isIOS && !isAndroid) return;
     
     if (deferredPrompt) {
       try {
         // Show the install prompt
-        deferredPrompt.prompt();
+        await deferredPrompt.prompt();
         
         // Wait for the user to respond to the prompt
         const choiceResult = await deferredPrompt.userChoice;
@@ -59,7 +60,7 @@ const InstallButton = ({ isIOS, isAndroid, deferredPrompt }: InstallButtonProps)
   return (
     <Button
       onClick={handleInstallClick}
-      className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+      className={`bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity ${className}`}
     >
       <Download className="mr-2 h-4 w-4" />
       {isIOS ? "Install on iOS" : isAndroid ? "Install on Android" : "Install App"}
