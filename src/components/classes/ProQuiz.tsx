@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { fetchProQuizQuestions } from '@/adapters/educationAdapter';
-import { Check, X, RefreshCw, ArrowLeft, ArrowRight } from 'lucide-react';
+import QuizHeader from './quiz/QuizHeader';
+import QuizQuestionCard from './quiz/QuizQuestionCard';
+import QuizResults from './quiz/QuizResults';
+import LoadingState from './quiz/LoadingState';
+import ErrorState from './quiz/ErrorState';
 
-interface QuizQuestion {
+export interface QuizQuestion {
   id: number;
   question: string;
   options: string[];
@@ -104,29 +105,11 @@ const ProQuiz = () => {
   };
 
   if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-cyan border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-          <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
-        </div>
-        <p className="mt-4 text-gray-400">Loading quiz questions...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500">{error}</p>
-        <Button 
-          variant="outline" 
-          className="mt-4"
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </Button>
-      </div>
-    );
+    return <ErrorState error={error} />;
   }
 
   if (questions.length === 0) {
@@ -139,139 +122,34 @@ const ProQuiz = () => {
 
   if (quizComplete) {
     return (
-      <div className="mt-6">
-        <Card className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40">
-          <h2 className="text-xl font-bold mb-4">Quiz Complete!</h2>
-          <p className="mb-4">You scored {correctAnswers} out of {questions.length} questions correctly.</p>
-          
-          <div className="mb-6">
-            <div className="text-4xl font-bold text-cyan my-2">
-              {Math.round((correctAnswers / questions.length) * 100)}%
-            </div>
-            <Progress 
-              value={(correctAnswers / questions.length) * 100} 
-              className="h-2 w-full bg-charcoalPrimary"
-            />
-          </div>
-          
-          {correctAnswers / questions.length >= 0.7 ? (
-            <div className="bg-green-900/20 border border-green-700 rounded-lg p-4 mb-6">
-              <p className="text-green-300 font-medium">
-                Great job! You've passed this quiz.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-orange-900/20 border border-orange-700 rounded-lg p-4 mb-6">
-              <p className="text-orange-300">
-                You need 70% to pass. Keep studying and try again!
-              </p>
-            </div>
-          )}
-          
-          <Button 
-            onClick={restartQuiz}
-            className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 w-full"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
-          </Button>
-        </Card>
-      </div>
+      <QuizResults 
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        onRestartQuiz={restartQuiz}
+      />
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const isFirstQuestion = currentQuestionIndex === 0;
-  const correctOptionIndex = getCorrectOptionIndex(currentQuestion.correctAnswer);
-
   return (
     <div className="mt-6">
-      <h2 className="text-xl font-bold mb-4">Professional Algo Trading Quiz</h2>
+      <QuizHeader 
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={questions.length}
+        progress={progress}
+      />
       
-      <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-        <div>
-          Question {currentQuestionIndex + 1} of {questions.length}
-        </div>
-      </div>
-      
-      <Progress value={progress} className="h-1 w-full bg-charcoalPrimary mb-4" />
-      
-      <Card className="bg-charcoalSecondary rounded-xl p-5 border border-gray-800/40">
-        <div className="mb-6">
-          <div className="text-xs text-gray-400 mb-1">
-            Question {currentQuestionIndex + 1}
-          </div>
-          <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">{currentQuestion.question}</h3>
-          
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => (
-              <div 
-                key={index}
-                onClick={() => handleOptionSelect(index)}
-                className="w-full cursor-pointer"
-              >
-                <Card 
-                  className={`p-4 border transition-colors ${
-                    selectedOption === index 
-                      ? index === correctOptionIndex
-                        ? 'bg-green-900/30 border-green-500'
-                        : 'bg-red-900/30 border-red-500'
-                      : 'bg-charcoalPrimary border-gray-700 hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border mr-3 flex items-center justify-center ${
-                      selectedOption === index 
-                        ? index === correctOptionIndex
-                          ? 'border-green-500 bg-green-500/20' 
-                          : 'border-red-500 bg-red-500/20'
-                        : 'border-gray-500'
-                    }`}>
-                      <span className="font-medium text-sm">{getOptionLabel(index)}</span>
-                    </div>
-                    <span>{option}</span>
-                    
-                    {isAnswered && (
-                      <div className="ml-auto">
-                        {index === correctOptionIndex && (
-                          <Check className="h-5 w-5 text-green-500" />
-                        )}
-                        {selectedOption === index && index !== correctOptionIndex && (
-                          <X className="h-5 w-5 text-red-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="flex justify-between gap-2">
-          <Button 
-            variant="secondary" 
-            size="sm"
-            onClick={handlePrevious} 
-            disabled={isFirstQuestion}
-            className="flex-1"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            <span className="hidden sm:inline">Previous</span>
-            <span className="sm:hidden">Prev</span>
-          </Button>
-          <Button 
-            size="sm"
-            onClick={handleNext} 
-            disabled={!isAnswered}
-            className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
-          >
-            <span>{isLastQuestion ? "Finish" : "Next"}</span>
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
-      </Card>
+      <QuizQuestionCard
+        currentQuestion={questions[currentQuestionIndex]}
+        currentQuestionIndex={currentQuestionIndex}
+        selectedOption={selectedOption}
+        isAnswered={isAnswered}
+        questions={questions}
+        onOptionSelect={handleOptionSelect}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        getCorrectOptionIndex={getCorrectOptionIndex}
+        getOptionLabel={getOptionLabel}
+      />
     </div>
   );
 };
