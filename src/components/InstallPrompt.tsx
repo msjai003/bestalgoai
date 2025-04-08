@@ -9,6 +9,13 @@ import AndroidInstallInstructions from './install/AndroidInstallInstructions';
 import GenericInstallInstructions from './install/GenericInstallInstructions';
 import InstallButton from './install/InstallButton';
 
+// Save a global reference to the deferredPrompt for use by other components
+declare global {
+  interface Window {
+    showInstallPrompt: () => void;
+  }
+}
+
 const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -41,26 +48,24 @@ const InstallPrompt = () => {
       // Store the event for later use
       window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
       setIsInstallable(true);
-      
-      // Show our custom install button immediately instead of after a delay
-      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
-      if (!installPromptDismissed) {
-        setShowPrompt(true);
-      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // For iOS, we'll show different instructions
     if (isIOSDevice && !isStandalone) {
-      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
       setIsInstallable(true);
-      
-      // Show the iOS prompt immediately instead of after a delay
-      if (!installPromptDismissed) {
-        setShowPrompt(true);
-      }
     }
+
+    // Create a global function to show the install prompt
+    window.showInstallPrompt = () => {
+      const installPromptDismissed = localStorage.getItem('installPromptDismissed');
+      if (!installPromptDismissed && isInstallable) {
+        setShowPrompt(true);
+      } else {
+        toast.info("You've previously dismissed the install prompt. The app is still available to install.");
+      }
+    };
 
     // Listen for app installed event
     window.addEventListener('appinstalled', () => {
@@ -72,27 +77,11 @@ const InstallPrompt = () => {
       toast.success("App installed successfully!");
     });
 
-    // Check if manifest exists and is correctly linked
-    const linkManifest = document.querySelector('link[rel="manifest"]');
-    if (!linkManifest) {
-      console.error("No manifest link found in document head");
-    }
-
-    // Show a message to help users find the install option
-    setTimeout(() => {
-      if (!isStandalone && (window.deferredInstallPrompt || isIOSDevice || isAndroidDevice)) {
-        toast.info("You can install this app on your device for a better experience!", {
-          duration: 5000,
-          position: "top-center"
-        });
-      }
-    }, 2000);
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', () => {});
     };
-  }, []);
+  }, [isInstallable]);
 
   const dismissPrompt = () => {
     setShowPrompt(false);
