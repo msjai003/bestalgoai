@@ -62,12 +62,48 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
   
-  const handleInstallClick = () => {
-    // Using the global showInstallPrompt function
-    if (window.showInstallPrompt) {
-      window.showInstallPrompt();
+  const handleInstallClick = async () => {
+    if (window.deferredInstallPrompt) {
+      try {
+        // Show the install prompt
+        await window.deferredInstallPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const choiceResult = await window.deferredInstallPrompt.userChoice;
+        
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+          toast.success("Installation started! You'll find the app on your home screen soon.");
+        } else {
+          console.log('User dismissed the install prompt');
+          toast.info("Installation declined. You can install later if needed.");
+        }
+        
+        // Clear the saved prompt since it can't be used again
+        window.deferredInstallPrompt = null;
+      } catch (error) {
+        console.error('Error during installation:', error);
+        toast.error("Installation failed. Please try again.");
+      }
     } else {
-      toast.error("Installation not available at the moment");
+      // For iOS or other platforms where the deferredInstallPrompt is not available
+      const userAgent = navigator.userAgent || '';
+      const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+      const isAndroidDevice = /Android/.test(userAgent);
+      
+      if (isIOSDevice) {
+        toast.info("To install: tap the share button and select 'Add to Home Screen'", {
+          duration: 5000
+        });
+      } else if (isAndroidDevice) {
+        toast.info("To install: tap the menu button and select 'Add to Home screen'", {
+          duration: 5000
+        });
+      } else {
+        toast.info("To install, use your browser's menu options to add this site to your home screen", {
+          duration: 5000
+        });
+      }
     }
   };
   
@@ -171,7 +207,7 @@ const Header = () => {
             
             {isInstallable && (
               <button
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
+                className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
                 onClick={() => {
                   handleInstallClick();
                   setMobileMenuOpen(false);
