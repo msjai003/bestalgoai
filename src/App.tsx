@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,46 @@ import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
+
+// Import all the pages that are used in the routes
+import Index from "@/pages/Index";
+import Pricing from "@/pages/Pricing";
+import About from "@/pages/About";
+import Blog from "@/pages/Blog";
+import Support from "@/pages/Support";
+import Auth from "@/pages/Auth";
+import AuthCallback from "@/pages/AuthCallback";
+import Registration from "@/pages/Registration";
+import Signup from "@/pages/Signup";
+import ForgotPassword from "@/pages/ForgotPassword";
+import Terms from "@/pages/Terms";
+import Logout from "@/pages/Logout";
+import ColorTest from "@/pages/ColorTest";
+import Education from "@/pages/Education";
+import Classes from "@/pages/Classes";
+import Dashboard from "@/pages/Dashboard";
+import Onboarding from "@/pages/Onboarding";
+import StrategyBuilder from "@/pages/StrategyBuilder";
+import StrategySelection from "@/pages/StrategySelection";
+import StrategyDetails from "@/pages/StrategyDetails";
+import StrategyManagement from "@/pages/StrategyManagement";
+import BacktestReport from "@/pages/BacktestReport";
+import ZenflowBacktest from "@/pages/ZenflowBacktest";
+import ZenflowBacktestReport from "@/pages/ZenflowBacktestReport";
+import LiveTrading from "@/pages/LiveTrading";
+import Alerts from "@/pages/Alerts";
+import Settings from "@/pages/Settings";
+import Notifications from "@/pages/Notifications";
+import Subscription from "@/pages/Subscription";
+import CommunityLearning from "@/pages/CommunityLearning";
+import RiskManagement from "@/pages/RiskManagement";
+import BrokerIntegration from "@/pages/BrokerIntegration";
+import BrokerCredentials from "@/pages/BrokerCredentials";
+import CustomStrategyAdmin from "@/pages/CustomStrategyAdmin";
+import StrategyConfigAdmin from "@/pages/StrategyConfigAdmin";
+import PriceAdminPage from "@/pages/PriceAdminPage";
+import ApiKeys from "@/pages/ApiKeys";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
