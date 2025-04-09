@@ -79,7 +79,7 @@ export const brokers: Broker[] = [
   },
   {
     id: 8,
-    name: "Bigul", // Updated from "Bigil" to "Bigul"
+    name: "Bigul",
     logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg",
     description: "New-age trading platform with innovative features",
     supportedAssets: ["Stocks", "Options", "Futures", "ETFs"],
@@ -87,4 +87,3 @@ export const brokers: Broker[] = [
     apiRequired: true,
   }
 ];
-

@@ -43,4 +43,3 @@ export const strategyDescriptions = {
   "Position Trading": "Long-term trading strategy that holds positions for extended periods.",
   "Trend Following": "Strategy that follows the overall market trend for longer durations."
 } as const;
-
