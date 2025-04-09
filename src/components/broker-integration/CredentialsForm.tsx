@@ -51,12 +51,10 @@ export const CredentialsForm = ({
     });
   };
 
-  // Mask sensitive data
-  const maskValue = (value: string) => {
-    if (!value) return "";
-    return value.length > 8 
-      ? `${value.substring(0, 2)}${"X".repeat(value.length - 4)}${value.substring(value.length - 2)}`
-      : "X".repeat(value.length);
+  // Check if a specific input field is required
+  const isFieldRequired = (fieldName: string) => {
+    if (!selectedBroker?.requiredInputs) return false;
+    return selectedBroker.requiredInputs.includes(fieldName);
   };
 
   return (
@@ -73,7 +71,14 @@ export const CredentialsForm = ({
       {selectedBroker && (
         <div className="mb-6 p-4 bg-gray-800/30 rounded-xl border border-gray-700">
           <div className="flex items-center">
-            <img src={selectedBroker.logo} className="w-12 h-12 rounded-lg" alt={selectedBroker.name} />
+            <img 
+              src={selectedBroker.logo} 
+              className="w-12 h-12 rounded-lg" 
+              alt={selectedBroker.name} 
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
+            />
             <div className="ml-3">
               <h3 className="font-semibold text-lg">{selectedBroker.name}</h3>
               <p className="text-sm text-gray-400">{selectedBroker.description}</p>
@@ -102,7 +107,7 @@ export const CredentialsForm = ({
       )}
 
       <div className="space-y-4">
-        {/* Username and Password - Required by database schema */}
+        {/* Username and Password - always required */}
         <div>
           <Label htmlFor="username" className="text-gray-300 flex items-center gap-2">
             <User className="w-4 h-4" /> Username / Account ID
@@ -114,6 +119,7 @@ export const CredentialsForm = ({
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.username}
             onChange={(e) => updateCredential('username', e.target.value)}
+            required
           />
           <p className="text-gray-400 text-xs mt-1">
             This will be used to connect to your broker's API.
@@ -132,6 +138,7 @@ export const CredentialsForm = ({
               className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
               value={credentials.password}
               onChange={(e) => updateCredential('password', e.target.value)}
+              required
             />
             <Button
               type="button"
@@ -185,131 +192,140 @@ export const CredentialsForm = ({
           </p>
         </div>
 
-        <div>
-          <Label htmlFor="sessionId" className="text-gray-300 flex items-center gap-2">
-            <Hash className="w-4 h-4" /> Session ID
-          </Label>
-          <div className="relative">
-            <Input
-              id="sessionId"
-              type={fieldVisibility.sessionId ? "text" : "password"}
-              placeholder="Enter your session ID"
-              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-              value={credentials.sessionId}
-              onChange={(e) => updateCredential('sessionId', e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1 h-8 w-8 p-0"
-              onClick={() => toggleFieldVisibility('sessionId')}
-            >
-              {fieldVisibility.sessionId ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-              <span className="sr-only">Toggle session ID visibility</span>
-            </Button>
+        {/* Session ID - Show if required */}
+        {(isFieldRequired('session_id') || credentials.sessionId) && (
+          <div>
+            <Label htmlFor="sessionId" className="text-gray-300 flex items-center gap-2">
+              <Hash className="w-4 h-4" /> Session ID
+            </Label>
+            <div className="relative">
+              <Input
+                id="sessionId"
+                type={fieldVisibility.sessionId ? "text" : "password"}
+                placeholder="Enter your session ID"
+                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                value={credentials.sessionId}
+                onChange={(e) => updateCredential('sessionId', e.target.value)}
+                required={isFieldRequired('session_id')}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-8 w-8 p-0"
+                onClick={() => toggleFieldVisibility('sessionId')}
+              >
+                {fieldVisibility.sessionId ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle session ID visibility</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {showApiFields && (
-          <>
-            <div>
-              <Label htmlFor="apiKey" className="text-gray-300 flex items-center gap-2">
-                <Key className="w-4 h-4" /> API Key
-              </Label>
-              <div className="relative">
-                <Input
-                  id="apiKey"
-                  type={fieldVisibility.apiKey ? "text" : "password"}
-                  placeholder="Enter your API key"
-                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-                  value={credentials.apiKey}
-                  onChange={(e) => updateCredential('apiKey', e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1 h-8 w-8 p-0"
-                  onClick={() => toggleFieldVisibility('apiKey')}
-                >
-                  {fieldVisibility.apiKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Toggle API key visibility</span>
-                </Button>
-              </div>
+        {/* API fields - show if required or if showApiFields is true */}
+        {((showApiFields || isFieldRequired('api_key')) && (
+          <div>
+            <Label htmlFor="apiKey" className="text-gray-300 flex items-center gap-2">
+              <Key className="w-4 h-4" /> API Key
+            </Label>
+            <div className="relative">
+              <Input
+                id="apiKey"
+                type={fieldVisibility.apiKey ? "text" : "password"}
+                placeholder="Enter your API key"
+                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                value={credentials.apiKey}
+                onChange={(e) => updateCredential('apiKey', e.target.value)}
+                required={isFieldRequired('api_key')}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-8 w-8 p-0"
+                onClick={() => toggleFieldVisibility('apiKey')}
+              >
+                {fieldVisibility.apiKey ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle API key visibility</span>
+              </Button>
             </div>
+          </div>
+        ))}
 
-            {/* Show Secret Key only for brokers that require it */}
-            {selectedBroker?.requiresSecretKey && (
-              <div>
-                <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
-                  <FileKey className="w-4 h-4" /> Secret Key
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="secretKey"
-                    type={fieldVisibility.secretKey ? "text" : "password"}
-                    placeholder="Enter your secret key"
-                    className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-                    value={credentials.secretKey}
-                    onChange={(e) => updateCredential('secretKey', e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1 h-8 w-8 p-0"
-                    onClick={() => toggleFieldVisibility('secretKey')}
-                  >
-                    {fieldVisibility.secretKey ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Toggle secret key visibility</span>
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
-                <Shield className="w-4 h-4" /> 2FA Secret
-              </Label>
-              <div className="relative">
-                <Input
-                  id="twoFactorSecret"
-                  type={fieldVisibility.twoFactorSecret ? "text" : "password"}
-                  placeholder="Enter your 2FA secret"
-                  className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-                  value={credentials.twoFactorSecret}
-                  onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1 h-8 w-8 p-0"
-                  onClick={() => toggleFieldVisibility('twoFactorSecret')}
-                >
-                  {fieldVisibility.twoFactorSecret ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Toggle 2FA secret visibility</span>
-                </Button>
-              </div>
+        {/* Secret Key - Show if required */}
+        {((selectedBroker?.requiresSecretKey || isFieldRequired('secret_key')) && (
+          <div>
+            <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
+              <FileKey className="w-4 h-4" /> Secret Key
+            </Label>
+            <div className="relative">
+              <Input
+                id="secretKey"
+                type={fieldVisibility.secretKey ? "text" : "password"}
+                placeholder="Enter your secret key"
+                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                value={credentials.secretKey}
+                onChange={(e) => updateCredential('secretKey', e.target.value)}
+                required={isFieldRequired('secret_key')}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-8 w-8 p-0"
+                onClick={() => toggleFieldVisibility('secretKey')}
+              >
+                {fieldVisibility.secretKey ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle secret key visibility</span>
+              </Button>
             </div>
-          </>
+          </div>
+        ))}
+
+        {/* 2FA Secret - Show if required */}
+        {(isFieldRequired('two_factor') || credentials.twoFactorSecret) && (
+          <div>
+            <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
+              <Shield className="w-4 h-4" /> 2FA Secret
+            </Label>
+            <div className="relative">
+              <Input
+                id="twoFactorSecret"
+                type={fieldVisibility.twoFactorSecret ? "text" : "password"}
+                placeholder="Enter your 2FA secret"
+                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+                value={credentials.twoFactorSecret}
+                onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
+                required={isFieldRequired('two_factor')}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-8 w-8 p-0"
+                onClick={() => toggleFieldVisibility('twoFactorSecret')}
+              >
+                {fieldVisibility.twoFactorSecret ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle 2FA secret visibility</span>
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 

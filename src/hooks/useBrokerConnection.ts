@@ -29,7 +29,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [productType, setProductType] = useState("qwedhidnqin213"); // Add state for product type with default value
+  const [productType, setProductType] = useState("qwedhidnqin213"); // Default value
 
   // Load existing broker credentials if available
   useEffect(() => {
@@ -86,14 +86,50 @@ export const useBrokerConnection = (selectedBroker: any) => {
     loadBrokerCredentials();
   }, [user, selectedBroker]);
 
-  const handleCredentialsSubmit = async () => {
+  const validateCredentials = () => {
+    // Check if the broker has required inputs defined
+    const requiredInputs = selectedBroker?.requiredInputs || [];
+    
+    // Always require username and password
     if (!credentials.username) {
       toast.error("Please enter your username");
-      return;
+      return false;
     }
 
     if (!credentials.password) {
       toast.error("Please enter your password");
+      return false;
+    }
+
+    // Check for API key if required
+    if (requiredInputs.includes('api_key') && !credentials.apiKey) {
+      toast.error("Please enter your API key");
+      return false;
+    }
+
+    // Check for secret key if required
+    if (requiredInputs.includes('secret_key') && !credentials.secretKey) {
+      toast.error("Please enter your secret key");
+      return false;
+    }
+
+    // Check for session ID if required
+    if (requiredInputs.includes('session_id') && !credentials.sessionId) {
+      toast.error("Please enter your session ID");
+      return false;
+    }
+
+    // Check for 2FA if required
+    if (requiredInputs.includes('two_factor') && !credentials.twoFactorSecret) {
+      toast.error("Please enter your 2FA secret");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCredentialsSubmit = async () => {
+    if (!validateCredentials()) {
       return;
     }
 
@@ -126,7 +162,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
           session_id: credentials.sessionId,
-          product_type: productType, // Include product type in update
+          product_type: productType,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -170,7 +206,6 @@ export const useBrokerConnection = (selectedBroker: any) => {
           user_id: user.id,
           broker_id: selectedBroker.id,
           broker_name: selectedBroker.name,
-          // Store all credential fields correctly, but leave accesstoken empty
           username: credentials.username,
           password: credentials.password,
           accesstoken: "valid", // Set default value "valid" for access token
@@ -178,7 +213,7 @@ export const useBrokerConnection = (selectedBroker: any) => {
           secret_key: credentials.secretKey,
           two_factor_secret: credentials.twoFactorSecret,
           session_id: credentials.sessionId,
-          product_type: productType, // Include product type
+          product_type: productType,
           status: 'connected'
         });
 
@@ -232,6 +267,6 @@ export const useBrokerConnection = (selectedBroker: any) => {
     isConnected,
     isLoading,
     productType,
-    setProductType // Export the product type state and setter
+    setProductType
   };
 };

@@ -309,6 +309,36 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_details: {
+        Row: {
+          broker_name: string
+          created_at: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean | null
+          required_inputs: Json
+          updated_at: string | null
+        }
+        Insert: {
+          broker_name: string
+          created_at?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          broker_name?: string
+          created_at?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           broker_username: string | null

@@ -1,15 +1,36 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, HelpCircle } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
-import { brokers } from "@/components/broker-integration/BrokerData";
+import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { toast } from "sonner";
+import { fetchBrokerDetails } from "@/services/brokerService";
+import { Broker } from "@/types/broker";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
+  const [brokers, setBrokers] = useState<Broker[]>(staticBrokers);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBrokers = async () => {
+      setLoading(true);
+      try {
+        const brokerData = await fetchBrokerDetails();
+        setBrokers(brokerData);
+      } catch (error) {
+        console.error("Error loading brokers:", error);
+        toast.error("Failed to load broker list");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBrokers();
+  }, []);
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
@@ -36,7 +57,8 @@ const BrokerIntegration = () => {
       <main className="pt-20 px-4 pb-24">
         <BrokerList 
           brokers={brokers} 
-          onSelectBroker={handleSelectBroker} 
+          onSelectBroker={handleSelectBroker}
+          loading={loading}
         />
       </main>
 

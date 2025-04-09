@@ -4,18 +4,36 @@ import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton"; 
 
 interface BrokerListProps {
   brokers: Broker[];
   onSelectBroker: (brokerId: number) => void;
+  loading?: boolean;
 }
 
-export const BrokerList = ({ brokers, onSelectBroker }: BrokerListProps) => {
+export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredBrokers = brokers.filter((broker) =>
     broker.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <section className="mb-6">
+        <h1 className="text-2xl font-bold mb-4">Connect Your Broker</h1>
+        <div className="relative">
+          <Skeleton className="w-full h-12 rounded-xl" />
+        </div>
+        <div className="mt-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="w-full h-24 rounded-xl" />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-6">
@@ -56,12 +74,12 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
   // Refresh functions when component mounts
   useEffect(() => {
     refresh();
-  }, [broker.id]);
+  }, [broker.id, refresh]);
   
   const enabledFunctions = functions.filter(func => func.function_enabled);
   const premiumFunctions = functions.filter(func => func.is_premium && func.function_enabled);
   
-  // Get broker image from the first function if available
+  // Get broker image from the first function if available, or use broker.logo
   const brokerImage = functions.length > 0 && functions[0].broker_image 
     ? functions[0].broker_image 
     : broker.logo;
@@ -78,6 +96,10 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         src={brokerImage}
         className="w-10 h-10 rounded-lg object-cover"
         alt={displayName}
+        onError={(e) => {
+          // Fallback to placeholder if image fails to load
+          (e.target as HTMLImageElement).src = "/placeholder.svg";
+        }}
       />
       <div className="ml-3 flex-1">
         <h3 className="font-semibold">{displayName}</h3>

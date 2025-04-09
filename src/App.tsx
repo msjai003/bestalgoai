@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,6 +48,7 @@ import StrategyConfigAdmin from "@/pages/StrategyConfigAdmin";
 import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
+import BrokerManagement from "@/pages/BrokerManagement";
 
 const queryClient = new QueryClient();
 
@@ -172,6 +172,7 @@ function AppRoutes() {
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
       <Route path="/price-admin" element={<PriceAdminPage />} />
       <Route path="/api-keys" element={<ApiKeys />} />
+      <Route path="/broker-management" element={<BrokerManagement />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -1,0 +1,72 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+
+/**
+ * Upload a broker image to storage and return the public URL
+ */
+export const uploadBrokerImage = async (
+  file: File,
+  brokerId: number
+): Promise<string | null> => {
+  try {
+    // Generate a unique file name
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${brokerId}-${uuidv4()}.${fileExt}`;
+    const filePath = `broker-logos/${fileName}`;
+    
+    // Upload the file to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('broker-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+    
+    if (error) {
+      console.error('Error uploading broker image:', error);
+      return null;
+    }
+    
+    // Get the public URL for the uploaded file
+    const { data: { publicUrl } } = supabase.storage
+      .from('broker-images')
+      .getPublicUrl(filePath);
+    
+    return publicUrl;
+  } catch (error) {
+    console.error('Exception uploading broker image:', error);
+    return null;
+  }
+};
+
+/**
+ * Convert a base64 image to a File object
+ */
+export const base64ToFile = (
+  base64String: string,
+  filename: string
+): File | null => {
+  try {
+    // Extract the MIME type and base64 data
+    const arr = base64String.split(',');
+    if (arr.length < 2) return null;
+    
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    if (!mimeMatch) return null;
+    
+    const mime = mimeMatch[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new File([u8arr], filename, { type: mime });
+  } catch (error) {
+    console.error('Error converting base64 to File:', error);
+    return null;
+  }
+};

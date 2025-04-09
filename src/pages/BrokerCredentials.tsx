@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CredentialsForm } from "@/components/broker-integration/CredentialsForm";
 import { AccountSettings } from "@/components/broker-integration/AccountSettings";
@@ -6,24 +7,49 @@ import { SuccessDialog } from "@/components/broker-integration/SuccessDialog";
 import { BrokerHeader } from "@/components/broker-integration/BrokerHeader";
 import { BrokerFunctions } from "@/components/broker-integration/BrokerFunctions";
 import { useBrokerConnection } from "@/hooks/useBrokerConnection";
-import { brokers, accountTypes } from "@/components/broker-integration/BrokerData";
+import { accountTypes } from "@/components/broker-integration/BrokerData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Broker } from "@/types/broker";
+import { fetchBrokerById } from "@/services/brokerService";
+import { toast } from "sonner";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { brokerId } = location.state || {};
   
-  const selectedBroker: Broker | null = brokerId ? brokers.find(b => b.id === brokerId) || null : null;
-  const showApiFields = selectedBroker?.apiRequired || false;
+  const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
+  const [fetchingBroker, setFetchingBroker] = useState(true);
 
-  // Redirect if no broker was selected
   useEffect(() => {
-    if (!selectedBroker) {
-      navigate("/broker-integration");
-    }
-  }, [selectedBroker, navigate]);
+    const loadBroker = async () => {
+      if (!brokerId) {
+        navigate("/broker-integration");
+        return;
+      }
+
+      setFetchingBroker(true);
+      try {
+        const broker = await fetchBrokerById(brokerId);
+        if (!broker) {
+          toast.error("Broker not found");
+          navigate("/broker-integration");
+          return;
+        }
+        setSelectedBroker(broker);
+      } catch (error) {
+        console.error("Error fetching broker:", error);
+        toast.error("Failed to load broker details");
+        navigate("/broker-integration");
+      } finally {
+        setFetchingBroker(false);
+      }
+    };
+
+    loadBroker();
+  }, [brokerId, navigate]);
+
+  const showApiFields = selectedBroker?.apiRequired || false;
 
   const {
     connectionStep,
@@ -45,6 +71,23 @@ const BrokerCredentials = () => {
     productType,
     setProductType
   } = useBrokerConnection(selectedBroker);
+
+  if (fetchingBroker) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-100 pt-20 px-4">
+        <BrokerHeader 
+          onBack={() => navigate("/broker-integration")} 
+          title="Loading Broker" 
+        />
+        <div className="space-y-4 mt-8">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedBroker) {
     return null; // Will redirect in useEffect
