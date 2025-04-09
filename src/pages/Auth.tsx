@@ -49,6 +49,9 @@ const Auth = () => {
         }
       } else {
         navigate('/dashboard');
+        toast.success('Login successful!', {
+          className: 'bg-cyan/10 border-cyan/30 text-cyan'
+        });
       }
     } catch (error: any) {
       console.error('Login error:', error);

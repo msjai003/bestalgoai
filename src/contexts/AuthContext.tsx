@@ -325,7 +325,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         setUser(user);
-        toast.success('Account created successfully!');
+        toast.success('Account created successfully!', {
+          className: 'bg-cyan/10 border-cyan/30 text-cyan'
+        });
         return { error: null, data: { user } };
       } else {
         toast.info('Please check your email to confirm your account');
@@ -362,7 +364,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: data.user.email || '',
         };
         setUser(user);
-        toast.success('Login successful!');
+        toast.success('Login successful!', {
+          className: 'bg-cyan/10 border-cyan/30 text-cyan'
+        });
         return { error: null, data: { user } };
       }
       
@@ -389,7 +393,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else if (!logoutToastShown) {
-          toast.success('Successfully signed out');
+          toast.success('Successfully signed out', {
+            className: 'bg-cyan/10 border-cyan/30 text-cyan'
+          });
           logoutToastShown = true;
         }
       } else {
