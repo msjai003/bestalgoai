@@ -131,23 +131,28 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
  */
 export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_details')
       .insert({
         broker_name: broker.name,
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      })
+      });
+    
+    const { data, error } = await supabase
+      .from('broker_details')
       .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
       .maybeSingle();
     
-    if (error) {
+    if (error || !data) {
       console.error("Error saving broker:", error);
       return null;
     }
     
-    return data?.id || null;
+    return data.id;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
