@@ -9,13 +9,13 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-black border-gray-200",
+        default: "bg-white text-black border-gray-200 shadow-md",
         destructive:
-          "bg-white text-black border-charcoalDanger/50",
+          "bg-white text-black border-charcoalDanger/50 shadow-md",
         success: 
-          "bg-white text-black border-2 border-cyan",
+          "bg-white text-black border-2 border-cyan shadow-md",
         info: 
-          "bg-white text-black border-2 border-cyan",
+          "bg-white text-black border-2 border-cyan shadow-md",
       },
     },
     defaultVariants: {
