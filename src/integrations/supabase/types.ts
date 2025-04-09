@@ -313,6 +313,7 @@ export type Database = {
         Row: {
           broker_name: string
           created_at: string | null
+          description: string | null
           id: number
           image_url: string | null
           is_active: boolean | null
@@ -322,6 +323,7 @@ export type Database = {
         Insert: {
           broker_name: string
           created_at?: string | null
+          description?: string | null
           id?: number
           image_url?: string | null
           is_active?: boolean | null
@@ -331,11 +333,54 @@ export type Database = {
         Update: {
           broker_name?: string
           created_at?: string | null
+          description?: string | null
           id?: number
           image_url?: string | null
           is_active?: boolean | null
           required_inputs?: Json
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brokers_functions: {
+        Row: {
+          broker_id: number
+          broker_image: string | null
+          broker_name: string
+          created_at: string
+          function_description: string | null
+          function_enabled: boolean
+          function_name: string
+          function_slug: string
+          id: string
+          is_premium: boolean
+          updated_at: string
+        }
+        Insert: {
+          broker_id: number
+          broker_image?: string | null
+          broker_name: string
+          created_at?: string
+          function_description?: string | null
+          function_enabled?: boolean
+          function_name: string
+          function_slug: string
+          id?: string
+          is_premium?: boolean
+          updated_at?: string
+        }
+        Update: {
+          broker_id?: number
+          broker_image?: string | null
+          broker_name?: string
+          created_at?: string
+          function_description?: string | null
+          function_enabled?: boolean
+          function_name?: string
+          function_slug?: string
+          id?: string
+          is_premium?: boolean
+          updated_at?: string
         }
         Relationships: []
       }

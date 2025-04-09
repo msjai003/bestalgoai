@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { BrokerFunction } from '@/hooks/strategy/types';
+import { BrokerFunction } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 
@@ -68,7 +68,10 @@ const BrokerFunctionsAdmin = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setFunctions(data || []);
+      
+      // Ensure data is cast to the correct type
+      const typedData = data as BrokerFunction[];
+      setFunctions(typedData || []);
     } catch (error: any) {
       toast.error(`Error fetching broker functions: ${error.message}`);
     } finally {
@@ -127,7 +130,7 @@ const BrokerFunctionsAdmin = () => {
       // Update local state
       setFunctions(prevFunctions => 
         prevFunctions.map(func => 
-          func.id === id ? { ...func, ...editForm } as BrokerFunction : func
+          func.id === id ? { ...func, ...editForm as BrokerFunction } : func
         )
       );
       
@@ -189,8 +192,10 @@ const BrokerFunctionsAdmin = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Update local state
-        setFunctions(prevFunctions => [...prevFunctions, data[0] as BrokerFunction]);
+        // Update local state with correct typing
+        const newFunction = data[0] as unknown as BrokerFunction;
+        setFunctions(prevFunctions => [...prevFunctions, newFunction]);
+        
         toast.success('Function added successfully');
         setShowAddForm(false);
         form.reset({
@@ -226,7 +231,7 @@ const BrokerFunctionsAdmin = () => {
       // Check which brokers need default functions (specifically 5 Paisa and Bigil)
       const targetBrokers = [
         { id: 7, name: "5 Paisa" },
-        { id: 8, name: "Bigil" }
+        { id: 8, name: "Bigul" }
       ];
       
       let addedCount = 0;
@@ -260,8 +265,9 @@ const BrokerFunctionsAdmin = () => {
           
           if (data) {
             addedCount += data.length;
-            // Update local state with new functions
-            setFunctions(prev => [...prev, ...data as BrokerFunction[]]);
+            // Update local state with new functions (with correct typing)
+            const typedData = data as unknown as BrokerFunction[];
+            setFunctions(prev => [...prev, ...typedData]);
           }
         }
       }

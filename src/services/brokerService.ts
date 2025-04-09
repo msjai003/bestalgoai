@@ -26,15 +26,39 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     }
     
     // Map database broker details to Broker type
-    return data.map((item: BrokerDetail) => ({
-      id: item.id,
-      name: item.broker_name,
-      description: item.description || "Broker integration",
-      logo: item.image_url || "/placeholder.svg",
-      apiRequired: (item.required_inputs && item.required_inputs.includes('api_key')) || false,
-      requiresSecretKey: (item.required_inputs && item.required_inputs.includes('secret_key')) || false,
-      requiredInputs: item.required_inputs || []
-    }));
+    return data.map((item) => {
+      // Handle the required_inputs field which can be JSON or an array
+      let requiredInputs: string[] = [];
+      
+      if (item.required_inputs) {
+        // If it's already an array, use it directly
+        if (Array.isArray(item.required_inputs)) {
+          requiredInputs = item.required_inputs;
+        } 
+        // If it's a JSON string, parse it
+        else if (typeof item.required_inputs === 'string' && item.required_inputs.startsWith('[')) {
+          try {
+            requiredInputs = JSON.parse(item.required_inputs);
+          } catch (e) {
+            console.error("Error parsing required_inputs JSON:", e);
+          }
+        }
+        // If it's an object with key-value pairs, extract the keys
+        else if (typeof item.required_inputs === 'object') {
+          requiredInputs = Object.keys(item.required_inputs);
+        }
+      }
+
+      return {
+        id: item.id,
+        name: item.broker_name,
+        description: item.description || "Broker integration",
+        logo: item.image_url || "/placeholder.svg",
+        apiRequired: requiredInputs.includes('api_key'),
+        requiresSecretKey: requiredInputs.includes('secret_key'),
+        requiredInputs: requiredInputs
+      };
+    });
   } catch (error) {
     console.error("Exception fetching broker details:", error);
     // Fall back to static broker data if there's an exception
@@ -63,15 +87,37 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       return staticBrokers.find(b => b.id === brokerId) || null;
     }
     
+    // Handle the required_inputs field which can be JSON or an array
+    let requiredInputs: string[] = [];
+    
+    if (data.required_inputs) {
+      // If it's already an array, use it directly
+      if (Array.isArray(data.required_inputs)) {
+        requiredInputs = data.required_inputs;
+      } 
+      // If it's a JSON string, parse it
+      else if (typeof data.required_inputs === 'string' && data.required_inputs.startsWith('[')) {
+        try {
+          requiredInputs = JSON.parse(data.required_inputs);
+        } catch (e) {
+          console.error("Error parsing required_inputs JSON:", e);
+        }
+      }
+      // If it's an object with key-value pairs, extract the keys
+      else if (typeof data.required_inputs === 'object') {
+        requiredInputs = Object.keys(data.required_inputs);
+      }
+    }
+    
     // Map database broker details to Broker type
     return {
       id: data.id,
       name: data.broker_name,
       description: data.description || "Broker integration",
       logo: data.image_url || "/placeholder.svg",
-      apiRequired: (data.required_inputs && data.required_inputs.includes('api_key')) || false,
-      requiresSecretKey: (data.required_inputs && data.required_inputs.includes('secret_key')) || false,
-      requiredInputs: data.required_inputs || []
+      apiRequired: requiredInputs.includes('api_key'),
+      requiresSecretKey: requiredInputs.includes('secret_key'),
+      requiredInputs: requiredInputs
     };
   } catch (error) {
     console.error("Exception fetching broker by ID:", error);

@@ -49,3 +49,18 @@ export interface BrokerDetail {
   created_at?: string;
   updated_at?: string;
 }
+
+// Interface representing the brokers_functions table structure
+export interface BrokerFunction {
+  id: string;
+  broker_id: number;
+  broker_name: string;
+  function_name: string;
+  function_description?: string;
+  function_slug: string;
+  function_enabled: boolean;
+  is_premium: boolean;
+  broker_image?: string;
+  created_at?: string;
+  updated_at?: string;
+}

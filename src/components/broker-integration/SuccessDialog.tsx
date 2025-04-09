@@ -38,6 +38,9 @@ export const SuccessDialog = ({
           
           if (imageData && !imageError) {
             setBrokerImage(imageData);
+          } else {
+            // Fall back to the logo from the broker object
+            setBrokerImage(selectedBroker.logo);
           }
           
           // Use the name from the broker object
@@ -46,6 +49,7 @@ export const SuccessDialog = ({
           console.error("Error fetching broker details:", error);
           // Fallback to the name from the broker object
           setBrokerName(selectedBroker.name);
+          setBrokerImage(selectedBroker.logo);
         }
       }
     };
