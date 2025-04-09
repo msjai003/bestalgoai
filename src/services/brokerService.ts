@@ -170,16 +170,15 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    const result = await supabase
+    const { error } = await supabase
       .from('broker_details')
       .update({
         broker_name: broker.name,
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      });
-      
-    const { error } = await result.eq('id', brokerId);
+      })
+      .eq('id', brokerId);
     
     if (error) {
       console.error("Error updating broker:", error);
@@ -198,11 +197,10 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
-    const result = await supabase
+    const { error } = await supabase
       .from('broker_details')
-      .delete();
-      
-    const { error } = await result.eq('id', brokerId);
+      .delete()
+      .eq('id', brokerId);
     
     if (error) {
       console.error("Error deleting broker:", error);
@@ -221,11 +219,10 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
  */
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
-    const result = await supabase
+    const { error } = await supabase
       .from('broker_details')
-      .delete();
-      
-    const { error } = await result.gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
+      .delete()
+      .gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
     
     if (error) {
       console.error("Error deleting all brokers:", error);
