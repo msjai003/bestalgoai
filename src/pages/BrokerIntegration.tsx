@@ -1,90 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, HelpCircle, RefreshCw } from "lucide-react";
+import { ChevronLeft, HelpCircle } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
 import { brokers } from "@/components/broker-integration/BrokerData";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Check for broker functions and initialize if needed
-  useEffect(() => {
-    checkBrokerFunctions();
-  }, []);
-
-  const checkBrokerFunctions = async () => {
-    setIsRefreshing(true);
-    try {
-      // Check if 5 Paisa and Bigil have any functions
-      const { data, error } = await supabase
-        .from('brokers_functions')
-        .select('broker_id')
-        .in('broker_id', [7, 8]);
-      
-      if (error) {
-        console.error('Error checking broker functions:', error);
-        toast.error("Failed to check broker functions");
-        return;
-      }
-
-      // If no functions found for these brokers, add default ones
-      if (!data || data.length === 0) {
-        // Define default functions for brokers
-        const defaultFunctions = [
-          { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker' },
-          { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders' },
-          { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders' },
-          { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions' },
-          { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data' },
-          { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions' }
-        ];
-        
-        const newBrokers = [
-          { id: 7, name: "5 Paisa" },
-          { id: 8, name: "Bigil" }
-        ];
-        
-        for (const broker of newBrokers) {
-          // Add default functions for this broker
-          const functionsToAdd = defaultFunctions.map(func => ({
-            broker_id: broker.id,
-            broker_name: broker.name,
-            function_name: func.name,
-            function_description: func.description,
-            function_slug: func.slug,
-            function_enabled: true,
-            is_premium: func.slug === 'market_data', // Make market data premium as an example
-            broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
-          }));
-          
-          const { error: insertError } = await supabase
-            .from('brokers_functions')
-            .insert(functionsToAdd);
-            
-          if (insertError) {
-            console.error(`Error adding functions for ${broker.name}:`, insertError);
-            toast.error(`Failed to add functions for ${broker.name}`);
-          } else {
-            console.log(`Added default functions for ${broker.name}`);
-            toast.success(`Added default functions for ${broker.name}`);
-          }
-        }
-      } else {
-        console.log('Broker functions already exist:', data.length);
-      }
-    } catch (err) {
-      console.error('Error initializing broker functions:', err);
-      toast.error("Failed to initialize broker functions");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
@@ -104,14 +29,7 @@ const BrokerIntegration = () => {
             <ChevronLeft className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
           <h1 className="text-lg font-semibold">Select Your Broker</h1>
-          <Button 
-            variant="ghost" 
-            className="p-2"
-            onClick={() => checkBrokerFunctions()}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-5 h-5 text-charcoalTextSecondary ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="w-10"></div> {/* Spacer for balance */}
         </div>
       </header>
 
@@ -119,7 +37,6 @@ const BrokerIntegration = () => {
         <BrokerList 
           brokers={brokers} 
           onSelectBroker={handleSelectBroker} 
-          key={isRefreshing ? 'refreshing' : 'loaded'} // Force re-render on refresh
         />
       </main>
 

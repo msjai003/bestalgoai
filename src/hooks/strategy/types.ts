@@ -1,4 +1,3 @@
-
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
@@ -36,12 +35,10 @@ export interface BrokerFunction {
   broker_id: number;
   broker_name: string;
   function_name: string;
-  function_description: string | null;
+  function_description?: string;
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  configuration: any; // Compatible with Json type
-  broker_image?: string; // Add the new broker_image property
-  created_at: string;
-  updated_at: string;
+  broker_image?: string;
+  configuration?: any;
 }
