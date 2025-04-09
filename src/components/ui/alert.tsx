@@ -9,13 +9,13 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-charcoalSecondary text-charcoalTextPrimary border-white/10",
+        default: "bg-charcoalSecondary text-white border-white/10",
         destructive:
-          "border-charcoalDanger/50 text-charcoalDanger border-charcoalDanger/20 bg-charcoalDanger/10 [&>svg]:text-charcoalDanger",
+          "border-charcoalDanger/50 text-white border-charcoalDanger/20 bg-charcoalDanger/10 [&>svg]:text-charcoalDanger",
         success: 
-          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan font-medium",
+          "border-2 border-cyan text-white bg-cyan font-medium [&>svg]:text-white",
         info: 
-          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan",
+          "border-2 border-cyan text-white bg-cyan [&>svg]:text-white",
       },
     },
     defaultVariants: {
