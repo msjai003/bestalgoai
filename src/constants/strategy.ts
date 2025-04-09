@@ -22,7 +22,7 @@ export const indices = ["Nifty", "Sensex"];
 export const positionTypes = ["Buy", "Sell"];
 export const optionTypes = ["Call", "Put"];
 export const expiryTypes = ["Weekly", "Next Weekly", "Monthly"];
-export const brokers = ["Zerodha", "Aliceblue", "Angel One", "5 Paisa", "Bigil"];
+export const brokers = ["Zerodha", "Aliceblue", "Angel One", "5 Paisa", "Bigul"];
 export const highLowTypes = ["High", "Low"];
 
 export const strikeTypes = [
@@ -43,3 +43,4 @@ export const strategyDescriptions = {
   "Position Trading": "Long-term trading strategy that holds positions for extended periods.",
   "Trend Following": "Strategy that follows the overall market trend for longer durations."
 } as const;
+
