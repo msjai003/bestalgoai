@@ -13,9 +13,9 @@ const alertVariants = cva(
         destructive:
           "border-charcoalDanger/50 text-charcoalDanger border-charcoalDanger/20 bg-charcoalDanger/10 [&>svg]:text-charcoalDanger",
         success: 
-          "border-2 border-[#D3E4FD] text-[#0FA0CE] bg-[#D3E4FD]/30 [&>svg]:text-[#0FA0CE] font-medium",
+          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan font-medium",
         info: 
-          "border-2 border-[#D3E4FD] text-[#0FA0CE] bg-[#D3E4FD]/30 [&>svg]:text-[#0FA0CE]",
+          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan",
       },
     },
     defaultVariants: {
