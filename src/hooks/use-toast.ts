@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import type {
@@ -169,7 +168,6 @@ function toast({ variant, ...props }: Toast) {
   }
 }
 
-// Create helper functions for common toast types
 toast.success = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
   return toast({
     variant: "success",

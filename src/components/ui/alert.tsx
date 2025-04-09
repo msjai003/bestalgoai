@@ -13,9 +13,9 @@ const alertVariants = cva(
         destructive:
           "border-charcoalDanger/50 text-charcoalDanger border-charcoalDanger/20 bg-charcoalDanger/10 [&>svg]:text-charcoalDanger",
         success: 
-          "border-charcoalSuccess/50 text-charcoalSuccess border-charcoalSuccess/20 bg-charcoalSuccess/10 [&>svg]:text-charcoalSuccess",
+          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan font-medium",
         info: 
-          "border-cyan/50 text-cyan border-cyan/20 bg-cyan/10 [&>svg]:text-cyan",
+          "border-2 border-cyan text-cyan bg-cyan/20 [&>svg]:text-cyan",
       },
     },
     defaultVariants: {
