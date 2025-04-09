@@ -131,7 +131,8 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
  */
 export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
   try {
-    const response = await supabase
+    // Insert the new broker
+    const insertResponse = await supabase
       .from('broker_details')
       .insert({
         broker_name: broker.name,
@@ -140,15 +141,21 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
         required_inputs: broker.requiredInputs || []
       });
     
+    if (insertResponse.error) {
+      console.error("Error inserting broker:", insertResponse.error);
+      return null;
+    }
+    
+    // Get the ID of the newly inserted broker
     const { data, error } = await supabase
       .from('broker_details')
       .select('id')
       .order('id', { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .single();
     
     if (error || !data) {
-      console.error("Error saving broker:", error);
+      console.error("Error retrieving broker ID:", error);
       return null;
     }
     
@@ -164,7 +171,7 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const updateResponse = await supabase
       .from('broker_details')
       .update({
         broker_name: broker.name,
@@ -174,8 +181,8 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
       })
       .eq('id', brokerId);
     
-    if (error) {
-      console.error("Error updating broker:", error);
+    if (updateResponse.error) {
+      console.error("Error updating broker:", updateResponse.error);
       return false;
     }
     
@@ -191,13 +198,13 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const deleteResponse = await supabase
       .from('broker_details')
       .delete()
       .eq('id', brokerId);
     
-    if (error) {
-      console.error("Error deleting broker:", error);
+    if (deleteResponse.error) {
+      console.error("Error deleting broker:", deleteResponse.error);
       return false;
     }
     
