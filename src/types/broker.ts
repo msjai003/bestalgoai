@@ -44,7 +44,7 @@ export interface BrokerDetail {
   broker_name: string;
   description?: string;
   image_url?: string;
-  required_inputs: string[];
+  required_inputs: string[] | any;  // Updated to handle both string[] and JSON
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;

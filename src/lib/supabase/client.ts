@@ -24,10 +24,15 @@ export const supabase = {
           data: [],
           error: null
         }),
+        single: () => ({ data: null, error: null }),
         data: [],
         error: null
       }),
       order: (column, { ascending } = { ascending: false }) => ({
+        order: (column, { ascending } = { ascending: false }) => ({
+          data: [],
+          error: null
+        }),
         limit: (limit) => ({
           data: [],
           error: null
@@ -39,9 +44,9 @@ export const supabase = {
       data: [],
       error: null
     }),
-    insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ data: [], error: null }),
-    delete: () => ({ data: [], error: null }),
+    insert: (data) => ({ data: [], error: null, select: () => ({ data: [], error: null }) }),
+    update: (data) => ({ data: [], error: null, eq: () => ({ data: [], error: null }) }),
+    delete: () => ({ data: [], error: null, eq: () => ({ data: [], error: null }) }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
@@ -54,7 +59,7 @@ export const supabase = {
     // Mock implementation of rpc function
     console.log(`Mock RPC call to ${functionName} with params:`, params);
     return {
-      data: [],
+      data: null,
       error: null
     };
   },

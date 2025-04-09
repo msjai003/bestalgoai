@@ -1,5 +1,5 @@
 
-import { BrokerFunction } from '@/hooks/strategy/types';
+import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -82,7 +82,7 @@ export const isBrokerFunctionPremium = async (
       return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
     }
     
-    return !!data.is_premium;
+    return data.is_premium === true;
   } catch (error) {
     console.error("Error checking if broker function is premium:", error);
     // Fall back to static data if there's an exception

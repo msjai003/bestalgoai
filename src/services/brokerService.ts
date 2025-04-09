@@ -26,7 +26,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     }
     
     // Map database broker details to Broker type
-    return data.map((item) => {
+    return data.map((item: any) => {
       // Handle the required_inputs field which can be JSON or an array
       let requiredInputs: string[] = [];
       
@@ -54,8 +54,8 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
         name: item.broker_name,
         description: item.description || "Broker integration",
         logo: item.image_url || "/placeholder.svg",
-        apiRequired: requiredInputs.includes('api_key'),
-        requiresSecretKey: requiredInputs.includes('secret_key'),
+        apiRequired: Array.isArray(requiredInputs) ? requiredInputs.includes('api_key') : false,
+        requiresSecretKey: Array.isArray(requiredInputs) ? requiredInputs.includes('secret_key') : false,
         requiredInputs: requiredInputs
       };
     });
@@ -115,8 +115,8 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       name: data.broker_name,
       description: data.description || "Broker integration",
       logo: data.image_url || "/placeholder.svg",
-      apiRequired: requiredInputs.includes('api_key'),
-      requiresSecretKey: requiredInputs.includes('secret_key'),
+      apiRequired: Array.isArray(requiredInputs) ? requiredInputs.includes('api_key') : false,
+      requiresSecretKey: Array.isArray(requiredInputs) ? requiredInputs.includes('secret_key') : false,
       requiredInputs: requiredInputs
     };
   } catch (error) {
