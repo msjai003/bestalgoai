@@ -225,7 +225,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .lte('id', 1000000); // Delete all rows with ID <= a very large number
+      .gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
     
     if (error) {
       console.error("Error deleting all brokers:", error);
