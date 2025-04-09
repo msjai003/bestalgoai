@@ -8,7 +8,6 @@ import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
-import BrokerDetailsView from "./pages/BrokerDetailsView";
 
 // Import all the pages that are used in the routes
 import Index from "@/pages/Index";
@@ -174,7 +173,6 @@ function AppRoutes() {
       <Route path="/price-admin" element={<PriceAdminPage />} />
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
-      <Route path="/broker-details" element={<BrokerDetailsView />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

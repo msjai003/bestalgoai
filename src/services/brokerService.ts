@@ -26,21 +26,19 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     }
     
     // Map database broker details to Broker type
-    return data.map((item: any) => {
+    return data.map((item) => {
       // Handle the required_inputs field which can be JSON or an array
       let requiredInputs: string[] = [];
       
       if (item.required_inputs) {
         // If it's already an array, use it directly
         if (Array.isArray(item.required_inputs)) {
-          // Convert any non-string items to strings
-          requiredInputs = item.required_inputs.map((input: any) => String(input));
+          requiredInputs = item.required_inputs;
         } 
         // If it's a JSON string, parse it
         else if (typeof item.required_inputs === 'string' && item.required_inputs.startsWith('[')) {
           try {
-            const parsed = JSON.parse(item.required_inputs);
-            requiredInputs = Array.isArray(parsed) ? parsed.map((input: any) => String(input)) : [];
+            requiredInputs = JSON.parse(item.required_inputs);
           } catch (e) {
             console.error("Error parsing required_inputs JSON:", e);
           }
@@ -56,8 +54,8 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
         name: item.broker_name,
         description: item.description || "Broker integration",
         logo: item.image_url || "/placeholder.svg",
-        apiRequired: Array.isArray(requiredInputs) ? requiredInputs.includes('api_key') : false,
-        requiresSecretKey: Array.isArray(requiredInputs) ? requiredInputs.includes('secret_key') : false,
+        apiRequired: requiredInputs.includes('api_key'),
+        requiresSecretKey: requiredInputs.includes('secret_key'),
         requiredInputs: requiredInputs
       };
     });
@@ -95,14 +93,12 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     if (data.required_inputs) {
       // If it's already an array, use it directly
       if (Array.isArray(data.required_inputs)) {
-        // Convert any non-string items to strings
-        requiredInputs = data.required_inputs.map((input: any) => String(input));
+        requiredInputs = data.required_inputs;
       } 
       // If it's a JSON string, parse it
       else if (typeof data.required_inputs === 'string' && data.required_inputs.startsWith('[')) {
         try {
-          const parsed = JSON.parse(data.required_inputs);
-          requiredInputs = Array.isArray(parsed) ? parsed.map((input: any) => String(input)) : [];
+          requiredInputs = JSON.parse(data.required_inputs);
         } catch (e) {
           console.error("Error parsing required_inputs JSON:", e);
         }
@@ -119,8 +115,8 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       name: data.broker_name,
       description: data.description || "Broker integration",
       logo: data.image_url || "/placeholder.svg",
-      apiRequired: Array.isArray(requiredInputs) ? requiredInputs.includes('api_key') : false,
-      requiresSecretKey: Array.isArray(requiredInputs) ? requiredInputs.includes('secret_key') : false,
+      apiRequired: requiredInputs.includes('api_key'),
+      requiresSecretKey: requiredInputs.includes('secret_key'),
       requiredInputs: requiredInputs
     };
   } catch (error) {
