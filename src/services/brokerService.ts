@@ -33,12 +33,14 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       if (item.required_inputs) {
         // If it's already an array, use it directly
         if (Array.isArray(item.required_inputs)) {
-          requiredInputs = item.required_inputs;
+          // Convert any non-string items to strings
+          requiredInputs = item.required_inputs.map((input: any) => String(input));
         } 
         // If it's a JSON string, parse it
         else if (typeof item.required_inputs === 'string' && item.required_inputs.startsWith('[')) {
           try {
-            requiredInputs = JSON.parse(item.required_inputs);
+            const parsed = JSON.parse(item.required_inputs);
+            requiredInputs = Array.isArray(parsed) ? parsed.map((input: any) => String(input)) : [];
           } catch (e) {
             console.error("Error parsing required_inputs JSON:", e);
           }
@@ -93,12 +95,14 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     if (data.required_inputs) {
       // If it's already an array, use it directly
       if (Array.isArray(data.required_inputs)) {
-        requiredInputs = data.required_inputs;
+        // Convert any non-string items to strings
+        requiredInputs = data.required_inputs.map((input: any) => String(input));
       } 
       // If it's a JSON string, parse it
       else if (typeof data.required_inputs === 'string' && data.required_inputs.startsWith('[')) {
         try {
-          requiredInputs = JSON.parse(data.required_inputs);
+          const parsed = JSON.parse(data.required_inputs);
+          requiredInputs = Array.isArray(parsed) ? parsed.map((input: any) => String(input)) : [];
         } catch (e) {
           console.error("Error parsing required_inputs JSON:", e);
         }
