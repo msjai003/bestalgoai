@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Broker } from "@/types/broker";
+import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
+import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
 /**
  * Fetch all broker details from the database
@@ -25,7 +26,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     }
     
     // Map database broker details to Broker type
-    return data.map(item => ({
+    return data.map((item: BrokerDetail) => ({
       id: item.id,
       name: item.broker_name,
       description: item.description || "Broker integration",

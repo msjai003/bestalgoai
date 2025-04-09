@@ -1,8 +1,7 @@
 
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Broker } from "@/types/broker";
-import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
 
@@ -69,23 +68,14 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 };
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
-  const { functions, brokerName, isLoading, refresh } = useBrokerFunctions(broker.id);
+  // Get broker image from broker.logo
+  const brokerImage = broker.logo;
   
-  // Refresh functions when component mounts
-  useEffect(() => {
-    refresh();
-  }, [broker.id, refresh]);
+  // Use broker name
+  const displayName = broker.name;
   
-  const enabledFunctions = functions.filter(func => func.function_enabled);
-  const premiumFunctions = functions.filter(func => func.is_premium && func.function_enabled);
-  
-  // Get broker image from the first function if available, or use broker.logo
-  const brokerImage = functions.length > 0 && functions[0].broker_image 
-    ? functions[0].broker_image 
-    : broker.logo;
-  
-  // Use broker name from functions table if available
-  const displayName = brokerName || broker.name;
+  // Check if broker has required inputs
+  const hasRequiredInputs = broker.requiredInputs && broker.requiredInputs.length > 0;
 
   return (
     <div
@@ -104,25 +94,23 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       <div className="ml-3 flex-1">
         <h3 className="font-semibold">{displayName}</h3>
         <div className="flex items-center gap-2 mt-1">
-          {isLoading ? (
-            <div className="text-xs text-gray-400">Loading features...</div>
-          ) : functions.length > 0 ? (
+          {hasRequiredInputs ? (
             <>
               <div className="flex items-center gap-1 text-xs text-gray-400">
                 <Check className="w-3 h-3 text-green-500" />
-                <span>{enabledFunctions.length} functions available</span>
+                <span>Authentication ready</span>
               </div>
               
-              {premiumFunctions.length > 0 && (
+              {broker.apiRequired && (
                 <Badge variant="outline" className="text-xs bg-amber-900/30 text-amber-400 border-amber-800">
-                  {premiumFunctions.length} Premium
+                  API Required
                 </Badge>
               )}
             </>
           ) : (
             <div className="flex items-center gap-1 text-xs text-gray-400">
               <AlertCircle className="w-3 h-3 text-gray-500" />
-              <span>No functions configured</span>
+              <span>No authentication configuration</span>
             </div>
           )}
         </div>
@@ -131,3 +119,5 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     </div>
   );
 };
+
+export default BrokerList;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Broker, BrokerPermissions } from "@/types/broker";
 import { useEffect, useState } from "react";
-import { getBrokerImage } from "@/lib/broker-functions";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SuccessDialogProps {
   open: boolean;
@@ -31,27 +31,17 @@ export const SuccessDialog = ({
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
-          // Get broker image from the database
-          const image = await getBrokerImage(selectedBroker.id);
-          if (image) {
-            setBrokerImage(image);
+          // Get broker image from the database using a function call
+          const { data: imageData, error: imageError } = await supabase.rpc('get_broker_image', {
+            p_broker_id: selectedBroker.id
+          });
+          
+          if (imageData && !imageError) {
+            setBrokerImage(imageData);
           }
           
-          // Use broker name from the brokers_functions table
-          // We'll fetch the first function for this broker to get the name
-          const { supabase } = await import("@/integrations/supabase/client");
-          const { data } = await supabase
-            .from('brokers_functions')
-            .select('broker_name')
-            .eq('broker_id', selectedBroker.id)
-            .limit(1);
-            
-          if (data && data.length > 0) {
-            setBrokerName(data[0].broker_name);
-          } else {
-            // Fallback to the name from the broker object
-            setBrokerName(selectedBroker.name);
-          }
+          // Use the name from the broker object
+          setBrokerName(selectedBroker.name);
         } catch (error) {
           console.error("Error fetching broker details:", error);
           // Fallback to the name from the broker object

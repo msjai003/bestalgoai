@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, HelpCircle } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { toast } from "sonner";

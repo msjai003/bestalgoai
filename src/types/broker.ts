@@ -1,3 +1,4 @@
+
 export interface Broker {
   id: number;
   name: string;
@@ -35,4 +36,16 @@ export interface ApiKeyInfo {
   api_key: string;
   created_at: string;
   last_used?: string;
+}
+
+// Interface representing the broker_details table structure
+export interface BrokerDetail {
+  id: number;
+  broker_name: string;
+  description?: string;
+  image_url?: string;
+  required_inputs: string[];
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
