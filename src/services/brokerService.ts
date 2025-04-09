@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -178,7 +179,7 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
       })
-      .match({ id: brokerId });
+      .eq('id', brokerId);
     
     if (error) {
       console.error("Error updating broker:", error);
@@ -201,7 +202,7 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .match({ id: brokerId });
+      .eq('id', brokerId);
     
     if (error) {
       console.error("Error deleting broker:", error);
@@ -224,7 +225,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .match({});
+      .neq('id', 0); // This will match all rows since IDs are positive integers
     
     if (error) {
       console.error("Error deleting all brokers:", error);
