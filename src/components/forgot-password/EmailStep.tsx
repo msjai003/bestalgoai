@@ -32,7 +32,7 @@ const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, isLoading, onSub
       <Button
         type="submit"
         disabled={isLoading || !email}
-        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
+        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-3xl shadow-lg"
       >
         {isLoading ? 'Sending...' : 'Send Reset Link'}
       </Button>

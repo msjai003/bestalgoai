@@ -14,7 +14,7 @@ export const CTA = () => {
           <Button 
             variant="gradient" 
             size="md"
-            className="w-full sm:w-auto sm:px-6 font-semibold shadow-lg"
+            className="w-full sm:w-auto sm:px-6 font-semibold shadow-lg rounded-3xl"
           >
             Get Started Free
           </Button>

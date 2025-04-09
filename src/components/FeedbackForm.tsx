@@ -113,7 +113,7 @@ const FeedbackForm: React.FC = () => {
           type="submit"
           variant="gradient"
           size="md"
-          className="w-full flex items-center justify-center gap-2 rounded-2xl shadow-md hover:shadow-cyan/20 hover:shadow-lg"
+          className="w-full flex items-center justify-center gap-2 rounded-3xl shadow-md hover:shadow-cyan/20 hover:shadow-lg"
         >
           <Send className="w-4 h-4" />
           Sign Up
