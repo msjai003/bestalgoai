@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -166,6 +167,34 @@ function toast({ variant, ...props }: Toast) {
     dismiss,
     update,
   }
+}
+
+// Create helper functions for common toast types
+toast.success = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
+  return toast({
+    variant: "success",
+    title: typeof content === "string" ? content : undefined,
+    description: typeof content !== "string" ? content : undefined,
+    ...options,
+  })
+}
+
+toast.error = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
+  return toast({
+    variant: "destructive",
+    title: typeof content === "string" ? content : undefined,
+    description: typeof content !== "string" ? content : undefined,
+    ...options,
+  })
+}
+
+toast.info = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
+  return toast({
+    variant: "default",
+    title: typeof content === "string" ? content : undefined,
+    description: typeof content !== "string" ? content : undefined,
+    ...options,
+  })
 }
 
 function useToast() {

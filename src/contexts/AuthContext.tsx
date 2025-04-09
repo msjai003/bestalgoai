@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
 import { GoogleUserDetails, fetchGoogleUserDetails as fetchGoogleUserDetailsUtil, saveGoogleUserDetails } from '@/utils/googleAuthUtils';
@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [googleUserDetails, setGoogleUserDetails] = useState<GoogleUserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     logoutToastShown = false;
@@ -325,9 +326,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         setUser(user);
-        toast.success('Account created successfully!', {
-          className: 'bg-cyan/10 border-cyan/30 text-cyan'
-        });
+        toast.success('Account created successfully!');
         return { error: null, data: { user } };
       } else {
         toast.info('Please check your email to confirm your account');
@@ -364,9 +363,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: data.user.email || '',
         };
         setUser(user);
-        toast.success('Login successful!', {
-          className: 'bg-cyan/10 border-cyan/30 text-cyan'
-        });
+        toast.success('Login successful!');
         return { error: null, data: { user } };
       }
       
@@ -393,9 +390,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error during sign out:', error);
           toast.error(error.message);
         } else if (!logoutToastShown) {
-          toast.success('Successfully signed out', {
-            className: 'bg-cyan/10 border-cyan/30 text-cyan'
-          });
+          toast.success('Successfully signed out');
           logoutToastShown = true;
         }
       } else {

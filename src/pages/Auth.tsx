@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, signInWithGoogle, user, googleUserDetails } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -49,9 +51,7 @@ const Auth = () => {
         }
       } else {
         navigate('/dashboard');
-        toast.success('Login successful!', {
-          className: 'bg-cyan/10 border-cyan/30 text-cyan'
-        });
+        toast.success('Login successful!');
       }
     } catch (error: any) {
       console.error('Login error:', error);
