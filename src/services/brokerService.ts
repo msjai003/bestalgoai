@@ -132,7 +132,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
 export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
   try {
     // Insert the new broker
-    const insertResponse = await supabase
+    const { error } = await supabase
       .from('broker_details')
       .insert({
         broker_name: broker.name,
@@ -141,24 +141,24 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
         required_inputs: broker.requiredInputs || []
       });
     
-    if (insertResponse.error) {
-      console.error("Error inserting broker:", insertResponse.error);
+    if (error) {
+      console.error("Error inserting broker:", error);
       return null;
     }
     
     // Get the ID of the newly inserted broker
-    const response = await supabase
+    const { data, error: selectError } = await supabase
       .from('broker_details')
       .select('id')
       .order('id', { ascending: false })
       .limit(1);
     
-    if (response.error || !response.data || response.data.length === 0) {
-      console.error("Error retrieving broker ID:", response.error);
+    if (selectError || !data || data.length === 0) {
+      console.error("Error retrieving broker ID:", selectError);
       return null;
     }
     
-    return response.data[0].id;
+    return data[0].id;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
@@ -222,11 +222,10 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
     // Delete all rows from the broker_details table
-    // Using .filter() to avoid TypeScript error with .gte()
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .filter('id', 'gte', 0); // Delete all rows with ID >= 0 (which should be all of them)
+      .lte('id', 1000000); // Delete all rows with ID <= a very large number
     
     if (error) {
       console.error("Error deleting all brokers:", error);
