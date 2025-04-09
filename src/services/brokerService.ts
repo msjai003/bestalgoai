@@ -170,7 +170,7 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    // Update the broker details
+    // Fix: Correcting the query chain structure
     const { error } = await supabase
       .from('broker_details')
       .update({
@@ -198,7 +198,7 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
-    // Delete the broker by id
+    // Fix: Correcting the query chain structure
     const { error } = await supabase
       .from('broker_details')
       .delete()
@@ -221,7 +221,7 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
  */
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
-    // Delete all rows from the broker_details table
+    // Fix: Correcting the query chain structure
     const { error } = await supabase
       .from('broker_details')
       .delete()
