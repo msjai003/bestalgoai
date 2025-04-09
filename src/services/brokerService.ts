@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -170,18 +169,16 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    // Create the update query
-    const query = supabase
+    // Update the broker details
+    const { error } = await supabase
       .from('broker_details')
       .update({
         broker_name: broker.name,
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      });
-      
-    // Add the filter condition
-    const { error } = await query.eq('id', brokerId);
+      })
+      .match({ id: brokerId });
     
     if (error) {
       console.error("Error updating broker:", error);
@@ -200,13 +197,11 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
-    // Create the delete query
-    const query = supabase
+    // Delete the broker by id
+    const { error } = await supabase
       .from('broker_details')
-      .delete();
-      
-    // Add the filter condition
-    const { error } = await query.eq('id', brokerId);
+      .delete()
+      .match({ id: brokerId });
     
     if (error) {
       console.error("Error deleting broker:", error);
@@ -225,12 +220,11 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
  */
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
-    // Delete all rows from the broker_details table without using neq
-    // We'll use a simpler approach that doesn't rely on filtering
+    // Delete all rows from the broker_details table
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .gte('id', 0); // This will match all rows since IDs are positive integers
+      .match({});
     
     if (error) {
       console.error("Error deleting all brokers:", error);
