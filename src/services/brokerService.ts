@@ -170,8 +170,8 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    // Perform the update with the filter in a single operation
-    const updateResponse = await supabase
+    // Perform the update operation
+    const { error } = await supabase
       .from('broker_details')
       .update({
         broker_name: broker.name,
@@ -181,8 +181,8 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
       })
       .eq('id', brokerId);
     
-    if (updateResponse.error) {
-      console.error("Error updating broker:", updateResponse.error);
+    if (error) {
+      console.error("Error updating broker:", error);
       return false;
     }
     
@@ -199,19 +199,42 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
     // Perform the delete with the filter in a single operation
-    const deleteResponse = await supabase
+    const { error } = await supabase
       .from('broker_details')
       .delete()
       .eq('id', brokerId);
     
-    if (deleteResponse.error) {
-      console.error("Error deleting broker:", deleteResponse.error);
+    if (error) {
+      console.error("Error deleting broker:", error);
       return false;
     }
     
     return true;
   } catch (error) {
     console.error("Exception deleting broker:", error);
+    return false;
+  }
+};
+
+/**
+ * Delete all brokers from the database
+ */
+export const deleteAllBrokers = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('broker_details')
+      .delete()
+      .neq('id', 0); // This will delete all rows as no id is 0
+    
+    if (error) {
+      console.error("Error deleting all brokers:", error);
+      return false;
+    }
+    
+    console.log("All broker details have been deleted successfully");
+    return true;
+  } catch (error) {
+    console.error("Exception deleting all brokers:", error);
     return false;
   }
 };
