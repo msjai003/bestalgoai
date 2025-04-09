@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
-import { QuickAccessSection } from "@/components/dashboard/QuickAccessSection";
+import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
