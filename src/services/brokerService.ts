@@ -75,7 +75,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       .from('broker_details')
       .select('*')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error("Error fetching broker details:", error);
@@ -140,14 +140,14 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
         required_inputs: broker.requiredInputs || []
       })
       .select('id')
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error("Error saving broker:", error);
       return null;
     }
     
-    return data.id;
+    return data?.id || null;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
