@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -147,19 +146,18 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
     }
     
     // Get the ID of the newly inserted broker
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_details')
       .select('id')
       .order('id', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
     
-    if (error || !data) {
-      console.error("Error retrieving broker ID:", error);
+    if (response.error || !response.data || response.data.length === 0) {
+      console.error("Error retrieving broker ID:", response.error);
       return null;
     }
     
-    return data.id;
+    return response.data[0].id;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
@@ -178,11 +176,21 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      })
-      .eq('id', brokerId);
+      });
     
     if (updateResponse.error) {
       console.error("Error updating broker:", updateResponse.error);
+      return false;
+    }
+    
+    // Need to add the filter after the update
+    const filterResponse = await supabase
+      .from('broker_details')
+      .update({}) // Empty update as we just need to filter
+      .eq('id', brokerId);
+    
+    if (filterResponse.error) {
+      console.error("Error applying filter after update:", filterResponse.error);
       return false;
     }
     
@@ -200,11 +208,21 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
     const deleteResponse = await supabase
       .from('broker_details')
+      .delete();
+    
+    if (deleteResponse.error) {
+      console.error("Error in delete operation:", deleteResponse.error);
+      return false;
+    }
+    
+    // Apply the filter after the delete operation
+    const filterResponse = await supabase
+      .from('broker_details')
       .delete()
       .eq('id', brokerId);
     
-    if (deleteResponse.error) {
-      console.error("Error deleting broker:", deleteResponse.error);
+    if (filterResponse.error) {
+      console.error("Error deleting broker:", filterResponse.error);
       return false;
     }
     
