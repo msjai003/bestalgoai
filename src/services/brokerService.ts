@@ -170,16 +170,18 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
-    // Perform the update operation
-    const { error } = await supabase
+    // Create the update query
+    const query = supabase
       .from('broker_details')
       .update({
         broker_name: broker.name,
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      })
-      .eq('id', brokerId);
+      });
+      
+    // Add the filter condition
+    const { error } = await query.eq('id', brokerId);
     
     if (error) {
       console.error("Error updating broker:", error);
@@ -198,11 +200,13 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
-    // Perform the delete with the filter in a single operation
-    const { error } = await supabase
+    // Create the delete query
+    const query = supabase
       .from('broker_details')
-      .delete()
-      .eq('id', brokerId);
+      .delete();
+      
+    // Add the filter condition
+    const { error } = await query.eq('id', brokerId);
     
     if (error) {
       console.error("Error deleting broker:", error);
@@ -221,10 +225,12 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
  */
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
+    // Delete all rows from the broker_details table without using neq
+    // We'll use a simpler approach that doesn't rely on filtering
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .neq('id', 0); // This will delete all rows as no id is 0
+      .gte('id', 0); // This will match all rows since IDs are positive integers
     
     if (error) {
       console.error("Error deleting all brokers:", error);
