@@ -147,18 +147,18 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
     }
     
     // Get the ID of the newly inserted broker
-    const { data, error: selectError } = await supabase
+    const { data: queryData, error: selectError } = await supabase
       .from('broker_details')
       .select('id')
       .order('id', { ascending: false })
       .limit(1);
     
-    if (selectError || !data || data.length === 0) {
+    if (selectError || !queryData || queryData.length === 0) {
       console.error("Error retrieving broker ID:", selectError);
       return null;
     }
     
-    return data[0].id;
+    return queryData[0].id;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
