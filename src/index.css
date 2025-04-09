@@ -21,3 +21,17 @@
   }
 }
 
+@layer components {
+  .glass-card {
+    @apply bg-charcoalSecondary/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-xl;
+  }
+  
+  .premium-card {
+    @apply bg-gradient-to-b from-charcoalSecondary/60 to-charcoalSecondary/30 backdrop-blur-md rounded-2xl border border-cyan/10 shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyan to-cyan/80 bg-clip-text text-transparent;
+  }
+}
+
