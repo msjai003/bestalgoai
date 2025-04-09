@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -169,6 +170,7 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
  */
 export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
   try {
+    // Perform the update with the filter in a single operation
     const updateResponse = await supabase
       .from('broker_details')
       .update({
@@ -176,21 +178,11 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      });
+      })
+      .eq('id', brokerId);
     
     if (updateResponse.error) {
       console.error("Error updating broker:", updateResponse.error);
-      return false;
-    }
-    
-    // Need to add the filter after the update
-    const filterResponse = await supabase
-      .from('broker_details')
-      .update({}) // Empty update as we just need to filter
-      .eq('id', brokerId);
-    
-    if (filterResponse.error) {
-      console.error("Error applying filter after update:", filterResponse.error);
       return false;
     }
     
@@ -206,23 +198,14 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
  */
 export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   try {
+    // Perform the delete with the filter in a single operation
     const deleteResponse = await supabase
-      .from('broker_details')
-      .delete();
-    
-    if (deleteResponse.error) {
-      console.error("Error in delete operation:", deleteResponse.error);
-      return false;
-    }
-    
-    // Apply the filter after the delete operation
-    const filterResponse = await supabase
       .from('broker_details')
       .delete()
       .eq('id', brokerId);
     
-    if (filterResponse.error) {
-      console.error("Error deleting broker:", filterResponse.error);
+    if (deleteResponse.error) {
+      console.error("Error deleting broker:", deleteResponse.error);
       return false;
     }
     
