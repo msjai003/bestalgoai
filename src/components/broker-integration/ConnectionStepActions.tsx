@@ -40,7 +40,7 @@ export const ConnectionStepActions = ({
       <Button
         variant="gradient"
         size="sm"
-        className="w-full rounded-xl font-semibold bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg transition-all duration-300"
+        className="w-full rounded-2xl font-semibold bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary hover:shadow-cyan/30 hover:shadow-lg transition-all duration-300"
         onClick={onSubmit}
         disabled={isSubmitting}
       >
@@ -63,7 +63,7 @@ export const ConnectionStepActions = ({
       <Button
         variant="outline"
         size="sm"
-        className="w-full border border-gray-700 bg-charcoalSecondary text-white rounded-xl font-semibold hover:border-cyan/30 transition-all duration-300"
+        className="w-full border border-gray-700 bg-charcoalSecondary text-white rounded-2xl font-semibold hover:border-cyan/30 transition-all duration-300"
         onClick={onBack}
         disabled={isSubmitting}
       >

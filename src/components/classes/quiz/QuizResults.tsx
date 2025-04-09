@@ -50,7 +50,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
       
       <Button 
         onClick={onRestartQuiz}
-        className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 w-full"
+        className="bg-cyan text-charcoalPrimary hover:bg-cyan/90 w-full rounded-2xl"
       >
         <RefreshCw className="mr-2 h-4 w-4" />
         Try Again

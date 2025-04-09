@@ -83,7 +83,7 @@ const InstallButton = ({
   return (
     <Button
       onClick={handleInstallClick}
-      className={`bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity ${className}`}
+      className={`bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-2xl flex items-center justify-center hover:opacity-90 transition-opacity ${className}`}
     >
       <Download className="mr-2 h-4 w-4" />
       {isIOS ? "Install on iOS" : isAndroid ? "Install on Android" : "Install App"}

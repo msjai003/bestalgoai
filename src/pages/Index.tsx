@@ -84,7 +84,7 @@ const Index = () => {
             <div className="fixed z-50 bottom-24 right-6">
               <Button
                 onClick={() => {}}
-                className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity w-16 h-16"
+                className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-2xl shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity w-16 h-16"
                 aria-label="Download App"
               >
                 <InstallButton 
