@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -225,7 +224,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .neq('id', 0); // This will match all rows since IDs are positive integers
+      .gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
     
     if (error) {
       console.error("Error deleting all brokers:", error);
