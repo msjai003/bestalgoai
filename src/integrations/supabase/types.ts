@@ -342,6 +342,71 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_work: {
+        Row: {
+          access_token: string | null
+          api_key: string | null
+          broker_id: number | null
+          broker_name: string
+          created_at: string
+          id: number
+          is_active: boolean
+          password: string | null
+          product_type: string | null
+          secret_key: string | null
+          session_id: string | null
+          status: string | null
+          two_factor_code: string | null
+          two_factor_secret: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          api_key?: string | null
+          broker_id?: number | null
+          broker_name: string
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          password?: string | null
+          product_type?: string | null
+          secret_key?: string | null
+          session_id?: string | null
+          status?: string | null
+          two_factor_code?: string | null
+          two_factor_secret?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          api_key?: string | null
+          broker_id?: number | null
+          broker_name?: string
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          password?: string | null
+          product_type?: string | null
+          secret_key?: string | null
+          session_id?: string | null
+          status?: string | null
+          two_factor_code?: string | null
+          two_factor_secret?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broker_work_broker_id_fkey"
+            columns: ["broker_id"]
+            isOneToOne: false
+            referencedRelation: "broker_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brokers_functions: {
         Row: {
           broker_id: number
