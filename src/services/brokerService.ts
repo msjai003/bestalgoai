@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -221,10 +222,11 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
 export const deleteAllBrokers = async (): Promise<boolean> => {
   try {
     // Delete all rows from the broker_details table
+    // Using .filter() to avoid TypeScript error with .gte()
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
+      .filter('id', 'gte', 0); // Delete all rows with ID >= 0 (which should be all of them)
     
     if (error) {
       console.error("Error deleting all brokers:", error);
