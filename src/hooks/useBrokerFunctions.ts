@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { BrokerFunction } from "@/types/broker";
@@ -14,59 +15,16 @@ export const useBrokerFunctions = (brokerId?: number) => {
     setIsLoading(true);
     setError(null);
     
-    try {
-      // Fetch functions from the database
-      const fetchFunctions = async () => {
-        let query = supabase
-          .from('brokers_functions')
-          .select('*');
-          
-        if (brokerId) {
-          query = query.eq('broker_id', brokerId);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error("Error fetching broker functions:", error);
-          setError(error.message);
-          
-          // Fall back to static data in case of error
-          setFunctionsFromStaticData();
-          return;
-        }
-        
-        if (!data || data.length === 0) {
-          // If no data in the database, fallback to static data
-          setFunctionsFromStaticData();
-          return;
-        }
-        
-        // Process database functions
-        const typedData = data as BrokerFunction[];
-        setFunctions(typedData);
-        
-        // Extract broker name from the functions or broker list
-        if (brokerId) {
-          const broker = brokers.find(b => b.id === brokerId);
-          setBrokerName(broker?.name || null);
-        } else if (typedData.length > 0) {
-          setBrokerName(typedData[0].broker_name);
-        }
-      };
-      
-      fetchFunctions().finally(() => {
-        setIsLoading(false);
-      });
-    } catch (err: any) {
-      console.error("Exception in fetching broker functions:", err);
-      setError(err.message);
-      toast.error("Failed to load broker functions");
-      setIsLoading(false);
-      
-      // Fall back to static data
-      setFunctionsFromStaticData();
+    // Initialize with static data since brokers_functions table was removed
+    setFunctionsFromStaticData();
+    
+    // Extract broker name if brokerId is provided
+    if (brokerId) {
+      const broker = brokers.find(b => b.id === brokerId);
+      setBrokerName(broker?.name || null);
     }
+    
+    setIsLoading(false);
   }, [brokerId]);
   
   // Helper function to set functions from static data as fallback
@@ -207,11 +165,8 @@ export const useBrokerFunctions = (brokerId?: number) => {
     
     setFunctions(filteredFunctions);
     
-    // Extract broker name
-    if (brokerId) {
-      const broker = brokers.find(b => b.id === brokerId);
-      setBrokerName(broker?.name || null);
-    } else if (filteredFunctions.length > 0) {
+    // Extract broker name if not already set and we have functions
+    if (!brokerName && filteredFunctions.length > 0) {
       setBrokerName(filteredFunctions[0].broker_name);
     }
   };
