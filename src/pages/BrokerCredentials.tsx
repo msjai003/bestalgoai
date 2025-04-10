@@ -24,7 +24,7 @@ const BrokerCredentials = () => {
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
   const [fetchingBroker, setFetchingBroker] = useState(true);
 
-  const loadBroker = async () => {
+  const loadBroker = async (forceRefresh = false) => {
     if (!brokerId) {
       navigate("/broker-integration");
       return;
@@ -49,7 +49,7 @@ const BrokerCredentials = () => {
   };
 
   useEffect(() => {
-    loadBroker();
+    loadBroker(false);
     
     // Set up real-time subscription for broker details changes
     const brokerDetailsChannel = supabase
@@ -58,7 +58,7 @@ const BrokerCredentials = () => {
         { event: '*', schema: 'public', table: 'broker_details', filter: `id=eq.${brokerId}` }, 
         (payload) => {
           console.log('Broker details changed for current broker:', payload);
-          loadBroker();
+          loadBroker(false);
           toast.info("Broker information updated");
         }
       )
@@ -71,7 +71,7 @@ const BrokerCredentials = () => {
         { event: '*', schema: 'public', table: 'brokers_admin', filter: `id=eq.${brokerId}` }, 
         (payload) => {
           console.log('Broker admin data changed for current broker:', payload);
-          loadBroker();
+          loadBroker(false);
           toast.info("Broker administration data updated");
         }
       )
@@ -79,7 +79,7 @@ const BrokerCredentials = () => {
     
     // Set up a refresh interval
     const refreshInterval = setInterval(() => {
-      loadBroker();
+      loadBroker(false);
     }, 20000); // Refresh every 20 seconds
     
     // Clean up on unmount
@@ -91,7 +91,7 @@ const BrokerCredentials = () => {
   }, [brokerId, navigate]);
 
   const handleRefresh = () => {
-    loadBroker();
+    loadBroker(true);
     toast.success("Broker details refreshed");
   };
 
