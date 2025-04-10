@@ -58,7 +58,6 @@ const BrokerFunctionsAdmin = () => {
     }
   });
 
-  // Fetch broker functions using RPC
   const fetchBrokerFunctions = async () => {
     setLoading(true);
     try {
@@ -72,7 +71,6 @@ const BrokerFunctionsAdmin = () => {
         data = result;
       }
       
-      // Convert BrokerInfocapFunction to BrokerFunction format
       const mappedFunctions: BrokerFunction[] = data.map(func => ({
         id: func.id,
         broker_id: func.broker_id,
@@ -100,7 +98,6 @@ const BrokerFunctionsAdmin = () => {
     }
   }, [user, selectedBrokerId]);
 
-  // Start editing a function
   const handleEdit = (func: BrokerFunction & { function_order?: number }) => {
     setEditingId(func.id);
     setEditForm({
@@ -115,12 +112,10 @@ const BrokerFunctionsAdmin = () => {
     });
   };
 
-  // Cancel editing
   const handleCancelEdit = () => {
     setEditingId(null);
   };
 
-  // Save function changes
   const handleSave = async (id: string) => {
     if (!editForm.function_name || !editForm.function_slug) {
       toast.error('Function name and slug cannot be empty');
@@ -142,7 +137,6 @@ const BrokerFunctionsAdmin = () => {
           editForm.is_premium || false
         );
         
-        // Update local state
         setFunctions(prevFunctions => 
           prevFunctions.map(func => 
             func.id === id ? { 
@@ -163,14 +157,12 @@ const BrokerFunctionsAdmin = () => {
     }
   };
 
-  // Delete a function
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this function? This action cannot be undone.')) {
       return;
     }
 
     try {
-      // Use the numeric part of the id
       const numericId = parseInt(id);
       if (isNaN(numericId)) {
         toast.error('Invalid function ID');
@@ -183,7 +175,6 @@ const BrokerFunctionsAdmin = () => {
         throw new Error('Failed to delete function');
       }
       
-      // Update local state
       setFunctions(prevFunctions => 
         prevFunctions.filter(func => func.id !== id)
       );
@@ -194,10 +185,8 @@ const BrokerFunctionsAdmin = () => {
     }
   };
 
-  // Add new function
   const handleAddFunction = async (values: FormValues) => {
     try {
-      // Find the broker name from the id
       const broker = brokers.find(b => b.id === values.broker_id);
       if (!broker) {
         toast.error('Invalid broker selected');
@@ -219,7 +208,6 @@ const BrokerFunctionsAdmin = () => {
         throw new Error('Failed to add function');
       }
       
-      // Create a new function object with the returned ID
       const newFunction: BrokerFunction & { function_order: number } = {
         id: String(newId),
         broker_id: values.broker_id,
@@ -232,7 +220,6 @@ const BrokerFunctionsAdmin = () => {
         function_order: values.function_order || 0
       };
       
-      // Update local state
       setFunctions(prevFunctions => [...prevFunctions, newFunction]);
       
       toast.success('Function added successfully');
@@ -252,12 +239,10 @@ const BrokerFunctionsAdmin = () => {
     }
   };
 
-  // Seed default functions for new brokers (5 Paisa and Bigil)
   const seedDefaultFunctions = async () => {
     try {
       setLoading(true);
       
-      // Define default functions for brokers
       const defaultFunctions = [
         { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker', order: 1 },
         { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders', order: 2 },
@@ -267,7 +252,6 @@ const BrokerFunctionsAdmin = () => {
         { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions', order: 6 }
       ];
       
-      // Check which brokers need default functions (specifically 5 Paisa and Bigil)
       const targetBrokers = [
         { id: 7, name: "5 Paisa" },
         { id: 8, name: "Bigul" }
@@ -277,11 +261,9 @@ const BrokerFunctionsAdmin = () => {
       let newFunctions: (BrokerFunction & { function_order: number })[] = [];
       
       for (const broker of targetBrokers) {
-        // Check if broker already has functions in broker_infocap
         const existingFunctions = await getBrokerInfocapFunctions(broker.id);
         
         if (!existingFunctions || existingFunctions.length === 0) {
-          // Add default functions for this broker
           for (const func of defaultFunctions) {
             const newId = await saveBrokerInfocapFunction(
               broker.id,
@@ -291,13 +273,12 @@ const BrokerFunctionsAdmin = () => {
               func.slug,
               func.order,
               true,
-              func.slug === 'market_data' // Make market data premium as an example
+              func.slug === 'market_data'
             );
             
             if (newId) {
               addedCount++;
               
-              // Create a new function object with the returned ID
               const newFunction: BrokerFunction & { function_order: number } = {
                 id: String(newId),
                 broker_id: broker.id,
@@ -317,7 +298,6 @@ const BrokerFunctionsAdmin = () => {
       }
       
       if (addedCount > 0) {
-        // Update local state with new functions
         setFunctions(prev => [...prev, ...newFunctions]);
         toast.success(`Added ${addedCount} default functions for new brokers`);
       } else {

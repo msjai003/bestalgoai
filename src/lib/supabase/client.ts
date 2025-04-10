@@ -157,6 +157,20 @@ export const supabase = {
       };
     }
     
+    if (functionName === 'delete_broker_infocap_function') {
+      return {
+        data: true,
+        error: null
+      };
+    }
+    
+    if (functionName === 'update_broker_infocap_function_order') {
+      return {
+        data: true,
+        error: null
+      };
+    }
+    
     // Default response for other RPC functions
     return {
       data: [],

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail, BrokerFunction, BrokerInfocapFunction } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -17,13 +18,13 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       return staticBrokers;
     }
     
-    if (!data || data.length === 0) {
+    if (!data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker details found in database, using static data");
       return staticBrokers;
     }
     
     // Map database broker details to Broker type
-    return data.map((item) => {
+    return (data as any[]).map((item) => {
       // Handle the required_inputs field which can be JSON or an array
       let requiredInputs: string[] = [];
       
@@ -73,13 +74,13 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       p_broker_id: brokerId
     });
     
-    if (error || !data || data.length === 0) {
+    if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.error("Error fetching broker details:", error);
       // Try to find in static data
       return staticBrokers.find(b => b.id === brokerId) || null;
     }
     
-    const item = data[0];
+    const item = Array.isArray(data) ? data[0] : data;
     
     // Handle the required_inputs field which can be JSON or an array
     let requiredInputs: string[] = [];
@@ -133,15 +134,15 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
       })
-      .select('id')
-      .single();
+      .select();
     
     if (error) {
       console.error("Error saving broker:", error);
       return null;
     }
     
-    return data.id;
+    const result = Array.isArray(data) ? data[0] : data;
+    return result?.id || null;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
@@ -219,7 +220,7 @@ export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>
       return null;
     }
     
-    return data;
+    return data as string;
   } catch (error) {
     console.error("Exception saving broker function:", error);
     return null;
@@ -239,7 +240,7 @@ export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
       return [];
     }
     
-    return data || [];
+    return data as BrokerFunction[];
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
     return [];
@@ -276,7 +277,7 @@ export const saveBrokerInfocapFunction = async (
       return null;
     }
     
-    return data;
+    return data as number;
   } catch (error) {
     console.error("Exception saving broker function:", error);
     return null;
@@ -295,7 +296,7 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
       return [];
     }
     
-    return data || [];
+    return data as BrokerInfocapFunction[];
   } catch (error) {
     console.error("Exception fetching all broker functions:", error);
     return [];
@@ -316,7 +317,7 @@ export const getBrokerInfocapFunctions = async (brokerId: number): Promise<Broke
       return [];
     }
     
-    return data || [];
+    return data as BrokerInfocapFunction[];
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
     return [];
@@ -328,7 +329,7 @@ export const getBrokerInfocapFunctions = async (brokerId: number): Promise<Broke
  */
 export const deleteBrokerInfocapFunction = async (functionId: number): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc('delete_broker_infocap_function', {
+    const { data, error } = await supabase.rpc('delete_broker_infocap_function', {
       p_function_id: functionId
     });
     
@@ -337,7 +338,7 @@ export const deleteBrokerInfocapFunction = async (functionId: number): Promise<b
       return false;
     }
     
-    return true;
+    return data as boolean;
   } catch (error) {
     console.error("Exception deleting broker function:", error);
     return false;
@@ -352,7 +353,7 @@ export const updateBrokerInfocapFunctionOrder = async (
   newOrder: number
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc('update_broker_infocap_function_order', {
+    const { data, error } = await supabase.rpc('update_broker_infocap_function_order', {
       p_function_id: functionId,
       p_new_order: newOrder
     });
@@ -362,7 +363,7 @@ export const updateBrokerInfocapFunctionOrder = async (
       return false;
     }
     
-    return true;
+    return data as boolean;
   } catch (error) {
     console.error("Exception updating broker function order:", error);
     return false;

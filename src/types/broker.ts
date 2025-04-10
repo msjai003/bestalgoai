@@ -63,6 +63,7 @@ export interface BrokerFunction {
   broker_image?: string;
   created_at?: string;
   updated_at?: string;
+  function_order?: number; // Added for compatibility
 }
 
 // Interface for broker function configuration

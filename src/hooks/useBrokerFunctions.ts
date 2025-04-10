@@ -70,7 +70,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
           return;
         }
         
-        const mappedFunctions: BrokerFunction[] = data.map((item: any) => ({
+        const mappedFunctions: BrokerFunction[] = (data as any[]).map((item: any) => ({
           id: item.id.toString(),
           broker_id: item.broker_id,
           broker_name: item.broker_name,

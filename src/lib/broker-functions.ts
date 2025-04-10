@@ -1,3 +1,4 @@
+
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/lib/supabase/client';
@@ -63,14 +64,14 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       p_broker_id: brokerId
     });
       
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       console.log("No broker functions found in database, using static data");
       // Fall back to static data if database query fails or returns no results
       return getStaticBrokerFunctions(brokerId);
     }
     
     // Convert BrokerInfocapFunction to BrokerFunction format
-    return data.map((func: BrokerInfocapFunction) => ({
+    return (data as BrokerInfocapFunction[]).map((func: BrokerInfocapFunction) => ({
       id: func.id,
       broker_id: func.broker_id,
       broker_name: func.broker_name,
@@ -110,7 +111,7 @@ export const hasBrokerFunction = async (
     }
     
     // Filter the returned functions to find the one with the matching slug
-    const matchingFunctions = data.filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -142,7 +143,7 @@ export const isBrokerFunctionPremium = async (
     }
     
     // Filter to find the specific function
-    const matchingFunctions = data.filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -190,7 +191,7 @@ export const getBrokerImage = async (
       p_broker_id: brokerId
     });
     
-    if (error || !data || data.length === 0) {
+    if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.error("Error fetching broker image:", error);
       // Fall back to static broker data
       const broker = brokers.find(b => b.id === brokerId);
@@ -199,7 +200,8 @@ export const getBrokerImage = async (
       return image;
     }
     
-    const image = data[0]?.image_url || null;
+    const details = Array.isArray(data) ? data[0] : data;
+    const image = details?.image_url || null;
     brokerImageCache[brokerId] = image;
     return image;
   } catch (error) {
@@ -264,7 +266,7 @@ export const getBrokerFunctionConfig = async (
     }
     
     // Find the specific function
-    const matchingFunctions = data.filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
       func.function_slug === functionSlug
     );
     
@@ -308,7 +310,7 @@ export const saveBrokerInfocapFunction = async (
       return null;
     }
     
-    return data;
+    return data as number;
   } catch (error) {
     console.error("Error saving broker function:", error);
     return null;
@@ -327,7 +329,7 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
       return [];
     }
     
-    return data;
+    return data as BrokerInfocapFunction[];
   } catch (error) {
     console.error("Error fetching all broker functions:", error);
     return [];
