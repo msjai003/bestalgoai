@@ -5,10 +5,12 @@ import { brokers as staticBrokers } from "@/components/broker-integration/Broker
 import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
 /**
- * Fetch all broker details from the database
+ * Fetch all broker details from the database, with no caching
  */
 export const fetchBrokerDetails = async (): Promise<Broker[]> => {
   try {
+    console.log("Fetching broker details from database");
+    
     // First try to fetch from brokers_admin table
     const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
@@ -16,7 +18,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       .eq('is_active', true) as any;
     
     if (!adminError && adminData && adminData.length > 0) {
-      console.log("Found broker details in brokers_admin table");
+      console.log("Found broker details in brokers_admin table:", adminData.length);
       // Map broker_admin data to Broker type
       return adminData.map((item: any) => {
         let requiredInputs: string[] = [];
@@ -108,10 +110,12 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
 };
 
 /**
- * Fetch a single broker's details by ID
+ * Fetch a single broker's details by ID with no caching
  */
 export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> => {
   try {
+    console.log(`Fetching broker with ID ${brokerId}`);
+    
     // First try to fetch from brokers_admin table
     const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
@@ -120,6 +124,8 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       .maybeSingle() as any;
     
     if (!adminError && adminData) {
+      console.log("Found broker in brokers_admin table:", adminData);
+      
       // Handle the required_inputs field
       let requiredInputs: string[] = [];
       

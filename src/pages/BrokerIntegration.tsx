@@ -15,20 +15,22 @@ const BrokerIntegration = () => {
   const [brokers, setBrokers] = useState<Broker[]>(staticBrokers);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadBrokers = async () => {
-      setLoading(true);
-      try {
-        const brokerData = await fetchBrokerDetails();
-        setBrokers(brokerData);
-      } catch (error) {
-        console.error("Error loading brokers:", error);
-        toast.error("Failed to load broker list");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Function to load brokers
+  const loadBrokers = async () => {
+    setLoading(true);
+    try {
+      const brokerData = await fetchBrokerDetails();
+      setBrokers(brokerData);
+    } catch (error) {
+      console.error("Error loading brokers:", error);
+      toast.error("Failed to load broker list");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    // Load brokers immediately when the component mounts
     loadBrokers();
   }, []);
 
@@ -36,6 +38,12 @@ const BrokerIntegration = () => {
     setSelectedBrokerId(brokerId);
     // Navigate to the credentials page with the selected broker ID
     navigate("/broker-credentials", { state: { brokerId } });
+  };
+
+  // Function to manually refresh broker list
+  const handleRefresh = () => {
+    loadBrokers();
+    toast.success("Broker list refreshed");
   };
 
   return (
@@ -50,7 +58,27 @@ const BrokerIntegration = () => {
             <ChevronLeft className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
           <h1 className="text-lg font-semibold">Select Your Broker</h1>
-          <div className="w-10"></div> {/* Spacer for balance */}
+          <Button 
+            variant="ghost"
+            className="p-2"
+            onClick={handleRefresh}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="w-5 h-5 text-charcoalTextSecondary" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M21 2v6h-6"></path>
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+              <path d="M3 22v-6h6"></path>
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+            </svg>
+          </Button>
         </div>
       </header>
 

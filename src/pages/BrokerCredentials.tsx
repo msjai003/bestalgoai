@@ -12,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Broker } from "@/types/broker";
 import { fetchBrokerById } from "@/services/brokerService";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
@@ -21,33 +23,38 @@ const BrokerCredentials = () => {
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
   const [fetchingBroker, setFetchingBroker] = useState(true);
 
-  useEffect(() => {
-    const loadBroker = async () => {
-      if (!brokerId) {
+  const loadBroker = async () => {
+    if (!brokerId) {
+      navigate("/broker-integration");
+      return;
+    }
+
+    setFetchingBroker(true);
+    try {
+      const broker = await fetchBrokerById(brokerId);
+      if (!broker) {
+        toast.error("Broker not found");
         navigate("/broker-integration");
         return;
       }
+      setSelectedBroker(broker);
+    } catch (error) {
+      console.error("Error fetching broker:", error);
+      toast.error("Failed to load broker details");
+      navigate("/broker-integration");
+    } finally {
+      setFetchingBroker(false);
+    }
+  };
 
-      setFetchingBroker(true);
-      try {
-        const broker = await fetchBrokerById(brokerId);
-        if (!broker) {
-          toast.error("Broker not found");
-          navigate("/broker-integration");
-          return;
-        }
-        setSelectedBroker(broker);
-      } catch (error) {
-        console.error("Error fetching broker:", error);
-        toast.error("Failed to load broker details");
-        navigate("/broker-integration");
-      } finally {
-        setFetchingBroker(false);
-      }
-    };
-
+  useEffect(() => {
     loadBroker();
   }, [brokerId, navigate]);
+
+  const handleRefresh = () => {
+    loadBroker();
+    toast.success("Broker details refreshed");
+  };
 
   const showApiFields = selectedBroker?.apiRequired || false;
 
@@ -109,6 +116,19 @@ const BrokerCredentials = () => {
       case "credentials":
         return (
           <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">{selectedBroker.name}</h2>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+                className="flex gap-2 items-center"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
+            
             <CredentialsForm
               selectedBroker={selectedBroker}
               credentials={credentials}
