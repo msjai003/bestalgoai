@@ -5,79 +5,34 @@ import { supabase } from '@/lib/supabase/client';
 
 /**
  * Fetches all functions for a specific broker
- * Using static data since brokers_sections table was removed
+ * Using the brokers_functions table
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // First check if the broker exists in brokers_admin table
-    const { data: adminBroker, error: adminError } = await supabase
-      .from('brokers_admin')
+    // Fetch functions from database
+    const { data: functions, error } = await supabase
+      .from('brokers_functions')
       .select('*')
-      .eq('id', brokerId)
-      .maybeSingle() as any;
+      .eq('broker_id', brokerId);
       
-    // Find the broker either from admin table or static data
-    const broker = !adminError && adminBroker 
-      ? { 
-          id: adminBroker.id, 
-          name: adminBroker.broker_name, 
-          logo: adminBroker.image_url || "/placeholder.svg" 
-        }
-      : brokers.find(b => b.id === brokerId);
+    if (error) {
+      console.error("Error fetching broker functions:", error);
+      throw error;
+    }
+    
+    if (functions && functions.length > 0) {
+      return functions as BrokerFunction[];
+    }
+    
+    // If no functions found in database, check if the broker exists and create defaults
+    const broker = await getBrokerInfo(brokerId);
     
     if (!broker) return [];
     
     // Create standard functions for this broker
-    const standardFunctions: BrokerFunction[] = [
-      {
-        id: `${broker.id}-order_placement`,
-        broker_id: broker.id,
-        broker_name: broker.name,
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: broker.logo
-      },
-      {
-        id: `${broker.id}-order_modification`,
-        broker_id: broker.id,
-        broker_name: broker.name,
-        function_name: "Order Modification",
-        function_description: "Modify existing orders",
-        function_slug: "order_modification",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: broker.logo
-      },
-      {
-        id: `${broker.id}-portfolio_view`,
-        broker_id: broker.id,
-        broker_name: broker.name,
-        function_name: "Portfolio View",
-        function_description: "View current holdings and positions",
-        function_slug: "portfolio_view",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: broker.logo
-      },
-      {
-        id: `${broker.id}-market_data`,
-        broker_id: broker.id,
-        broker_name: broker.name,
-        function_name: "Market Data",
-        function_description: "Access real-time market data",
-        function_slug: "market_data",
-        function_enabled: true,
-        is_premium: true,
-        broker_image: broker.logo
-      }
-    ];
-    
-    return standardFunctions;
+    return createDefaultFunctions(broker);
   } catch (error) {
-    console.error("Error creating broker functions:", error);
+    console.error("Error fetching broker functions:", error);
     return [];
   }
 };
@@ -90,37 +45,28 @@ export const hasBrokerFunction = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
+    // Check if function exists in database
+    const { data, error } = await supabase
+      .from('brokers_functions')
+      .select('function_enabled')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Error checking broker function:", error);
+      return false;
+    }
+    
+    if (data) {
+      return data.function_enabled;
+    }
+    
     // Default functions that all brokers are assumed to have
     const defaultFunctions = ["order_placement", "portfolio_view"];
     
     // Check if it's a default function
-    if (defaultFunctions.includes(functionSlug)) {
-      return true;
-    }
-    
-    // Premium functions that require checking
-    if (functionSlug === "market_data") {
-      // For now, assume market_data is available but premium
-      return true;
-    }
-    
-    // For other functions, check based on broker-specific logic
-    // First check if the broker exists in brokers_admin table
-    const { data: adminBroker, error: adminError } = await supabase
-      .from('brokers_admin')
-      .select('*')
-      .eq('id', brokerId)
-      .maybeSingle();
-      
-    // Find the broker either from admin table or static data
-    const broker = !adminError && adminBroker 
-      ? { id: adminBroker.id, name: adminBroker.broker_name }
-      : brokers.find(b => b.id === brokerId);
-      
-    if (!broker) return false;
-    
-    // Add broker-specific logic here if needed
-    return false;
+    return defaultFunctions.includes(functionSlug);
   } catch (error) {
     console.error("Error checking broker function:", error);
     return false;
@@ -135,6 +81,23 @@ export const isBrokerFunctionPremium = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
+    // Check if function exists in database
+    const { data, error } = await supabase
+      .from('brokers_functions')
+      .select('is_premium')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Error checking if broker function is premium:", error);
+      return false;
+    }
+    
+    if (data) {
+      return data.is_premium;
+    }
+    
     // Premium functions
     const premiumFunctions = ["market_data"];
     
@@ -185,6 +148,113 @@ export const getBrokerImage = async (
     const broker = brokers.find(b => b.id === brokerId);
     return broker?.logo || null;
   }
+};
+
+/**
+ * Helper function to get broker info
+ */
+const getBrokerInfo = async (brokerId: number) => {
+  try {
+    // First check if the broker exists in brokers_admin table
+    const { data: adminBroker, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('*')
+      .eq('id', brokerId)
+      .maybeSingle();
+      
+    if (!adminError && adminBroker) {
+      return {
+        id: adminBroker.id,
+        name: adminBroker.broker_name,
+        logo: adminBroker.image_url || "/placeholder.svg"
+      };
+    }
+    
+    // Try to fetch from database using the broker_details table as fallback
+    const { data, error } = await supabase
+      .from('broker_details')
+      .select('*')
+      .eq('id', brokerId)
+      .maybeSingle();
+    
+    if (error || !data) {
+      // Fall back to static broker data
+      return brokers.find(b => b.id === brokerId);
+    }
+    
+    return {
+      id: data.id,
+      name: data.broker_name,
+      logo: data.image_url || "/placeholder.svg"
+    };
+  } catch (error) {
+    console.error("Error fetching broker info:", error);
+    // Fall back to static broker data
+    return brokers.find(b => b.id === brokerId);
+  }
+};
+
+/**
+ * Helper function to create default functions for a broker
+ */
+const createDefaultFunctions = (broker: { id: number; name: string; logo?: string }) => {
+  return [
+    {
+      id: `${broker.id}-order_placement`,
+      broker_id: broker.id,
+      broker_name: broker.name,
+      function_name: "Order Placement",
+      function_description: "Place new orders with the broker",
+      function_slug: "order_placement",
+      function_enabled: true,
+      is_premium: false,
+      broker_image: broker.logo
+    },
+    {
+      id: `${broker.id}-order_modification`,
+      broker_id: broker.id,
+      broker_name: broker.name,
+      function_name: "Order Modification",
+      function_description: "Modify existing orders",
+      function_slug: "order_modification",
+      function_enabled: true,
+      is_premium: false,
+      broker_image: broker.logo
+    },
+    {
+      id: `${broker.id}-order_cancellation`,
+      broker_id: broker.id,
+      broker_name: broker.name,
+      function_name: "Order Cancellation",
+      function_description: "Cancel pending orders",
+      function_slug: "order_cancellation",
+      function_enabled: true,
+      is_premium: false,
+      broker_image: broker.logo
+    },
+    {
+      id: `${broker.id}-portfolio_view`,
+      broker_id: broker.id,
+      broker_name: broker.name,
+      function_name: "Portfolio View",
+      function_description: "View current holdings and positions",
+      function_slug: "portfolio_view",
+      function_enabled: true,
+      is_premium: false,
+      broker_image: broker.logo
+    },
+    {
+      id: `${broker.id}-market_data`,
+      broker_id: broker.id,
+      broker_name: broker.name,
+      function_name: "Market Data",
+      function_description: "Access real-time market data",
+      function_slug: "market_data",
+      function_enabled: true,
+      is_premium: true,
+      broker_image: broker.logo
+    }
+  ];
 };
 
 /**
