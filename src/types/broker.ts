@@ -44,7 +44,7 @@ export interface BrokerDetail {
   broker_name: string;
   description?: string;
   image_url?: string;
-  required_inputs: string[];
+  required_inputs: string[] | string;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -89,3 +89,6 @@ export interface BrokerInfocapFunction {
   created_at?: string;
   updated_at?: string;
 }
+
+// Type definitions for RPC function responses
+export type BrokerInfocapResponse = BrokerInfocapFunction[] | null;

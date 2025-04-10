@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export const testSupabaseConnection = async () => {
   try {
@@ -83,8 +83,9 @@ export const testTableAccess = async (tableName: string) => {
       // Try to parse the result which should be an array with one object
       const result = queryResult[0];
       if (result && typeof result === 'object') {
+        // Handle the RPC mock response structure
         tableExists = result.exists === true;
-        recordCount = result.count ? Number(result.count) : 0;
+        recordCount = typeof result.count === 'number' ? result.count : 0;
       }
     }
     

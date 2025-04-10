@@ -51,7 +51,116 @@ export const supabase = {
     }),
   },
   rpc: (functionName, params = {}) => {
-    // Mock implementation of rpc function
+    // Mock implementations for specific RPC functions
+    if (functionName === 'get_broker_infocap_functions') {
+      const mockFunctions = [
+        {
+          id: "1",
+          broker_id: params?.p_broker_id || 1,
+          broker_name: "Zerodha",
+          function_name: "Order Placement",
+          function_description: "Place new orders with the broker",
+          function_slug: "order_placement",
+          function_enabled: true,
+          is_premium: false,
+          function_order: 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: "2",
+          broker_id: params?.p_broker_id || 1,
+          broker_name: "Zerodha",
+          function_name: "Market Data",
+          function_description: "Access real-time market data",
+          function_slug: "market_data",
+          function_enabled: true,
+          is_premium: true,
+          function_order: 2,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      // If broker ID is provided, filter the results
+      const result = params?.p_broker_id 
+        ? mockFunctions.filter(f => f.broker_id === params.p_broker_id)
+        : mockFunctions;
+        
+      return {
+        data: result,
+        error: null
+      };
+    }
+    
+    if (functionName === 'get_all_broker_infocap_functions') {
+      return {
+        data: [
+          {
+            id: "1",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "2",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "3",
+            broker_id: 2,
+            broker_name: "ICICI Direct",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ],
+        error: null
+      };
+    }
+    
+    if (functionName === 'save_broker_infocap_function') {
+      return {
+        data: Math.floor(Math.random() * 1000) + 1, // Random ID for the saved function
+        error: null
+      };
+    }
+    
+    if (functionName === 'execute_sql') {
+      if (params.query && params.query.includes('EXISTS')) {
+        return {
+          data: [{ exists: true, count: 5 }],
+          error: null
+        };
+      }
+      return {
+        data: [],
+        error: null
+      };
+    }
+    
+    // Default mock response for any other RPC functions
     console.log(`Mock RPC call to ${functionName} with params:`, params);
     return {
       data: [],
