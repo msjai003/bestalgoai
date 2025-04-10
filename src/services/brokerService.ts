@@ -156,3 +156,131 @@ export const fetchBrokerById = async (brokerId: number, cacheTimestamp?: number)
     return staticBroker || null;
   }
 };
+
+/**
+ * Save a new broker to the database
+ * @param brokerData The broker data to save
+ * @returns The ID of the newly created broker, or null on failure
+ */
+export const saveBroker = async (brokerData: Partial<Broker>): Promise<number | null> => {
+  try {
+    // Prepare the data for insertion
+    const brokerEntry = {
+      broker_name: brokerData.name,
+      description: brokerData.description,
+      image_url: brokerData.logo,
+      required_inputs: brokerData.requiredInputs,
+      is_active: true
+    };
+
+    // Insert into broker_details table
+    const { data, error } = await supabase
+      .from('broker_details')
+      .insert(brokerEntry)
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('Error saving broker:', error);
+      return null;
+    }
+
+    return data.id;
+  } catch (error) {
+    console.error('Error saving broker:', error);
+    return null;
+  }
+};
+
+/**
+ * Update an existing broker in the database
+ * @param brokerId The ID of the broker to update
+ * @param brokerData The updated broker data
+ * @returns Boolean indicating success or failure
+ */
+export const updateBroker = async (brokerId: number, brokerData: Partial<Broker>): Promise<boolean> => {
+  try {
+    // Prepare the data for update
+    const brokerEntry = {
+      broker_name: brokerData.name,
+      description: brokerData.description,
+      image_url: brokerData.logo,
+      required_inputs: brokerData.requiredInputs,
+      updated_at: new Date().toISOString()
+    };
+
+    // First try to update in brokers_admin table
+    const { error: adminError } = await supabase
+      .from('brokers_admin')
+      .update(brokerEntry)
+      .eq('id', brokerId);
+
+    if (!adminError) {
+      console.log(`Updated broker in brokers_admin table`);
+      return true;
+    }
+
+    // If not in admin table or error occurred, try broker_details table
+    const { error } = await supabase
+      .from('broker_details')
+      .update(brokerEntry)
+      .eq('id', brokerId);
+
+    if (error) {
+      console.error('Error updating broker:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating broker:', error);
+    return false;
+  }
+};
+
+/**
+ * Delete a broker from the database
+ * @param brokerId The ID of the broker to delete
+ * @returns Boolean indicating success or failure
+ */
+export const deleteBroker = async (brokerId: number): Promise<boolean> => {
+  try {
+    // First try to delete from broker_functionality table to avoid foreign key constraints
+    await supabase
+      .from('broker_functionality')
+      .delete()
+      .eq('broker_id', brokerId);
+
+    // Then try to delete from brokers_function_configs table
+    await supabase
+      .from('brokers_function_configs')
+      .delete()
+      .eq('broker_id', brokerId);
+    
+    // First try to delete from brokers_admin table
+    const { error: adminError } = await supabase
+      .from('brokers_admin')
+      .delete()
+      .eq('id', brokerId);
+    
+    if (!adminError) {
+      console.log(`Deleted broker from brokers_admin table`);
+    }
+
+    // Also try to delete from broker_details table
+    const { error } = await supabase
+      .from('broker_details')
+      .delete()
+      .eq('id', brokerId);
+
+    if (error && adminError) {
+      console.error('Error deleting broker:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting broker:', error);
+    return false;
+  }
+};

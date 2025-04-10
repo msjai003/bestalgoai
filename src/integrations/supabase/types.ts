@@ -342,6 +342,48 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_functionality: {
+        Row: {
+          broker_id: number
+          broker_image: string | null
+          broker_name: string
+          created_at: string | null
+          function_description: string | null
+          function_enabled: boolean | null
+          function_name: string
+          function_slug: string
+          id: string
+          is_premium: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          broker_image?: string | null
+          broker_name: string
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean | null
+          function_name: string
+          function_slug: string
+          id?: string
+          is_premium?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          broker_image?: string | null
+          broker_name?: string
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean | null
+          function_name?: string
+          function_slug?: string
+          id?: string
+          is_premium?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       brokers_admin: {
         Row: {
           broker_name: string
@@ -380,6 +422,33 @@ export type Database = {
           is_active?: boolean | null
           required_inputs?: Json | null
           supported_assets?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brokers_function_configs: {
+        Row: {
+          broker_id: number
+          config_data: Json
+          created_at: string | null
+          function_slug: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          config_data?: Json
+          created_at?: string | null
+          function_slug: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          config_data?: Json
+          created_at?: string | null
+          function_slug?: string
+          id?: string
           updated_at?: string | null
         }
         Relationships: []

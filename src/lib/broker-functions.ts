@@ -5,15 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Fetches all functions for a specific broker
- * Using a direct query approach to avoid type issues
+ * Using a typed approach with casting to avoid TypeScript errors
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Use a more direct query approach to avoid type issues
+    // Use type assertion to handle the query safely
     const { data: functions, error } = await supabase
       .from('broker_functionality')
       .select('*')
-      .eq('broker_id', brokerId);
+      .eq('broker_id', brokerId) as any;
       
     if (error) {
       console.error("Error fetching broker functionalities:", error);
@@ -65,7 +65,7 @@ export const hasBrokerFunction = async (
       .from('broker_functionality')
       .select('function_enabled')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug);
+      .eq('function_slug', functionSlug) as any;
       
     if (error) {
       console.error("Error checking broker functionality:", error);
@@ -73,7 +73,7 @@ export const hasBrokerFunction = async (
     }
     
     if (data && data.length > 0) {
-      return (data[0] as any).function_enabled;
+      return data[0].function_enabled;
     }
     
     // Default functions that all brokers are assumed to have
@@ -99,7 +99,7 @@ export const isBrokerFunctionPremium = async (
       .from('broker_functionality')
       .select('is_premium')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug);
+      .eq('function_slug', functionSlug) as any;
       
     if (error) {
       console.error("Error checking if broker functionality is premium:", error);
@@ -107,7 +107,7 @@ export const isBrokerFunctionPremium = async (
     }
     
     if (data && data.length > 0) {
-      return (data[0] as any).is_premium;
+      return data[0].is_premium;
     }
     
     // Premium functions
@@ -262,19 +262,19 @@ const createAndStoreDefaultFunctions = async (broker: { id: number; name: string
         .from('broker_functionality')
         .select('id')
         .eq('broker_id', func.broker_id)
-        .eq('function_slug', func.function_slug);
+        .eq('function_slug', func.function_slug) as any;
         
       if (!checkError && existingFuncs && existingFuncs.length > 0) {
         // Update existing function
         await supabase
           .from('broker_functionality')
           .update(func)
-          .eq('id', existingFuncs[0].id);
+          .eq('id', existingFuncs[0].id) as any;
       } else {
         // Insert new function
         await supabase
           .from('broker_functionality')
-          .insert(func);
+          .insert(func) as any;
       }
     } catch (error) {
       console.error("Error storing broker function:", error);
@@ -302,10 +302,10 @@ export const getBrokerFunctionConfig = async (
       .from('brokers_function_configs')
       .select('config_data')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug);
+      .eq('function_slug', functionSlug) as any;
     
     if (!error && data && data.length > 0) {
-      return (data[0] as any).config_data;
+      return data[0].config_data;
     }
     
     // Return hardcoded default configs as fallback
@@ -346,7 +346,8 @@ export const getBrokerFunctionRequiredInputs = async (
       let requiredInputs: string[] = [];
       const adminBroker = adminData[0];
       if (Array.isArray(adminBroker.required_inputs)) {
-        requiredInputs = adminBroker.required_inputs.map(item => String(item));
+        // Convert each item to string to ensure consistency
+        requiredInputs = adminBroker.required_inputs.map((item: any) => String(item));
       } else if (typeof adminBroker.required_inputs === 'string') {
         try {
           requiredInputs = JSON.parse(adminBroker.required_inputs);
@@ -373,7 +374,8 @@ export const getBrokerFunctionRequiredInputs = async (
       let requiredInputs: string[] = [];
       const brokerDetails = data[0];
       if (Array.isArray(brokerDetails.required_inputs)) {
-        requiredInputs = brokerDetails.required_inputs.map(item => String(item));
+        // Convert each item to string to ensure consistency
+        requiredInputs = brokerDetails.required_inputs.map((item: any) => String(item));
       } else if (typeof brokerDetails.required_inputs === 'string') {
         try {
           requiredInputs = JSON.parse(brokerDetails.required_inputs);
