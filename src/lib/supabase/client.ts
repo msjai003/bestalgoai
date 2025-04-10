@@ -56,49 +56,12 @@ export const supabase = {
       // Ensure params has p_broker_id
       const brokerId = params && typeof params === 'object' && 'p_broker_id' in params ? params.p_broker_id : 1;
       
-      const mockFunctions = [
-        {
-          id: "1",
-          broker_id: brokerId,
-          broker_name: "Zerodha",
-          function_name: "Order Placement",
-          function_description: "Place new orders with the broker",
-          function_slug: "order_placement",
-          function_enabled: true,
-          is_premium: false,
-          function_order: 1,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: "2",
-          broker_id: brokerId,
-          broker_name: "Zerodha",
-          function_name: "Market Data",
-          function_description: "Access real-time market data",
-          function_slug: "market_data",
-          function_enabled: true,
-          is_premium: true,
-          function_order: 2,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
+      // Create a comprehensive list of mock broker functions based on broker ID
+      let mockFunctions = [];
       
-      // Filter the results by broker ID if provided
-      const result = params && typeof params === 'object' && 'p_broker_id' in params 
-        ? mockFunctions.filter(f => f.broker_id === params.p_broker_id)
-        : mockFunctions;
-        
-      return {
-        data: result,
-        error: null
-      };
-    }
-    
-    if (functionName === 'get_all_broker_infocap_functions') {
-      return {
-        data: [
+      // Zerodha (ID: 1)
+      if (brokerId === 1) {
+        mockFunctions = [
           {
             id: "1",
             broker_id: 1,
@@ -127,6 +90,25 @@ export const supabase = {
           },
           {
             id: "3",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 3,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // ICICI Direct (ID: 2)
+      else if (brokerId === 2) {
+        mockFunctions = [
+          {
+            id: "4",
             broker_id: 2,
             broker_name: "ICICI Direct",
             function_name: "Order Placement",
@@ -139,20 +121,26 @@ export const supabase = {
             updated_at: new Date().toISOString()
           },
           {
-            id: "4",
-            broker_id: 5,
-            broker_name: "Upstox",
-            function_name: "Order Placement",
-            function_description: "Place new orders with the broker",
-            function_slug: "order_placement",
+            id: "5",
+            broker_id: 2,
+            broker_name: "ICICI Direct",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
             function_enabled: true,
-            is_premium: false,
-            function_order: 1,
+            is_premium: true,
+            function_order: 2,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          },
+          }
+        ];
+      }
+      
+      // Angel One (ID: 3)
+      else if (brokerId === 3) {
+        mockFunctions = [
           {
-            id: "5",
+            id: "6",
             broker_id: 3,
             broker_name: "Angel One",
             function_name: "Order Placement",
@@ -165,7 +153,39 @@ export const supabase = {
             updated_at: new Date().toISOString()
           },
           {
-            id: "6",
+            id: "7",
+            broker_id: 3,
+            broker_name: "Angel One",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "8",
+            broker_id: 3,
+            broker_name: "Angel One",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 3,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // HDFC Securities (ID: 4)
+      else if (brokerId === 4) {
+        mockFunctions = [
+          {
+            id: "9",
             broker_id: 4,
             broker_name: "HDFC Securities",
             function_name: "Order Placement",
@@ -178,7 +198,45 @@ export const supabase = {
             updated_at: new Date().toISOString()
           },
           {
-            id: "7",
+            id: "10",
+            broker_id: 4,
+            broker_name: "HDFC Securities",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // Upstox (ID: 5)
+      else if (brokerId === 5) {
+        mockFunctions = [
+          {
+            id: "11",
+            broker_id: 5,
+            broker_name: "Upstox",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // Groww (ID: 6)
+      else if (brokerId === 6) {
+        mockFunctions = [
+          {
+            id: "12",
             broker_id: 6,
             broker_name: "Groww",
             function_name: "Order Placement",
@@ -191,7 +249,26 @@ export const supabase = {
             updated_at: new Date().toISOString()
           },
           {
-            id: "8",
+            id: "13",
+            broker_id: 6,
+            broker_name: "Groww",
+            function_name: "Portfolio Import",
+            function_description: "Import existing portfolio",
+            function_slug: "portfolio_import",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // 5 Paisa (ID: 7)
+      else if (brokerId === 7) {
+        mockFunctions = [
+          {
+            id: "14",
             broker_id: 7,
             broker_name: "5 Paisa",
             function_name: "Order Placement",
@@ -204,7 +281,26 @@ export const supabase = {
             updated_at: new Date().toISOString()
           },
           {
-            id: "9",
+            id: "15",
+            broker_id: 7,
+            broker_name: "5 Paisa",
+            function_name: "Instant Fund Transfer",
+            function_description: "Transfer funds instantly",
+            function_slug: "fund_transfer",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+      
+      // Bigul (ID: 8)
+      else if (brokerId === 8) {
+        mockFunctions = [
+          {
+            id: "16",
             broker_id: 8,
             broker_name: "Bigul",
             function_name: "Order Placement",
@@ -213,6 +309,260 @@ export const supabase = {
             function_enabled: true,
             is_premium: false,
             function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "17",
+            broker_id: 8,
+            broker_name: "Bigul",
+            function_name: "Advanced Charting",
+            function_description: "Access advanced charting tools",
+            function_slug: "advanced_charting",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+      }
+        
+      return {
+        data: mockFunctions,
+        error: null
+      };
+    }
+    
+    if (functionName === 'get_all_broker_infocap_functions') {
+      return {
+        data: [
+          // Zerodha functions
+          {
+            id: "1",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "2",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "3",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 3,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // ICICI Direct functions
+          {
+            id: "4",
+            broker_id: 2,
+            broker_name: "ICICI Direct",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "5",
+            broker_id: 2,
+            broker_name: "ICICI Direct",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // Angel One functions
+          {
+            id: "6",
+            broker_id: 3,
+            broker_name: "Angel One",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "7",
+            broker_id: 3,
+            broker_name: "Angel One",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "8",
+            broker_id: 3,
+            broker_name: "Angel One",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 3,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // HDFC Securities functions
+          {
+            id: "9",
+            broker_id: 4,
+            broker_name: "HDFC Securities",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "10",
+            broker_id: 4,
+            broker_name: "HDFC Securities",
+            function_name: "Market Data",
+            function_description: "Access real-time market data",
+            function_slug: "market_data",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // Upstox functions
+          {
+            id: "11",
+            broker_id: 5,
+            broker_name: "Upstox",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // Groww functions
+          {
+            id: "12",
+            broker_id: 6,
+            broker_name: "Groww",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "13",
+            broker_id: 6,
+            broker_name: "Groww",
+            function_name: "Portfolio Import",
+            function_description: "Import existing portfolio",
+            function_slug: "portfolio_import",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // 5 Paisa functions
+          {
+            id: "14",
+            broker_id: 7,
+            broker_name: "5 Paisa",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "15",
+            broker_id: 7,
+            broker_name: "5 Paisa",
+            function_name: "Instant Fund Transfer",
+            function_description: "Transfer funds instantly",
+            function_slug: "fund_transfer",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          // Bigul functions
+          {
+            id: "16",
+            broker_id: 8,
+            broker_name: "Bigul",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "17",
+            broker_id: 8,
+            broker_name: "Bigul",
+            function_name: "Advanced Charting",
+            function_description: "Access advanced charting tools",
+            function_slug: "advanced_charting",
+            function_enabled: true,
+            is_premium: true,
+            function_order: 2,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }

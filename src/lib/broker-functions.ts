@@ -1,4 +1,3 @@
-
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,7 +50,155 @@ const staticBrokerFunctions: BrokerFunction[] = [
     is_premium: false,
     broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
   },
-  // More static data entries...
+  {
+    id: "2-market_data",
+    broker_id: 2,
+    broker_name: "ICICI Direct",
+    function_name: "Market Data",
+    function_description: "Access real-time market data",
+    function_slug: "market_data",
+    function_enabled: true,
+    is_premium: true,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
+  },
+  // Angel One functions
+  {
+    id: "3-order_placement",
+    broker_id: 3,
+    broker_name: "Angel One",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+  },
+  {
+    id: "3-market_data",
+    broker_id: 3,
+    broker_name: "Angel One",
+    function_name: "Market Data",
+    function_description: "Access real-time market data",
+    function_slug: "market_data",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+  },
+  {
+    id: "3-order_modification",
+    broker_id: 3,
+    broker_name: "Angel One",
+    function_name: "Order Modification",
+    function_description: "Modify existing orders",
+    function_slug: "order_modification",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+  },
+  // HDFC Securities functions
+  {
+    id: "4-order_placement",
+    broker_id: 4,
+    broker_name: "HDFC Securities",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
+  },
+  {
+    id: "4-market_data",
+    broker_id: 4,
+    broker_name: "HDFC Securities",
+    function_name: "Market Data",
+    function_description: "Access real-time market data",
+    function_slug: "market_data",
+    function_enabled: true,
+    is_premium: true,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
+  },
+  // Upstox functions
+  {
+    id: "5-order_placement",
+    broker_id: 5,
+    broker_name: "Upstox",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg"
+  },
+  // Groww functions
+  {
+    id: "6-order_placement",
+    broker_id: 6,
+    broker_name: "Groww",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
+  },
+  {
+    id: "6-portfolio_import",
+    broker_id: 6,
+    broker_name: "Groww",
+    function_name: "Portfolio Import",
+    function_description: "Import existing portfolio",
+    function_slug: "portfolio_import",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
+  },
+  // 5 Paisa functions
+  {
+    id: "7-order_placement",
+    broker_id: 7,
+    broker_name: "5 Paisa",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
+  },
+  {
+    id: "7-fund_transfer",
+    broker_id: 7,
+    broker_name: "5 Paisa",
+    function_name: "Instant Fund Transfer",
+    function_description: "Transfer funds instantly",
+    function_slug: "fund_transfer",
+    function_enabled: true,
+    is_premium: true,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
+  },
+  // Bigul functions
+  {
+    id: "8-order_placement",
+    broker_id: 8,
+    broker_name: "Bigul",
+    function_name: "Order Placement",
+    function_description: "Place new orders with the broker",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+  },
+  {
+    id: "8-advanced_charting",
+    broker_id: 8,
+    broker_name: "Bigul",
+    function_name: "Advanced Charting",
+    function_description: "Access advanced charting tools",
+    function_slug: "advanced_charting",
+    function_enabled: true,
+    is_premium: true,
+    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+  }
 ];
 
 /**
