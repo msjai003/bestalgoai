@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,9 +15,15 @@ import { toast } from 'sonner';
 import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { BrokerFunction } from '@/types/broker';
+import { BrokerFunction, BrokerInfocapFunction } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
+import { 
+  saveBrokerInfocapFunction, 
+  getAllBrokerInfocapFunctions, 
+  getBrokerInfocapFunctions,
+  deleteBrokerInfocapFunction
+} from '@/services/brokerService';
 
 interface FormValues {
   broker_id: number;
@@ -28,6 +33,7 @@ interface FormValues {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
+  function_order: number;
 }
 
 const BrokerFunctionsAdmin = () => {
@@ -35,7 +41,7 @@ const BrokerFunctionsAdmin = () => {
   const [functions, setFunctions] = useState<BrokerFunction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<BrokerFunction>>({});
+  const [editForm, setEditForm] = useState<Partial<BrokerFunction & { function_order?: number }>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
   
@@ -46,34 +52,43 @@ const BrokerFunctionsAdmin = () => {
       function_name: '',
       function_description: '',
       function_slug: '',
+      function_order: 0,
       function_enabled: true,
       is_premium: false
     }
   });
 
-  // Fetch broker functions
+  // Fetch broker functions using RPC
   const fetchBrokerFunctions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('brokers_functions')
-        .select('*')
-        .order('broker_name')
-        .order('function_name');
-        
-      if (selectedBrokerId) {
-        query = query.eq('broker_id', selectedBrokerId);
-      }
-        
-      const { data, error } = await query;
-
-      if (error) throw error;
+      let data;
       
-      // Ensure data is cast to the correct type
-      const typedData = data as BrokerFunction[];
-      setFunctions(typedData || []);
+      if (selectedBrokerId) {
+        const result = await getBrokerInfocapFunctions(selectedBrokerId);
+        data = result;
+      } else {
+        const result = await getAllBrokerInfocapFunctions();
+        data = result;
+      }
+      
+      // Convert BrokerInfocapFunction to BrokerFunction format
+      const mappedFunctions: BrokerFunction[] = data.map(func => ({
+        id: func.id,
+        broker_id: func.broker_id,
+        broker_name: func.broker_name,
+        function_name: func.function_name,
+        function_description: func.function_description,
+        function_slug: func.function_slug,
+        function_enabled: func.function_enabled,
+        is_premium: func.is_premium,
+        function_order: func.function_order
+      }));
+      
+      setFunctions(mappedFunctions);
     } catch (error: any) {
       toast.error(`Error fetching broker functions: ${error.message}`);
+      setFunctions([]);
     } finally {
       setLoading(false);
     }
@@ -86,7 +101,7 @@ const BrokerFunctionsAdmin = () => {
   }, [user, selectedBrokerId]);
 
   // Start editing a function
-  const handleEdit = (func: BrokerFunction) => {
+  const handleEdit = (func: BrokerFunction & { function_order?: number }) => {
     setEditingId(func.id);
     setEditForm({
       broker_id: func.broker_id,
@@ -95,7 +110,8 @@ const BrokerFunctionsAdmin = () => {
       function_description: func.function_description,
       function_slug: func.function_slug,
       function_enabled: func.function_enabled,
-      is_premium: func.is_premium
+      is_premium: func.is_premium,
+      function_order: func.function_order || 0
     });
   };
 
@@ -112,30 +128,36 @@ const BrokerFunctionsAdmin = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .update({
-          broker_id: editForm.broker_id,
-          broker_name: editForm.broker_name,
-          function_name: editForm.function_name,
-          function_description: editForm.function_description,
-          function_slug: editForm.function_slug,
-          function_enabled: editForm.function_enabled,
-          is_premium: editForm.is_premium
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      // Update local state
-      setFunctions(prevFunctions => 
-        prevFunctions.map(func => 
-          func.id === id ? { ...func, ...editForm as BrokerFunction } : func
-        )
-      );
-      
-      toast.success('Function updated successfully');
-      setEditingId(null);
+      if (editForm.broker_id && editForm.broker_name && editForm.function_name && 
+          editForm.function_slug && typeof editForm.function_order === 'number') {
+        
+        await saveBrokerInfocapFunction(
+          editForm.broker_id,
+          editForm.broker_name,
+          editForm.function_name,
+          editForm.function_description || null,
+          editForm.function_slug,
+          editForm.function_order,
+          editForm.function_enabled !== undefined ? editForm.function_enabled : true,
+          editForm.is_premium || false
+        );
+        
+        // Update local state
+        setFunctions(prevFunctions => 
+          prevFunctions.map(func => 
+            func.id === id ? { 
+              ...func, 
+              ...editForm as BrokerFunction,
+              function_order: editForm.function_order
+            } : func
+          )
+        );
+        
+        toast.success('Function updated successfully');
+        setEditingId(null);
+      } else {
+        toast.error('Missing required fields');
+      }
     } catch (error: any) {
       toast.error(`Failed to update function: ${error.message}`);
     }
@@ -148,12 +170,18 @@ const BrokerFunctionsAdmin = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      // Use the numeric part of the id
+      const numericId = parseInt(id);
+      if (isNaN(numericId)) {
+        toast.error('Invalid function ID');
+        return;
+      }
+      
+      const success = await deleteBrokerInfocapFunction(numericId);
+      
+      if (!success) {
+        throw new Error('Failed to delete function');
+      }
       
       // Update local state
       setFunctions(prevFunctions => 
@@ -176,38 +204,49 @@ const BrokerFunctionsAdmin = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('brokers_functions')
-        .insert({
-          broker_id: values.broker_id,
-          broker_name: broker.name,
-          function_name: values.function_name,
-          function_description: values.function_description || null,
-          function_slug: values.function_slug,
-          function_enabled: values.function_enabled,
-          is_premium: values.is_premium
-        })
-        .select();
-
-      if (error) throw error;
+      const newId = await saveBrokerInfocapFunction(
+        values.broker_id,
+        broker.name,
+        values.function_name,
+        values.function_description || null,
+        values.function_slug,
+        values.function_order || 0,
+        values.function_enabled,
+        values.is_premium
+      );
       
-      if (data && data.length > 0) {
-        // Update local state with correct typing
-        const newFunction = data[0] as unknown as BrokerFunction;
-        setFunctions(prevFunctions => [...prevFunctions, newFunction]);
-        
-        toast.success('Function added successfully');
-        setShowAddForm(false);
-        form.reset({
-          broker_id: 0,
-          broker_name: '',
-          function_name: '',
-          function_description: '',
-          function_slug: '',
-          function_enabled: true,
-          is_premium: false
-        });
+      if (!newId) {
+        throw new Error('Failed to add function');
       }
+      
+      // Create a new function object with the returned ID
+      const newFunction: BrokerFunction & { function_order: number } = {
+        id: String(newId),
+        broker_id: values.broker_id,
+        broker_name: broker.name,
+        function_name: values.function_name,
+        function_description: values.function_description,
+        function_slug: values.function_slug,
+        function_enabled: values.function_enabled,
+        is_premium: values.is_premium,
+        function_order: values.function_order || 0
+      };
+      
+      // Update local state
+      setFunctions(prevFunctions => [...prevFunctions, newFunction]);
+      
+      toast.success('Function added successfully');
+      setShowAddForm(false);
+      form.reset({
+        broker_id: 0,
+        broker_name: '',
+        function_name: '',
+        function_description: '',
+        function_slug: '',
+        function_order: 0,
+        function_enabled: true,
+        is_premium: false
+      });
     } catch (error: any) {
       toast.error(`Failed to add function: ${error.message}`);
     }
@@ -220,12 +259,12 @@ const BrokerFunctionsAdmin = () => {
       
       // Define default functions for brokers
       const defaultFunctions = [
-        { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker' },
-        { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders' },
-        { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders' },
-        { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions' },
-        { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data' },
-        { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions' }
+        { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker', order: 1 },
+        { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders', order: 2 },
+        { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders', order: 3 },
+        { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions', order: 4 },
+        { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data', order: 5 },
+        { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions', order: 6 }
       ];
       
       // Check which brokers need default functions (specifically 5 Paisa and Bigil)
@@ -235,44 +274,51 @@ const BrokerFunctionsAdmin = () => {
       ];
       
       let addedCount = 0;
+      let newFunctions: (BrokerFunction & { function_order: number })[] = [];
       
       for (const broker of targetBrokers) {
-        // Check if broker already has functions
-        const { data: existingFunctions } = await supabase
-          .from('brokers_functions')
-          .select('*')
-          .eq('broker_id', broker.id);
-          
+        // Check if broker already has functions in broker_infocap
+        const existingFunctions = await getBrokerInfocapFunctions(broker.id);
+        
         if (!existingFunctions || existingFunctions.length === 0) {
           // Add default functions for this broker
-          const functionsToAdd = defaultFunctions.map(func => ({
-            broker_id: broker.id,
-            broker_name: broker.name,
-            function_name: func.name,
-            function_description: func.description,
-            function_slug: func.slug,
-            function_enabled: true,
-            is_premium: func.slug === 'market_data', // Make market data premium as an example
-            broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
-          }));
-          
-          const { data, error } = await supabase
-            .from('brokers_functions')
-            .insert(functionsToAdd)
-            .select();
+          for (const func of defaultFunctions) {
+            const newId = await saveBrokerInfocapFunction(
+              broker.id,
+              broker.name,
+              func.name,
+              func.description,
+              func.slug,
+              func.order,
+              true,
+              func.slug === 'market_data' // Make market data premium as an example
+            );
             
-          if (error) throw error;
-          
-          if (data) {
-            addedCount += data.length;
-            // Update local state with new functions (with correct typing)
-            const typedData = data as unknown as BrokerFunction[];
-            setFunctions(prev => [...prev, ...typedData]);
+            if (newId) {
+              addedCount++;
+              
+              // Create a new function object with the returned ID
+              const newFunction: BrokerFunction & { function_order: number } = {
+                id: String(newId),
+                broker_id: broker.id,
+                broker_name: broker.name,
+                function_name: func.name,
+                function_description: func.description,
+                function_slug: func.slug,
+                function_enabled: true,
+                is_premium: func.slug === 'market_data',
+                function_order: func.order
+              };
+              
+              newFunctions.push(newFunction);
+            }
           }
         }
       }
       
       if (addedCount > 0) {
+        // Update local state with new functions
+        setFunctions(prev => [...prev, ...newFunctions]);
         toast.success(`Added ${addedCount} default functions for new brokers`);
       } else {
         toast.info('All brokers already have functions configured');
@@ -386,6 +432,17 @@ const BrokerFunctionsAdmin = () => {
                   </div>
                   
                   <div>
+                    <Label htmlFor="function_order">Order</Label>
+                    <Input
+                      id="function_order"
+                      type="number"
+                      {...form.register('function_order', { valueAsNumber: true })}
+                      placeholder="Display order (e.g. 1, 2, 3)"
+                      defaultValue="0"
+                    />
+                  </div>
+                  
+                  <div>
                     <Label htmlFor="function_description">Description</Label>
                     <Textarea
                       id="function_description"
@@ -449,6 +506,7 @@ const BrokerFunctionsAdmin = () => {
                   <TableHead>Broker</TableHead>
                   <TableHead>Function Name</TableHead>
                   <TableHead>Slug</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Premium</TableHead>
@@ -456,140 +514,155 @@ const BrokerFunctionsAdmin = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {functions.map((func) => (
-                  <TableRow key={func.id}>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Select
-                          value={editForm.broker_id?.toString()}
-                          onValueChange={(value) => {
-                            const brokerId = parseInt(value);
-                            const broker = brokers.find(b => b.id === brokerId);
-                            setEditForm({
-                              ...editForm,
-                              broker_id: brokerId,
-                              broker_name: broker?.name || ''
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select broker" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {brokers.map(broker => (
-                              <SelectItem key={broker.id} value={broker.id.toString()}>
-                                {broker.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        func.broker_name
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Input
-                          value={editForm.function_name || ''}
-                          onChange={(e) => setEditForm({...editForm, function_name: e.target.value})}
-                          className="w-full"
-                          required
-                        />
-                      ) : (
-                        func.function_name
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Input
-                          value={editForm.function_slug || ''}
-                          onChange={(e) => setEditForm({...editForm, function_slug: e.target.value})}
-                          className="w-full"
-                          required
-                        />
-                      ) : (
-                        func.function_slug
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Textarea
-                          value={editForm.function_description || ''}
-                          onChange={(e) => setEditForm({...editForm, function_description: e.target.value})}
-                          className="w-full"
-                        />
-                      ) : (
-                        func.function_description || '-'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Switch 
-                          checked={!!editForm.function_enabled}
-                          onCheckedChange={(checked) => setEditForm({...editForm, function_enabled: checked})}
-                        />
-                      ) : (
-                        <span className={`px-2 py-1 rounded-full text-xs ${func.function_enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {func.function_enabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === func.id ? (
-                        <Switch 
-                          checked={!!editForm.is_premium}
-                          onCheckedChange={(checked) => setEditForm({...editForm, is_premium: checked})}
-                        />
-                      ) : (
-                        <span className={`px-2 py-1 rounded-full text-xs ${func.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {func.is_premium ? 'Premium' : 'Standard'}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {editingId === func.id ? (
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleCancelEdit}
+                {functions.map((func) => {
+                  const functionOrder = (func as any).function_order || 0;
+                  return (
+                    <TableRow key={func.id}>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Select
+                            value={editForm.broker_id?.toString()}
+                            onValueChange={(value) => {
+                              const brokerId = parseInt(value);
+                              const broker = brokers.find(b => b.id === brokerId);
+                              setEditForm({
+                                ...editForm,
+                                broker_id: brokerId,
+                                broker_name: broker?.name || ''
+                              });
+                            }}
                           >
-                            Cancel
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleSave(func.id)}
-                            className="flex items-center gap-1"
-                          >
-                            <Save className="h-4 w-4" />
-                            Save
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(func)}
-                            className="flex items-center gap-1"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(func.id)}
-                            className="flex items-center gap-1"
-                          >
-                            <Trash className="h-4 w-4" />
-                            Delete
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select broker" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {brokers.map(broker => (
+                                <SelectItem key={broker.id} value={broker.id.toString()}>
+                                  {broker.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          func.broker_name
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Input
+                            value={editForm.function_name || ''}
+                            onChange={(e) => setEditForm({...editForm, function_name: e.target.value})}
+                            className="w-full"
+                            required
+                          />
+                        ) : (
+                          func.function_name
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Input
+                            value={editForm.function_slug || ''}
+                            onChange={(e) => setEditForm({...editForm, function_slug: e.target.value})}
+                            className="w-full"
+                            required
+                          />
+                        ) : (
+                          func.function_slug
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Input
+                            type="number"
+                            value={editForm.function_order || 0}
+                            onChange={(e) => setEditForm({...editForm, function_order: parseInt(e.target.value)})}
+                            className="w-full"
+                          />
+                        ) : (
+                          functionOrder
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Textarea
+                            value={editForm.function_description || ''}
+                            onChange={(e) => setEditForm({...editForm, function_description: e.target.value})}
+                            className="w-full"
+                          />
+                        ) : (
+                          func.function_description || '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Switch 
+                            checked={!!editForm.function_enabled}
+                            onCheckedChange={(checked) => setEditForm({...editForm, function_enabled: checked})}
+                          />
+                        ) : (
+                          <span className={`px-2 py-1 rounded-full text-xs ${func.function_enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {func.function_enabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingId === func.id ? (
+                          <Switch 
+                            checked={!!editForm.is_premium}
+                            onCheckedChange={(checked) => setEditForm({...editForm, is_premium: checked})}
+                          />
+                        ) : (
+                          <span className={`px-2 py-1 rounded-full text-xs ${func.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {func.is_premium ? 'Premium' : 'Standard'}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingId === func.id ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleSave(func.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <Save className="h-4 w-4" />
+                              Save
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit({...func, function_order: functionOrder})}
+                              className="flex items-center gap-1"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(func.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <Trash className="h-4 w-4" />
+                              Delete
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

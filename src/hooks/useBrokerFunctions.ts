@@ -61,10 +61,8 @@ export const useBrokerFunctions = (brokerId?: number) => {
     // Static broker functions for fallback - now we'll directly query the broker_infocap table
     const fetchStaticFunctionsFromTable = async () => {
       try {
-        const { data, error } = await supabase
-          .from('broker_infocap')
-          .select('*')
-          .order('function_order', { ascending: true });
+        // Use RPC function instead of direct table access
+        const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
         
         if (error || !data) {
           console.error("Error fetching from broker_infocap:", error);

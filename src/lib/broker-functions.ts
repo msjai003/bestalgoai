@@ -1,4 +1,3 @@
-
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/lib/supabase/client';
@@ -99,21 +98,23 @@ export const hasBrokerFunction = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    // Query directly from broker_infocap table
-    const { data, error } = await supabase
-      .from('broker_infocap')
-      .select('*')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .eq('function_enabled', true);
-      
-    if (error) {
+    // Use RPC to check if a broker has a specific function
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
+      p_broker_id: brokerId
+    });
+    
+    if (error || !data) {
       console.error("Error checking broker function:", error);
       // Fall back to static data if database query fails
       return checkStaticBrokerFunction(brokerId, functionSlug);
     }
     
-    return data && data.length > 0;
+    // Filter the returned functions to find the one with the matching slug
+    const matchingFunctions = data.filter((func: any) => 
+      func.function_slug === functionSlug && func.function_enabled
+    );
+    
+    return matchingFunctions.length > 0;
   } catch (error) {
     console.error("Error checking broker function:", error);
     // Fall back to static data if there's an exception
@@ -129,22 +130,25 @@ export const isBrokerFunctionPremium = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    // Query directly from broker_infocap table
-    const { data, error } = await supabase
-      .from('broker_infocap')
-      .select('is_premium')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .eq('function_enabled', true)
-      .maybeSingle();
-      
+    // Use RPC to get the broker functions
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
+      p_broker_id: brokerId
+    });
+    
     if (error || !data) {
       console.error("Error checking if broker function is premium:", error);
       // Fall back to static data if database query fails
       return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
     }
     
-    return !!data.is_premium;
+    // Filter to find the specific function
+    const matchingFunctions = data.filter((func: any) => 
+      func.function_slug === functionSlug && func.function_enabled
+    );
+    
+    if (matchingFunctions.length === 0) return false;
+    
+    return !!matchingFunctions[0].is_premium;
   } catch (error) {
     console.error("Error checking if broker function is premium:", error);
     // Fall back to static data if there's an exception
@@ -181,14 +185,12 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Try to fetch from database 
-    const { data, error } = await supabase
-      .from('broker_details')
-      .select('image_url')
-      .eq('id', brokerId)
-      .maybeSingle();
+    // Try to fetch from database using RPC to get the broker_details
+    const { data, error } = await supabase.rpc('get_broker_details', {
+      p_broker_id: brokerId
+    });
     
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       console.error("Error fetching broker image:", error);
       // Fall back to static broker data
       const broker = brokers.find(b => b.id === brokerId);
@@ -197,7 +199,7 @@ export const getBrokerImage = async (
       return image;
     }
     
-    const image = data.image_url || null;
+    const image = data[0]?.image_url || null;
     brokerImageCache[brokerId] = image;
     return image;
   } catch (error) {
@@ -245,14 +247,11 @@ export const getBrokerFunctionConfig = async (
   functionSlug: string
 ): Promise<any | null> => {
   try {
-    // Look for config in broker_infocap (add this only if you have config data in this table)
-    const { data, error } = await supabase
-      .from('broker_infocap')
-      .select('function_description')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
-      
+    // Use RPC to get broker functions
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
+      p_broker_id: brokerId
+    });
+    
     if (error || !data) {
       // Fall back to static data if database query fails
       const staticFunction = staticBrokerFunctions.find(func => 
@@ -264,8 +263,15 @@ export const getBrokerFunctionConfig = async (
       return null; // No configuration in static data
     }
     
-    // Return configuration if it exists
-    return data || null;
+    // Find the specific function
+    const matchingFunctions = data.filter((func: any) => 
+      func.function_slug === functionSlug
+    );
+    
+    if (matchingFunctions.length === 0) return null;
+    
+    // Return the function description as the config for now
+    return { function_description: matchingFunctions[0].function_description } || null;
   } catch (error) {
     console.error("Error getting broker function config:", error);
     return null;

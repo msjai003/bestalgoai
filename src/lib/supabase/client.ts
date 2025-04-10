@@ -16,6 +16,7 @@ export const supabase = {
     select: (query = '*') => ({
       eq: (column, value) => ({
         maybeSingle: () => ({ data: null, error: null }),
+        single: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
           limit: (limit) => ({
             data: [],
@@ -24,6 +25,7 @@ export const supabase = {
           data: [],
           error: null
         }),
+        eq: () => ({ data: [], error: null }),
         data: [],
         error: null
       }),
@@ -39,9 +41,21 @@ export const supabase = {
       data: [],
       error: null
     }),
-    insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ data: [], error: null }),
-    delete: () => ({ data: [], error: null }),
+    insert: (data) => ({ 
+      select: () => ({ data: [], error: null }),
+      data: [], 
+      error: null 
+    }),
+    update: (data) => ({ 
+      eq: () => ({ data: [], error: null }),
+      data: [], 
+      error: null 
+    }),
+    delete: () => ({ 
+      eq: () => ({ data: [], error: null }),
+      data: [], 
+      error: null 
+    }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
@@ -53,6 +67,97 @@ export const supabase = {
   rpc: (functionName, params = {}) => {
     // Mock implementation of rpc function
     console.log(`Mock RPC call to ${functionName} with params:`, params);
+    
+    // Mock specific RPC functions
+    if (functionName === 'get_broker_infocap_functions') {
+      return {
+        data: [
+          {
+            id: "1",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "2",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ],
+        error: null
+      };
+    }
+    
+    if (functionName === 'get_all_broker_infocap_functions') {
+      return {
+        data: [
+          {
+            id: "1",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "2",
+            broker_id: 1,
+            broker_name: "Zerodha",
+            function_name: "Order Modification",
+            function_description: "Modify existing orders",
+            function_slug: "order_modification",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 2,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "3",
+            broker_id: 2,
+            broker_name: "ICICI Direct",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ],
+        error: null
+      };
+    }
+    
+    if (functionName === 'save_broker_infocap_function') {
+      return {
+        data: 123, // Return a mock ID
+        error: null
+      };
+    }
+    
+    // Default response for other RPC functions
     return {
       data: [],
       error: null
