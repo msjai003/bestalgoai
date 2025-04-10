@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, RefreshCw } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { toast } from "sonner";
@@ -14,25 +14,37 @@ const BrokerIntegration = () => {
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
   const [brokers, setBrokers] = useState<Broker[]>(staticBrokers);
   const [loading, setLoading] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  // Function to load brokers
-  const loadBrokers = async () => {
+  // Function to load brokers with improved error handling
+  const loadBrokers = useCallback(async () => {
     setLoading(true);
     try {
+      console.log("Fetching fresh broker data from database...");
       const brokerData = await fetchBrokerDetails();
+      console.log(`Loaded ${brokerData.length} brokers from database`);
       setBrokers(brokerData);
+      setLastRefreshed(new Date());
     } catch (error) {
       console.error("Error loading brokers:", error);
       toast.error("Failed to load broker list");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     // Load brokers immediately when the component mounts
     loadBrokers();
-  }, []);
+    
+    // Set up an interval to refresh data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadBrokers();
+    }, 30000);
+    
+    // Clean up the interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [loadBrokers]);
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
@@ -60,33 +72,38 @@ const BrokerIntegration = () => {
           <h1 className="text-lg font-semibold">Select Your Broker</h1>
           <Button 
             variant="ghost"
-            className="p-2"
+            className="p-2 relative group"
             onClick={handleRefresh}
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="w-5 h-5 text-charcoalTextSecondary" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M21 2v6h-6"></path>
-              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-              <path d="M3 22v-6h6"></path>
-              <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-            </svg>
+            <RefreshCw 
+              className={`w-5 h-5 text-charcoalTextSecondary ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} 
+            />
           </Button>
         </div>
       </header>
 
       <main className="pt-20 px-4 pb-24">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-charcoalTextSecondary">
+            Last updated: {lastRefreshed.toLocaleTimeString()}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+        
         <BrokerList 
           brokers={brokers} 
           onSelectBroker={handleSelectBroker}
           loading={loading}
+          onRefresh={handleRefresh}
         />
       </main>
 

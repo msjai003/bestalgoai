@@ -18,10 +18,14 @@ export const supabase = {
         maybeSingle: () => ({ data: null, error: null }),
         single: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
-          limit: (limit) => ({
+          limit: (limit, options) => ({
             data: [],
             error: null
           }),
+          data: [],
+          error: null
+        }),
+        limit: (limit, options) => ({
           data: [],
           error: null
         }),
@@ -33,12 +37,24 @@ export const supabase = {
         error: null
       }),
       order: (column, { ascending } = { ascending: false }) => ({
-        limit: (limit) => ({
+        limit: (limit, options) => ({
+          data: [],
+          error: null
+        }),
+        eq: (column, value) => ({
           data: [],
           error: null
         }),
         data: [],
         error: null
+      }),
+      limit: (limit, options) => ({
+        data: [],
+        error: null,
+        select: (subQuery) => ({
+          data: [],
+          error: null 
+        })
       }),
       count: () => ({ data: 0, error: null }),
       data: [],
@@ -78,6 +94,12 @@ export const supabase = {
       error: null
     };
   },
+  channel: (channel) => ({
+    on: (event, options, callback) => ({
+      subscribe: () => {}
+    })
+  }),
+  removeChannel: (channel) => {},
 };
 
 // Get the current site URL for redirects

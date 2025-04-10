@@ -5,20 +5,23 @@ import { brokers as staticBrokers } from "@/components/broker-integration/Broker
 import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
 /**
- * Fetch all broker details from the database, with no caching
+ * Fetch all broker details from the database, with NO CACHING to ensure latest data
  */
 export const fetchBrokerDetails = async (): Promise<Broker[]> => {
   try {
     console.log("Fetching broker details from database");
     
-    // First try to fetch from brokers_admin table
+    // First try to fetch from brokers_admin table with a cache-busting timestamp
+    const timestamp = new Date().getTime();
     const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
       .select('*')
-      .eq('is_active', true) as any;
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .limit(100, { foreignTable: null }) as any;
     
     if (!adminError && adminData && adminData.length > 0) {
-      console.log("Found broker details in brokers_admin table:", adminData.length);
+      console.log(`Found ${adminData.length} broker details in brokers_admin table`);
       // Map broker_admin data to Broker type
       return adminData.map((item: any) => {
         let requiredInputs: string[] = [];

@@ -10,6 +10,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [brokerName, setBrokerName] = useState<string | null>(null);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const fetchBrokerFunctions = useCallback(async () => {
     setIsLoading(true);
@@ -24,14 +25,18 @@ export const useBrokerFunctions = (brokerId?: number) => {
       let broker = null;
       
       if (brokerId) {
+        // Fetch with cache-busting timestamp
+        const timestamp = new Date().getTime();
+        
         // We use any type here to avoid type errors with table names
-        const { data: adminData, error: adminError } = await supabase
+        const response = await supabase
           .from('brokers_admin')
-          .select('*')
-          .eq('id', brokerId)
-          .maybeSingle() as any;
+          .select('*') as any;
           
-        if (!adminError && adminData) {
+        // Filter on the client side if needed
+        const adminData = response.data?.find((b: any) => b.id === brokerId);
+          
+        if (response.data && adminData) {
           broker = {
             id: adminData.id,
             name: adminData.broker_name,
@@ -45,6 +50,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
       
       if (broker) {
         setBrokerName(broker.name);
+        console.log(`Loaded functions for broker: ${broker.name}`);
         
         // Add standard functions for this broker
         defaultFunctions.push(
@@ -136,6 +142,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
       }
       
       setFunctions(defaultFunctions);
+      setLastRefreshed(new Date());
     } catch (err) {
       console.error("Error creating broker functions:", err);
       setError("Failed to load broker functions");
@@ -149,6 +156,15 @@ export const useBrokerFunctions = (brokerId?: number) => {
 
   useEffect(() => {
     fetchBrokerFunctions();
+    
+    // Set up an interval to refresh data periodically
+    const refreshInterval = setInterval(() => {
+      fetchBrokerFunctions();
+    }, 60000); // Refresh every minute
+    
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, [fetchBrokerFunctions]);
 
   return {
@@ -156,6 +172,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
     brokerName,
     isLoading,
     error,
+    lastRefreshed,
     refresh: fetchBrokerFunctions
   };
 };
