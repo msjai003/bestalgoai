@@ -4,35 +4,66 @@ import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Fetches all functions for a specific broker from the brokers_sections table
+ * Fetches all functions for a specific broker
+ * Using static data since brokers_sections table was removed
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    const { data, error } = await supabase
-      .from('brokers_sections')
-      .select('*')
-      .eq('broker_id', brokerId)
-      .eq('function_enabled', true);
+    // Find the broker in the static data
+    const broker = brokers.find(b => b.id === brokerId);
+    if (!broker) return [];
     
-    if (error || !data) {
-      console.error("Error fetching broker functions:", error);
-      return [];
-    }
+    // Create standard functions for this broker
+    const standardFunctions: BrokerFunction[] = [
+      {
+        id: `${broker.id}-order_placement`,
+        broker_id: broker.id,
+        broker_name: broker.name,
+        function_name: "Order Placement",
+        function_description: "Place new orders with the broker",
+        function_slug: "order_placement",
+        function_enabled: true,
+        is_premium: false,
+        broker_image: broker.logo
+      },
+      {
+        id: `${broker.id}-order_modification`,
+        broker_id: broker.id,
+        broker_name: broker.name,
+        function_name: "Order Modification",
+        function_description: "Modify existing orders",
+        function_slug: "order_modification",
+        function_enabled: true,
+        is_premium: false,
+        broker_image: broker.logo
+      },
+      {
+        id: `${broker.id}-portfolio_view`,
+        broker_id: broker.id,
+        broker_name: broker.name,
+        function_name: "Portfolio View",
+        function_description: "View current holdings and positions",
+        function_slug: "portfolio_view",
+        function_enabled: true,
+        is_premium: false,
+        broker_image: broker.logo
+      },
+      {
+        id: `${broker.id}-market_data`,
+        broker_id: broker.id,
+        broker_name: broker.name,
+        function_name: "Market Data",
+        function_description: "Access real-time market data",
+        function_slug: "market_data",
+        function_enabled: true,
+        is_premium: true,
+        broker_image: broker.logo
+      }
+    ];
     
-    return data.map(item => ({
-      id: `${item.broker_id}-${item.function_slug}`,
-      broker_id: item.broker_id,
-      broker_name: item.broker_name,
-      function_name: item.function_name,
-      function_description: item.function_description || '',
-      function_slug: item.function_slug,
-      function_enabled: item.function_enabled,
-      is_premium: item.is_premium,
-      broker_image: item.broker_image,
-      configuration: item.configuration
-    }));
+    return standardFunctions;
   } catch (error) {
-    console.error("Error fetching broker functions:", error);
+    console.error("Error creating broker functions:", error);
     return [];
   }
 };
@@ -45,19 +76,26 @@ export const hasBrokerFunction = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
-      .from('brokers_sections')
-      .select('id')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .eq('function_enabled', true);
+    // Default functions that all brokers are assumed to have
+    const defaultFunctions = ["order_placement", "portfolio_view"];
     
-    if (error) {
-      console.error("Error checking broker function:", error);
-      return false;
+    // Check if it's a default function
+    if (defaultFunctions.includes(functionSlug)) {
+      return true;
     }
     
-    return data && data.length > 0;
+    // Premium functions that require checking
+    if (functionSlug === "market_data") {
+      // For now, assume market_data is available but premium
+      return true;
+    }
+    
+    // For other functions, check based on broker-specific logic
+    const broker = brokers.find(b => b.id === brokerId);
+    if (!broker) return false;
+    
+    // Add broker-specific logic here if needed
+    return false;
   } catch (error) {
     console.error("Error checking broker function:", error);
     return false;
@@ -72,20 +110,11 @@ export const isBrokerFunctionPremium = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
-      .from('brokers_sections')
-      .select('is_premium')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .eq('function_enabled', true)
-      .maybeSingle();
+    // Premium functions
+    const premiumFunctions = ["market_data"];
     
-    if (error || !data) {
-      console.error("Error checking if broker function is premium:", error);
-      return false;
-    }
-    
-    return !!data.is_premium;
+    // Check if it's in the premium functions list
+    return premiumFunctions.includes(functionSlug);
   } catch (error) {
     console.error("Error checking if broker function is premium:", error);
     return false;
@@ -130,20 +159,19 @@ export const getBrokerFunctionConfig = async (
   functionSlug: string
 ): Promise<any | null> => {
   try {
-    const { data, error } = await supabase
-      .from('brokers_sections')
-      .select('configuration')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .eq('function_enabled', true)
-      .maybeSingle();
+    // Since the database table is removed, we're returning hardcoded configs
+    const defaultConfigs: Record<string, any> = {
+      order_placement: {
+        requires_2fa: false,
+        default_order_type: "MARKET"
+      },
+      market_data: {
+        refresh_interval: 5,
+        premium_only: true
+      }
+    };
     
-    if (error || !data) {
-      console.error("Error getting broker function config:", error);
-      return null;
-    }
-    
-    return data.configuration;
+    return defaultConfigs[functionSlug] || null;
   } catch (error) {
     console.error("Error getting broker function config:", error);
     return null;
@@ -158,19 +186,17 @@ export const getBrokerFunctionRequiredInputs = async (
   functionSlug: string
 ): Promise<string[]> => {
   try {
-    const { data, error } = await supabase
-      .from('brokers_sections')
-      .select('required_inputs')
-      .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
+    // Find the broker
+    const broker = brokers.find(b => b.id === brokerId);
+    if (!broker) return [];
     
-    if (error || !data) {
-      console.error("Error getting broker function required inputs:", error);
-      return [];
+    // Return broker required inputs based on the function
+    if (broker.requiredInputs && broker.requiredInputs.length > 0) {
+      return broker.requiredInputs;
     }
     
-    return data.required_inputs as string[] || [];
+    // Default required inputs if broker doesn't specify
+    return ["username", "password"];
   } catch (error) {
     console.error("Error getting broker function required inputs:", error);
     return [];

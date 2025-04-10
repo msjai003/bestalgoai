@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +18,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { BrokerFunction } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
+import { useBrokerFunctions } from '@/hooks/useBrokerFunctions';
 
 interface FormValues {
   broker_id: number;
@@ -55,25 +55,29 @@ const BrokerFunctionsAdmin = () => {
   const fetchBrokerFunctions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('brokers_functions')
-        .select('*')
-        .order('broker_name')
-        .order('function_name');
-        
-      if (selectedBrokerId) {
-        query = query.eq('broker_id', selectedBrokerId);
-      }
-        
-      const { data, error } = await query;
-
-      if (error) throw error;
+      // Use the useBrokerFunctions hook to get functions
+      const allFunctions: BrokerFunction[] = [];
       
-      // Ensure data is cast to the correct type
-      const typedData = data as BrokerFunction[];
-      setFunctions(typedData || []);
+      if (selectedBrokerId) {
+        // Fetch functions for a specific broker
+        const { functions: brokerFunctions } = useBrokerFunctions(selectedBrokerId);
+        if (brokerFunctions.length > 0) {
+          allFunctions.push(...brokerFunctions);
+        }
+      } else {
+        // Fetch functions for all brokers
+        for (const broker of brokers) {
+          const { functions: brokerFunctions } = useBrokerFunctions(broker.id);
+          if (brokerFunctions.length > 0) {
+            allFunctions.push(...brokerFunctions);
+          }
+        }
+      }
+      
+      setFunctions(allFunctions);
     } catch (error: any) {
       toast.error(`Error fetching broker functions: ${error.message}`);
+      setFunctions([]);
     } finally {
       setLoading(false);
     }
@@ -111,34 +115,15 @@ const BrokerFunctionsAdmin = () => {
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .update({
-          broker_id: editForm.broker_id,
-          broker_name: editForm.broker_name,
-          function_name: editForm.function_name,
-          function_description: editForm.function_description,
-          function_slug: editForm.function_slug,
-          function_enabled: editForm.function_enabled,
-          is_premium: editForm.is_premium
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      // Update local state
-      setFunctions(prevFunctions => 
-        prevFunctions.map(func => 
-          func.id === id ? { ...func, ...editForm as BrokerFunction } : func
-        )
-      );
-      
-      toast.success('Function updated successfully');
-      setEditingId(null);
-    } catch (error: any) {
-      toast.error(`Failed to update function: ${error.message}`);
-    }
+    // Since we're no longer using the database, just update the local state
+    setFunctions(prevFunctions => 
+      prevFunctions.map(func => 
+        func.id === id ? { ...func, ...editForm as BrokerFunction } : func
+      )
+    );
+    
+    toast.success('Function updated successfully');
+    setEditingId(null);
   };
 
   // Delete a function
@@ -147,70 +132,50 @@ const BrokerFunctionsAdmin = () => {
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      // Update local state
-      setFunctions(prevFunctions => 
-        prevFunctions.filter(func => func.id !== id)
-      );
-      
-      toast.success('Function deleted successfully');
-    } catch (error: any) {
-      toast.error(`Failed to delete function: ${error.message}`);
-    }
+    // Since we're no longer using the database, just update the local state
+    setFunctions(prevFunctions => 
+      prevFunctions.filter(func => func.id !== id)
+    );
+    
+    toast.success('Function deleted successfully');
   };
 
   // Add new function
   const handleAddFunction = async (values: FormValues) => {
-    try {
-      // Find the broker name from the id
-      const broker = brokers.find(b => b.id === values.broker_id);
-      if (!broker) {
-        toast.error('Invalid broker selected');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('brokers_functions')
-        .insert({
-          broker_id: values.broker_id,
-          broker_name: broker.name,
-          function_name: values.function_name,
-          function_description: values.function_description || null,
-          function_slug: values.function_slug,
-          function_enabled: values.function_enabled,
-          is_premium: values.is_premium
-        })
-        .select();
-
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        // Update local state with correct typing
-        const newFunction = data[0] as unknown as BrokerFunction;
-        setFunctions(prevFunctions => [...prevFunctions, newFunction]);
-        
-        toast.success('Function added successfully');
-        setShowAddForm(false);
-        form.reset({
-          broker_id: 0,
-          broker_name: '',
-          function_name: '',
-          function_description: '',
-          function_slug: '',
-          function_enabled: true,
-          is_premium: false
-        });
-      }
-    } catch (error: any) {
-      toast.error(`Failed to add function: ${error.message}`);
+    // Find the broker name from the id
+    const broker = brokers.find(b => b.id === values.broker_id);
+    if (!broker) {
+      toast.error('Invalid broker selected');
+      return;
     }
+
+    // Create a new function
+    const newFunction: BrokerFunction = {
+      id: `${values.broker_id}-${values.function_slug}`,
+      broker_id: values.broker_id,
+      broker_name: broker.name,
+      function_name: values.function_name,
+      function_description: values.function_description || '',
+      function_slug: values.function_slug,
+      function_enabled: values.function_enabled,
+      is_premium: values.is_premium,
+      broker_image: broker.logo
+    };
+    
+    // Add to local state
+    setFunctions(prevFunctions => [...prevFunctions, newFunction]);
+    
+    toast.success('Function added successfully');
+    setShowAddForm(false);
+    form.reset({
+      broker_id: 0,
+      broker_name: '',
+      function_name: '',
+      function_description: '',
+      function_slug: '',
+      function_enabled: true,
+      is_premium: false
+    });
   };
 
   // Seed default functions for new brokers (5 Paisa and Bigil)
@@ -235,17 +200,16 @@ const BrokerFunctionsAdmin = () => {
       ];
       
       let addedCount = 0;
+      const newFunctions: BrokerFunction[] = [];
       
       for (const broker of targetBrokers) {
-        // Check if broker already has functions
-        const { data: existingFunctions } = await supabase
-          .from('brokers_functions')
-          .select('*')
-          .eq('broker_id', broker.id);
-          
-        if (!existingFunctions || existingFunctions.length === 0) {
+        // Check if broker already has functions in our local state
+        const existingFunctions = functions.filter(f => f.broker_id === broker.id);
+        
+        if (existingFunctions.length === 0) {
           // Add default functions for this broker
           const functionsToAdd = defaultFunctions.map(func => ({
+            id: `${broker.id}-${func.slug}`,
             broker_id: broker.id,
             broker_name: broker.name,
             function_name: func.name,
@@ -256,23 +220,13 @@ const BrokerFunctionsAdmin = () => {
             broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
           }));
           
-          const { data, error } = await supabase
-            .from('brokers_functions')
-            .insert(functionsToAdd)
-            .select();
-            
-          if (error) throw error;
-          
-          if (data) {
-            addedCount += data.length;
-            // Update local state with new functions (with correct typing)
-            const typedData = data as unknown as BrokerFunction[];
-            setFunctions(prev => [...prev, ...typedData]);
-          }
+          newFunctions.push(...functionsToAdd);
+          addedCount += functionsToAdd.length;
         }
       }
       
       if (addedCount > 0) {
+        setFunctions(prev => [...prev, ...newFunctions]);
         toast.success(`Added ${addedCount} default functions for new brokers`);
       } else {
         toast.info('All brokers already have functions configured');
@@ -598,7 +552,7 @@ const BrokerFunctionsAdmin = () => {
         <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
           <h3 className="text-lg font-medium mb-2">Admin Panel Information</h3>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>This panel allows you to manage broker functions in the database.</li>
+            <li>This panel allows you to manage broker functions.</li>
             <li>Functions define what capabilities are available for each broker.</li>
             <li>Premium functions will be displayed with a special badge.</li>
             <li>You can enable or disable functions as needed.</li>
