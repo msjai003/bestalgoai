@@ -23,6 +23,7 @@ const BrokerCredentials = () => {
   
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
   const [fetchingBroker, setFetchingBroker] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const loadBroker = async (forceRefresh = false) => {
     if (!brokerId) {
@@ -31,7 +32,12 @@ const BrokerCredentials = () => {
     }
 
     setFetchingBroker(true);
+    
+    // Generate a timestamp for cache busting
+    const timestamp = forceRefresh ? new Date().getTime() : undefined;
+    
     try {
+      console.log(`Loading broker ${brokerId} details${forceRefresh ? ' (force refresh)' : ''}...`);
       const broker = await fetchBrokerById(brokerId);
       if (!broker) {
         toast.error("Broker not found");
@@ -39,6 +45,11 @@ const BrokerCredentials = () => {
         return;
       }
       setSelectedBroker(broker);
+      setLastRefreshed(new Date());
+      
+      if (forceRefresh) {
+        toast.success("Broker details refreshed successfully");
+      }
     } catch (error) {
       console.error("Error fetching broker:", error);
       toast.error("Failed to load broker details");
@@ -49,20 +60,27 @@ const BrokerCredentials = () => {
   };
 
   useEffect(() => {
+    // Initial load
     loadBroker(false);
     
-    // Set up real-time subscription for broker details changes
+    // Set up real-time subscription for broker details changes with improved notification
     const brokerDetailsChannel = supabase
       .channel('broker_details_credential_page')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details', filter: `id=eq.${brokerId}` }, 
         (payload) => {
-          console.log('Broker details changed for current broker:', payload);
-          loadBroker(false);
-          toast.info("Broker information updated");
+          console.log('📢 Broker details changed for current broker:', payload);
+          // Short delay to ensure database consistency
+          setTimeout(() => {
+            loadBroker(true);
+            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+            toast.info(`Broker "${brokerName}" information updated`);
+          }, 500);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Broker details channel subscription status:', status);
+      });
     
     // Add subscription for brokers_admin table changes for this specific broker
     const brokersAdminChannel = supabase
@@ -70,17 +88,23 @@ const BrokerCredentials = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin', filter: `id=eq.${brokerId}` }, 
         (payload) => {
-          console.log('Broker admin data changed for current broker:', payload);
-          loadBroker(false);
-          toast.info("Broker administration data updated");
+          console.log('📢 Broker admin data changed for current broker:', payload);
+          // Short delay to ensure database consistency
+          setTimeout(() => {
+            loadBroker(true);
+            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+            toast.info(`Broker "${brokerName}" administration data updated`);
+          }, 500);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Broker admin channel subscription status:', status);
+      });
     
-    // Set up a refresh interval
+    // Set up a more frequent refresh interval (reduced from 20 seconds to 10 seconds)
     const refreshInterval = setInterval(() => {
       loadBroker(false);
-    }, 20000); // Refresh every 20 seconds
+    }, 10000); // Refresh every 10 seconds
     
     // Clean up on unmount
     return () => {
@@ -157,15 +181,20 @@ const BrokerCredentials = () => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">{selectedBroker.name}</h2>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRefresh}
-                className="flex gap-2 items-center"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center">
+                <div className="text-xs text-gray-400">
+                  Last updated: {lastRefreshed.toLocaleTimeString()}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  className="flex gap-2 items-center"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
             </div>
             
             <CredentialsForm

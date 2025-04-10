@@ -46,7 +46,7 @@ export const fetchBrokerDetails = async (timestamp?: number): Promise<Broker[]> 
           id: item.id,
           name: item.broker_name,
           description: item.description || "Broker integration",
-          logo: item.image_url || "/placeholder.svg",
+          logo: `${item.image_url || "/placeholder.svg"}?t=${cacheKey}`, // Add cache-busting parameter
           supportedAssets: item.supported_assets || [],
           fees: item.fees || "",
           apiRequired: requiredInputs.includes('api_key'),
@@ -105,7 +105,7 @@ export const fetchBrokerDetails = async (timestamp?: number): Promise<Broker[]> 
         id: item.id,
         name: item.broker_name,
         description: item.description || "Broker integration",
-        logo: item.image_url || "/placeholder.svg",
+        logo: `${item.image_url || "/placeholder.svg"}?t=${cacheKey}`, // Add cache-busting parameter
         apiRequired: requiredInputs.includes('api_key'),
         requiresSecretKey: requiredInputs.includes('secret_key'),
         requiredInputs: requiredInputs
@@ -123,7 +123,9 @@ export const fetchBrokerDetails = async (timestamp?: number): Promise<Broker[]> 
  */
 export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> => {
   try {
-    console.log(`Fetching broker with ID ${brokerId}`);
+    // Add cache-busting timestamp
+    const cacheKey = new Date().getTime();
+    console.log(`Fetching broker with ID ${brokerId} (cache key: ${cacheKey})`);
     
     // First try to fetch from brokers_admin table
     const { data: adminData, error: adminError } = await supabase
@@ -156,7 +158,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
         id: adminData.id,
         name: adminData.broker_name,
         description: adminData.description || "Broker integration",
-        logo: adminData.image_url || "/placeholder.svg",
+        logo: `${adminData.image_url || "/placeholder.svg"}?t=${cacheKey}`, // Add cache-busting parameter
         supportedAssets: adminData.supported_assets || [],
         fees: adminData.fees || "",
         apiRequired: requiredInputs.includes('api_key'),
@@ -209,7 +211,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       id: data.id,
       name: data.broker_name,
       description: data.description || "Broker integration",
-      logo: data.image_url || "/placeholder.svg",
+      logo: `${data.image_url || "/placeholder.svg"}?t=${cacheKey}`, // Add cache-busting parameter
       apiRequired: requiredInputs.includes('api_key'),
       requiresSecretKey: requiredInputs.includes('secret_key'),
       requiredInputs: requiredInputs

@@ -22,14 +22,13 @@ const BrokerIntegration = () => {
   const loadBrokers = useCallback(async (forceRefresh = true) => {
     setLoading(true);
     try {
-      console.log(`Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data from database at ${new Date().toISOString()}...`);
-      
-      // Add a random query parameter to bust cache
+      // Generate timestamp for cache busting
       const timestamp = new Date().getTime();
+      console.log(`🔄 Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data at ${new Date().toISOString()}... (cache: ${timestamp})`);
       
-      // Get fresh broker data
+      // Get fresh broker data with the timestamp for cache busting
       const brokerData = await fetchBrokerDetails(timestamp);
-      console.log(`Loaded ${brokerData.length} brokers from database:`, brokerData);
+      console.log(`✅ Loaded ${brokerData.length} brokers:`, brokerData);
       
       // Only update state if we have data
       if (brokerData && brokerData.length > 0) {
@@ -59,10 +58,10 @@ const BrokerIntegration = () => {
     // Load brokers immediately when the component mounts
     loadBrokers(false); // Don't show toast on initial load
     
-    // Set up an interval to refresh data every 3 seconds (reduced from 5s)
+    // Set up an interval to refresh data more frequently (every 2 seconds)
     const refreshInterval = setInterval(() => {
       loadBrokers(false); // Silent refresh
-    }, 3000);
+    }, 2000);
     
     // Set up real-time subscription for broker details changes with improved debugging
     const brokerDetailsChannel = supabase
