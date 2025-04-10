@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { BrokerFunction } from "@/types/broker";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { brokers } from "@/components/broker-integration/BrokerData";
 import { getFunctionsForBroker } from "@/lib/broker-functions";
 
@@ -58,13 +58,15 @@ export const useBrokerFunctions = (brokerId?: number) => {
   
   // Helper function to set functions from static data as fallback
   const setFunctionsFromStaticData = () => {
-    // Try to fetch from broker_infocap table using RPC
+    // Static broker functions for fallback - now we'll directly query the broker_infocap table
     const fetchStaticFunctionsFromTable = async () => {
       try {
-        // Use RPC function to get all broker functions
-        const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
+        const { data, error } = await supabase
+          .from('broker_infocap')
+          .select('*')
+          .order('function_order', { ascending: true });
         
-        if (error || !data || !Array.isArray(data) || data.length === 0) {
+        if (error || !data) {
           console.error("Error fetching from broker_infocap:", error);
           useDefaultStaticData();
           return;
@@ -79,7 +81,6 @@ export const useBrokerFunctions = (brokerId?: number) => {
           function_slug: item.function_slug,
           function_enabled: item.function_enabled,
           is_premium: item.is_premium,
-          function_order: item.function_order,
           broker_image: null // We'll fetch this elsewhere if needed
         }));
         
