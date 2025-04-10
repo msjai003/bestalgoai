@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react';
+import { FlipCardActions } from './FlipCardActions';
 
 interface FlashCardProps {
   question: string;

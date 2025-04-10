@@ -9,6 +9,8 @@ import { LogOut, User, Shield, Bell, Key } from "lucide-react";
 
 const Settings = () => {
   const { user } = useAuth();
+  // Get name from user object safely
+  const userName = user?.email?.split('@')[0] || "User";
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white">
@@ -38,7 +40,7 @@ const Settings = () => {
           <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 mb-3">
             <User className="w-12 h-12 text-gray-400" />
           </div>
-          <h2 className="text-xl font-bold text-white">{user?.displayName || "User"}</h2>
+          <h2 className="text-xl font-bold text-white">{userName}</h2>
           <p className="text-gray-400">{user?.email}</p>
           <div className="mt-2">
             <span className="bg-cyan/10 text-cyan px-3 py-1 rounded-full text-sm border border-cyan/20">Premium Trader</span>

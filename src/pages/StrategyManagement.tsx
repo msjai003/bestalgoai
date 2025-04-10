@@ -11,12 +11,12 @@ import { useToast } from "@/hooks/use-toast";
 const StrategyManagement = () => {
   const { toast } = useToast();
   const { 
-    wishlistStrategies, 
+    wishlistedStrategies, 
     removeFromWishlist, 
-    clearWishlist 
+    clearWishlist,
+    isLoading
   } = useStrategyWishlist();
-  const [isLoading, setIsLoading] = useState(false);
-
+  
   const handleRemove = (id: string) => {
     removeFromWishlist(id);
     toast({
@@ -65,9 +65,9 @@ const StrategyManagement = () => {
           </Link>
         </div>
         
-        {wishlistStrategies.length > 0 ? (
+        {wishlistedStrategies.length > 0 ? (
           <div className="space-y-4">
-            {wishlistStrategies.map((strategy) => (
+            {wishlistedStrategies.map((strategy) => (
               <div key={strategy.id} className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium text-white">{strategy.name}</h3>
@@ -106,7 +106,7 @@ const StrategyManagement = () => {
               </div>
             ))}
             
-            {wishlistStrategies.length > 1 && (
+            {wishlistedStrategies.length > 1 && (
               <Button 
                 variant="outline" 
                 className="w-full mt-4 border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-full"

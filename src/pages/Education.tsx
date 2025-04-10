@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -20,7 +21,7 @@ import {
   LogIn,
   Loader
 } from 'lucide-react';
-import { FlashCard } from '@/components/education/FlashCard';
+import FlashCard from '@/components/education/FlashCard'; // Fixed import
 import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
