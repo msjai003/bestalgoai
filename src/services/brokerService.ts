@@ -1,6 +1,6 @@
 
 import { supabase } from "@/lib/supabase/client";
-import { Broker, BrokerDetail } from "@/types/broker";
+import { Broker, BrokerDetail, BrokerFunction } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
@@ -200,5 +200,54 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
   } catch (error) {
     console.error("Exception deleting broker:", error);
     return false;
+  }
+};
+
+/**
+ * Save a broker function to the database
+ */
+export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>): Promise<string | null> => {
+  try {
+    // Use RPC function instead of direct table access to avoid TypeScript errors
+    const { data, error } = await supabase.rpc('save_broker_function', {
+      p_broker_id: brokerFunction.broker_id,
+      p_broker_name: brokerFunction.broker_name,
+      p_function_name: brokerFunction.function_name,
+      p_function_description: brokerFunction.function_description || '',
+      p_function_slug: brokerFunction.function_slug,
+      p_function_enabled: brokerFunction.function_enabled || true,
+      p_is_premium: brokerFunction.is_premium || false,
+      p_broker_image: brokerFunction.broker_image || ''
+    });
+    
+    if (error) {
+      console.error("Error saving broker function:", error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Exception saving broker function:", error);
+    return null;
+  }
+};
+
+/**
+ * Fetch all broker functions
+ */
+export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
+  try {
+    // Use RPC function instead of direct table access to avoid TypeScript errors
+    const { data, error } = await supabase.rpc('get_all_broker_functions');
+    
+    if (error) {
+      console.error("Error fetching broker functions:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Exception fetching broker functions:", error);
+    return [];
   }
 };

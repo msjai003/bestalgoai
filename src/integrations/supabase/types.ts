@@ -309,81 +309,6 @@ export type Database = {
         }
         Relationships: []
       }
-      broker_details: {
-        Row: {
-          broker_name: string
-          created_at: string | null
-          description: string | null
-          id: number
-          image_url: string | null
-          is_active: boolean | null
-          required_inputs: Json
-          updated_at: string | null
-        }
-        Insert: {
-          broker_name: string
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          image_url?: string | null
-          is_active?: boolean | null
-          required_inputs?: Json
-          updated_at?: string | null
-        }
-        Update: {
-          broker_name?: string
-          created_at?: string | null
-          description?: string | null
-          id?: number
-          image_url?: string | null
-          is_active?: boolean | null
-          required_inputs?: Json
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      brokers_functions: {
-        Row: {
-          broker_id: number
-          broker_image: string | null
-          broker_name: string
-          created_at: string
-          function_description: string | null
-          function_enabled: boolean
-          function_name: string
-          function_slug: string
-          id: string
-          is_premium: boolean
-          updated_at: string
-        }
-        Insert: {
-          broker_id: number
-          broker_image?: string | null
-          broker_name: string
-          created_at?: string
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name: string
-          function_slug: string
-          id?: string
-          is_premium?: boolean
-          updated_at?: string
-        }
-        Update: {
-          broker_id?: number
-          broker_image?: string | null
-          broker_name?: string
-          created_at?: string
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name?: string
-          function_slug?: string
-          id?: string
-          is_premium?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
       custom_strategies: {
         Row: {
           broker_username: string | null
@@ -1677,6 +1602,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      sync_brokers_to_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

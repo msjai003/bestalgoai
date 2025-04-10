@@ -50,7 +50,7 @@ export interface BrokerDetail {
   updated_at?: string;
 }
 
-// Interface representing the brokers_functions table structure
+// Interface representing the broker_functionality table structure
 export interface BrokerFunction {
   id: string;
   broker_id: number;
@@ -61,6 +61,16 @@ export interface BrokerFunction {
   function_enabled: boolean;
   is_premium: boolean;
   broker_image?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Interface for broker function configuration
+export interface BrokerFunctionConfig {
+  id: string;
+  broker_id: number;
+  function_slug: string;
+  config_data: Record<string, any>;
   created_at?: string;
   updated_at?: string;
 }
