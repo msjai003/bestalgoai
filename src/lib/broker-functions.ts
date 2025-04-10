@@ -1,7 +1,6 @@
-
 import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Fetches all functions for a specific broker

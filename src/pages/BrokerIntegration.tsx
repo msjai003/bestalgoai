@@ -8,7 +8,7 @@ import { brokers as staticBrokers } from "@/components/broker-integration/Broker
 import { toast } from "sonner";
 import { fetchBrokerDetails } from "@/services/brokerService";
 import { Broker } from "@/types/broker";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { syncBrokerFunctionsFromDetails } from "@/lib/broker-functions";
 
 const BrokerIntegration = () => {

@@ -1,6 +1,6 @@
 
 import { Search, ChevronRight, Check, AlertCircle, RefreshCw } from "lucide-react";
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import { Broker } from "@/types/broker";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
@@ -15,6 +15,12 @@ interface BrokerListProps {
 
 export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRefresh }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [latestRender, setLatestRender] = useState(new Date());
+
+  // Force re-render when brokers array changes (especially name changes)
+  useEffect(() => {
+    setLatestRender(new Date());
+  }, [brokers]);
 
   const filteredBrokers = brokers.filter((broker) =>
     broker.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -57,7 +63,7 @@ export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRe
         {filteredBrokers.length > 0 ? (
           filteredBrokers.map((broker) => (
             <BrokerCard 
-              key={`${broker.id}-${broker.name}`} // Add broker name to the key to force re-render on name change
+              key={`${broker.id}-${broker.name}-${latestRender.getTime()}`} // Add broker name and timestamp to the key to force re-render on name change
               broker={broker} 
               onSelect={onSelectBroker} 
             />
