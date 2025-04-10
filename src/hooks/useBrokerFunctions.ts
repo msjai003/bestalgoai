@@ -36,17 +36,20 @@ export const useBrokerFunctions = (brokerId?: number) => {
           setBrokerName(dbFunctions[0].broker_name);
           
           // Map database functions to BrokerFunction type
-          functionsData = await Promise.all(dbFunctions.map(async f => ({
-            id: f.id,
-            broker_id: f.broker_id,
-            broker_name: f.broker_name,
-            function_name: f.function_name,
-            function_description: f.function_description || "",
-            function_slug: f.function_slug,
-            function_enabled: f.function_enabled,
-            is_premium: f.is_premium,
-            broker_image: await getBrokerImage(f.broker_id)
-          })));
+          functionsData = await Promise.all(dbFunctions.map(async f => {
+            const brokerImage = await getBrokerImage(f.broker_id);
+            return {
+              id: f.id,
+              broker_id: f.broker_id,
+              broker_name: f.broker_name,
+              function_name: f.function_name,
+              function_description: f.function_description || "",
+              function_slug: f.function_slug,
+              function_enabled: f.function_enabled,
+              is_premium: f.is_premium,
+              broker_image: brokerImage
+            };
+          }));
         } else {
           // No functions found in database for this broker, fetch broker info to create defaults
           const broker = await fetchBrokerInfo(brokerId);
@@ -311,19 +314,18 @@ export const useBrokerFunctions = (brokerId?: number) => {
     for (const func of defaultFunctions) {
       try {
         // First check if function exists
-        const { data: existingFunc, error: checkError } = await supabase
+        const { data: existingFuncs, error: checkError } = await supabase
           .from('broker_functionality')
           .select('id')
           .eq('broker_id', func.broker_id)
-          .eq('function_slug', func.function_slug)
-          .maybeSingle();
+          .eq('function_slug', func.function_slug);
           
-        if (!checkError && existingFunc) {
+        if (!checkError && existingFuncs && existingFuncs.length > 0) {
           // Update existing function
           await supabase
             .from('broker_functionality')
             .update(func)
-            .eq('id', existingFunc.id);
+            .eq('id', existingFuncs[0].id);
         } else {
           // Insert new function
           await supabase

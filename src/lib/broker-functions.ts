@@ -22,10 +22,13 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     
     if (functions && functions.length > 0) {
       // Use Promise.all to handle multiple async operations
-      return await Promise.all(functions.map(async func => ({
-        ...func,
-        broker_image: func.broker_image || await getBrokerImage(func.broker_id)
-      }))) as BrokerFunction[];
+      return await Promise.all(functions.map(async func => {
+        const brokerImage = await getBrokerImage(func.broker_id);
+        return {
+          ...func,
+          broker_image: func.broker_image || brokerImage
+        };
+      })) as BrokerFunction[];
     }
     
     // If no functions found in database, check if the broker exists and create defaults
@@ -54,16 +57,15 @@ export const hasBrokerFunction = async (
       .from('broker_functionality')
       .select('function_enabled')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
+      .eq('function_slug', functionSlug);
       
     if (error) {
       console.error("Error checking broker functionality:", error);
       return false;
     }
     
-    if (data) {
-      return data.function_enabled;
+    if (data && data.length > 0) {
+      return data[0].function_enabled;
     }
     
     // Default functions that all brokers are assumed to have
@@ -90,16 +92,15 @@ export const isBrokerFunctionPremium = async (
       .from('broker_functionality')
       .select('is_premium')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
+      .eq('function_slug', functionSlug);
       
     if (error) {
       console.error("Error checking if broker functionality is premium:", error);
       return false;
     }
     
-    if (data) {
-      return data.is_premium;
+    if (data && data.length > 0) {
+      return data[0].is_premium;
     }
     
     // Premium functions
@@ -254,19 +255,18 @@ const createAndStoreDefaultFunctions = async (broker: { id: number; name: string
   for (const func of defaultFunctions) {
     try {
       // Check if function already exists
-      const { data: existingFunc, error: checkError } = await supabase
+      const { data: existingFuncs, error: checkError } = await supabase
         .from('broker_functionality')
         .select('id')
         .eq('broker_id', func.broker_id)
-        .eq('function_slug', func.function_slug)
-        .maybeSingle();
+        .eq('function_slug', func.function_slug);
         
-      if (!checkError && existingFunc) {
+      if (!checkError && existingFuncs && existingFuncs.length > 0) {
         // Update existing function
         await supabase
           .from('broker_functionality')
           .update(func)
-          .eq('id', existingFunc.id);
+          .eq('id', existingFuncs[0].id);
       } else {
         // Insert new function
         await supabase
@@ -300,7 +300,7 @@ export const getBrokerFunctionConfig = async (
       .select('config_data')
       .eq('broker_id', brokerId)
       .eq('function_slug', functionSlug)
-      .single();
+      .maybeSingle();
     
     if (!error && data) {
       return data.config_data;
@@ -338,7 +338,7 @@ export const getBrokerFunctionRequiredInputs = async (
       .from('brokers_admin')
       .select('required_inputs')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
     
     if (!adminError && adminData && adminData.required_inputs) {
       // Parse required inputs from admin table
@@ -366,7 +366,7 @@ export const getBrokerFunctionRequiredInputs = async (
       .from('broker_details')
       .select('required_inputs')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
       
     if (!error && data && data.required_inputs) {
       // Parse required inputs from broker_details
