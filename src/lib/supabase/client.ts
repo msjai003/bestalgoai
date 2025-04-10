@@ -16,6 +16,7 @@ export const supabase = {
     select: (query = '*') => ({
       eq: (column, value) => ({
         maybeSingle: () => ({ data: null, error: null }),
+        single: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
           limit: (limit) => ({
             data: [],
@@ -24,6 +25,10 @@ export const supabase = {
           data: [],
           error: null
         }),
+        data: [],
+        error: null
+      }),
+      gte: (column, value) => ({
         data: [],
         error: null
       }),
@@ -39,9 +44,24 @@ export const supabase = {
       data: [],
       error: null
     }),
-    insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ data: [], error: null }),
-    delete: () => ({ data: [], error: null }),
+    insert: (data) => ({ 
+      select: (columns) => ({ data: [{ id: 'mock-id', ...data }], error: null }),
+      single: () => ({ data: { id: 'mock-id', ...data }, error: null }),
+      data: [{ id: 'mock-id', ...data }], 
+      error: null 
+    }),
+    update: (data) => ({ 
+      eq: (column, value) => ({ data, error: null }),
+      single: () => ({ data, error: null }),
+      data, 
+      error: null 
+    }),
+    delete: () => ({ 
+      eq: (column, value) => ({ data: null, error: null }),
+      gte: (column, value) => ({ data: null, error: null }),
+      data: null, 
+      error: null 
+    }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {

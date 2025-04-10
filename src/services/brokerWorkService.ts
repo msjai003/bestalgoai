@@ -28,10 +28,11 @@ export interface BrokerWork {
  */
 export const fetchAllBrokerWork = async (): Promise<BrokerWork[]> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .select('*')
-      .eq('is_active', true);
+      .select('*');
+    
+    const { data, error } = response;
     
     if (error) {
       console.error("Error fetching broker work:", error);
@@ -50,18 +51,19 @@ export const fetchAllBrokerWork = async (): Promise<BrokerWork[]> => {
  */
 export const fetchBrokerWorkByBrokerId = async (brokerId: number): Promise<BrokerWork[]> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .select('*')
-      .eq('broker_id', brokerId)
-      .eq('is_active', true);
+      .select('*');
+    
+    const { data, error } = response;
     
     if (error) {
       console.error("Error fetching broker work by broker ID:", error);
       return [];
     }
     
-    return data || [];
+    // Filter by broker_id client-side
+    return (data || []).filter(item => item.broker_id === brokerId && item.is_active === true);
   } catch (error) {
     console.error("Exception fetching broker work by broker ID:", error);
     return [];
@@ -73,18 +75,19 @@ export const fetchBrokerWorkByBrokerId = async (brokerId: number): Promise<Broke
  */
 export const fetchBrokerWorkById = async (id: number): Promise<BrokerWork | null> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+      .select('*');
+    
+    const { data, error } = response;
     
     if (error) {
       console.error("Error fetching broker work by ID:", error);
       return null;
     }
     
-    return data;
+    // Find the record with matching ID
+    return (data || []).find(item => item.id === id) || null;
   } catch (error) {
     console.error("Exception fetching broker work by ID:", error);
     return null;
@@ -96,10 +99,11 @@ export const fetchBrokerWorkById = async (id: number): Promise<BrokerWork | null
  */
 export const createBrokerWork = async (brokerWork: Omit<BrokerWork, 'id' | 'created_at' | 'updated_at'>): Promise<number | null> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .insert(brokerWork)
-      .select('id');
+      .insert(brokerWork);
+    
+    const { data, error } = response;
     
     if (error) {
       console.error("Error creating broker work:", error);
@@ -122,10 +126,11 @@ export const createBrokerWork = async (brokerWork: Omit<BrokerWork, 'id' | 'crea
  */
 export const updateBrokerWork = async (id: number, brokerWork: Partial<BrokerWork>): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .update(brokerWork)
-      .eq('id', id);
+      .update(brokerWork);
+    
+    const { error } = response;
     
     if (error) {
       console.error("Error updating broker work:", error);
@@ -144,10 +149,11 @@ export const updateBrokerWork = async (id: number, brokerWork: Partial<BrokerWor
  */
 export const deleteBrokerWork = async (id: number): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .delete()
-      .eq('id', id);
+      .delete();
+    
+    const { error } = response;
     
     if (error) {
       console.error("Error deleting broker work:", error);
@@ -166,10 +172,11 @@ export const deleteBrokerWork = async (id: number): Promise<boolean> => {
  */
 export const softDeleteBrokerWork = async (id: number): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .update({ is_active: false })
-      .eq('id', id);
+      .update({ is_active: false });
+    
+    const { error } = response;
     
     if (error) {
       console.error("Error soft deleting broker work:", error);
@@ -188,10 +195,11 @@ export const softDeleteBrokerWork = async (id: number): Promise<boolean> => {
  */
 export const updateBrokerWorkStatus = async (id: number, status: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .update({ status })
-      .eq('id', id);
+      .update({ status });
+    
+    const { error } = response;
     
     if (error) {
       console.error("Error updating broker work status:", error);
@@ -210,20 +218,23 @@ export const updateBrokerWorkStatus = async (id: number, status: string): Promis
  */
 export const fetchBrokerWorkByCredentials = async (username: string, password: string): Promise<BrokerWork | null> => {
   try {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .select('*')
-      .eq('username', username)
-      .eq('password', password)
-      .eq('is_active', true)
-      .maybeSingle();
+      .select('*');
+    
+    const { data, error } = response;
     
     if (error) {
       console.error("Error fetching broker work by credentials:", error);
       return null;
     }
     
-    return data;
+    // Filter by username and password client-side
+    return (data || []).find(item => 
+      item.username === username && 
+      item.password === password && 
+      item.is_active === true
+    ) || null;
   } catch (error) {
     console.error("Exception fetching broker work by credentials:", error);
     return null;
@@ -247,10 +258,11 @@ export const updateBrokerWorkCredentials = async (
   }
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from('broker_work')
-      .update(credentials)
-      .eq('id', id);
+      .update(credentials);
+    
+    const { error } = response;
     
     if (error) {
       console.error("Error updating broker work credentials:", error);
@@ -269,14 +281,33 @@ export const updateBrokerWorkCredentials = async (
  */
 export const updateBrokerWorkStatusByBrokerId = async (brokerId: number, status: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    // First fetch all records for this broker
+    const { data, error: fetchError } = await supabase
       .from('broker_work')
-      .update({ status })
-      .eq('broker_id', brokerId);
+      .select('*');
     
-    if (error) {
-      console.error("Error batch updating broker work status:", error);
+    if (fetchError) {
+      console.error("Error fetching broker work by broker ID:", fetchError);
       return false;
+    }
+    
+    // Filter by broker_id client-side
+    const brokerWorkItems = (data || []).filter(item => item.broker_id === brokerId);
+    
+    if (brokerWorkItems.length === 0) {
+      return true; // No items to update
+    }
+    
+    // Update each item one by one
+    for (const item of brokerWorkItems) {
+      const response = await supabase
+        .from('broker_work')
+        .update({ status });
+      
+      if (response.error) {
+        console.error("Error updating broker work status:", response.error);
+        return false;
+      }
     }
     
     return true;
