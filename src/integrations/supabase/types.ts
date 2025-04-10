@@ -342,45 +342,6 @@ export type Database = {
         }
         Relationships: []
       }
-      brokers_functionality: {
-        Row: {
-          broker_id: number
-          broker_name: string
-          created_at: string | null
-          function_description: string | null
-          function_enabled: boolean
-          function_name: string
-          function_slug: string
-          id: string
-          is_premium: boolean
-          updated_at: string | null
-        }
-        Insert: {
-          broker_id: number
-          broker_name: string
-          created_at?: string | null
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name: string
-          function_slug: string
-          id?: string
-          is_premium?: boolean
-          updated_at?: string | null
-        }
-        Update: {
-          broker_id?: number
-          broker_name?: string
-          created_at?: string | null
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name?: string
-          function_slug?: string
-          id?: string
-          is_premium?: boolean
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       custom_strategies: {
         Row: {
           broker_username: string | null
@@ -1674,10 +1635,6 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
-      }
-      sync_broker_functionalities: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
     }
     Enums: {
