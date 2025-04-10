@@ -25,7 +25,7 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({
         size="sm"
         onClick={onPrevious} 
         disabled={isFirstQuestion}
-        className="flex-1 rounded-3xl"
+        className="flex-1"
       >
         <ArrowLeft className="mr-1 h-4 w-4" />
         <span className="hidden sm:inline">Previous</span>
@@ -35,7 +35,7 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({
         size="sm"
         onClick={onNext} 
         disabled={!isAnswered}
-        className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90 rounded-3xl"
+        className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
       >
         <span>{isLastQuestion ? "Finish" : "Next"}</span>
         <ArrowRight className="ml-1 h-4 w-4" />
