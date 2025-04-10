@@ -50,7 +50,7 @@ const Dashboard = () => {
 
   if (user === null) {
     return (
-      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+      <div className="min-h-screen bg-[#121212] flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
           <p className="text-gray-300">Loading dashboard...</p>
@@ -60,7 +60,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
+    <div className="bg-[#121212] min-h-screen">
       <Header />
       <main className="pt-16 pb-20 px-4">
         <PortfolioOverview 

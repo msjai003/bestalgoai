@@ -12,26 +12,26 @@ const Classes = () => {
   const [activeTab, setActiveTab] = useState('basic');
 
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-white">
+    <div className="min-h-screen bg-[#121212] text-white">
       <Header />
       
       <main className="pt-16 pb-20 px-4">
         <div className="my-6">
-          <h1 className="text-2xl font-bold mb-4">Trading Classes</h1>
-          <p className="text-gray-300">Explore our trading questions and answers to boost your knowledge</p>
+          <h1 className="text-2xl font-bold mb-2">Trading Classes</h1>
+          <p className="text-gray-400">Explore our trading questions and answers to boost your knowledge</p>
         </div>
         
         <Tabs defaultValue="basic" onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
-            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-[#1A1A1A] border border-gray-800/40">
+            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
               <BookOpen className="h-4 w-4" />
               <span>Basic</span>
             </TabsTrigger>
-            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
               <Brain className="h-4 w-4" />
               <span>Intermediate</span>
             </TabsTrigger>
-            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
               <Infinity className="h-4 w-4" />
               <span>Pro</span>
             </TabsTrigger>
