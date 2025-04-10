@@ -1,4 +1,5 @@
-import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse } from '@/types/broker';
+
+import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, RPCParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -59,9 +60,8 @@ const staticBrokerFunctions: BrokerFunction[] = [
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
     // Use the RPC function to get broker functions from broker_infocap
-    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
-      p_broker_id: brokerId
-    });
+    const params: RPCParams = { p_broker_id: brokerId };
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker functions found in database, using static data");
@@ -80,6 +80,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
         function_slug: func.function_slug,
         function_enabled: func.function_enabled,
         is_premium: func.is_premium,
+        function_order: func.function_order,
         broker_image: getBrokerImageFromCache(func.broker_id),
         created_at: func.created_at,
         updated_at: func.updated_at
@@ -163,7 +164,7 @@ const getBrokerImageFromCache = (brokerId: number): string | undefined => {
 };
 
 /**
- * Gets broker image for a broker function
+ * Gets broker image for a broker
  */
 export const getBrokerImage = async (
   brokerId: number
@@ -174,26 +175,15 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Try to fetch from database 
-    const { data, error } = await supabase
-      .from('broker_details')
-      .select('image_url')
-      .eq('id', brokerId)
-      .maybeSingle();
-    
-    if (error || !data) {
-      console.error("Error fetching broker image:", error);
-      // Fall back to static broker data
-      const broker = brokers.find(b => b.id === brokerId);
-      const image = broker?.logo || null;
+    // Try to get broker from static data first
+    const broker = brokers.find(b => b.id === brokerId);
+    if (broker) {
+      const image = broker.logo || null;
       brokerImageCache[brokerId] = image;
       return image;
     }
     
-    // We need to handle different property names between tables
-    const image = data.image_url || null;
-    brokerImageCache[brokerId] = image;
-    return image;
+    return null;
   } catch (error) {
     console.error("Error fetching broker image:", error);
     // Fall back to static broker data
@@ -271,7 +261,7 @@ export const saveBrokerInfocapFunction = async (
   isPremium: boolean = false
 ): Promise<number | null> => {
   try {
-    const { data, error } = await supabase.rpc('save_broker_infocap_function', {
+    const params: RPCParams = {
       p_broker_id: brokerId,
       p_broker_name: brokerName,
       p_function_name: functionName,
@@ -280,13 +270,16 @@ export const saveBrokerInfocapFunction = async (
       p_function_order: functionOrder,
       p_function_enabled: functionEnabled,
       p_is_premium: isPremium
-    });
+    };
+    
+    const { data, error } = await supabase.rpc('save_broker_infocap_function', params);
     
     if (error) {
       console.error("Error saving broker function:", error);
       return null;
     }
     
+    // Since we're returning a number from the RPC, we know it's a number
     return typeof data === 'number' ? data : null;
   } catch (error) {
     console.error("Error saving broker function:", error);

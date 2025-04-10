@@ -55,7 +55,7 @@ export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
     
-    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
+    const { data, error } = await supabase.rpc('execute_sql', {
       query: `SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
@@ -75,14 +75,13 @@ export const testTableAccess = async (tableName: string) => {
       };
     }
     
-    let tableData = null;
     let tableExists = false;
     let recordCount = 0;
     
-    if (queryResult && Array.isArray(queryResult) && queryResult.length > 0) {
+    if (data && Array.isArray(data) && data.length > 0) {
       // Try to parse the result which should be an array with one object
-      const result = queryResult[0];
-      if (result && typeof result === 'object') {
+      const result = data[0] as any;
+      if (result) {
         // Handle the RPC mock response structure
         tableExists = result.exists === true;
         recordCount = typeof result.count === 'number' ? result.count : 0;

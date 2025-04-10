@@ -63,6 +63,7 @@ export interface BrokerFunction {
   broker_image?: string;
   created_at?: string;
   updated_at?: string;
+  function_order?: number;
 }
 
 // Interface for broker function configuration
@@ -92,3 +93,21 @@ export interface BrokerInfocapFunction {
 
 // Type definitions for RPC function responses
 export type BrokerInfocapResponse = BrokerInfocapFunction[] | null;
+
+// Response types for the mock client
+export interface MockQueryResponse<T> {
+  data: T | null;
+  error: Error | null;
+}
+
+export interface RPCParams {
+  p_broker_id?: number;
+  p_broker_name?: string;
+  p_function_name?: string;
+  p_function_description?: string;
+  p_function_slug?: string;
+  p_function_order?: number;
+  p_function_enabled?: boolean;
+  p_is_premium?: boolean;
+  query?: string;
+}
