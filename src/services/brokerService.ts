@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -59,8 +58,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       .from('broker_details')
       .select('*')
       .eq('is_active', true)
-      .order('id', { ascending: true }) // Add ordering for consistency
-      .limit(100); // Add limit for safety
+      .order('id', { ascending: true }); // Add ordering for consistency
     
     if (error) {
       console.error("Error fetching broker details:", error);
@@ -373,7 +371,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
     
     const response = await supabase
       .from(tableTarget)
-      .delete() as any;
+      .delete();
       
     const { error } = await response.gte('id', 0);
     
@@ -384,7 +382,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
       tableTarget = 'broker_details';
       const fallbackResponse = await supabase
         .from(tableTarget)
-        .delete() as any;
+        .delete();
         
       const fallbackResult = await fallbackResponse.gte('id', 0);
         

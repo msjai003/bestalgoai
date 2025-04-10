@@ -29,6 +29,10 @@ export const supabase = {
           data: [],
           error: null
         }),
+        eq: (column, value) => ({
+          data: [],
+          error: null
+        }),
         data: [],
         error: null
       }),
