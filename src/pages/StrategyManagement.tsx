@@ -7,6 +7,7 @@ import { useStrategyWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { Button } from "@/components/ui/button";
 import { Heart, ChevronLeft, Plus, Trash2, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 
 const StrategyManagement = () => {
   const { toast } = useToast();
@@ -17,12 +18,29 @@ const StrategyManagement = () => {
     isLoading
   } = useStrategyWishlist();
   
-  const handleRemove = (id: string) => {
-    removeFromWishlist(id);
-    toast({
-      title: "Strategy removed",
-      description: "The strategy has been removed from your wishlist",
-    });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [strategyToDelete, setStrategyToDelete] = useState<{id: string, name: string} | null>(null);
+  
+  const handleRemoveClick = (id: string, name: string) => {
+    setStrategyToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (strategyToDelete) {
+      removeFromWishlist(strategyToDelete.id);
+      toast({
+        title: "Strategy removed",
+        description: "The strategy has been removed from your wishlist",
+      });
+      setDeleteDialogOpen(false);
+      setStrategyToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setStrategyToDelete(null);
   };
 
   const handleClearWishlist = () => {
@@ -87,7 +105,7 @@ const StrategyManagement = () => {
                       variant="outline" 
                       size="sm" 
                       className="rounded-full border border-red-500/30 text-red-500 hover:bg-red-500/10"
-                      onClick={() => handleRemove(strategy.id)}
+                      onClick={() => handleRemoveClick(strategy.id.toString(), strategy.name)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -137,6 +155,14 @@ const StrategyManagement = () => {
           </div>
         )}
       </main>
+      
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        strategyName={strategyToDelete?.name || ""}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
       
       <BottomNav />
     </div>
