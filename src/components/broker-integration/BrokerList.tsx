@@ -1,6 +1,6 @@
 
 import { Search, ChevronRight, Check, AlertCircle, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Broker } from "@/types/broker";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
@@ -13,7 +13,7 @@ interface BrokerListProps {
   onRefresh?: () => void;
 }
 
-export const BrokerList = ({ brokers, onSelectBroker, loading = false, onRefresh }: BrokerListProps) => {
+export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRefresh }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredBrokers = brokers.filter((broker) =>
@@ -57,7 +57,7 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false, onRefresh
         {filteredBrokers.length > 0 ? (
           filteredBrokers.map((broker) => (
             <BrokerCard 
-              key={`${broker.id}-card`} 
+              key={`${broker.id}-${broker.name}`} // Add broker name to the key to force re-render on name change
               broker={broker} 
               onSelect={onSelectBroker} 
             />
@@ -95,9 +95,10 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false, onRefresh
       )}
     </section>
   );
-};
+});
 
-const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
+// Memoize the BrokerCard to prevent unnecessary re-renders
+const BrokerCard = memo(({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   // Get broker image from broker.logo
   const brokerImage = broker.logo;
   
@@ -148,6 +149,6 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       <ChevronRight className="ml-auto w-5 h-5 text-gray-500" />
     </div>
   );
-};
+});
 
 export default BrokerList;

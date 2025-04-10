@@ -63,7 +63,7 @@ const BrokerIntegration = () => {
       loadBrokers(false); // Silent refresh
     }, 2000);
     
-    // Set up real-time subscription for broker details changes with improved debugging
+    // Set up improved real-time subscription for broker details changes
     const brokerDetailsChannel = supabase
       .channel('broker_details_realtime')
       .on('postgres_changes', 
@@ -73,12 +73,14 @@ const BrokerIntegration = () => {
           
           // Extract broker name for better notification
           const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-          const changeType = payload.eventType || 'MODIFIED';
+          const changeType = payload.eventType === 'UPDATE' ? 'updated' : 
+                            payload.eventType === 'INSERT' ? 'added' : 
+                            payload.eventType === 'DELETE' ? 'removed' : 'modified';
           
           // Force immediate reload of brokers with a short delay to ensure DB consistency
           setTimeout(() => {
-            loadBrokers(false);
-            toast.info(`Broker "${brokerName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
+            loadBrokers(true);
+            toast.info(`Broker "${brokerName}" ${changeType} (${new Date().toLocaleTimeString()})`);
           }, 300);
         }
       )
@@ -95,21 +97,25 @@ const BrokerIntegration = () => {
           console.log('⚡ Broker admin data changed in database:', payload);
           
           // Extract broker name for better notification
-          const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          const oldName = payload.old?.broker_name || 'Unknown';
+          const newName = payload.new?.broker_name || 'Unknown';
           const changeType = payload.eventType || 'MODIFIED';
           
-          // Log the changed data for debugging
-          if (payload.new && payload.old) {
-            console.log("Modified broker data:", {
-              from: payload.old.broker_name,
-              to: payload.new.broker_name
-            });
+          // Log specific name changes for debugging
+          if (payload.eventType === 'UPDATE' && oldName !== newName) {
+            console.log(`Broker name changed from "${oldName}" to "${newName}"`);
           }
           
           // Force immediate reload of brokers with a short delay to ensure DB consistency
           setTimeout(() => {
-            loadBrokers(false);
-            toast.info(`Broker "${brokerName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
+            loadBrokers(true);
+            
+            // Show more descriptive toast depending on the change type
+            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
+              toast.info(`Broker name changed from "${oldName}" to "${newName}" (${new Date().toLocaleTimeString()})`);
+            } else {
+              toast.info(`Broker "${newName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
+            }
           }, 300);
         }
       )

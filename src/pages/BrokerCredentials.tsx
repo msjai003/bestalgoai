@@ -63,18 +63,28 @@ const BrokerCredentials = () => {
     // Initial load
     loadBroker(false);
     
-    // Set up real-time subscription for broker details changes with improved notification
+    // Set up improved real-time subscription for broker details changes
     const brokerDetailsChannel = supabase
       .channel('broker_details_credential_page')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details', filter: `id=eq.${brokerId}` }, 
         (payload) => {
           console.log('📢 Broker details changed for current broker:', payload);
+          
+          // Check for name changes specifically
+          const oldName = payload.old?.broker_name;
+          const newName = payload.new?.broker_name;
+          
           // Short delay to ensure database consistency
           setTimeout(() => {
             loadBroker(true);
-            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-            toast.info(`Broker "${brokerName}" information updated`);
+            
+            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
+              toast.info(`Broker name changed from "${oldName}" to "${newName}"`);
+            } else {
+              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+              toast.info(`Broker "${brokerName}" information updated`);
+            }
           }, 500);
         }
       )
@@ -82,18 +92,28 @@ const BrokerCredentials = () => {
         console.log('Broker details channel subscription status:', status);
       });
     
-    // Add subscription for brokers_admin table changes for this specific broker
+    // Add improved subscription for brokers_admin table changes for this specific broker
     const brokersAdminChannel = supabase
       .channel('brokers_admin_credential_page')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin', filter: `id=eq.${brokerId}` }, 
         (payload) => {
           console.log('📢 Broker admin data changed for current broker:', payload);
+          
+          // Check for name changes specifically
+          const oldName = payload.old?.broker_name;
+          const newName = payload.new?.broker_name;
+          
           // Short delay to ensure database consistency
           setTimeout(() => {
             loadBroker(true);
-            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-            toast.info(`Broker "${brokerName}" administration data updated`);
+            
+            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
+              toast.info(`Broker name changed from "${oldName}" to "${newName}"`);
+            } else {
+              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+              toast.info(`Broker "${brokerName}" administration data updated`);
+            }
           }, 500);
         }
       )
@@ -101,10 +121,10 @@ const BrokerCredentials = () => {
         console.log('Broker admin channel subscription status:', status);
       });
     
-    // Set up a more frequent refresh interval (reduced from 20 seconds to 10 seconds)
+    // Set up a more frequent refresh interval (every 5 seconds)
     const refreshInterval = setInterval(() => {
       loadBroker(false);
-    }, 10000); // Refresh every 10 seconds
+    }, 5000); // Refresh every 5 seconds
     
     // Clean up on unmount
     return () => {
