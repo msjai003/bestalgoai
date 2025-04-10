@@ -50,7 +50,7 @@ export interface BrokerDetail {
   updated_at?: string;
 }
 
-// Interface representing the brokers_functions table structure
+// Interface representing the broker_functionality table structure
 export interface BrokerFunction {
   id: string;
   broker_id: number;

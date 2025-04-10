@@ -1,14 +1,15 @@
+
 import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Fetches all functions for a specific broker
- * Using the broker_functionality table
+ * Using a direct query approach to avoid type issues
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Fetch functions from database
+    // Use a more direct query approach to avoid type issues
     const { data: functions, error } = await supabase
       .from('broker_functionality')
       .select('*')
@@ -21,13 +22,22 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     
     if (functions && functions.length > 0) {
       // Use Promise.all to handle multiple async operations
-      return await Promise.all(functions.map(async func => {
+      const result = await Promise.all(functions.map(async (func: any) => {
         const brokerImage = await getBrokerImage(func.broker_id);
         return {
-          ...func,
+          id: func.id,
+          broker_id: func.broker_id,
+          broker_name: func.broker_name,
+          function_name: func.function_name,
+          function_description: func.function_description || "",
+          function_slug: func.function_slug,
+          function_enabled: func.function_enabled,
+          is_premium: func.is_premium,
           broker_image: func.broker_image || brokerImage
-        };
-      })) as BrokerFunction[];
+        } as BrokerFunction;
+      }));
+      
+      return result;
     }
     
     // If no functions found in database, check if the broker exists and create defaults
@@ -63,7 +73,7 @@ export const hasBrokerFunction = async (
     }
     
     if (data && data.length > 0) {
-      return data[0].function_enabled;
+      return (data[0] as any).function_enabled;
     }
     
     // Default functions that all brokers are assumed to have
@@ -97,7 +107,7 @@ export const isBrokerFunctionPremium = async (
     }
     
     if (data && data.length > 0) {
-      return data[0].is_premium;
+      return (data[0] as any).is_premium;
     }
     
     // Premium functions
@@ -276,7 +286,7 @@ const createAndStoreDefaultFunctions = async (broker: { id: number; name: string
     ...func,
     id: `${broker.id}-${func.function_slug}`, // Fallback ID if not returned from database
     broker_image: broker.logo
-  }));
+  })) as BrokerFunction[];
 };
 
 /**
@@ -295,7 +305,7 @@ export const getBrokerFunctionConfig = async (
       .eq('function_slug', functionSlug);
     
     if (!error && data && data.length > 0) {
-      return data[0].config_data;
+      return (data[0] as any).config_data;
     }
     
     // Return hardcoded default configs as fallback
@@ -336,7 +346,7 @@ export const getBrokerFunctionRequiredInputs = async (
       let requiredInputs: string[] = [];
       const adminBroker = adminData[0];
       if (Array.isArray(adminBroker.required_inputs)) {
-        requiredInputs = adminBroker.required_inputs;
+        requiredInputs = adminBroker.required_inputs.map(item => String(item));
       } else if (typeof adminBroker.required_inputs === 'string') {
         try {
           requiredInputs = JSON.parse(adminBroker.required_inputs);
@@ -363,7 +373,7 @@ export const getBrokerFunctionRequiredInputs = async (
       let requiredInputs: string[] = [];
       const brokerDetails = data[0];
       if (Array.isArray(brokerDetails.required_inputs)) {
-        requiredInputs = brokerDetails.required_inputs;
+        requiredInputs = brokerDetails.required_inputs.map(item => String(item));
       } else if (typeof brokerDetails.required_inputs === 'string') {
         try {
           requiredInputs = JSON.parse(brokerDetails.required_inputs);

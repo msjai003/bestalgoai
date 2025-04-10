@@ -72,7 +72,10 @@ const BrokerIntegration = () => {
           console.log('⚡ Broker details changed in database:', payload);
           
           // Extract broker name for better notification
-          const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          const brokerName = payload.new ? 
+            (payload.new as any).broker_name || 'Unknown' : 
+            (payload.old ? (payload.old as any).broker_name || 'Unknown' : 'Unknown');
+            
           const changeType = payload.eventType === 'UPDATE' ? 'updated' : 
                             payload.eventType === 'INSERT' ? 'added' : 
                             payload.eventType === 'DELETE' ? 'removed' : 'modified';
@@ -97,8 +100,8 @@ const BrokerIntegration = () => {
           console.log('⚡ Broker admin data changed in database:', payload);
           
           // Extract broker name for better notification
-          const oldName = payload.old?.broker_name || 'Unknown';
-          const newName = payload.new?.broker_name || 'Unknown';
+          const oldName = payload.old ? (payload.old as any).broker_name || 'Unknown' : 'Unknown';
+          const newName = payload.new ? (payload.new as any).broker_name || 'Unknown' : 'Unknown';
           const changeType = payload.eventType || 'MODIFIED';
           
           // Log specific name changes for debugging
