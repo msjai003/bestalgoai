@@ -9,7 +9,7 @@ import { LogOut, User, Shield, Bell, Key } from "lucide-react";
 
 const Settings = () => {
   const { user } = useAuth();
-  // Get name from user object safely
+  // Get name from user object safely by extracting from email
   const userName = user?.email?.split('@')[0] || "User";
 
   return (

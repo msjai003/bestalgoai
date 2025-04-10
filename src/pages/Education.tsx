@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -21,7 +20,7 @@ import {
   LogIn,
   Loader
 } from 'lucide-react';
-import FlashCard from '@/components/education/FlashCard'; // Fixed import
+import FlashCard from '@/components/education/FlashCard';
 import { ModuleList } from '@/components/education/ModuleList';
 import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
@@ -51,6 +50,7 @@ const Education = () => {
   const { user } = useAuth();
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [activeQuizModule, setActiveQuizModule] = useState<string>(currentModule);
+  const [currentCard, setCurrentCard] = useState(0);
   
   const stats = getStats();
   
@@ -64,6 +64,14 @@ const Education = () => {
     setActiveQuizModule(moduleId);
     startQuiz();
     setQuizModalOpen(true);
+  };
+  
+  const nextCard = () => {
+    setCurrentCard(currentCard + 1);
+  };
+  
+  const prevCard = () => {
+    setCurrentCard(currentCard - 1);
   };
   
   useEffect(() => {
@@ -260,7 +268,14 @@ const Education = () => {
               </Button>
             </div>
             
-            <FlashCard />
+            <FlashCard 
+              question={educationData[currentLevel]?.find(m => m.id === currentModule)?.flashcards[currentCard]?.question || "Loading question..."}
+              answer={educationData[currentLevel]?.find(m => m.id === currentModule)?.flashcards[currentCard]?.answer || "Loading answer..."}
+              currentIndex={currentCard + 1}
+              totalCount={educationData[currentLevel]?.find(m => m.id === currentModule)?.flashcards.length || 0}
+              onNext={nextCard}
+              onPrevious={prevCard}
+            />
           </section>
         )}
         
