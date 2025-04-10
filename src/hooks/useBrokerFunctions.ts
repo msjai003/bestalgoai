@@ -82,7 +82,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
               function_description: func.function_description || "",
               function_slug: func.function_slug,
               function_enabled: func.function_enabled,
-              is_premium: f.is_premium,
+              is_premium: func.is_premium,
               broker_image: imageUrl
             });
           }
