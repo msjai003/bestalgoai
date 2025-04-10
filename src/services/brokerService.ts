@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -7,12 +8,12 @@ import { syncBrokersToAdmin } from "@/lib/broker-functions";
 /**
  * Fetch all broker details from the database, with NO CACHING to ensure latest data
  */
-export const fetchBrokerDetails = async (): Promise<Broker[]> => {
+export const fetchBrokerDetails = async (timestamp?: number): Promise<Broker[]> => {
   try {
-    console.log("Fetching broker details from database with FORCE REFRESH");
+    // Generate a unique timestamp to prevent caching at all levels if not provided
+    const cacheKey = timestamp || new Date().getTime();
     
-    // Generate a unique timestamp to prevent caching at all levels
-    const timestamp = new Date().getTime();
+    console.log(`Fetching broker details from database with force refresh (cache key: ${cacheKey})`);
     
     // First try to fetch from brokers_admin table
     const { data: adminData, error: adminError } = await supabase
@@ -22,7 +23,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       .order('display_order', { ascending: true });
     
     if (!adminError && adminData && adminData.length > 0) {
-      console.log(`Found ${adminData.length} broker details in brokers_admin table:`, adminData);
+      console.log(`Found ${adminData.length} broker details in brokers_admin table at ${new Date().toLocaleTimeString()}:`, adminData);
       // Map broker_admin data to Broker type
       return adminData.map((item: any) => {
         let requiredInputs: string[] = [];

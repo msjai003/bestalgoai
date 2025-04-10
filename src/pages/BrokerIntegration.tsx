@@ -22,10 +22,13 @@ const BrokerIntegration = () => {
   const loadBrokers = useCallback(async (forceRefresh = true) => {
     setLoading(true);
     try {
-      console.log(`Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data from database...`);
+      console.log(`Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data from database at ${new Date().toISOString()}...`);
+      
+      // Add a random query parameter to bust cache
+      const timestamp = new Date().getTime();
       
       // Get fresh broker data
-      const brokerData = await fetchBrokerDetails();
+      const brokerData = await fetchBrokerDetails(timestamp);
       console.log(`Loaded ${brokerData.length} brokers from database:`, brokerData);
       
       // Only update state if we have data
@@ -56,10 +59,10 @@ const BrokerIntegration = () => {
     // Load brokers immediately when the component mounts
     loadBrokers(false); // Don't show toast on initial load
     
-    // Set up an interval to refresh data every 5 seconds (reduced from 10s)
+    // Set up an interval to refresh data every 3 seconds (reduced from 5s)
     const refreshInterval = setInterval(() => {
       loadBrokers(false); // Silent refresh
-    }, 5000);
+    }, 3000);
     
     // Set up real-time subscription for broker details changes with improved debugging
     const brokerDetailsChannel = supabase
@@ -68,15 +71,21 @@ const BrokerIntegration = () => {
         { event: '*', schema: 'public', table: 'broker_details' }, 
         (payload) => {
           console.log('⚡ Broker details changed in database:', payload);
+          
           // Extract broker name for better notification
           const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          const changeType = payload.eventType || 'MODIFIED';
           
-          // Force immediate reload of brokers
-          loadBrokers(false);
-          toast.info(`Broker "${brokerName}" information updated`);
+          // Force immediate reload of brokers with a short delay to ensure DB consistency
+          setTimeout(() => {
+            loadBrokers(false);
+            toast.info(`Broker "${brokerName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
+          }, 300);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Broker details channel status:', status);
+      });
     
     // Add subscription for brokers_admin table changes with improved notification
     const brokersAdminChannel = supabase
@@ -85,8 +94,10 @@ const BrokerIntegration = () => {
         { event: '*', schema: 'public', table: 'brokers_admin' }, 
         (payload) => {
           console.log('⚡ Broker admin data changed in database:', payload);
+          
           // Extract broker name for better notification
           const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          const changeType = payload.eventType || 'MODIFIED';
           
           // Log the changed data for debugging
           if (payload.new && payload.old) {
@@ -96,12 +107,16 @@ const BrokerIntegration = () => {
             });
           }
           
-          // Force immediate reload of brokers
-          loadBrokers(false);
-          toast.info(`Broker "${brokerName}" information updated`);
+          // Force immediate reload of brokers with a short delay to ensure DB consistency
+          setTimeout(() => {
+            loadBrokers(false);
+            toast.info(`Broker "${brokerName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
+          }, 300);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Broker admin channel status:', status);
+      });
     
     // Clean up the interval and subscription on component unmount
     return () => {

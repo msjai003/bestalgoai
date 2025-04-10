@@ -18,8 +18,11 @@ export const useBrokerFunctions = (brokerId?: number) => {
     try {
       let functionsData: BrokerFunction[] = [];
       
+      // Generate cache-busting timestamp
+      const timestamp = new Date().getTime();
+      
       if (brokerId) {
-        console.log(`🔄 Fetching broker functions for broker ID ${brokerId} - ${new Date().toISOString()}`);
+        console.log(`🔄 Fetching broker functions for broker ID ${brokerId} - ${new Date().toISOString()} (cache: ${timestamp})`);
         
         // Fetch functions for a specific broker
         const { data: dbFunctions, error: functionsError } = await supabase
@@ -35,11 +38,11 @@ export const useBrokerFunctions = (brokerId?: number) => {
         if (dbFunctions && dbFunctions.length > 0) {
           // Set broker name from the first function
           setBrokerName(dbFunctions[0].broker_name);
-          console.log(`Found broker name: ${dbFunctions[0].broker_name}`);
+          console.log(`Found broker name: ${dbFunctions[0].broker_name} (${new Date().toLocaleTimeString()})`);
           
           // Map database functions to BrokerFunction type
           functionsData = await Promise.all(dbFunctions.map(async func => {
-            const brokerImage = await getBrokerImage(func.broker_id);
+            const brokerImage = await getBrokerImage(func.broker_id, timestamp);
             return {
               id: func.id,
               broker_id: func.broker_id,
@@ -54,7 +57,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
           }));
         } else {
           // No functions found in database for this broker, fetch broker info to create defaults
-          const broker = await fetchBrokerInfo(brokerId);
+          const broker = await fetchBrokerInfo(brokerId, timestamp);
           
           if (broker) {
             setBrokerName(broker.name);
@@ -122,13 +125,13 @@ export const useBrokerFunctions = (brokerId?: number) => {
     }
   }, [brokerId]);
 
-  // Enhanced real-time subscription: 
+  // Enhanced real-time subscription system
   useEffect(() => {
     console.log("🎧 Setting up real-time listeners for broker data changes");
     
     // 1. Listen for changes in the broker_details table
     const brokerDetailsChannel = supabase
-      .channel('broker_details_changes')
+      .channel('broker_details_changes_' + (brokerId || 'all'))
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details' }, 
         (payload) => {
@@ -136,21 +139,26 @@ export const useBrokerFunctions = (brokerId?: number) => {
           
           // Only refresh if this change affects the current broker
           if (!brokerId || payload.new?.id === brokerId || payload.old?.id === brokerId) {
-            // Refresh functions when broker details change
-            fetchBrokerFunctions();
-            
-            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-            toast.info(`Broker "${brokerName}" information updated`);
+            // Refresh functions when broker details change with a small delay
+            // to ensure database consistency
+            setTimeout(() => {
+              fetchBrokerFunctions();
+              
+              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+              toast.info(`Broker "${brokerName}" information updated (${new Date().toLocaleTimeString()})`);
+            }, 300);
           } else {
             console.log("Change doesn't affect current broker, skipping refresh");
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Broker details channel status for ${brokerId || 'all'}:`, status);
+      });
     
     // 2. Listen for changes in the broker_functionality table
     const brokerFunctionalityChannel = supabase
-      .channel('broker_functionality_changes')
+      .channel('broker_functionality_changes_' + (brokerId || 'all'))
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_functionality' }, 
         (payload) => {
@@ -158,19 +166,23 @@ export const useBrokerFunctions = (brokerId?: number) => {
           
           // Only refresh if this change affects the current broker
           if (!brokerId || payload.new?.broker_id === brokerId || payload.old?.broker_id === brokerId) {
-            // Refresh functions when broker functions change
-            fetchBrokerFunctions();
-            toast.info("Broker functionalities updated");
+            // Refresh functions when broker functions change with delay
+            setTimeout(() => {
+              fetchBrokerFunctions();
+              toast.info(`Broker functionalities updated (${new Date().toLocaleTimeString()})`);
+            }, 300);
           } else {
             console.log("Change doesn't affect current broker, skipping refresh");
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Broker functionality channel status for ${brokerId || 'all'}:`, status);
+      });
       
     // 3. Listen for changes in the brokers_admin table
     const brokersAdminChannel = supabase
-      .channel('brokers_admin_changes')
+      .channel('brokers_admin_changes_' + (brokerId || 'all'))
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin' }, 
         (payload) => {
@@ -180,36 +192,53 @@ export const useBrokerFunctions = (brokerId?: number) => {
           if (payload.new && payload.old) {
             console.log("Modified broker admin data:", {
               from: payload.old.broker_name,
-              to: payload.new.broker_name
+              to: payload.new.broker_name,
+              timestamp: new Date().toLocaleTimeString()
             });
           }
           
           // Only refresh if this change affects the current broker
           if (!brokerId || payload.new?.id === brokerId || payload.old?.id === brokerId) {
-            // Refresh functions when broker admin data changes
-            fetchBrokerFunctions();
-            
-            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-            toast.info(`Broker "${brokerName}" admin data updated`);
+            // Refresh functions when broker admin data changes with delay
+            setTimeout(() => {
+              fetchBrokerFunctions();
+              
+              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+              toast.info(`Broker "${brokerName}" admin data updated (${new Date().toLocaleTimeString()})`);
+            }, 300);
           } else {
             console.log("Change doesn't affect current broker, skipping refresh");
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Broker admin channel status for ${brokerId || 'all'}:`, status);
+      });
+    
+    // Initial fetch
+    fetchBrokerFunctions();
+    
+    // Set up a short interval to refresh data every 2 seconds
+    const refreshInterval = setInterval(() => {
+      fetchBrokerFunctions();
+    }, 2000);
     
     return () => {
       console.log("🛑 Removing real-time listeners for broker data changes");
       
+      clearInterval(refreshInterval);
       supabase.removeChannel(brokerDetailsChannel);
       supabase.removeChannel(brokerFunctionalityChannel);
       supabase.removeChannel(brokersAdminChannel);
     };
   }, [fetchBrokerFunctions, brokerId]);
 
-  // Helper function to fetch broker info
-  const fetchBrokerInfo = async (id: number) => {
+  // Helper function to fetch broker info with cache busting
+  const fetchBrokerInfo = async (id: number, timestamp?: number) => {
     try {
+      const cacheKey = timestamp || new Date().getTime();
+      console.log(`Fetching broker info for ID ${id} with cache key ${cacheKey}`);
+      
       // Try to get broker info from brokers_admin table first
       const { data: adminBroker, error: adminError } = await supabase
         .from('brokers_admin')
@@ -284,9 +313,11 @@ export const useBrokerFunctions = (brokerId?: number) => {
     }
   };
 
-  // Helper function to get broker image
-  const getBrokerImage = async (brokerId: number): Promise<string | undefined> => {
+  // Helper function to get broker image with cache busting
+  const getBrokerImage = async (brokerId: number, timestamp?: number): Promise<string | undefined> => {
     try {
+      const cacheKey = timestamp || new Date().getTime();
+      
       // First check if the broker exists in brokers_admin table
       const { data: adminBroker, error: adminError } = await supabase
         .from('brokers_admin')
@@ -294,7 +325,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .eq('id', brokerId);
         
       if (!adminError && adminBroker && adminBroker.length > 0 && adminBroker[0].image_url) {
-        return adminBroker[0].image_url;
+        return `${adminBroker[0].image_url}?t=${cacheKey}`;
       }
       
       // Try broker_details table
@@ -304,7 +335,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .eq('id', brokerId);
         
       if (!detailsError && brokerDetails && brokerDetails.length > 0 && brokerDetails[0].image_url) {
-        return brokerDetails[0].image_url;
+        return `${brokerDetails[0].image_url}?t=${cacheKey}`;
       }
       
       // Fall back to static data

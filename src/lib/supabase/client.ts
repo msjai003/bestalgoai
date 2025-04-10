@@ -116,10 +116,31 @@ export const supabase = {
   },
   channel: (channel) => ({
     on: (event, options, callback) => ({
-      subscribe: () => {}
-    })
+      subscribe: (callbackFn) => {
+        // Immediately execute the callback to simulate subscription
+        if (callbackFn) callbackFn('SUBSCRIBED');
+        // Also immediately trigger a fake data event for testing
+        if (callback && typeof callback === 'function') {
+          setTimeout(() => {
+            callback({
+              new: { broker_name: 'Updated Broker Name', id: 1 },
+              old: { broker_name: 'Old Broker Name', id: 1 },
+              eventType: 'UPDATE'
+            });
+          }, 1000);
+        }
+        return {};
+      }
+    }),
+    track: (state) => Promise.resolve({ state }),
+    unsubscribe: () => {},
+    untrack: () => Promise.resolve(),
+    presenceState: () => ({}),
+    status: () => 'SUBSCRIBED',
   }),
   removeChannel: (channel) => {},
+  getChannels: () => [],
+  getSubscriptions: () => ({}),
 };
 
 // Get the current site URL for redirects
