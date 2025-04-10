@@ -60,9 +60,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         // Fetch all functions for all brokers from the brokers_functions table
         const { data: allFunctions, error: allFunctionsError } = await supabase
           .from('brokers_functions')
-          .select('*')
-          .order('broker_id', { ascending: true })
-          .order('function_name', { ascending: true });
+          .select('*');
           
         if (allFunctionsError) {
           console.error("Error fetching all broker functions:", allFunctionsError);
@@ -70,8 +68,16 @@ export const useBrokerFunctions = (brokerId?: number) => {
         }
         
         if (allFunctions && allFunctions.length > 0) {
+          // Sort functions by broker_id and function_name
+          const sortedFunctions = [...allFunctions].sort((a, b) => {
+            if (a.broker_id !== b.broker_id) {
+              return a.broker_id - b.broker_id;
+            }
+            return a.function_name.localeCompare(b.function_name);
+          });
+          
           // Map database functions to BrokerFunction type
-          functionsData = allFunctions.map(f => ({
+          functionsData = sortedFunctions.map(f => ({
             id: f.id,
             broker_id: f.broker_id,
             broker_name: f.broker_name,
