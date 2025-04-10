@@ -1,14 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { ExecuteSqlParams } from '@/types/broker';
 
 export const testSupabaseConnection = async () => {
   try {
     const startTime = Date.now();
     
     // Try to access the users table for a more complete connection test
-    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
-      query: 'SELECT count(*) FROM user_profiles LIMIT 10'
-    });
+    const params: ExecuteSqlParams = { query: 'SELECT count(*) FROM user_profiles LIMIT 10' };
+    const { data: queryResult, error } = await supabase.rpc('execute_sql', params);
     
     const endTime = Date.now();
     
@@ -55,7 +55,7 @@ export const testTableAccess = async (tableName: string) => {
   try {
     console.log(`Testing access to ${tableName} table...`);
     
-    const { data, error } = await supabase.rpc('execute_sql', {
+    const params: ExecuteSqlParams = {
       query: `SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
@@ -63,7 +63,9 @@ export const testTableAccess = async (tableName: string) => {
       ) as "exists", (
         SELECT count(*) FROM "${tableName}" LIMIT 1
       ) as "count"`
-    });
+    };
+    
+    const { data, error } = await supabase.rpc('execute_sql', params);
 
     if (error) {
       console.error(`Error accessing ${tableName} table:`, error);

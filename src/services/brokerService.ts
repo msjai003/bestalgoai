@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Broker, BrokerFunction, BrokerInfocapFunction, RPCParams } from "@/types/broker";
+import { Broker, BrokerFunction, BrokerInfocapFunction, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { getAllBrokerInfocapFunctions, saveBrokerInfocapFunction } from "@/lib/broker-functions";
 
@@ -68,7 +68,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     const staticBroker = staticBrokers.find(b => b.id === brokerId);
     
     // Get data from broker_infocap to update name
-    const params: RPCParams = { p_broker_id: brokerId };
+    const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
     
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
@@ -164,7 +164,7 @@ export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
  */
 export const getBrokerInfocapFunctions = async (brokerId: number): Promise<BrokerInfocapFunction[]> => {
   try {
-    const params: RPCParams = { p_broker_id: brokerId };
+    const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
     
     if (error || !data) {

@@ -1,5 +1,5 @@
 
-import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, RPCParams } from '@/types/broker';
+import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -60,7 +60,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
     // Use the RPC function to get broker functions from broker_infocap
-    const params: RPCParams = { p_broker_id: brokerId };
+    const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
@@ -261,7 +261,7 @@ export const saveBrokerInfocapFunction = async (
   isPremium: boolean = false
 ): Promise<number | null> => {
   try {
-    const params: RPCParams = {
+    const params: SaveBrokerFunctionParams = {
       p_broker_id: brokerId,
       p_broker_name: brokerName,
       p_function_name: functionName,

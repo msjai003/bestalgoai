@@ -111,3 +111,23 @@ export interface RPCParams {
   p_is_premium?: boolean;
   query?: string;
 }
+
+// Define specific RPC parameter types to ensure correct type checking
+export interface GetBrokerFunctionsParams {
+  p_broker_id: number;
+}
+
+export interface SaveBrokerFunctionParams {
+  p_broker_id: number;
+  p_broker_name: string;
+  p_function_name: string;
+  p_function_description: string;
+  p_function_slug: string;
+  p_function_order: number;
+  p_function_enabled: boolean;
+  p_is_premium: boolean;
+}
+
+export interface ExecuteSqlParams {
+  query: string;
+}

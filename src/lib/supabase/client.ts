@@ -53,8 +53,8 @@ export const supabase = {
   rpc: (functionName, params = {}) => {
     // Type-safe handling of params based on function name
     if (functionName === 'get_broker_infocap_functions') {
-      // Handle p_broker_id parameter
-      const brokerId = params?.p_broker_id || 1;
+      // Ensure params has p_broker_id
+      const brokerId = params && typeof params === 'object' && 'p_broker_id' in params ? params.p_broker_id : 1;
       
       const mockFunctions = [
         {
@@ -86,7 +86,7 @@ export const supabase = {
       ];
       
       // Filter the results by broker ID if provided
-      const result = params && 'p_broker_id' in params 
+      const result = params && typeof params === 'object' && 'p_broker_id' in params 
         ? mockFunctions.filter(f => f.broker_id === params.p_broker_id)
         : mockFunctions;
         
@@ -145,15 +145,22 @@ export const supabase = {
     
     if (functionName === 'save_broker_infocap_function') {
       // Ensure params have proper type safety
+      if (typeof params !== 'object' || params === null) {
+        return {
+          data: null,
+          error: { message: "Invalid parameters" }
+        };
+      }
+      
       const mockParams = {
-        p_broker_id: params.p_broker_id || 0,
-        p_broker_name: params.p_broker_name || '',
-        p_function_name: params.p_function_name || '',
-        p_function_description: params.p_function_description || '',
-        p_function_slug: params.p_function_slug || '',
-        p_function_order: params.p_function_order || 0,
-        p_function_enabled: params.p_function_enabled !== undefined ? params.p_function_enabled : true,
-        p_is_premium: params.p_is_premium || false
+        p_broker_id: 'p_broker_id' in params ? params.p_broker_id : 0,
+        p_broker_name: 'p_broker_name' in params ? params.p_broker_name : '',
+        p_function_name: 'p_function_name' in params ? params.p_function_name : '',
+        p_function_description: 'p_function_description' in params ? params.p_function_description : '',
+        p_function_slug: 'p_function_slug' in params ? params.p_function_slug : '',
+        p_function_order: 'p_function_order' in params ? params.p_function_order : 0,
+        p_function_enabled: 'p_function_enabled' in params ? params.p_function_enabled : true,
+        p_is_premium: 'p_is_premium' in params ? params.p_is_premium : false
       };
       
       return {
@@ -163,7 +170,8 @@ export const supabase = {
     }
     
     if (functionName === 'execute_sql') {
-      if (params && 'query' in params && params.query && params.query.includes('EXISTS')) {
+      const query = params && typeof params === 'object' && 'query' in params ? String(params.query) : '';
+      if (query && typeof query === 'string' && query.includes('EXISTS')) {
         return {
           data: [{ exists: true, count: 5 }],
           error: null

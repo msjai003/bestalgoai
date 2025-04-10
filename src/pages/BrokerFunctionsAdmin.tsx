@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -16,9 +15,14 @@ import { toast } from 'sonner';
 import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { BrokerFunction } from '@/types/broker';
+import { BrokerFunction, BrokerInfocapFunction, SaveBrokerFunctionParams } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
+import { 
+  getAllBrokerInfocapFunctions, 
+  saveBrokerInfocapFunction 
+} from '@/lib/broker-functions';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FormValues {
   broker_id: number;
@@ -28,14 +32,15 @@ interface FormValues {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
+  function_order: number;
 }
 
 const BrokerFunctionsAdmin = () => {
   const { user } = useAuth();
-  const [functions, setFunctions] = useState<BrokerFunction[]>([]);
+  const [functions, setFunctions] = useState<BrokerInfocapFunction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<BrokerFunction>>({});
+  const [editForm, setEditForm] = useState<Partial<BrokerInfocapFunction>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
   
@@ -46,6 +51,7 @@ const BrokerFunctionsAdmin = () => {
       function_name: '',
       function_description: '',
       function_slug: '',
+      function_order: 0,
       function_enabled: true,
       is_premium: false
     }
@@ -55,25 +61,16 @@ const BrokerFunctionsAdmin = () => {
   const fetchBrokerFunctions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('brokers_functions')
-        .select('*')
-        .order('broker_name')
-        .order('function_name');
-        
-      if (selectedBrokerId) {
-        query = query.eq('broker_id', selectedBrokerId);
-      }
-        
-      const { data, error } = await query;
-
-      if (error) throw error;
+      let functionsList = await getAllBrokerInfocapFunctions();
       
-      // Ensure data is cast to the correct type
-      const typedData = data as BrokerFunction[];
-      setFunctions(typedData || []);
+      if (selectedBrokerId !== null) {
+        functionsList = functionsList.filter(func => func.broker_id === selectedBrokerId);
+      }
+      
+      setFunctions(functionsList);
     } catch (error: any) {
       toast.error(`Error fetching broker functions: ${error.message}`);
+      setFunctions([]);
     } finally {
       setLoading(false);
     }
@@ -86,7 +83,7 @@ const BrokerFunctionsAdmin = () => {
   }, [user, selectedBrokerId]);
 
   // Start editing a function
-  const handleEdit = (func: BrokerFunction) => {
+  const handleEdit = (func: BrokerInfocapFunction) => {
     setEditingId(func.id);
     setEditForm({
       broker_id: func.broker_id,
@@ -95,7 +92,8 @@ const BrokerFunctionsAdmin = () => {
       function_description: func.function_description,
       function_slug: func.function_slug,
       function_enabled: func.function_enabled,
-      is_premium: func.is_premium
+      is_premium: func.is_premium,
+      function_order: func.function_order || 0
     });
   };
 
@@ -106,31 +104,32 @@ const BrokerFunctionsAdmin = () => {
 
   // Save function changes
   const handleSave = async (id: string) => {
-    if (!editForm.function_name || !editForm.function_slug) {
-      toast.error('Function name and slug cannot be empty');
+    if (!editForm.function_name || !editForm.function_slug || !editForm.broker_id || !editForm.broker_name) {
+      toast.error('Required fields cannot be empty');
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .update({
-          broker_id: editForm.broker_id,
-          broker_name: editForm.broker_name,
-          function_name: editForm.function_name,
-          function_description: editForm.function_description,
-          function_slug: editForm.function_slug,
-          function_enabled: editForm.function_enabled,
-          is_premium: editForm.is_premium
-        })
-        .eq('id', id);
+      // Use the RPC function to save the changes
+      const result = await saveBrokerInfocapFunction(
+        editForm.broker_id, 
+        editForm.broker_name, 
+        editForm.function_name, 
+        editForm.function_description || '', 
+        editForm.function_slug, 
+        editForm.function_order || 0,
+        editForm.function_enabled === true,
+        editForm.is_premium === true
+      );
 
-      if (error) throw error;
+      if (result === null) {
+        throw new Error('Failed to save function');
+      }
       
       // Update local state
       setFunctions(prevFunctions => 
         prevFunctions.map(func => 
-          func.id === id ? { ...func, ...editForm as BrokerFunction } : func
+          func.id === id ? { ...func, ...editForm as BrokerInfocapFunction } : func
         )
       );
       
@@ -148,12 +147,26 @@ const BrokerFunctionsAdmin = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('brokers_functions')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      // Since we don't have a direct delete RPC, mark the function as disabled instead
+      const funcToDelete = functions.find(f => f.id === id);
+      if (!funcToDelete) {
+        throw new Error('Function not found');
+      }
+      
+      const result = await saveBrokerInfocapFunction(
+        funcToDelete.broker_id,
+        funcToDelete.broker_name,
+        funcToDelete.function_name,
+        funcToDelete.function_description || '',
+        funcToDelete.function_slug,
+        funcToDelete.function_order || 0,
+        false, // Set function_enabled to false instead of deleting
+        funcToDelete.is_premium
+      );
+      
+      if (result === null) {
+        throw new Error('Failed to delete function');
+      }
       
       // Update local state
       setFunctions(prevFunctions => 
@@ -176,38 +189,36 @@ const BrokerFunctionsAdmin = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('brokers_functions')
-        .insert({
-          broker_id: values.broker_id,
-          broker_name: broker.name,
-          function_name: values.function_name,
-          function_description: values.function_description || null,
-          function_slug: values.function_slug,
-          function_enabled: values.function_enabled,
-          is_premium: values.is_premium
-        })
-        .select();
+      const result = await saveBrokerInfocapFunction(
+        values.broker_id,
+        broker.name,
+        values.function_name,
+        values.function_description || '',
+        values.function_slug,
+        values.function_order || 0,
+        values.function_enabled,
+        values.is_premium
+      );
 
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        // Update local state with correct typing
-        const newFunction = data[0] as unknown as BrokerFunction;
-        setFunctions(prevFunctions => [...prevFunctions, newFunction]);
-        
-        toast.success('Function added successfully');
-        setShowAddForm(false);
-        form.reset({
-          broker_id: 0,
-          broker_name: '',
-          function_name: '',
-          function_description: '',
-          function_slug: '',
-          function_enabled: true,
-          is_premium: false
-        });
+      if (result === null) {
+        throw new Error('Failed to add function');
       }
+      
+      // Refresh the list to get the new function
+      fetchBrokerFunctions();
+      
+      toast.success('Function added successfully');
+      setShowAddForm(false);
+      form.reset({
+        broker_id: 0,
+        broker_name: '',
+        function_name: '',
+        function_description: '',
+        function_slug: '',
+        function_order: 0,
+        function_enabled: true,
+        is_premium: false
+      });
     } catch (error: any) {
       toast.error(`Failed to add function: ${error.message}`);
     }
@@ -238,42 +249,33 @@ const BrokerFunctionsAdmin = () => {
       
       for (const broker of targetBrokers) {
         // Check if broker already has functions
-        const { data: existingFunctions } = await supabase
-          .from('brokers_functions')
-          .select('*')
-          .eq('broker_id', broker.id);
+        const existingFunctions = functions.filter(f => f.broker_id === broker.id);
           
         if (!existingFunctions || existingFunctions.length === 0) {
           // Add default functions for this broker
-          const functionsToAdd = defaultFunctions.map(func => ({
-            broker_id: broker.id,
-            broker_name: broker.name,
-            function_name: func.name,
-            function_description: func.description,
-            function_slug: func.slug,
-            function_enabled: true,
-            is_premium: func.slug === 'market_data', // Make market data premium as an example
-            broker_image: `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${broker.id}.jpg`
-          }));
-          
-          const { data, error } = await supabase
-            .from('brokers_functions')
-            .insert(functionsToAdd)
-            .select();
+          for (const func of defaultFunctions) {
+            const result = await saveBrokerInfocapFunction(
+              broker.id,
+              broker.name,
+              func.name,
+              func.description,
+              func.slug,
+              addedCount, // Use count as order
+              true,
+              func.slug === 'market_data' // Make market data premium as an example
+            );
             
-          if (error) throw error;
-          
-          if (data) {
-            addedCount += data.length;
-            // Update local state with new functions (with correct typing)
-            const typedData = data as unknown as BrokerFunction[];
-            setFunctions(prev => [...prev, ...typedData]);
+            if (result !== null) {
+              addedCount++;
+            }
           }
         }
       }
       
       if (addedCount > 0) {
         toast.success(`Added ${addedCount} default functions for new brokers`);
+        // Refresh the list
+        fetchBrokerFunctions();
       } else {
         toast.info('All brokers already have functions configured');
       }
