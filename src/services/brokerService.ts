@@ -1,6 +1,5 @@
-
 import { supabase } from "@/lib/supabase/client";
-import { Broker, BrokerDetail, BrokerFunction } from "@/types/broker";
+import { Broker, BrokerDetail, BrokerFunction, BrokerInfocapFunction } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
@@ -249,5 +248,162 @@ export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
     return [];
+  }
+};
+
+/**
+ * Save a broker function to the broker_infocap table
+ */
+export const saveBrokerInfocapFunction = async (
+  brokerId: number,
+  brokerName: string,
+  functionName: string,
+  functionDescription: string | null,
+  functionSlug: string,
+  functionOrder: number,
+  isEnabled: boolean = true,
+  isPremium: boolean = false
+): Promise<number | null> => {
+  try {
+    const { data, error } = await supabase.rpc('save_broker_infocap_function', {
+      p_broker_id: brokerId,
+      p_broker_name: brokerName,
+      p_function_name: functionName,
+      p_function_description: functionDescription || '',
+      p_function_slug: functionSlug,
+      p_function_order: functionOrder,
+      p_function_enabled: isEnabled,
+      p_is_premium: isPremium
+    });
+    
+    if (error) {
+      console.error("Error saving broker function:", error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Exception saving broker function:", error);
+    return null;
+  }
+};
+
+/**
+ * Get all functions from the broker_infocap table
+ */
+export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunction[]> => {
+  try {
+    const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
+    
+    if (error) {
+      console.error("Error fetching all broker functions:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Exception fetching all broker functions:", error);
+    return [];
+  }
+};
+
+/**
+ * Get functions for a specific broker from the broker_infocap table
+ */
+export const getBrokerInfocapFunctions = async (brokerId: number): Promise<BrokerInfocapFunction[]> => {
+  try {
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
+      p_broker_id: brokerId
+    });
+    
+    if (error) {
+      console.error("Error fetching broker functions:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Exception fetching broker functions:", error);
+    return [];
+  }
+};
+
+/**
+ * Delete a function from the broker_infocap table
+ */
+export const deleteBrokerInfocapFunction = async (functionId: number): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('broker_infocap')
+      .delete()
+      .eq('id', functionId);
+    
+    if (error) {
+      console.error("Error deleting broker function:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Exception deleting broker function:", error);
+    return false;
+  }
+};
+
+/**
+ * Update function order in the broker_infocap table
+ */
+export const updateBrokerInfocapFunctionOrder = async (
+  functionId: number,
+  newOrder: number
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('broker_infocap')
+      .update({ function_order: newOrder, updated_at: new Date() })
+      .eq('id', functionId);
+    
+    if (error) {
+      console.error("Error updating broker function order:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Exception updating broker function order:", error);
+    return false;
+  }
+};
+
+/**
+ * Save or update many broker functions at once (batch operation)
+ */
+export const saveBulkBrokerInfocapFunctions = async (
+  functions: Partial<BrokerInfocapFunction>[]
+): Promise<boolean> => {
+  try {
+    // We'll process each function one by one using our RPC function
+    for (const func of functions) {
+      if (!func.broker_id || !func.broker_name || !func.function_name || !func.function_slug) {
+        console.error("Invalid function data:", func);
+        continue;
+      }
+      
+      await saveBrokerInfocapFunction(
+        func.broker_id,
+        func.broker_name,
+        func.function_name,
+        func.function_description || null,
+        func.function_slug,
+        func.function_order || 0,
+        func.function_enabled !== undefined ? func.function_enabled : true,
+        func.is_premium || false
+      );
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Exception saving bulk broker functions:", error);
+    return false;
   }
 };

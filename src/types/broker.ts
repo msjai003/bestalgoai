@@ -74,3 +74,18 @@ export interface BrokerFunctionConfig {
   created_at?: string;
   updated_at?: string;
 }
+
+// Interface representing the broker_infocap table structure
+export interface BrokerInfocapFunction {
+  id: string;
+  broker_id: number;
+  broker_name: string;
+  function_name: string;
+  function_description?: string;
+  function_slug: string;
+  function_order: number;
+  function_enabled: boolean;
+  is_premium: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

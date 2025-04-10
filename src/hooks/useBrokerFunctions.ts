@@ -26,6 +26,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         }
         
         try {
+          // Use our updated function that now fetches from broker_infocap
           const brokerFunctions = await getFunctionsForBroker(brokerId);
           setFunctions(brokerFunctions);
           
@@ -57,70 +58,117 @@ export const useBrokerFunctions = (brokerId?: number) => {
   
   // Helper function to set functions from static data as fallback
   const setFunctionsFromStaticData = () => {
-    // Static broker functions for fallback
-    const staticBrokerFunctions: BrokerFunction[] = [
-      // Zerodha functions
-      {
-        id: "1-order_placement",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      {
-        id: "1-order_modification",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Order Modification",
-        function_description: "Modify existing orders",
-        function_slug: "order_modification",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      {
-        id: "1-market_data",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Market Data",
-        function_description: "Access real-time market data",
-        function_slug: "market_data",
-        function_enabled: true,
-        is_premium: true,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      // ICICI Direct functions
-      {
-        id: "2-order_placement",
-        broker_id: 2,
-        broker_name: "ICICI Direct",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
-      },
-      // More static data...
-    ];
+    // Static broker functions for fallback - now we'll directly query the broker_infocap table
+    const fetchStaticFunctionsFromTable = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('broker_infocap')
+          .select('*')
+          .order('function_order', { ascending: true });
+        
+        if (error || !data) {
+          console.error("Error fetching from broker_infocap:", error);
+          useDefaultStaticData();
+          return;
+        }
+        
+        const mappedFunctions: BrokerFunction[] = data.map((item: any) => ({
+          id: item.id.toString(),
+          broker_id: item.broker_id,
+          broker_name: item.broker_name,
+          function_name: item.function_name,
+          function_description: item.function_description,
+          function_slug: item.function_slug,
+          function_enabled: item.function_enabled,
+          is_premium: item.is_premium,
+          broker_image: null // We'll fetch this elsewhere if needed
+        }));
+        
+        const filteredFunctions = brokerId
+          ? mappedFunctions.filter(func => func.broker_id === brokerId)
+          : mappedFunctions;
+        
+        setFunctions(filteredFunctions);
+        
+        // Extract broker name
+        if (brokerId) {
+          const broker = brokers.find(b => b.id === brokerId);
+          setBrokerName(broker?.name || null);
+        } else if (filteredFunctions.length > 0) {
+          setBrokerName(filteredFunctions[0].broker_name);
+        }
+      } catch (err) {
+        console.error("Error fetching static data from table:", err);
+        useDefaultStaticData();
+      }
+    };
     
-    const filteredFunctions = brokerId
-      ? staticBrokerFunctions.filter(func => func.broker_id === brokerId)
-      : staticBrokerFunctions;
+    const useDefaultStaticData = () => {
+      // These were the original static functions used as fallback
+      const staticBrokerFunctions: BrokerFunction[] = [
+        {
+          id: "1-order_placement",
+          broker_id: 1,
+          broker_name: "Zerodha",
+          function_name: "Order Placement",
+          function_description: "Place new orders with the broker",
+          function_slug: "order_placement",
+          function_enabled: true,
+          is_premium: false,
+          broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+        },
+        {
+          id: "1-order_modification",
+          broker_id: 1,
+          broker_name: "Zerodha",
+          function_name: "Order Modification",
+          function_description: "Modify existing orders",
+          function_slug: "order_modification",
+          function_enabled: true,
+          is_premium: false,
+          broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+        },
+        {
+          id: "1-market_data",
+          broker_id: 1,
+          broker_name: "Zerodha",
+          function_name: "Market Data",
+          function_description: "Access real-time market data",
+          function_slug: "market_data",
+          function_enabled: true,
+          is_premium: true,
+          broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+        },
+        {
+          id: "2-order_placement",
+          broker_id: 2,
+          broker_name: "ICICI Direct",
+          function_name: "Order Placement",
+          function_description: "Place new orders with the broker",
+          function_slug: "order_placement",
+          function_enabled: true,
+          is_premium: false,
+          broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
+        }
+      ];
+      
+      const filteredFunctions = brokerId
+        ? staticBrokerFunctions.filter(func => func.broker_id === brokerId)
+        : staticBrokerFunctions;
+      
+      setFunctions(filteredFunctions);
+      
+      // Extract broker name
+      if (brokerId) {
+        const broker = brokers.find(b => b.id === brokerId);
+        setBrokerName(broker?.name || null);
+      } else if (filteredFunctions.length > 0) {
+        setBrokerName(filteredFunctions[0].broker_name);
+      }
+    };
     
-    setFunctions(filteredFunctions);
-    
-    // Extract broker name
-    if (brokerId) {
-      const broker = brokers.find(b => b.id === brokerId);
-      setBrokerName(broker?.name || null);
-    } else if (filteredFunctions.length > 0) {
-      setBrokerName(filteredFunctions[0].broker_name);
-    }
+    // Try to fetch from table first, fall back to hardcoded data if that fails
+    fetchStaticFunctionsFromTable();
   };
 
   useEffect(() => {
