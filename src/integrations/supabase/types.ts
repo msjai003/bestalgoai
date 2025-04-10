@@ -342,6 +342,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers_admin: {
+        Row: {
+          broker_name: string
+          created_at: string
+          description: string | null
+          display_order: number
+          fees: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean
+          required_inputs: Json
+          supported_assets: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          broker_name: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          fees?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean
+          required_inputs?: Json
+          supported_assets?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          broker_name?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          fees?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean
+          required_inputs?: Json
+          supported_assets?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           broker_username: string | null

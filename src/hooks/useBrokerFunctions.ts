@@ -15,15 +15,33 @@ export const useBrokerFunctions = (brokerId?: number) => {
     setIsLoading(true);
     setError(null);
     
-    // Since the brokers_sections table was removed, we'll use the static data
-    // from BrokerData.ts instead
+    // Try to fetch from the brokers_admin table first, then fall back to static data
     const fetchData = async () => {
       try {
         // Create default function patterns that most brokers will have
         const defaultFunctions: BrokerFunction[] = [];
         
-        // Find the broker if brokerId is provided
-        const broker = brokerId ? brokers.find(b => b.id === brokerId) : null;
+        // First try to get broker info from brokers_admin table
+        let broker = null;
+        
+        if (brokerId) {
+          const { data: adminData, error: adminError } = await supabase
+            .from('brokers_admin')
+            .select('*')
+            .eq('id', brokerId)
+            .maybeSingle();
+            
+          if (!adminError && adminData) {
+            broker = {
+              id: adminData.id,
+              name: adminData.broker_name,
+              logo: adminData.image_url || "/placeholder.svg"
+            };
+          } else {
+            // Fall back to static data
+            broker = brokers.find(b => b.id === brokerId);
+          }
+        }
         
         if (broker) {
           setBrokerName(broker.name);
@@ -86,9 +104,23 @@ export const useBrokerFunctions = (brokerId?: number) => {
               broker_image: broker.logo
             }
           );
-        } else {
-          // If no broker ID specified, add functions for all brokers
-          brokers.forEach(b => {
+        } else if (!brokerId) {
+          // If no broker ID specified, add functions for all brokers from either admin table or static data
+          
+          // First try to get all brokers from admin table
+          const { data: allBrokers, error: brokersError } = await supabase
+            .from('brokers_admin')
+            .select('*');
+            
+          const brokersList = !brokersError && allBrokers && allBrokers.length > 0 
+            ? allBrokers.map(b => ({ 
+                id: b.id, 
+                name: b.broker_name, 
+                logo: b.image_url || "/placeholder.svg" 
+              }))
+            : brokers; // Fall back to static data
+            
+          brokersList.forEach(b => {
             defaultFunctions.push({
               id: `${b.id}-order_placement`,
               broker_id: b.id,

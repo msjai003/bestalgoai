@@ -1,7 +1,7 @@
 
-import { BrokerFunction } from '@/hooks/strategy/types';
+import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 /**
  * Fetches all functions for a specific broker
@@ -9,8 +9,22 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Find the broker in the static data
-    const broker = brokers.find(b => b.id === brokerId);
+    // First check if the broker exists in brokers_admin table
+    const { data: adminBroker, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('*')
+      .eq('id', brokerId)
+      .maybeSingle();
+      
+    // Find the broker either from admin table or static data
+    const broker = !adminError && adminBroker 
+      ? { 
+          id: adminBroker.id, 
+          name: adminBroker.broker_name, 
+          logo: adminBroker.image_url || "/placeholder.svg" 
+        }
+      : brokers.find(b => b.id === brokerId);
+    
     if (!broker) return [];
     
     // Create standard functions for this broker
@@ -91,7 +105,18 @@ export const hasBrokerFunction = async (
     }
     
     // For other functions, check based on broker-specific logic
-    const broker = brokers.find(b => b.id === brokerId);
+    // First check if the broker exists in brokers_admin table
+    const { data: adminBroker, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('*')
+      .eq('id', brokerId)
+      .maybeSingle();
+      
+    // Find the broker either from admin table or static data
+    const broker = !adminError && adminBroker 
+      ? { id: adminBroker.id, name: adminBroker.broker_name }
+      : brokers.find(b => b.id === brokerId);
+      
     if (!broker) return false;
     
     // Add broker-specific logic here if needed
@@ -128,7 +153,18 @@ export const getBrokerImage = async (
   brokerId: number
 ): Promise<string | null> => {
   try {
-    // Try to fetch from database using the broker_details table directly
+    // First check if the broker exists in brokers_admin table
+    const { data: adminBroker, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('image_url')
+      .eq('id', brokerId)
+      .maybeSingle();
+      
+    if (!adminError && adminBroker && adminBroker.image_url) {
+      return adminBroker.image_url;
+    }
+    
+    // Try to fetch from database using the broker_details table as fallback
     const { data, error } = await supabase
       .from('broker_details')
       .select('image_url')
@@ -186,7 +222,34 @@ export const getBrokerFunctionRequiredInputs = async (
   functionSlug: string
 ): Promise<string[]> => {
   try {
-    // Find the broker
+    // First check if the broker exists in brokers_admin table
+    const { data: adminBroker, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('required_inputs')
+      .eq('id', brokerId)
+      .maybeSingle();
+    
+    if (!adminError && adminBroker && adminBroker.required_inputs) {
+      // Parse required inputs from admin table
+      let requiredInputs: string[] = [];
+      if (Array.isArray(adminBroker.required_inputs)) {
+        requiredInputs = adminBroker.required_inputs;
+      } else if (typeof adminBroker.required_inputs === 'string') {
+        try {
+          requiredInputs = JSON.parse(adminBroker.required_inputs);
+        } catch (e) {
+          console.error("Error parsing required_inputs JSON:", e);
+        }
+      } else if (typeof adminBroker.required_inputs === 'object') {
+        requiredInputs = Object.keys(adminBroker.required_inputs);
+      }
+      
+      if (requiredInputs.length > 0) {
+        return requiredInputs;
+      }
+    }
+    
+    // Find the broker from static data as fallback
     const broker = brokers.find(b => b.id === brokerId);
     if (!broker) return [];
     
