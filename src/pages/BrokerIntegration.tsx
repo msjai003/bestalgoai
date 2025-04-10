@@ -1,148 +1,41 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, RefreshCw } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { BrokerList } from "@/components/broker-integration/BrokerList";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { toast } from "sonner";
 import { fetchBrokerDetails } from "@/services/brokerService";
 import { Broker } from "@/types/broker";
-import { supabase } from "@/integrations/supabase/client";
-import { syncBrokerFunctionsFromDetails } from "@/lib/broker-functions";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
   const [brokers, setBrokers] = useState<Broker[]>(staticBrokers);
   const [loading, setLoading] = useState(true);
-  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
-
-  // Function to load brokers with improved error handling and force refresh
-  const loadBrokers = useCallback(async (forceRefresh = true) => {
-    setLoading(true);
-    try {
-      // Generate timestamp for cache busting
-      const timestamp = new Date().getTime();
-      console.log(`🔄 Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data at ${new Date().toISOString()}... (cache: ${timestamp})`);
-      
-      // Get fresh broker data with the timestamp for cache busting
-      const brokerData = await fetchBrokerDetails(timestamp);
-      console.log(`✅ Loaded ${brokerData.length} brokers:`, brokerData);
-      
-      // Only update state if we have data
-      if (brokerData && brokerData.length > 0) {
-        setBrokers(brokerData);
-        setLastRefreshed(new Date());
-        
-        // Show toast on force refresh
-        if (forceRefresh) {
-          toast.success(`Broker list refreshed - ${brokerData.length} brokers loaded`);
-        }
-      } else {
-        console.warn("No broker data returned from fetch");
-        toast.error("No broker data available");
-      }
-
-      // Sync broker functions data
-      await syncBrokerFunctionsFromDetails();
-    } catch (error) {
-      console.error("Error loading brokers:", error);
-      toast.error("Failed to load broker list");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    // Load brokers immediately when the component mounts
-    loadBrokers(false); // Don't show toast on initial load
-    
-    // Set up an interval to refresh data more frequently (every 2 seconds)
-    const refreshInterval = setInterval(() => {
-      loadBrokers(false); // Silent refresh
-    }, 2000);
-    
-    // Set up improved real-time subscription for broker details changes
-    const brokerDetailsChannel = supabase
-      .channel('broker_details_realtime')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'broker_details' }, 
-        (payload) => {
-          console.log('⚡ Broker details changed in database:', payload);
-          
-          // Extract broker name for better notification
-          const brokerName = payload.new ? 
-            (payload.new as any).broker_name || 'Unknown' : 
-            (payload.old ? (payload.old as any).broker_name || 'Unknown' : 'Unknown');
-            
-          const changeType = payload.eventType === 'UPDATE' ? 'updated' : 
-                            payload.eventType === 'INSERT' ? 'added' : 
-                            payload.eventType === 'DELETE' ? 'removed' : 'modified';
-          
-          // Force immediate reload of brokers with a short delay to ensure DB consistency
-          setTimeout(() => {
-            loadBrokers(true);
-            toast.info(`Broker "${brokerName}" ${changeType} (${new Date().toLocaleTimeString()})`);
-          }, 300);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Broker details channel status:', status);
-      });
-    
-    // Add subscription for brokers_admin table changes with improved notification
-    const brokersAdminChannel = supabase
-      .channel('brokers_admin_realtime')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'brokers_admin' }, 
-        (payload) => {
-          console.log('⚡ Broker admin data changed in database:', payload);
-          
-          // Extract broker name for better notification
-          const oldName = payload.old ? (payload.old as any).broker_name || 'Unknown' : 'Unknown';
-          const newName = payload.new ? (payload.new as any).broker_name || 'Unknown' : 'Unknown';
-          const changeType = payload.eventType || 'MODIFIED';
-          
-          // Log specific name changes for debugging
-          if (payload.eventType === 'UPDATE' && oldName !== newName) {
-            console.log(`Broker name changed from "${oldName}" to "${newName}"`);
-          }
-          
-          // Force immediate reload of brokers with a short delay to ensure DB consistency
-          setTimeout(() => {
-            loadBrokers(true);
-            
-            // Show more descriptive toast depending on the change type
-            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
-              toast.info(`Broker name changed from "${oldName}" to "${newName}" (${new Date().toLocaleTimeString()})`);
-            } else {
-              toast.info(`Broker "${newName}" ${changeType.toLowerCase()} (${new Date().toLocaleTimeString()})`);
-            }
-          }, 300);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Broker admin channel status:', status);
-      });
-    
-    // Clean up the interval and subscription on component unmount
-    return () => {
-      clearInterval(refreshInterval);
-      supabase.removeChannel(brokerDetailsChannel);
-      supabase.removeChannel(brokersAdminChannel);
+    const loadBrokers = async () => {
+      setLoading(true);
+      try {
+        const brokerData = await fetchBrokerDetails();
+        setBrokers(brokerData);
+      } catch (error) {
+        console.error("Error loading brokers:", error);
+        toast.error("Failed to load broker list");
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [loadBrokers]);
+
+    loadBrokers();
+  }, []);
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
     // Navigate to the credentials page with the selected broker ID
     navigate("/broker-credentials", { state: { brokerId } });
-  };
-
-  // Function to manually refresh broker list
-  const handleRefresh = () => {
-    loadBrokers(true); // Force refresh with toast
   };
 
   return (
@@ -157,40 +50,15 @@ const BrokerIntegration = () => {
             <ChevronLeft className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
           <h1 className="text-lg font-semibold">Select Your Broker</h1>
-          <Button 
-            variant="ghost"
-            className="p-2 relative group"
-            onClick={handleRefresh}
-          >
-            <RefreshCw 
-              className={`w-5 h-5 text-charcoalTextSecondary ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} 
-            />
-          </Button>
+          <div className="w-10"></div> {/* Spacer for balance */}
         </div>
       </header>
 
       <main className="pt-20 px-4 pb-24">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-charcoalTextSecondary">
-            Last updated: {lastRefreshed.toLocaleTimeString()}
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-        
         <BrokerList 
           brokers={brokers} 
           onSelectBroker={handleSelectBroker}
           loading={loading}
-          onRefresh={handleRefresh}
         />
       </main>
 

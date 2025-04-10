@@ -12,9 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Broker } from "@/types/broker";
 import { fetchBrokerById } from "@/services/brokerService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
@@ -23,121 +20,34 @@ const BrokerCredentials = () => {
   
   const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
   const [fetchingBroker, setFetchingBroker] = useState(true);
-  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  const loadBroker = async (forceRefresh = false) => {
-    if (!brokerId) {
-      navigate("/broker-integration");
-      return;
-    }
-
-    setFetchingBroker(true);
-    
-    // Generate a timestamp for cache busting
-    const timestamp = forceRefresh ? new Date().getTime() : undefined;
-    
-    try {
-      console.log(`Loading broker ${brokerId} details${forceRefresh ? ' (force refresh)' : ''}...`);
-      const broker = await fetchBrokerById(brokerId);
-      if (!broker) {
-        toast.error("Broker not found");
+  useEffect(() => {
+    const loadBroker = async () => {
+      if (!brokerId) {
         navigate("/broker-integration");
         return;
       }
-      setSelectedBroker(broker);
-      setLastRefreshed(new Date());
-      
-      if (forceRefresh) {
-        toast.success("Broker details refreshed successfully");
+
+      setFetchingBroker(true);
+      try {
+        const broker = await fetchBrokerById(brokerId);
+        if (!broker) {
+          toast.error("Broker not found");
+          navigate("/broker-integration");
+          return;
+        }
+        setSelectedBroker(broker);
+      } catch (error) {
+        console.error("Error fetching broker:", error);
+        toast.error("Failed to load broker details");
+        navigate("/broker-integration");
+      } finally {
+        setFetchingBroker(false);
       }
-    } catch (error) {
-      console.error("Error fetching broker:", error);
-      toast.error("Failed to load broker details");
-      navigate("/broker-integration");
-    } finally {
-      setFetchingBroker(false);
-    }
-  };
-
-  useEffect(() => {
-    // Initial load
-    loadBroker(false);
-    
-    // Set up improved real-time subscription for broker details changes
-    const brokerDetailsChannel = supabase
-      .channel('broker_details_credential_page')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'broker_details', filter: `id=eq.${brokerId}` }, 
-        (payload) => {
-          console.log('📢 Broker details changed for current broker:', payload);
-          
-          // Check for name changes specifically
-          const oldName = payload.old?.broker_name;
-          const newName = payload.new?.broker_name;
-          
-          // Short delay to ensure database consistency
-          setTimeout(() => {
-            loadBroker(true);
-            
-            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
-              toast.info(`Broker name changed from "${oldName}" to "${newName}"`);
-            } else {
-              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-              toast.info(`Broker "${brokerName}" information updated`);
-            }
-          }, 500);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Broker details channel subscription status:', status);
-      });
-    
-    // Add improved subscription for brokers_admin table changes for this specific broker
-    const brokersAdminChannel = supabase
-      .channel('brokers_admin_credential_page')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'brokers_admin', filter: `id=eq.${brokerId}` }, 
-        (payload) => {
-          console.log('📢 Broker admin data changed for current broker:', payload);
-          
-          // Check for name changes specifically
-          const oldName = payload.old?.broker_name;
-          const newName = payload.new?.broker_name;
-          
-          // Short delay to ensure database consistency
-          setTimeout(() => {
-            loadBroker(true);
-            
-            if (payload.eventType === 'UPDATE' && oldName !== newName && payload.new) {
-              toast.info(`Broker name changed from "${oldName}" to "${newName}"`);
-            } else {
-              const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
-              toast.info(`Broker "${brokerName}" administration data updated`);
-            }
-          }, 500);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Broker admin channel subscription status:', status);
-      });
-    
-    // Set up a more frequent refresh interval (every 5 seconds)
-    const refreshInterval = setInterval(() => {
-      loadBroker(false);
-    }, 5000); // Refresh every 5 seconds
-    
-    // Clean up on unmount
-    return () => {
-      clearInterval(refreshInterval);
-      supabase.removeChannel(brokerDetailsChannel);
-      supabase.removeChannel(brokersAdminChannel);
     };
-  }, [brokerId, navigate]);
 
-  const handleRefresh = () => {
-    loadBroker(true);
-    toast.success("Broker details refreshed");
-  };
+    loadBroker();
+  }, [brokerId, navigate]);
 
   const showApiFields = selectedBroker?.apiRequired || false;
 
@@ -199,24 +109,6 @@ const BrokerCredentials = () => {
       case "credentials":
         return (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{selectedBroker.name}</h2>
-              <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center">
-                <div className="text-xs text-gray-400">
-                  Last updated: {lastRefreshed.toLocaleTimeString()}
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefresh}
-                  className="flex gap-2 items-center"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Refresh
-                </Button>
-              </div>
-            </div>
-            
             <CredentialsForm
               selectedBroker={selectedBroker}
               credentials={credentials}

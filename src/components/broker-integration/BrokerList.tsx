@@ -1,26 +1,18 @@
 
-import { Search, ChevronRight, Check, AlertCircle, RefreshCw } from "lucide-react";
-import { useState, memo, useEffect } from "react";
+import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { Broker } from "@/types/broker";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
-import { Button } from "@/components/ui/button";
 
 interface BrokerListProps {
   brokers: Broker[];
   onSelectBroker: (brokerId: number) => void;
   loading?: boolean;
-  onRefresh?: () => void;
 }
 
-export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRefresh }: BrokerListProps) => {
+export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [latestRender, setLatestRender] = useState(new Date());
-
-  // Force re-render when brokers array changes (especially name changes)
-  useEffect(() => {
-    setLatestRender(new Date());
-  }, [brokers]);
 
   const filteredBrokers = brokers.filter((broker) =>
     broker.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -37,9 +29,6 @@ export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRe
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="w-full h-24 rounded-xl" />
           ))}
-        </div>
-        <div className="flex justify-center mt-6">
-          <RefreshCw className="animate-spin h-8 w-8 text-gray-400" />
         </div>
       </section>
     );
@@ -63,48 +52,22 @@ export const BrokerList = memo(({ brokers, onSelectBroker, loading = false, onRe
         {filteredBrokers.length > 0 ? (
           filteredBrokers.map((broker) => (
             <BrokerCard 
-              key={`${broker.id}-${broker.name}-${latestRender.getTime()}`} // Add broker name and timestamp to the key to force re-render on name change
+              key={`${broker.id}-card`} 
               broker={broker} 
               onSelect={onSelectBroker} 
             />
           ))
         ) : (
-          <div className="text-center py-8 flex flex-col items-center">
-            <p className="text-gray-400 mb-4">No brokers found matching "{searchQuery}"</p>
-            {onRefresh && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onRefresh} 
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh Broker List
-              </Button>
-            )}
+          <div className="text-center py-8">
+            <p className="text-gray-400">No brokers found matching "{searchQuery}"</p>
           </div>
         )}
       </div>
-      
-      {filteredBrokers.length > 0 && onRefresh && (
-        <div className="flex justify-center mt-6">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onRefresh} 
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh Broker List
-          </Button>
-        </div>
-      )}
     </section>
   );
-});
+};
 
-// Memoize the BrokerCard to prevent unnecessary re-renders
-const BrokerCard = memo(({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
+const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   // Get broker image from broker.logo
   const brokerImage = broker.logo;
   
@@ -155,6 +118,6 @@ const BrokerCard = memo(({ broker, onSelect }: { broker: Broker, onSelect: (id: 
       <ChevronRight className="ml-auto w-5 h-5 text-gray-500" />
     </div>
   );
-});
+};
 
 export default BrokerList;

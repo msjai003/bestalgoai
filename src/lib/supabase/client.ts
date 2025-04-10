@@ -16,63 +16,22 @@ export const supabase = {
     select: (query = '*') => ({
       eq: (column, value) => ({
         maybeSingle: () => ({ data: null, error: null }),
-        single: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
-          limit: (limit, options) => ({
-            data: [],
-            error: null
-          }),
-          headers: () => ({
+          limit: (limit) => ({
             data: [],
             error: null
           }),
           data: [],
           error: null
         }),
-        limit: (limit, options) => ({
-          data: [],
-          error: null
-        }),
-        eq: (column, value) => ({
-          data: [],
-          error: null
-        }),
-        headers: () => ({
-          data: [],
-          error: null
-        }),
-        data: [],
-        error: null
-      }),
-      gte: (column, value) => ({
         data: [],
         error: null
       }),
       order: (column, { ascending } = { ascending: false }) => ({
-        limit: (limit, options) => ({
+        limit: (limit) => ({
           data: [],
           error: null
         }),
-        eq: (column, value) => ({
-          data: [],
-          error: null
-        }),
-        headers: () => ({
-          data: [],
-          error: null
-        }),
-        data: [],
-        error: null
-      }),
-      limit: (limit, options) => ({
-        data: [],
-        error: null,
-        select: (subQuery) => ({
-          data: [],
-          error: null 
-        })
-      }),
-      headers: () => ({
         data: [],
         error: null
       }),
@@ -80,24 +39,9 @@ export const supabase = {
       data: [],
       error: null
     }),
-    insert: (data) => ({ 
-      select: (columns) => ({ data: [{ id: 'mock-id', ...data }], error: null }),
-      single: () => ({ data: { id: 'mock-id', ...data }, error: null }),
-      data: [{ id: 'mock-id', ...data }], 
-      error: null 
-    }),
-    update: (data) => ({ 
-      eq: (column, value) => ({ data, error: null }),
-      single: () => ({ data, error: null }),
-      data, 
-      error: null 
-    }),
-    delete: () => ({ 
-      eq: (column, value) => ({ data: null, error: null }),
-      gte: (column, value) => ({ data: null, error: null }),
-      data: null, 
-      error: null 
-    }),
+    insert: (data) => ({ data: [], error: null }),
+    update: (data) => ({ data: [], error: null }),
+    delete: () => ({ data: [], error: null }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
@@ -114,33 +58,6 @@ export const supabase = {
       error: null
     };
   },
-  channel: (channel) => ({
-    on: (event, options, callback) => ({
-      subscribe: (callbackFn) => {
-        // Immediately execute the callback to simulate subscription
-        if (callbackFn) callbackFn('SUBSCRIBED');
-        // Also immediately trigger a fake data event for testing
-        if (callback && typeof callback === 'function') {
-          setTimeout(() => {
-            callback({
-              new: { broker_name: 'Updated Broker Name', id: 1 },
-              old: { broker_name: 'Old Broker Name', id: 1 },
-              eventType: 'UPDATE'
-            });
-          }, 1000);
-        }
-        return {};
-      }
-    }),
-    track: (state) => Promise.resolve({ state }),
-    unsubscribe: () => {},
-    untrack: () => Promise.resolve(),
-    presenceState: () => ({}),
-    status: () => 'SUBSCRIBED',
-  }),
-  removeChannel: (channel) => {},
-  getChannels: () => [],
-  getSubscriptions: () => ({}),
 };
 
 // Get the current site URL for redirects
