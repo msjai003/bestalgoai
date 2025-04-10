@@ -1,4 +1,3 @@
-
 import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/lib/supabase/client';
@@ -332,7 +331,7 @@ const createAndStoreDefaultFunctions = async (broker: { id: number; name: string
         } else {
           // Insert new function
           await supabase
-            .from('broker_functionality')
+            .from('brokers_functionality')
             .insert(func);
         }
       } catch (fallbackError) {
