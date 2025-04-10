@@ -46,20 +46,19 @@ export const hasBrokerFunction = async (
 ): Promise<boolean> => {
   try {
     // Check if function exists in database
-    const { data, error } = await supabase
+    const response = await supabase
       .from('brokers_functions')
       .select('function_enabled')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
+      .eq('function_slug', functionSlug);
       
-    if (error) {
-      console.error("Error checking broker function:", error);
+    if (response.error) {
+      console.error("Error checking broker function:", response.error);
       return false;
     }
     
-    if (data) {
-      return data.function_enabled;
+    if (response.data && response.data.length > 0) {
+      return response.data[0].function_enabled;
     }
     
     // Default functions that all brokers are assumed to have
@@ -82,20 +81,19 @@ export const isBrokerFunctionPremium = async (
 ): Promise<boolean> => {
   try {
     // Check if function exists in database
-    const { data, error } = await supabase
+    const response = await supabase
       .from('brokers_functions')
       .select('is_premium')
       .eq('broker_id', brokerId)
-      .eq('function_slug', functionSlug)
-      .maybeSingle();
+      .eq('function_slug', functionSlug);
       
-    if (error) {
-      console.error("Error checking if broker function is premium:", error);
+    if (response.error) {
+      console.error("Error checking if broker function is premium:", response.error);
       return false;
     }
     
-    if (data) {
-      return data.is_premium;
+    if (response.data && response.data.length > 0) {
+      return response.data[0].is_premium;
     }
     
     // Premium functions
@@ -117,31 +115,29 @@ export const getBrokerImage = async (
 ): Promise<string | null> => {
   try {
     // First check if the broker exists in brokers_admin table
-    const { data: adminBroker, error: adminError } = await supabase
+    const adminResponse = await supabase
       .from('brokers_admin')
       .select('image_url')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
       
-    if (!adminError && adminBroker && adminBroker.image_url) {
-      return adminBroker.image_url;
+    if (!adminResponse.error && adminResponse.data && adminResponse.data.length > 0 && adminResponse.data[0].image_url) {
+      return adminResponse.data[0].image_url;
     }
     
     // Get from broker_details table as fallback
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_details')
       .select('image_url')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
     
-    if (error || !data) {
-      console.error("Error fetching broker image:", error);
+    if (response.error || !response.data || response.data.length === 0) {
+      console.error("Error fetching broker image:", response.error);
       // Fall back to static broker data
       const broker = brokers.find(b => b.id === brokerId);
       return broker?.logo || null;
     }
     
-    return data.image_url;
+    return response.data[0].image_url;
   } catch (error) {
     console.error("Error fetching broker image:", error);
     // Fall back to static broker data
@@ -156,13 +152,13 @@ export const getBrokerImage = async (
 const getBrokerInfo = async (brokerId: number) => {
   try {
     // First check if the broker exists in brokers_admin table
-    const { data: adminBroker, error: adminError } = await supabase
+    const adminResponse = await supabase
       .from('brokers_admin')
       .select('*')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
       
-    if (!adminError && adminBroker) {
+    if (!adminResponse.error && adminResponse.data && adminResponse.data.length > 0) {
+      const adminBroker = adminResponse.data[0];
       return {
         id: adminBroker.id,
         name: adminBroker.broker_name,
@@ -171,17 +167,17 @@ const getBrokerInfo = async (brokerId: number) => {
     }
     
     // Check broker_details table
-    const { data, error } = await supabase
+    const response = await supabase
       .from('broker_details')
       .select('*')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
     
-    if (error || !data) {
+    if (response.error || !response.data || response.data.length === 0) {
       // Fall back to static broker data
       return brokers.find(b => b.id === brokerId);
     }
     
+    const data = response.data[0];
     return {
       id: data.id,
       name: data.broker_name,
@@ -265,7 +261,18 @@ export const getBrokerFunctionConfig = async (
   functionSlug: string
 ): Promise<any | null> => {
   try {
-    // Since the database table is removed, we're returning hardcoded configs
+    // Try to get config from the new brokers_function_configs table
+    const response = await supabase
+      .from('brokers_function_configs')
+      .select('config_data')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug);
+    
+    if (!response.error && response.data && response.data.length > 0) {
+      return response.data[0].config_data;
+    }
+    
+    // Return hardcoded default configs as fallback
     const defaultConfigs: Record<string, any> = {
       order_placement: {
         requires_2fa: false,
@@ -293,15 +300,15 @@ export const getBrokerFunctionRequiredInputs = async (
 ): Promise<string[]> => {
   try {
     // First check if broker exists in brokers_admin table
-    const { data: adminBroker, error: adminError } = await supabase
+    const adminResponse = await supabase
       .from('brokers_admin')
       .select('required_inputs')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
     
-    if (!adminError && adminBroker && adminBroker.required_inputs) {
+    if (!adminResponse.error && adminResponse.data && adminResponse.data.length > 0 && adminResponse.data[0].required_inputs) {
       // Parse required inputs from admin table
       let requiredInputs: string[] = [];
+      const adminBroker = adminResponse.data[0];
       if (Array.isArray(adminBroker.required_inputs)) {
         requiredInputs = adminBroker.required_inputs;
       } else if (typeof adminBroker.required_inputs === 'string') {
@@ -320,15 +327,15 @@ export const getBrokerFunctionRequiredInputs = async (
     }
     
     // Check broker_details table
-    const { data: brokerDetails, error: brokerError } = await supabase
+    const response = await supabase
       .from('broker_details')
       .select('required_inputs')
-      .eq('id', brokerId)
-      .maybeSingle();
+      .eq('id', brokerId);
       
-    if (!brokerError && brokerDetails && brokerDetails.required_inputs) {
+    if (!response.error && response.data && response.data.length > 0 && response.data[0].required_inputs) {
       // Parse required inputs from broker_details
       let requiredInputs: string[] = [];
+      const brokerDetails = response.data[0];
       if (Array.isArray(brokerDetails.required_inputs)) {
         requiredInputs = brokerDetails.required_inputs;
       } else if (typeof brokerDetails.required_inputs === 'string') {
@@ -374,13 +381,23 @@ export const syncBrokerFunctionsFromDetails = async (): Promise<boolean> => {
       .from('broker_details')
       .select('*');
       
-    if (brokerError || !brokerDetails) {
+    if (brokerError || !brokerDetails || brokerDetails.length === 0) {
       console.error("Error fetching broker details:", brokerError);
       return false;
     }
     
+    // Also try to get brokers from brokers_admin table
+    const { data: adminBrokers, error: adminError } = await supabase
+      .from('brokers_admin')
+      .select('*');
+    
+    const allBrokers = [
+      ...(brokerDetails || []),
+      ...(!adminError && adminBrokers ? adminBrokers : [])
+    ];
+    
     // Update broker functions for each broker
-    for (const broker of brokerDetails) {
+    for (const broker of allBrokers) {
       // First check if functions exist for this broker
       const { data: existingFunctions, error: funcError } = await supabase
         .from('brokers_functions')
@@ -399,7 +416,8 @@ export const syncBrokerFunctionsFromDetails = async (): Promise<boolean> => {
           .from('brokers_functions')
           .update({
             broker_name: broker.broker_name,
-            broker_image: broker.image_url
+            broker_image: broker.image_url,
+            updated_at: new Date().toISOString()
           })
           .eq('broker_id', broker.id);
           
@@ -428,6 +446,76 @@ export const syncBrokerFunctionsFromDetails = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Error synchronizing broker functions:", error);
+    return false;
+  }
+};
+
+// Add a function to sync brokers from broker_details to brokers_admin
+export const syncBrokersToAdmin = async (): Promise<boolean> => {
+  try {
+    // Get all brokers from broker_details
+    const { data: brokerDetails, error: brokerError } = await supabase
+      .from('broker_details')
+      .select('*');
+      
+    if (brokerError || !brokerDetails || brokerDetails.length === 0) {
+      console.error("Error fetching broker details:", brokerError);
+      return false;
+    }
+    
+    // For each broker in broker_details, add or update in brokers_admin
+    for (const broker of brokerDetails) {
+      // Check if broker already exists in brokers_admin
+      const { data: existingBroker, error: existingError } = await supabase
+        .from('brokers_admin')
+        .select('id')
+        .eq('id', broker.id);
+        
+      if (existingError) {
+        console.error(`Error checking if broker ${broker.id} exists in admin:`, existingError);
+        continue;
+      }
+      
+      if (existingBroker && existingBroker.length > 0) {
+        // Update existing broker
+        const { error: updateError } = await supabase
+          .from('brokers_admin')
+          .update({
+            broker_name: broker.broker_name,
+            description: broker.description,
+            image_url: broker.image_url,
+            is_active: broker.is_active,
+            required_inputs: broker.required_inputs,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', broker.id);
+          
+        if (updateError) {
+          console.error(`Error updating broker ${broker.id} in admin:`, updateError);
+        }
+      } else {
+        // Insert new broker
+        const { error: insertError } = await supabase
+          .from('brokers_admin')
+          .insert({
+            id: broker.id,
+            broker_name: broker.broker_name,
+            description: broker.description,
+            image_url: broker.image_url,
+            is_active: broker.is_active,
+            required_inputs: broker.required_inputs,
+            display_order: broker.id
+          });
+          
+        if (insertError) {
+          console.error(`Error inserting broker ${broker.id} into admin:`, insertError);
+        }
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error synchronizing brokers to admin:", error);
     return false;
   }
 };

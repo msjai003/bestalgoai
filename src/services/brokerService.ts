@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { uploadBrokerImage } from "@/utils/brokerImageUtils";
+import { syncBrokersToAdmin } from "@/lib/broker-functions";
 
 /**
  * Fetch all broker details from the database, with NO CACHING to ensure latest data
@@ -11,13 +12,11 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     console.log("Fetching broker details from database");
     
     // First try to fetch from brokers_admin table with a cache-busting timestamp
-    const timestamp = new Date().getTime();
     const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
       .select('*')
       .eq('is_active', true)
-      .order('display_order', { ascending: true })
-      .limit(100, { foreignTable: null });
+      .order('display_order', { ascending: true });
     
     if (!adminError && adminData && adminData.length > 0) {
       console.log(`Found ${adminData.length} broker details in brokers_admin table`);
@@ -70,6 +69,9 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       console.log("No broker details found in database, using static data");
       return staticBrokers;
     }
+    
+    // Sync broker data to admin table in the background
+    syncBrokersToAdmin().catch(err => console.error("Error syncing brokers to admin:", err));
     
     // Map database broker details to Broker type
     return data.map((item: any) => {
@@ -235,12 +237,12 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
         required_inputs: requiredInputs,
         supported_assets: broker.supportedAssets,
         fees: broker.fees
-      }) as any;
+      });
       
-    const { data, error } = await result.select('id').single();
+    const selectResult = await result.select('id');
     
-    if (error) {
-      console.error(`Error inserting broker to ${tableTarget}:`, error);
+    if (selectResult.error || !selectResult.data || selectResult.data.length === 0) {
+      console.error(`Error inserting broker to ${tableTarget}:`, selectResult.error);
       
       // Fallback to broker_details table
       tableTarget = 'broker_details';
@@ -251,19 +253,19 @@ export const saveBroker = async (broker: Partial<Broker>): Promise<number | null
           description: broker.description,
           image_url: broker.logo,
           required_inputs: requiredInputs
-        }) as any;
+        });
         
-      const fallbackResult = await fallbackResponse.select('id').single();
+      const fallbackSelect = await fallbackResponse.select('id');
         
-      if (fallbackResult.error) {
-        console.error(`Error inserting broker to ${tableTarget}:`, fallbackResult.error);
+      if (fallbackSelect.error || !fallbackSelect.data || fallbackSelect.data.length === 0) {
+        console.error(`Error inserting broker to ${tableTarget}:`, fallbackSelect.error);
         return null;
       }
       
-      return fallbackResult.data?.id || null;
+      return fallbackSelect.data[0]?.id || null;
     }
     
-    return data?.id || null;
+    return selectResult.data[0]?.id || null;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
@@ -290,7 +292,7 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
         required_inputs: requiredInputs,
         supported_assets: broker.supportedAssets,
         fees: broker.fees
-      }) as any;
+      });
       
     const { error } = await response.eq('id', brokerId);
     
@@ -306,7 +308,7 @@ export const updateBroker = async (brokerId: number, broker: Partial<Broker>): P
           description: broker.description,
           image_url: broker.logo,
           required_inputs: requiredInputs
-        }) as any;
+        });
         
       const fallbackResult = await fallbackResponse.eq('id', brokerId);
         
@@ -333,18 +335,18 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
     
     const response = await supabase
       .from(tableTarget)
-      .delete() as any;
+      .delete();
       
-    const { error } = await response.eq('id', brokerId);
+    const deleteResult = await response.eq('id', brokerId);
     
-    if (error) {
-      console.error(`Error deleting broker from ${tableTarget}:`, error);
+    if (deleteResult.error) {
+      console.error(`Error deleting broker from ${tableTarget}:`, deleteResult.error);
       
       // Fallback to broker_details table
       tableTarget = 'broker_details';
       const fallbackResponse = await supabase
         .from(tableTarget)
-        .delete() as any;
+        .delete();
         
       const fallbackResult = await fallbackResponse.eq('id', brokerId);
         
@@ -352,6 +354,26 @@ export const deleteBroker = async (brokerId: number): Promise<boolean> => {
         console.error(`Error deleting broker from ${tableTarget}:`, fallbackResult.error);
         return false;
       }
+    }
+    
+    // Also delete from brokers_functions table
+    const { error: funcError } = await supabase
+      .from('brokers_functions')
+      .delete()
+      .eq('broker_id', brokerId);
+      
+    if (funcError) {
+      console.error(`Error deleting broker functions for broker ${brokerId}:`, funcError);
+    }
+    
+    // Also delete from brokers_function_configs table
+    const { error: configError } = await supabase
+      .from('brokers_function_configs')
+      .delete()
+      .eq('broker_id', brokerId);
+      
+    if (configError) {
+      console.error(`Error deleting broker function configs for broker ${brokerId}:`, configError);
     }
     
     return true;
@@ -373,10 +395,10 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
       .from(tableTarget)
       .delete();
       
-    const { error } = await response.gte('id', 0);
+    const deleteResult = await response.gte('id', 0);
     
-    if (error) {
-      console.error(`Error deleting all brokers from ${tableTarget}:`, error);
+    if (deleteResult.error) {
+      console.error(`Error deleting all brokers from ${tableTarget}:`, deleteResult.error);
       
       // Fallback to broker_details table
       tableTarget = 'broker_details';
@@ -392,10 +414,35 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
       }
     }
     
+    // Also delete from brokers_functions and brokers_function_configs tables
+    await supabase.from('brokers_functions').delete().gte('broker_id', 0);
+    await supabase.from('brokers_function_configs').delete().gte('broker_id', 0);
+    
     console.log(`All broker details have been deleted successfully from ${tableTarget}`);
     return true;
   } catch (error) {
     console.error("Exception deleting all brokers:", error);
     return false;
+  }
+};
+
+/**
+ * Fetch all broker details from the database
+ */
+export const fetchBrokerDetailsOld = async (): Promise<BrokerDetail[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('broker_details')
+      .select('*');
+    
+    if (error) {
+      console.error("Error fetching broker details:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Exception fetching broker details:", error);
+    return [];
   }
 };

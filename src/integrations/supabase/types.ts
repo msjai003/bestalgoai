@@ -342,6 +342,117 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers_admin: {
+        Row: {
+          broker_name: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          fees: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean | null
+          required_inputs: Json | null
+          supported_assets: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_name: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          fees?: string | null
+          id: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json | null
+          supported_assets?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_name?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          fees?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json | null
+          supported_assets?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brokers_function_configs: {
+        Row: {
+          broker_id: number
+          config_data: Json
+          created_at: string | null
+          function_slug: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          config_data?: Json
+          created_at?: string | null
+          function_slug: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          config_data?: Json
+          created_at?: string | null
+          function_slug?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brokers_functions: {
+        Row: {
+          broker_id: number
+          broker_image: string | null
+          broker_name: string
+          created_at: string | null
+          function_description: string | null
+          function_enabled: boolean
+          function_name: string
+          function_slug: string
+          id: string
+          is_premium: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          broker_image?: string | null
+          broker_name: string
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean
+          function_name: string
+          function_slug: string
+          id: string
+          is_premium?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          broker_image?: string | null
+          broker_name?: string
+          created_at?: string | null
+          function_description?: string | null
+          function_enabled?: boolean
+          function_name?: string
+          function_slug?: string
+          id?: string
+          is_premium?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           broker_username: string | null
