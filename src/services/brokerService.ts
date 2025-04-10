@@ -2,7 +2,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail, BrokerFunction, BrokerInfocapFunction } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
-import { uploadBrokerImage } from "@/utils/brokerImageUtils";
 
 /**
  * Fetch all broker details from the database
@@ -18,13 +17,13 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       return staticBrokers;
     }
     
-    if (!data || (Array.isArray(data) && data.length === 0)) {
+    if (!data || !Array.isArray(data) || data.length === 0) {
       console.log("No broker details found in database, using static data");
       return staticBrokers;
     }
     
     // Map database broker details to Broker type
-    return (data as any[]).map((item) => {
+    return data.map((item) => {
       // Handle the required_inputs field which can be JSON or an array
       let requiredInputs: string[] = [];
       
@@ -74,13 +73,16 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       p_broker_id: brokerId
     });
     
-    if (error || !data || (Array.isArray(data) && data.length === 0)) {
+    if (error || !data || !Array.isArray(data) || data.length === 0) {
       console.error("Error fetching broker details:", error);
       // Try to find in static data
       return staticBrokers.find(b => b.id === brokerId) || null;
     }
     
-    const item = Array.isArray(data) ? data[0] : data;
+    const item = data[0];
+    if (!item) {
+      return staticBrokers.find(b => b.id === brokerId) || null;
+    }
     
     // Handle the required_inputs field which can be JSON or an array
     let requiredInputs: string[] = [];
@@ -122,83 +124,6 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
 };
 
 /**
- * Save a broker to the database
- */
-export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('broker_details')
-      .insert({
-        broker_name: broker.name,
-        description: broker.description,
-        image_url: broker.logo,
-        required_inputs: broker.requiredInputs || []
-      })
-      .select();
-    
-    if (error) {
-      console.error("Error saving broker:", error);
-      return null;
-    }
-    
-    const result = Array.isArray(data) ? data[0] : data;
-    return result?.id || null;
-  } catch (error) {
-    console.error("Exception saving broker:", error);
-    return null;
-  }
-};
-
-/**
- * Update an existing broker
- */
-export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('broker_details')
-      .update({
-        broker_name: broker.name,
-        description: broker.description,
-        image_url: broker.logo,
-        required_inputs: broker.requiredInputs || []
-      })
-      .eq('id', brokerId);
-    
-    if (error) {
-      console.error("Error updating broker:", error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Exception updating broker:", error);
-    return false;
-  }
-};
-
-/**
- * Delete a broker
- */
-export const deleteBroker = async (brokerId: number): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('broker_details')
-      .delete()
-      .eq('id', brokerId);
-    
-    if (error) {
-      console.error("Error deleting broker:", error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Exception deleting broker:", error);
-    return false;
-  }
-};
-
-/**
  * Save a broker function to the database
  */
 export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>): Promise<string | null> => {
@@ -220,7 +145,7 @@ export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>
       return null;
     }
     
-    return data as string;
+    return typeof data === 'string' ? data : String(data);
   } catch (error) {
     console.error("Exception saving broker function:", error);
     return null;
@@ -232,11 +157,15 @@ export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>
  */
 export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
   try {
-    // Use RPC function instead of direct table access
+    // Use RPC function for consistency
     const { data, error } = await supabase.rpc('get_all_broker_functions');
     
     if (error) {
       console.error("Error fetching broker functions:", error);
+      return [];
+    }
+    
+    if (!data || !Array.isArray(data)) {
       return [];
     }
     
@@ -277,7 +206,11 @@ export const saveBrokerInfocapFunction = async (
       return null;
     }
     
-    return data as number;
+    if (data && typeof data.id === 'string') {
+      return parseInt(data.id, 10);
+    }
+    
+    return data ? 1 : null; // Default to 1 if we got a truthy value
   } catch (error) {
     console.error("Exception saving broker function:", error);
     return null;
@@ -293,6 +226,10 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
     
     if (error) {
       console.error("Error fetching all broker functions:", error);
+      return [];
+    }
+    
+    if (!data || !Array.isArray(data)) {
       return [];
     }
     
@@ -317,6 +254,10 @@ export const getBrokerInfocapFunctions = async (brokerId: number): Promise<Broke
       return [];
     }
     
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+    
     return data as BrokerInfocapFunction[];
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
@@ -338,7 +279,7 @@ export const deleteBrokerInfocapFunction = async (functionId: number): Promise<b
       return false;
     }
     
-    return data as boolean;
+    return !!data;
   } catch (error) {
     console.error("Exception deleting broker function:", error);
     return false;
@@ -363,7 +304,7 @@ export const updateBrokerInfocapFunctionOrder = async (
       return false;
     }
     
-    return data as boolean;
+    return !!data;
   } catch (error) {
     console.error("Exception updating broker function order:", error);
     return false;

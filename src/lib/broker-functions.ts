@@ -64,9 +64,14 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       p_broker_id: brokerId
     });
       
-    if (error || !data) {
+    if (error) {
+      console.log("Error fetching broker functions:", error);
+      // Fall back to static data if database query fails
+      return getStaticBrokerFunctions(brokerId);
+    }
+    
+    if (!data || !Array.isArray(data) || data.length === 0) {
       console.log("No broker functions found in database, using static data");
-      // Fall back to static data if database query fails or returns no results
       return getStaticBrokerFunctions(brokerId);
     }
     
@@ -82,7 +87,8 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       is_premium: func.is_premium,
       broker_image: getBrokerImageFromCache(func.broker_id),
       created_at: func.created_at,
-      updated_at: func.updated_at
+      updated_at: func.updated_at,
+      function_order: func.function_order
     }));
   } catch (error) {
     console.error("Error fetching broker functions:", error);
@@ -104,14 +110,18 @@ export const hasBrokerFunction = async (
       p_broker_id: brokerId
     });
     
-    if (error || !data) {
+    if (error) {
       console.error("Error checking broker function:", error);
       // Fall back to static data if database query fails
       return checkStaticBrokerFunction(brokerId, functionSlug);
     }
     
+    if (!data || !Array.isArray(data)) {
+      return checkStaticBrokerFunction(brokerId, functionSlug);
+    }
+    
     // Filter the returned functions to find the one with the matching slug
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -136,14 +146,18 @@ export const isBrokerFunctionPremium = async (
       p_broker_id: brokerId
     });
     
-    if (error || !data) {
+    if (error) {
       console.error("Error checking if broker function is premium:", error);
       // Fall back to static data if database query fails
       return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
     }
     
+    if (!data || !Array.isArray(data)) {
+      return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
+    }
+    
     // Filter to find the specific function
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -191,7 +205,7 @@ export const getBrokerImage = async (
       p_broker_id: brokerId
     });
     
-    if (error || !data || (Array.isArray(data) && data.length === 0)) {
+    if (error) {
       console.error("Error fetching broker image:", error);
       // Fall back to static broker data
       const broker = brokers.find(b => b.id === brokerId);
@@ -200,8 +214,20 @@ export const getBrokerImage = async (
       return image;
     }
     
-    const details = Array.isArray(data) ? data[0] : data;
-    const image = details?.image_url || null;
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      // Fall back to static broker data
+      const broker = brokers.find(b => b.id === brokerId);
+      const image = broker?.logo || null;
+      brokerImageCache[brokerId] = image;
+      return image;
+    }
+    
+    const details = data[0];
+    if (!details) {
+      return null;
+    }
+    
+    const image = details.image_url || null;
     brokerImageCache[brokerId] = image;
     return image;
   } catch (error) {
@@ -254,7 +280,7 @@ export const getBrokerFunctionConfig = async (
       p_broker_id: brokerId
     });
     
-    if (error || !data) {
+    if (error) {
       // Fall back to static data if database query fails
       const staticFunction = staticBrokerFunctions.find(func => 
         func.broker_id === brokerId && 
@@ -265,8 +291,12 @@ export const getBrokerFunctionConfig = async (
       return null; // No configuration in static data
     }
     
+    if (!data || !Array.isArray(data)) {
+      return null;
+    }
+    
     // Find the specific function
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: any) => 
+    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug
     );
     
@@ -310,7 +340,11 @@ export const saveBrokerInfocapFunction = async (
       return null;
     }
     
-    return data as number;
+    if (data && typeof data.id === 'string') {
+      return parseInt(data.id, 10);
+    }
+    
+    return data ? 1 : null; // Default to 1 if we got a truthy value
   } catch (error) {
     console.error("Error saving broker function:", error);
     return null;
@@ -324,8 +358,12 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
   try {
     const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
     
-    if (error || !data) {
+    if (error) {
       console.error("Error fetching all broker functions:", error);
+      return [];
+    }
+    
+    if (!data || !Array.isArray(data)) {
       return [];
     }
     

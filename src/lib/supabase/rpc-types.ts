@@ -1,5 +1,5 @@
 
-import { BrokerFunction, BrokerInfocapFunction } from "@/types/broker";
+import { BrokerFunction, BrokerInfocapFunction, BrokerDetail } from "@/types/broker";
 
 /**
  * Type definitions for RPC functions to improve TypeScript support
@@ -45,7 +45,7 @@ export interface RPCFunctions {
       p_is_premium: boolean;
       p_broker_image: string;
     };
-    returns: string;
+    returns: { id: string };
   };
   
   // Broker Infocap Functions
@@ -70,7 +70,7 @@ export interface RPCFunctions {
       p_function_enabled: boolean;
       p_is_premium: boolean;
     };
-    returns: number;
+    returns: { id: string };
   };
   
   delete_broker_infocap_function: {

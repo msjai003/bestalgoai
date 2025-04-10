@@ -103,6 +103,24 @@ export const supabase = {
       };
     }
     
+    if (functionName === 'get_broker_details') {
+      return {
+        data: [
+          {
+            id: 1,
+            broker_name: "Zerodha",
+            description: "India's largest stock broker",
+            image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg",
+            required_inputs: ["username", "password", "api_key"],
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ],
+        error: null
+      };
+    }
+    
     if (functionName === 'get_all_broker_infocap_functions') {
       return {
         data: [
@@ -152,7 +170,7 @@ export const supabase = {
     
     if (functionName === 'save_broker_infocap_function') {
       return {
-        data: 123, // Return a mock ID
+        data: { id: "123" }, // Return a mock ID
         error: null
       };
     }
