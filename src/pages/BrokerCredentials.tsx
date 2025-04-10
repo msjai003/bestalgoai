@@ -14,6 +14,7 @@ import { fetchBrokerById } from "@/services/brokerService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 const BrokerCredentials = () => {
   const navigate = useNavigate();
@@ -49,6 +50,30 @@ const BrokerCredentials = () => {
 
   useEffect(() => {
     loadBroker();
+    
+    // Set up real-time subscription for broker details changes
+    const brokerDetailsChannel = supabase
+      .channel('broker_details_credential_page')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'broker_details', filter: `id=eq.${brokerId}` }, 
+        (payload) => {
+          console.log('Broker details changed for current broker:', payload);
+          loadBroker();
+          toast.info("Broker information updated");
+        }
+      )
+      .subscribe();
+    
+    // Set up a refresh interval
+    const refreshInterval = setInterval(() => {
+      loadBroker();
+    }, 20000); // Refresh every 20 seconds
+    
+    // Clean up on unmount
+    return () => {
+      clearInterval(refreshInterval);
+      supabase.removeChannel(brokerDetailsChannel);
+    };
   }, [brokerId, navigate]);
 
   const handleRefresh = () => {

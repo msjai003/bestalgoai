@@ -117,9 +117,10 @@ export const useBrokerFunctions = (brokerId?: number) => {
     }
   }, [brokerId]);
 
-  // Listen for changes in the broker_details table
+  // Enhanced real-time subscription: 
+  // 1. Listen for changes in the broker_details table
   useEffect(() => {
-    const channel = supabase
+    const brokerDetailsChannel = supabase
       .channel('broker_details_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details' }, 
@@ -132,15 +133,30 @@ export const useBrokerFunctions = (brokerId?: number) => {
       )
       .subscribe();
     
+    // 2. Listen for changes in the brokers_functions table
+    const brokerFunctionsChannel = supabase
+      .channel('broker_functions_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'brokers_functions' }, 
+        (payload) => {
+          console.log('Broker functions changed:', payload);
+          // Refresh functions when broker functions change
+          fetchBrokerFunctions();
+          toast.info("Broker functions updated");
+        }
+      )
+      .subscribe();
+    
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(brokerDetailsChannel);
+      supabase.removeChannel(brokerFunctionsChannel);
     };
   }, [fetchBrokerFunctions]);
 
   // Helper function to fetch broker info
   const fetchBrokerInfo = async (id: number) => {
     try {
-      // Try to get broker info from brokers_admin table
+      // Try to get broker info from brokers_admin table first
       const { data: adminBroker, error: adminError } = await supabase
         .from('brokers_admin')
         .select('*')
@@ -279,10 +295,10 @@ export const useBrokerFunctions = (brokerId?: number) => {
   useEffect(() => {
     fetchBrokerFunctions();
     
-    // Set up an interval to refresh data periodically
+    // Set up an interval to refresh data periodically (reduced from 60s to 15s)
     const refreshInterval = setInterval(() => {
       fetchBrokerFunctions();
-    }, 60000); // Refresh every minute
+    }, 15000); // Refresh every 15 seconds
     
     return () => {
       clearInterval(refreshInterval);

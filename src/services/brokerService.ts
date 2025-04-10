@@ -54,11 +54,13 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       });
     }
     
-    // Fallback to broker_details table
+    // Fallback to broker_details table with cache-busting
     const { data, error } = await supabase
       .from('broker_details')
       .select('*')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .order('id', { ascending: true }) // Add ordering for consistency
+      .limit(100); // Add limit for safety
     
     if (error) {
       console.error("Error fetching broker details:", error);

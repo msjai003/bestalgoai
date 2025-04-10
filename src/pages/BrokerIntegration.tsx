@@ -8,6 +8,7 @@ import { brokers as staticBrokers } from "@/components/broker-integration/Broker
 import { toast } from "sonner";
 import { fetchBrokerDetails } from "@/services/brokerService";
 import { Broker } from "@/types/broker";
+import { supabase } from "@/lib/supabase/client";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
@@ -37,13 +38,29 @@ const BrokerIntegration = () => {
     // Load brokers immediately when the component mounts
     loadBrokers();
     
-    // Set up an interval to refresh data every 30 seconds
+    // Set up an interval to refresh data every 10 seconds (reduced from 30s)
     const refreshInterval = setInterval(() => {
       loadBrokers();
-    }, 30000);
+    }, 10000);
     
-    // Clean up the interval on component unmount
-    return () => clearInterval(refreshInterval);
+    // Set up real-time subscription for broker details changes
+    const brokerDetailsChannel = supabase
+      .channel('broker_details_realtime')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'broker_details' }, 
+        (payload) => {
+          console.log('Broker details changed in database:', payload);
+          loadBrokers();
+          toast.info("Broker information updated");
+        }
+      )
+      .subscribe();
+    
+    // Clean up the interval and subscription on component unmount
+    return () => {
+      clearInterval(refreshInterval);
+      supabase.removeChannel(brokerDetailsChannel);
+    };
   }, [loadBrokers]);
 
   const handleSelectBroker = (brokerId: number) => {
