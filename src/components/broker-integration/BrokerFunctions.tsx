@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
-import { BrokerFunction } from "@/hooks/strategy/types";
+import { BrokerFunction } from "@/types/broker";
 import { CheckCircle, XCircle, Lock, Info } from "lucide-react";
 import { 
   Tooltip,
