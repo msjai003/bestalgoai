@@ -1,3 +1,4 @@
+
 import { BrokerFunction } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/lib/supabase/client';
@@ -54,7 +55,7 @@ export const hasBrokerFunction = async (
       .select('function_enabled')
       .eq('broker_id', brokerId)
       .eq('function_slug', functionSlug)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error("Error checking broker functionality:", error);
@@ -90,7 +91,7 @@ export const isBrokerFunctionPremium = async (
       .select('is_premium')
       .eq('broker_id', brokerId)
       .eq('function_slug', functionSlug)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error("Error checking if broker functionality is premium:", error);
@@ -124,7 +125,7 @@ export const getBrokerImage = async (
       .from('brokers_admin')
       .select('image_url')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
       
     if (!adminError && adminData && adminData.image_url) {
       return adminData.image_url;
@@ -135,7 +136,7 @@ export const getBrokerImage = async (
       .from('broker_details')
       .select('image_url')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
     
     if (error || !data) {
       console.error("Error fetching broker image:", error);
@@ -163,7 +164,7 @@ const getBrokerInfo = async (brokerId: number) => {
       .from('brokers_admin')
       .select('*')
       .eq('id', brokerId)
-      .single();
+      .maybeSingle();
       
     if (!adminError && adminData) {
       return {
@@ -178,8 +179,8 @@ const getBrokerInfo = async (brokerId: number) => {
       .from('broker_details')
       .select('*')
       .eq('id', brokerId)
-      .single();
-    
+      .maybeSingle();
+      
     if (error || !data) {
       // Fall back to static broker data
       return brokers.find(b => b.id === brokerId);
@@ -258,7 +259,7 @@ const createAndStoreDefaultFunctions = async (broker: { id: number; name: string
         .select('id')
         .eq('broker_id', func.broker_id)
         .eq('function_slug', func.function_slug)
-        .single();
+        .maybeSingle();
         
       if (!checkError && existingFunc) {
         // Update existing function

@@ -152,7 +152,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('brokers_admin')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
         
       if (!adminError && adminBroker) {
         return {
@@ -167,7 +167,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('broker_details')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
         
       if (!detailsError && brokerDetails) {
         return {
@@ -230,7 +230,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('brokers_admin')
         .select('image_url')
         .eq('id', brokerId)
-        .single();
+        .maybeSingle();
         
       if (!adminError && adminBroker && adminBroker.image_url) {
         return adminBroker.image_url;
@@ -241,7 +241,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('broker_details')
         .select('image_url')
         .eq('id', brokerId)
-        .single();
+        .maybeSingle();
         
       if (!detailsError && brokerDetails && brokerDetails.image_url) {
         return brokerDetails.image_url;
@@ -316,7 +316,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
           .select('id')
           .eq('broker_id', func.broker_id)
           .eq('function_slug', func.function_slug)
-          .single();
+          .maybeSingle();
           
         if (!checkError && existingFunc) {
           // Update existing function

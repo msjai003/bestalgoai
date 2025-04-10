@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { fetchBrokerDetails } from "@/services/brokerService";
 import { Broker } from "@/types/broker";
 import { supabase } from "@/lib/supabase/client";
+import { syncBrokerFunctionsFromDetails } from "@/lib/broker-functions";
 
 const BrokerIntegration = () => {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ const BrokerIntegration = () => {
       console.log(`Loaded ${brokerData.length} brokers from database`);
       setBrokers(brokerData);
       setLastRefreshed(new Date());
+
+      // Sync broker functions data
+      await syncBrokerFunctionsFromDetails();
     } catch (error) {
       console.error("Error loading brokers:", error);
       toast.error("Failed to load broker list");
