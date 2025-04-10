@@ -99,15 +99,18 @@ export const createBrokerWork = async (brokerWork: Omit<BrokerWork, 'id' | 'crea
     const { data, error } = await supabase
       .from('broker_work')
       .insert(brokerWork)
-      .select('id')
-      .single();
+      .select('id');
     
     if (error) {
       console.error("Error creating broker work:", error);
       return null;
     }
     
-    return data?.id || null;
+    if (!data || data.length === 0) {
+      return null;
+    }
+    
+    return data[0].id;
   } catch (error) {
     console.error("Exception creating broker work:", error);
     return null;

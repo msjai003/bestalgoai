@@ -132,33 +132,27 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
 export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
   try {
     // Insert the new broker
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('broker_details')
       .insert({
         broker_name: broker.name,
         description: broker.description,
         image_url: broker.logo,
         required_inputs: broker.requiredInputs || []
-      });
+      })
+      .select('id');
     
     if (error) {
       console.error("Error inserting broker:", error);
       return null;
     }
     
-    // Get the ID of the newly inserted broker
-    const { data: queryData, error: selectError } = await supabase
-      .from('broker_details')
-      .select('id')
-      .order('id', { ascending: false })
-      .limit(1);
-    
-    if (selectError || !queryData || queryData.length === 0) {
-      console.error("Error retrieving broker ID:", selectError);
+    if (!data || data.length === 0) {
+      console.error("No ID returned after insert");
       return null;
     }
     
-    return queryData[0].id;
+    return data[0].id;
   } catch (error) {
     console.error("Exception saving broker:", error);
     return null;
@@ -222,7 +216,7 @@ export const deleteAllBrokers = async (): Promise<boolean> => {
     const { error } = await supabase
       .from('broker_details')
       .delete()
-      .gte('id', 0); // Delete all rows with ID >= 0 (which should be all of them)
+      .gte('id', 0);
     
     if (error) {
       console.error("Error deleting all brokers:", error);

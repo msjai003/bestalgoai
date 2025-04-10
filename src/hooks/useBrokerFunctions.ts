@@ -15,161 +15,75 @@ export const useBrokerFunctions = (brokerId?: number) => {
     setIsLoading(true);
     setError(null);
     
-    // Initialize with static data since brokers_functions table was removed
-    setFunctionsFromStaticData();
-    
-    // Extract broker name if brokerId is provided
-    if (brokerId) {
-      const broker = brokers.find(b => b.id === brokerId);
-      setBrokerName(broker?.name || null);
-    }
-    
-    setIsLoading(false);
-  }, [brokerId]);
-  
-  // Helper function to set functions from static data as fallback
-  const setFunctionsFromStaticData = () => {
-    // Filter functions from static data based on broker ID
-    const staticBrokerFunctions: BrokerFunction[] = [
-      // Zerodha functions
-      {
-        id: "1-order_placement",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      {
-        id: "1-order_modification",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Order Modification",
-        function_description: "Modify existing orders",
-        function_slug: "order_modification",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      {
-        id: "1-market_data",
-        broker_id: 1,
-        broker_name: "Zerodha",
-        function_name: "Market Data",
-        function_description: "Access real-time market data",
-        function_slug: "market_data",
-        function_enabled: true,
-        is_premium: true,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-      },
-      // ICICI Direct functions
-      {
-        id: "2-order_placement",
-        broker_id: 2,
-        broker_name: "ICICI Direct",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
-      },
-      {
-        id: "2-portfolio_view",
-        broker_id: 2,
-        broker_name: "ICICI Direct",
-        function_name: "Portfolio View",
-        function_description: "View current holdings and positions",
-        function_slug: "portfolio_view",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
-      },
-      // Angel One functions
-      {
-        id: "3-order_placement",
-        broker_id: 3,
-        broker_name: "Angel One",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
-      },
-      {
-        id: "3-order_cancellation",
-        broker_id: 3,
-        broker_name: "Angel One",
-        function_name: "Order Cancellation",
-        function_description: "Cancel pending orders",
-        function_slug: "order_cancellation",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
-      },
-      // 5 Paisa functions
-      {
-        id: "7-order_placement",
-        broker_id: 7,
-        broker_name: "5 Paisa",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
-      },
-      {
-        id: "7-market_data",
-        broker_id: 7,
-        broker_name: "5 Paisa",
-        function_name: "Market Data",
-        function_description: "Access real-time market data",
-        function_slug: "market_data",
-        function_enabled: true,
-        is_premium: true,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
-      },
-      // Bigul functions
-      {
-        id: "8-order_placement",
-        broker_id: 8,
-        broker_name: "Bigul",
-        function_name: "Order Placement",
-        function_description: "Place new orders with the broker",
-        function_slug: "order_placement",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
-      },
-      {
-        id: "8-portfolio_view",
-        broker_id: 8,
-        broker_name: "Bigul",
-        function_name: "Portfolio View",
-        function_description: "View current holdings and positions",
-        function_slug: "portfolio_view",
-        function_enabled: true,
-        is_premium: false,
-        broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+    const fetchData = async () => {
+      try {
+        // Query the new brokers_sections table
+        const { data, error } = await supabase
+          .from('brokers_sections')
+          .select('*')
+          .eq('function_enabled', true);
+        
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          console.log("No broker functions found in database");
+          setFunctions([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Filter by broker ID if provided
+        const filteredData = brokerId 
+          ? data.filter(item => item.broker_id === brokerId)
+          : data;
+        
+        // Map data to BrokerFunction type
+        const mappedFunctions: BrokerFunction[] = filteredData.map(item => ({
+          id: `${item.broker_id}-${item.function_slug}`,
+          broker_id: item.broker_id,
+          broker_name: item.broker_name,
+          function_name: item.function_name,
+          function_description: item.function_description || '',
+          function_slug: item.function_slug,
+          function_enabled: item.function_enabled,
+          is_premium: item.is_premium,
+          broker_image: item.broker_image
+        }));
+        
+        setFunctions(mappedFunctions);
+        
+        // Extract broker name if brokerId is provided and we have matching functions
+        if (brokerId && mappedFunctions.length > 0) {
+          setBrokerName(mappedFunctions[0].broker_name);
+        } else if (brokerId) {
+          // Try to get broker name from broker_details
+          const { data: brokerData } = await supabase
+            .from('broker_details')
+            .select('broker_name')
+            .eq('id', brokerId)
+            .maybeSingle();
+          
+          if (brokerData) {
+            setBrokerName(brokerData.broker_name);
+          } else {
+            // Fall back to static data
+            const broker = brokers.find(b => b.id === brokerId);
+            setBrokerName(broker?.name || null);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching broker functions:", err);
+        setError("Failed to load broker functions");
+        
+        // Fallback to empty array
+        setFunctions([]);
+      } finally {
+        setIsLoading(false);
       }
-    ];
+    };
     
-    const filteredFunctions = brokerId
-      ? staticBrokerFunctions.filter(func => func.broker_id === brokerId)
-      : staticBrokerFunctions;
-    
-    setFunctions(filteredFunctions);
-    
-    // Extract broker name if not already set and we have functions
-    if (!brokerName && filteredFunctions.length > 0) {
-      setBrokerName(filteredFunctions[0].broker_name);
-    }
-  };
+    fetchData();
+  }, [brokerId]);
 
   useEffect(() => {
     fetchBrokerFunctions();

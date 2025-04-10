@@ -4,15 +4,36 @@ import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Fetches all functions for a specific broker
+ * Fetches all functions for a specific broker from the brokers_sections table
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Since the brokers_functions table was removed, we always return static data
-    return getStaticBrokerFunctions(brokerId);
+    const { data, error } = await supabase
+      .from('brokers_sections')
+      .select('*')
+      .eq('broker_id', brokerId)
+      .eq('function_enabled', true);
+    
+    if (error || !data) {
+      console.error("Error fetching broker functions:", error);
+      return [];
+    }
+    
+    return data.map(item => ({
+      id: `${item.broker_id}-${item.function_slug}`,
+      broker_id: item.broker_id,
+      broker_name: item.broker_name,
+      function_name: item.function_name,
+      function_description: item.function_description || '',
+      function_slug: item.function_slug,
+      function_enabled: item.function_enabled,
+      is_premium: item.is_premium,
+      broker_image: item.broker_image,
+      configuration: item.configuration
+    }));
   } catch (error) {
     console.error("Error fetching broker functions:", error);
-    return getStaticBrokerFunctions(brokerId);
+    return [];
   }
 };
 
@@ -24,11 +45,22 @@ export const hasBrokerFunction = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    // Since the brokers_functions table was removed, we use static data
-    return checkStaticBrokerFunction(brokerId, functionSlug);
+    const { data, error } = await supabase
+      .from('brokers_sections')
+      .select('id')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .eq('function_enabled', true);
+    
+    if (error) {
+      console.error("Error checking broker function:", error);
+      return false;
+    }
+    
+    return data && data.length > 0;
   } catch (error) {
     console.error("Error checking broker function:", error);
-    return checkStaticBrokerFunction(brokerId, functionSlug);
+    return false;
   }
 };
 
@@ -40,11 +72,23 @@ export const isBrokerFunctionPremium = async (
   functionSlug: string
 ): Promise<boolean> => {
   try {
-    // Since the brokers_functions table was removed, we use static data
-    return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
+    const { data, error } = await supabase
+      .from('brokers_sections')
+      .select('is_premium')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .eq('function_enabled', true)
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.error("Error checking if broker function is premium:", error);
+      return false;
+    }
+    
+    return !!data.is_premium;
   } catch (error) {
     console.error("Error checking if broker function is premium:", error);
-    return checkStaticBrokerFunctionPremium(brokerId, functionSlug);
+    return false;
   }
 };
 
@@ -78,90 +122,57 @@ export const getBrokerImage = async (
   }
 };
 
-// Static broker functions data as fallback
-const staticBrokerFunctions: BrokerFunction[] = [
-  // Zerodha functions
-  {
-    id: "1-order_placement",
-    broker_id: 1,
-    broker_name: "Zerodha",
-    function_name: "Order Placement",
-    function_description: "Place new orders with the broker",
-    function_slug: "order_placement",
-    function_enabled: true,
-    is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-  },
-  {
-    id: "1-order_modification",
-    broker_id: 1,
-    broker_name: "Zerodha",
-    function_name: "Order Modification",
-    function_description: "Modify existing orders",
-    function_slug: "order_modification",
-    function_enabled: true,
-    is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-  },
-  {
-    id: "1-market_data",
-    broker_id: 1,
-    broker_name: "Zerodha",
-    function_name: "Market Data",
-    function_description: "Access real-time market data",
-    function_slug: "market_data",
-    function_enabled: true,
-    is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
-  },
-  // Add more broker functions as needed for other brokers
-];
-
-// Helper functions for static data
-const getStaticBrokerFunctions = (brokerId: number): BrokerFunction[] => {
-  return staticBrokerFunctions.filter(func => 
-    func.broker_id === brokerId && func.function_enabled
-  );
-};
-
-const checkStaticBrokerFunction = (brokerId: number, functionSlug: string): boolean => {
-  const functions = staticBrokerFunctions.filter(func => 
-    func.broker_id === brokerId && 
-    func.function_slug === functionSlug && 
-    func.function_enabled
-  );
-  
-  return functions.length > 0;
-};
-
-const checkStaticBrokerFunctionPremium = (brokerId: number, functionSlug: string): boolean => {
-  const functions = staticBrokerFunctions.filter(func => 
-    func.broker_id === brokerId && 
-    func.function_slug === functionSlug && 
-    func.function_enabled
-  );
-  
-  if (functions.length === 0) return false;
-  
-  return !!functions[0].is_premium;
-};
-
-// Optional: Gets function configuration for a broker (if needed)
+/**
+ * Gets function configuration for a broker
+ */
 export const getBrokerFunctionConfig = async (
   brokerId: number, 
   functionSlug: string
 ): Promise<any | null> => {
   try {
-    // Since the brokers_functions table was removed, we use static data
-    const staticFunction = staticBrokerFunctions.find(func => 
-      func.broker_id === brokerId && 
-      func.function_slug === functionSlug && 
-      func.function_enabled
-    );
-      
-    return staticFunction?.configuration || null;
+    const { data, error } = await supabase
+      .from('brokers_sections')
+      .select('configuration')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .eq('function_enabled', true)
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.error("Error getting broker function config:", error);
+      return null;
+    }
+    
+    return data.configuration;
   } catch (error) {
     console.error("Error getting broker function config:", error);
     return null;
+  }
+};
+
+/**
+ * Gets required inputs for a broker function
+ */
+export const getBrokerFunctionRequiredInputs = async (
+  brokerId: number,
+  functionSlug: string
+): Promise<string[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('brokers_sections')
+      .select('required_inputs')
+      .eq('broker_id', brokerId)
+      .eq('function_slug', functionSlug)
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.error("Error getting broker function required inputs:", error);
+      return [];
+    }
+    
+    return data.required_inputs as string[] || [];
+  } catch (error) {
+    console.error("Error getting broker function required inputs:", error);
+    return [];
   }
 };
