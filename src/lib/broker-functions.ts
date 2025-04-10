@@ -14,7 +14,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       .from('brokers_admin')
       .select('*')
       .eq('id', brokerId)
-      .maybeSingle();
+      .maybeSingle() as any;
       
     // Find the broker either from admin table or static data
     const broker = !adminError && adminBroker 

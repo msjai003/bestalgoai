@@ -25,11 +25,12 @@ export const useBrokerFunctions = (brokerId?: number) => {
         let broker = null;
         
         if (brokerId) {
+          // We use any type here to avoid type errors with table names
           const { data: adminData, error: adminError } = await supabase
             .from('brokers_admin')
             .select('*')
             .eq('id', brokerId)
-            .maybeSingle();
+            .maybeSingle() as any;
             
           if (!adminError && adminData) {
             broker = {
@@ -110,10 +111,10 @@ export const useBrokerFunctions = (brokerId?: number) => {
           // First try to get all brokers from admin table
           const { data: allBrokers, error: brokersError } = await supabase
             .from('brokers_admin')
-            .select('*');
+            .select('*') as any;
             
           const brokersList = !brokersError && allBrokers && allBrokers.length > 0 
-            ? allBrokers.map(b => ({ 
+            ? allBrokers.map((b: any) => ({ 
                 id: b.id, 
                 name: b.broker_name, 
                 logo: b.image_url || "/placeholder.svg" 
@@ -123,7 +124,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
           brokersList.forEach(b => {
             defaultFunctions.push({
               id: `${b.id}-order_placement`,
-              broker_id: b.id,
+              broker_id: typeof b.id === 'number' ? b.id : Number(b.id),
               broker_name: b.name,
               function_name: "Order Placement",
               function_description: "Place new orders with the broker",
