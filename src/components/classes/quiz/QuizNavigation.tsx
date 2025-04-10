@@ -22,7 +22,6 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({
     <div className="flex justify-between gap-2">
       <Button 
         variant="secondary" 
-        size="sm"
         onClick={onPrevious} 
         disabled={isFirstQuestion}
         className="flex-1"
@@ -32,7 +31,6 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({
         <span className="sm:hidden">Prev</span>
       </Button>
       <Button 
-        size="sm"
         onClick={onNext} 
         disabled={!isAnswered}
         className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react';
-import { FlipCardActions } from './FlipCardActions';
 
 interface FlashCardProps {
   question: string;
@@ -47,7 +46,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
             </div>
             
             <Button
-              className="w-full mt-8 text-cyan border border-cyan/30 hover:bg-cyan/10 bg-transparent rounded-full"
+              className="w-full mt-8 text-cyan border border-cyan/30 hover:bg-cyan/10 bg-transparent"
               onClick={handleFlip}
             >
               <RotateCw className="mr-2 h-4 w-4" />
@@ -66,7 +65,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
             </div>
             
             <Button
-              className="w-full mt-8 text-cyan border border-cyan/30 hover:bg-cyan/10 bg-transparent rounded-full"
+              className="w-full mt-8 text-cyan border border-cyan/30 hover:bg-cyan/10 bg-transparent"
               onClick={handleFlip}
             >
               <RotateCw className="mr-2 h-4 w-4" />
@@ -79,7 +78,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
       <div className="flex justify-between gap-4 mt-4">
         <Button 
           variant="outline" 
-          className="flex-1 rounded-full border-gray-700 bg-charcoalSecondary text-white"
+          className="flex-1 border-gray-700 bg-charcoalSecondary text-white"
           onClick={onPrevious}
           disabled={currentIndex === 1}
         >
@@ -88,7 +87,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
         </Button>
         <Button 
           variant="cyan"
-          className="flex-1 rounded-full"
+          className="flex-1"
           onClick={onNext}
         >
           Next
