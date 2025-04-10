@@ -1,4 +1,3 @@
-
 // Mock Supabase client for frontend-only operation
 export const supabaseUrl = 'mock-url';
 export const supabaseAnonKey = 'mock-key';
@@ -129,6 +128,19 @@ export const supabase = {
             id: "3",
             broker_id: 2,
             broker_name: "ICICI Direct",
+            function_name: "Order Placement",
+            function_description: "Place new orders with the broker",
+            function_slug: "order_placement",
+            function_enabled: true,
+            is_premium: false,
+            function_order: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: "4",
+            broker_id: 5,
+            broker_name: "Upstox",
             function_name: "Order Placement",
             function_description: "Place new orders with the broker",
             function_slug: "order_placement",
