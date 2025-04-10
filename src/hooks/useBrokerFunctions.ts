@@ -36,7 +36,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
           setBrokerName(dbFunctions[0].broker_name);
           
           // Map database functions to BrokerFunction type
-          functionsData = dbFunctions.map(f => ({
+          functionsData = await Promise.all(dbFunctions.map(async f => ({
             id: f.id,
             broker_id: f.broker_id,
             broker_name: f.broker_name,
@@ -46,7 +46,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
             function_enabled: f.function_enabled,
             is_premium: f.is_premium,
             broker_image: await getBrokerImage(f.broker_id)
-          }));
+          })));
         } else {
           // No functions found in database for this broker, fetch broker info to create defaults
           const broker = await fetchBrokerInfo(brokerId);
@@ -60,9 +60,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         // Fetch all functions for all brokers from the broker_functionality table
         const { data: allFunctions, error: allFunctionsError } = await supabase
           .from('broker_functionality')
-          .select('*')
-          .order('broker_id', { ascending: true })
-          .order('function_name', { ascending: true });
+          .select('*');
           
         if (allFunctionsError) {
           console.error("Error fetching all broker functionalities:", allFunctionsError);
@@ -72,6 +70,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         if (allFunctions && allFunctions.length > 0) {
           // Map database functions to BrokerFunction type with broker images
           for (const func of allFunctions) {
+            const imageUrl = await getBrokerImage(func.broker_id);
             functionsData.push({
               id: func.id,
               broker_id: func.broker_id,
@@ -81,7 +80,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
               function_slug: func.function_slug,
               function_enabled: func.function_enabled,
               is_premium: func.is_premium,
-              broker_image: await getBrokerImage(func.broker_id)
+              broker_image: imageUrl
             });
           }
         } else {
@@ -153,7 +152,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('brokers_admin')
         .select('*')
         .eq('id', id)
-        .maybeSingle();
+        .single();
         
       if (!adminError && adminBroker) {
         return {
@@ -168,7 +167,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('broker_details')
         .select('*')
         .eq('id', id)
-        .maybeSingle();
+        .single();
         
       if (!detailsError && brokerDetails) {
         return {
@@ -231,7 +230,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('brokers_admin')
         .select('image_url')
         .eq('id', brokerId)
-        .maybeSingle();
+        .single();
         
       if (!adminError && adminBroker && adminBroker.image_url) {
         return adminBroker.image_url;
@@ -242,7 +241,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         .from('broker_details')
         .select('image_url')
         .eq('id', brokerId)
-        .maybeSingle();
+        .single();
         
       if (!detailsError && brokerDetails && brokerDetails.image_url) {
         return brokerDetails.image_url;
@@ -308,13 +307,32 @@ export const useBrokerFunctions = (brokerId?: number) => {
       }
     ];
     
-    // Insert functions into the database
-    const { data, error } = await supabase
-      .from('broker_functionality')
-      .upsert(defaultFunctions, { onConflict: 'broker_id,function_slug' });
-      
-    if (error) {
-      console.error("Error storing broker functionalities:", error);
+    // Insert functions into the database one by one
+    for (const func of defaultFunctions) {
+      try {
+        // First check if function exists
+        const { data: existingFunc, error: checkError } = await supabase
+          .from('broker_functionality')
+          .select('id')
+          .eq('broker_id', func.broker_id)
+          .eq('function_slug', func.function_slug)
+          .single();
+          
+        if (!checkError && existingFunc) {
+          // Update existing function
+          await supabase
+            .from('broker_functionality')
+            .update(func)
+            .eq('id', existingFunc.id);
+        } else {
+          // Insert new function
+          await supabase
+            .from('broker_functionality')
+            .insert(func);
+        }
+      } catch (error) {
+        console.error("Error storing broker function:", error);
+      }
     }
     
     // Return the functions with IDs and broker image
