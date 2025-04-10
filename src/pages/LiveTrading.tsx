@@ -12,6 +12,8 @@ import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
 
+// The LiveTrading component doesn't need any changes since the useLiveTrading hook
+// still exports the same interface even though it's been refactored internally
 const LiveTrading = () => {
   const {
     isActive,
