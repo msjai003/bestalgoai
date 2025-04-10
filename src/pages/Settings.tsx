@@ -1,269 +1,167 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Bell, User, HelpCircle, Shield, ChevronRight, LogOut, Key } from "lucide-react";
-import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
-import { PersonalDetailsDialog } from "@/components/settings/PersonalDetails/PersonalDetailsDialog";
-import { ProfilePictureUpload } from "@/components/settings/ProfilePictureUpload";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { toast } from "sonner";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
+import { LogOut, User, Shield, Bell, Key } from "lucide-react";
 
 const Settings = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeDialog, setActiveDialog] = useState<string | null>(null);
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<{
-    full_name: string;
-    email: string;
-    profile_picture: string | null;
-  }>({
-    full_name: "",
-    email: "",
-    profile_picture: null
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        console.log("Fetching profile for user ID:", user.id);
-        
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('full_name, email, profile_picture')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          setUserProfile({
-            full_name: "",
-            email: user.email || "",
-            profile_picture: null
-          });
-        } else if (data) {
-          console.log("Profile data retrieved:", data);
-          setUserProfile({
-            full_name: data.full_name || "",
-            email: data.email || "",
-            profile_picture: data.profile_picture
-          });
-          
-          if (data.profile_picture) {
-            setProfilePicture(data.profile_picture);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user]);
-
-  const handleProfilePictureChange = async (newImageUrl: string) => {
-    if (!user) {
-      toast.error("You must be logged in to update your profile picture");
-      return;
-    }
-    
-    setProfilePicture(newImageUrl);
-    
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ profile_picture: newImageUrl })
-        .eq('id', user.id);
-          
-      if (error) {
-        toast.error("Failed to update profile picture");
-        console.error("Error updating profile picture:", error);
-      } else {
-        toast.success("Profile picture uploaded successfully");
-        setUserProfile(prev => ({
-          ...prev,
-          profile_picture: newImageUrl
-        }));
-      }
-    } catch (error) {
-      console.error("Error updating profile picture:", error);
-      toast.error("Failed to update profile picture");
-    }
-  };
-
-  const openSecuritySettings = () => {
-    setActiveDialog("securitySettings");
-  };
 
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
-      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
-        <div className="flex items-center justify-between px-4 h-16">
-          <Button 
-            variant="ghost" 
-            className="p-2 hover:bg-charcoalSecondary hover:text-cyan"
-            onClick={() => navigate('/dashboard')}
-          >
-            <i className="fa-solid fa-arrow-left text-lg"></i>
-          </Button>
-          <h1 className="text-lg font-semibold text-cyan">Settings</h1>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" className="p-2 hover:bg-charcoalSecondary hover:text-cyan">
-                  <HelpCircle className="w-5 h-5 text-gray-400" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left" className="max-w-[250px] bg-charcoalSecondary text-charcoalTextPrimary border-gray-700">
-                <p className="text-sm">Need help? Hover over any setting to learn more, or visit our Help Center for detailed guidance.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div className="min-h-screen bg-charcoalPrimary text-white">
+      <Header />
+      
+      <main className="pt-16 pb-20 px-4">
+        <div className="my-6 flex items-center">
+          <Link to="/dashboard" className="text-gray-400 mr-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-2xl font-bold gradient-text">Settings</h1>
         </div>
-      </header>
-
-      <main className="pt-16 pb-24">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-spin h-8 w-8 border-4 border-cyan rounded-full border-t-transparent"></div>
+        
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 mb-3">
+            <User className="w-12 h-12 text-gray-400" />
           </div>
-        ) : (
-          <>
-            <section className="px-4 py-6">
-              <div className="flex items-center space-x-4">
-                <ProfilePictureUpload 
-                  currentImageUrl={profilePicture}
-                  onImageChange={handleProfilePictureChange}
-                />
-                <div>
-                  <h2 className="text-lg font-semibold">{userProfile.full_name || "User"}</h2>
-                  <p className="text-sm text-charcoalTextSecondary">{userProfile.email || "No email available"}</p>
-                  <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-cyan/20 text-cyan">
-                    Premium Trader
-                  </span>
-                </div>
+          <h2 className="text-xl font-bold text-white">{user?.displayName || "User"}</h2>
+          <p className="text-gray-400">{user?.email}</p>
+          <div className="mt-2">
+            <span className="bg-cyan/10 text-cyan px-3 py-1 rounded-full text-sm border border-cyan/20">Premium Trader</span>
+          </div>
+        </div>
+        
+        <div className="glass-card p-4 mb-6">
+          <h3 className="text-cyan text-lg mb-4">Account Settings</h3>
+          
+          <Link to="/settings/personal" className="flex items-center justify-between p-3 border-b border-gray-800 hover:bg-gray-800/30 rounded-lg transition-colors">
+            <div className="flex items-center">
+              <div className="bg-gray-800 p-2 rounded-lg mr-3">
+                <User className="h-5 w-5 text-cyan" />
               </div>
-            </section>
-
-            <section className="px-4">
-              <div className="space-y-4">
-                {/* Account Settings Section */}
-                <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
-                  <h3 className="text-sm font-medium text-cyan/80 mb-3">Account Settings</h3>
-                  <div className="space-y-3">
-                    <SettingsLink 
-                      icon={<User className="w-5 h-5 text-cyan" />} 
-                      label="Personal Details" 
-                      onClick={() => setActiveDialog("personalDetails")}
-                    />
-                    <SettingsLink 
-                      icon={<Shield className="w-5 h-5 text-cyan" />} 
-                      label="Security Settings" 
-                      onClick={() => setActiveDialog("securitySettings")}
-                    />
-                    <SettingsLink 
-                      icon={<Bell className="w-5 h-5 text-cyan" />} 
-                      label="Notifications" 
-                      onClick={() => navigate("/notifications")}
-                      className="bg-cyan/10 hover:bg-cyan/20"
-                    />
-                  </div>
-                </div>
-                
-                {/* New Integration Settings Section */}
-                <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
-                  <h3 className="text-sm font-medium text-cyan/80 mb-3">Integration Settings</h3>
-                  <div className="space-y-3">
-                    <SettingsLink 
-                      icon={<Key className="w-5 h-5 text-cyan" />} 
-                      label="API Keys" 
-                      onClick={() => navigate("/api-keys")}
-                      className="relative"
-                    >
-                      <span className="absolute right-8 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-cyan/20 text-cyan text-xs rounded-full">
-                        New
-                      </span>
-                    </SettingsLink>
-                    <SettingsLink 
-                      icon={<i className="fa-solid fa-exchange-alt w-5 h-5 text-cyan flex items-center justify-center" />} 
-                      label="Broker Integration" 
-                      onClick={() => navigate("/broker-integration")}
-                    />
-                  </div>
-                </div>
+              <span>Personal Details</span>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-500"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </Link>
+          
+          <Link to="/settings/security" className="flex items-center justify-between p-3 border-b border-gray-800 hover:bg-gray-800/30 rounded-lg transition-colors">
+            <div className="flex items-center">
+              <div className="bg-gray-800 p-2 rounded-lg mr-3">
+                <Shield className="h-5 w-5 text-cyan" />
               </div>
-            </section>
-          </>
-        )}
-
-        <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-gray-800">
+              <span>Security Settings</span>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-500"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </Link>
+          
+          <Link to="/notifications" className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg transition-colors">
+            <div className="flex items-center">
+              <div className="bg-gray-800 p-2 rounded-lg mr-3">
+                <Bell className="h-5 w-5 text-cyan" />
+              </div>
+              <span>Notifications</span>
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-500"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </Link>
+        </div>
+        
+        <div className="glass-card p-4 mb-6">
+          <h3 className="text-cyan text-lg mb-4">Integration Settings</h3>
+          
+          <Link to="/api-keys" className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg transition-colors">
+            <div className="flex items-center">
+              <div className="bg-gray-800 p-2 rounded-lg mr-3">
+                <Key className="h-5 w-5 text-cyan" />
+              </div>
+              <span>API Keys</span>
+            </div>
+            <div className="flex items-center">
+              <span className="bg-cyan/10 text-cyan px-2 py-0.5 rounded-full text-xs border border-cyan/20 mr-2">New</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-gray-500"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </div>
+          </Link>
+        </div>
+        
+        <Link to="/logout">
           <Button 
-            variant="default"
-            size="default"
-            className="w-full flex items-center justify-center gap-2 bg-cyan hover:bg-cyan/90 rounded-lg font-medium shadow-lg transition-colors text-charcoalPrimary"
-            onClick={() => navigate('/logout')}
+            variant="destructive" 
+            className="w-full py-6 rounded-full shadow-lg" 
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="mr-2 h-5 w-5" />
             Logout
           </Button>
-        </section>
+        </Link>
       </main>
-
-      <SecuritySettingsDialog
-        open={activeDialog === "securitySettings"}
-        onOpenChange={(open) => setActiveDialog(open ? "securitySettings" : null)}
-      />
-      <PersonalDetailsDialog
-        open={activeDialog === "personalDetails"}
-        onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
-        onOpenSecuritySettings={openSecuritySettings}
-      />
+      
+      <BottomNav />
     </div>
   );
 };
-
-const SettingsLink = ({ 
-  icon, 
-  label, 
-  onClick,
-  className = "",
-  children
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
-  onClick?: () => void;
-  className?: string;
-  children?: React.ReactNode;
-}) => (
-  <button 
-    className={`flex items-center justify-between py-3 px-2 w-full text-left rounded-lg hover:bg-charcoalSecondary/50 transition-colors ${className}`}
-    onClick={onClick}
-  >
-    <div className="flex items-center space-x-3">
-      {icon}
-      <span>{label}</span>
-    </div>
-    <div className="flex items-center">
-      {children}
-      <ChevronRight className="w-4 h-4 text-gray-500" />
-    </div>
-  </button>
-);
 
 export default Settings;

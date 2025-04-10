@@ -12,7 +12,7 @@ const Classes = () => {
   const [activeTab, setActiveTab] = useState('basic');
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <div className="min-h-screen bg-charcoalPrimary text-white">
       <Header />
       
       <main className="pt-16 pb-20 px-4">
@@ -22,16 +22,25 @@ const Classes = () => {
         </div>
         
         <Tabs defaultValue="basic" onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-[#1A1A1A] border border-gray-800/40">
-            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40 rounded-full p-1">
+            <TabsTrigger 
+              value="basic" 
+              className="flex gap-2 items-center rounded-full data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
               <BookOpen className="h-4 w-4" />
               <span>Basic</span>
             </TabsTrigger>
-            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
+            <TabsTrigger 
+              value="intermediate" 
+              className="flex gap-2 items-center rounded-full data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
               <Brain className="h-4 w-4" />
               <span>Intermediate</span>
             </TabsTrigger>
-            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-[#121212]">
+            <TabsTrigger 
+              value="pro" 
+              className="flex gap-2 items-center rounded-full data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
               <Infinity className="h-4 w-4" />
               <span>Pro</span>
             </TabsTrigger>
