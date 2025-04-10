@@ -18,7 +18,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true })
-      .limit(100, { foreignTable: null }) as any;
+      .limit(100, { foreignTable: null });
     
     if (!adminError && adminData && adminData.length > 0) {
       console.log(`Found ${adminData.length} broker details in brokers_admin table`);
@@ -58,7 +58,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     const { data, error } = await supabase
       .from('broker_details')
       .select('*')
-      .eq('is_active', true) as any;
+      .eq('is_active', true);
     
     if (error) {
       console.error("Error fetching broker details:", error);
@@ -124,7 +124,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       .from('brokers_admin')
       .select('*')
       .eq('id', brokerId)
-      .maybeSingle() as any;
+      .maybeSingle();
     
     if (!adminError && adminData) {
       console.log("Found broker in brokers_admin table:", adminData);
@@ -164,7 +164,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       .from('broker_details')
       .select('*')
       .eq('id', brokerId)
-      .maybeSingle() as any;
+      .maybeSingle();
     
     if (error) {
       console.error("Error fetching broker details:", error);

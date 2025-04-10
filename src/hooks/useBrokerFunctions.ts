@@ -31,7 +31,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         // We use any type here to avoid type errors with table names
         const response = await supabase
           .from('brokers_admin')
-          .select('*') as any;
+          .select('*');
           
         // Filter on the client side if needed
         const adminData = response.data?.find((b: any) => b.id === brokerId);
@@ -116,7 +116,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         // First try to get all brokers from admin table
         const { data: allBrokers, error: brokersError } = await supabase
           .from('brokers_admin')
-          .select('*') as any;
+          .select('*');
           
         const brokersList = !brokersError && allBrokers && allBrokers.length > 0 
           ? allBrokers.map((b: any) => ({ 
