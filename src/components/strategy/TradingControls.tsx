@@ -17,7 +17,7 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
         <div className="space-y-3">
           {!isActive ? (
             <Button 
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-6 font-medium shadow-lg hover:opacity-90 transition-opacity"
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-6 rounded-lg font-medium shadow-lg hover:opacity-90 transition-opacity"
               onClick={onToggleTrading}
             >
               Start Trading All
@@ -34,7 +34,7 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
               
               <Button 
                 variant="destructive"
-                className="w-full py-6 font-medium"
+                className="w-full py-6 rounded-lg font-medium"
                 onClick={onToggleTrading}
               >
                 Square Off All Positions

@@ -15,13 +15,13 @@ export const TradingModeFilter = ({
   onModeChange,
 }: TradingModeFilterProps) => {
   return (
-    <div className="inline-flex items-center gap-1.5 p-1 bg-charcoalSecondary/30 rounded-full border border-gray-700/50">
+    <div className="inline-flex items-center gap-1.5 p-1 bg-charcoalSecondary/30 rounded-lg border border-gray-700/50">
       <Button
         variant="outline"
         size="sm"
         onClick={() => onModeChange("all")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "all"
             ? "bg-charcoalSecondary text-white shadow-sm"
             : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
@@ -34,7 +34,7 @@ export const TradingModeFilter = ({
         size="sm"
         onClick={() => onModeChange("live")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "live"
             ? "bg-charcoalSuccess/20 text-charcoalSuccess shadow-sm"
             : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
@@ -47,7 +47,7 @@ export const TradingModeFilter = ({
         size="sm"
         onClick={() => onModeChange("paper")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium border-0",
+          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
           selectedMode === "paper"
             ? "bg-cyan/20 text-cyan shadow-sm"
             : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"

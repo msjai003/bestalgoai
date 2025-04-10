@@ -254,62 +254,9 @@ export const useStrategyWishlist = () => {
     loadWishlist();
   }, [user, toast]);
 
-  // Add these missing functions required by StrategyManagement.tsx
-  const removeFromWishlist = (id: string) => {
-    // Convert string id to number as our function expects a number
-    const numericId = parseInt(id, 10);
-    
-    if (isNaN(numericId)) {
-      console.error("Invalid strategy ID for removal:", id);
-      return;
-    }
-    
-    setWishlistedStrategies(prev => prev.filter(strategy => strategy.id !== numericId));
-    
-    if (user) {
-      // Use the exported function
-      window.removeFromWishlist?.(user.id, numericId).catch(err => {
-        console.error("Error removing from wishlist:", err);
-      });
-    }
-  };
-  
-  const clearWishlist = () => {
-    setWishlistedStrategies([]);
-    
-    if (user) {
-      // Clear all items from database
-      Promise.all(
-        wishlistedStrategies.map(strategy => 
-          window.removeFromWishlist?.(user.id, strategy.id)
-        )
-      ).catch(err => {
-        console.error("Error clearing wishlist:", err);
-      });
-    }
-    
-    // Also clear local storage
-    localStorage.removeItem('wishlistedStrategies');
-  };
-
   return {
     wishlistedStrategies,
     isLoading,
-    hasPremium: isPremium,
-    removeFromWishlist,
-    clearWishlist
+    hasPremium: isPremium // Use our local variable instead of missing property
   };
 };
-
-// Make functions available on window for cross-file usage (temporary solution)
-// This helps with circular dependency issues
-declare global {
-  interface Window {
-    removeFromWishlist?: typeof removeFromWishlist;
-  }
-}
-
-// Expose the function to window
-if (typeof window !== 'undefined') {
-  window.removeFromWishlist = removeFromWishlist;
-}

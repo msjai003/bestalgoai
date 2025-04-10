@@ -22,18 +22,20 @@ const QuizNavigation: React.FC<QuizNavigationProps> = ({
     <div className="flex justify-between gap-2">
       <Button 
         variant="secondary" 
+        size="sm"
         onClick={onPrevious} 
         disabled={isFirstQuestion}
-        className="flex-1"
+        className="flex-1 rounded-3xl"
       >
         <ArrowLeft className="mr-1 h-4 w-4" />
         <span className="hidden sm:inline">Previous</span>
         <span className="sm:hidden">Prev</span>
       </Button>
       <Button 
+        size="sm"
         onClick={onNext} 
         disabled={!isAnswered}
-        className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
+        className="flex-1 bg-cyan text-charcoalPrimary hover:bg-cyan/90 rounded-3xl"
       >
         <span>{isLastQuestion ? "Finish" : "Next"}</span>
         <ArrowRight className="ml-1 h-4 w-4" />

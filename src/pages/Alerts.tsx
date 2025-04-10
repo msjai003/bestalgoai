@@ -3,8 +3,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, BellRing, Settings } from "lucide-react";
 
 type AlertType = "all" | "trade" | "system";
 type Notification = {
@@ -55,56 +53,54 @@ const Alerts = () => {
   const [activeTab, setActiveTab] = useState<AlertType>("all");
 
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
-      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
+    <div className="bg-gray-900 min-h-screen">
+      <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/dashboard">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ArrowLeft className="text-gray-300" />
-            </Button>
+          <Link to="/dashboard" className="p-2">
+            <i className="fa-solid fa-arrow-left text-gray-300"></i>
           </Link>
           <h1 className="text-lg font-semibold text-white">Alerts & Notifications</h1>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Settings className="text-gray-300" />
-          </Button>
+          <button className="p-2">
+            <i className="fa-solid fa-sliders text-gray-300"></i>
+          </button>
         </div>
       </header>
 
-      <div className="fixed top-16 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-40">
+      <div className="fixed top-16 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-40">
         <div className="flex space-x-2 p-2">
-          <Button
+          <button
             onClick={() => setActiveTab("all")}
             className={cn(
-              "flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors",
+              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
               activeTab === "all"
-                ? "bg-gradient-to-r from-cyan/20 to-cyan/10 border border-cyan/30 text-cyan"
+                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
                 : "bg-gray-800/50 text-gray-400"
             )}
           >
             All
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setActiveTab("trade")}
             className={cn(
-              "flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors",
+              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
               activeTab === "trade"
-                ? "bg-gradient-to-r from-cyan/20 to-cyan/10 border border-cyan/30 text-cyan"
+                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
                 : "bg-gray-800/50 text-gray-400"
             )}
           >
             Trade Alerts
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setActiveTab("system")}
             className={cn(
-              "flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors",
+              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
               activeTab === "system"
-                ? "bg-gradient-to-r from-cyan/20 to-cyan/10 border border-cyan/30 text-cyan"
+                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
                 : "bg-gray-800/50 text-gray-400"
             )}
           >
             System
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -112,11 +108,11 @@ const Alerts = () => {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className="p-4 rounded-xl bg-charcoalSecondary/50 border border-gray-700 shadow-lg"
+            className="p-4 rounded-xl bg-gray-800/50 border border-gray-700 shadow-lg"
           >
             <div className="flex items-start gap-3">
               <div className={cn("p-2 rounded-lg", notification.iconBgColor, notification.iconColor)}>
-                <BellRing className="w-5 h-5" />
+                <i className={`fa-solid ${notification.icon}`}></i>
               </div>
               <div className="flex-1">
                 <h3 className="text-white font-medium">{notification.title}</h3>
