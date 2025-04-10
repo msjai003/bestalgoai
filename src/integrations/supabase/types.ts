@@ -342,6 +342,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers_admin: {
+        Row: {
+          broker_name: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          fees: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean | null
+          required_inputs: Json | null
+          supported_assets: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_name: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          fees?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json | null
+          supported_assets?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_name?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          fees?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          required_inputs?: Json | null
+          supported_assets?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           broker_username: string | null
@@ -1635,6 +1677,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      sync_brokers_to_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

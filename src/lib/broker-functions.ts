@@ -447,62 +447,70 @@ export const syncBrokerFunctionsFromDetails = async (): Promise<boolean> => {
  */
 export const syncBrokersToAdmin = async (): Promise<boolean> => {
   try {
-    // Get all brokers from broker_details
-    const { data: brokerDetails, error: brokerError } = await supabase
-      .from('broker_details')
-      .select('*');
-      
-    if (brokerError || !brokerDetails || brokerDetails.length === 0) {
-      console.error("Error fetching broker details:", brokerError);
-      return false;
-    }
+    // Call the database function to sync brokers to admin
+    const { error } = await supabase.rpc('sync_brokers_to_admin');
     
-    // For each broker in broker_details, add or update in brokers_admin
-    for (const broker of brokerDetails) {
-      // Check if broker already exists in brokers_admin
-      const { data: existingBroker, error: existingError } = await supabase
-        .from('brokers_admin')
-        .select('id')
-        .eq('id', broker.id);
+    if (error) {
+      console.error("Error calling sync_brokers_to_admin function:", error);
+      
+      // Fallback implementation if RPC call fails
+      // Get all brokers from broker_details
+      const { data: brokerDetails, error: brokerError } = await supabase
+        .from('broker_details')
+        .select('*');
         
-      if (existingError) {
-        console.error(`Error checking if broker ${broker.id} exists in admin:`, existingError);
-        continue;
+      if (brokerError || !brokerDetails || brokerDetails.length === 0) {
+        console.error("Error fetching broker details:", brokerError);
+        return false;
       }
       
-      if (existingBroker && existingBroker.length > 0) {
-        // Update existing broker
-        const { error: updateError } = await supabase
+      // For each broker in broker_details, add or update in brokers_admin
+      for (const broker of brokerDetails) {
+        // Check if broker already exists in brokers_admin
+        const { data: existingBroker, error: existingError } = await supabase
           .from('brokers_admin')
-          .update({
-            broker_name: broker.broker_name,
-            description: broker.description,
-            image_url: broker.image_url,
-            is_active: broker.is_active,
-            required_inputs: broker.required_inputs,
-            updated_at: new Date().toISOString()
-          })
+          .select('id')
           .eq('id', broker.id);
           
-        if (updateError) {
-          console.error(`Error updating broker ${broker.id} in admin:`, updateError);
+        if (existingError) {
+          console.error(`Error checking if broker ${broker.id} exists in admin:`, existingError);
+          continue;
         }
-      } else {
-        // Insert new broker
-        const { error: insertError } = await supabase
-          .from('brokers_admin')
-          .insert({
-            id: broker.id,
-            broker_name: broker.broker_name,
-            description: broker.description,
-            image_url: broker.image_url,
-            is_active: broker.is_active,
-            required_inputs: broker.required_inputs,
-            display_order: broker.id
-          });
-          
-        if (insertError) {
-          console.error(`Error inserting broker ${broker.id} into admin:`, insertError);
+        
+        if (existingBroker && existingBroker.length > 0) {
+          // Update existing broker
+          const { error: updateError } = await supabase
+            .from('brokers_admin')
+            .update({
+              broker_name: broker.broker_name,
+              description: broker.description,
+              image_url: broker.image_url,
+              is_active: broker.is_active,
+              required_inputs: broker.required_inputs,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', broker.id);
+            
+          if (updateError) {
+            console.error(`Error updating broker ${broker.id} in admin:`, updateError);
+          }
+        } else {
+          // Insert new broker
+          const { error: insertError } = await supabase
+            .from('brokers_admin')
+            .insert({
+              id: broker.id,
+              broker_name: broker.broker_name,
+              description: broker.description,
+              image_url: broker.image_url,
+              is_active: broker.is_active,
+              required_inputs: broker.required_inputs,
+              display_order: broker.id
+            });
+            
+          if (insertError) {
+            console.error(`Error inserting broker ${broker.id} into admin:`, insertError);
+          }
         }
       }
     }

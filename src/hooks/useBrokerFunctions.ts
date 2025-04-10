@@ -82,7 +82,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
               function_description: func.function_description || "",
               function_slug: func.function_slug,
               function_enabled: func.function_enabled,
-              is_premium: func.is_premium,
+              is_premium: f.is_premium,
               broker_image: imageUrl
             });
           }
@@ -140,10 +140,25 @@ export const useBrokerFunctions = (brokerId?: number) => {
         }
       )
       .subscribe();
+      
+    // 3. Listen for changes in the brokers_admin table
+    const brokersAdminChannel = supabase
+      .channel('brokers_admin_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'brokers_admin' }, 
+        (payload) => {
+          console.log('Broker admin data changed:', payload);
+          // Refresh functions when broker admin data changes
+          fetchBrokerFunctions();
+          toast.info("Broker administration data updated");
+        }
+      )
+      .subscribe();
     
     return () => {
       supabase.removeChannel(brokerDetailsChannel);
       supabase.removeChannel(brokerFunctionalityChannel);
+      supabase.removeChannel(brokersAdminChannel);
     };
   }, [fetchBrokerFunctions]);
 
@@ -192,7 +207,8 @@ export const useBrokerFunctions = (brokerId?: number) => {
       // Try to get broker info from brokers_admin table
       const { data: adminBrokers, error: adminError } = await supabase
         .from('brokers_admin')
-        .select('*');
+        .select('*')
+        .order('display_order', { ascending: true });
         
       if (!adminError && adminBrokers && adminBrokers.length > 0) {
         return adminBrokers.map(b => ({
