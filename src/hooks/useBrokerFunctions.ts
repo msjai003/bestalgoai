@@ -36,17 +36,17 @@ export const useBrokerFunctions = (brokerId?: number) => {
           setBrokerName(dbFunctions[0].broker_name);
           
           // Map database functions to BrokerFunction type
-          functionsData = await Promise.all(dbFunctions.map(async f => {
-            const brokerImage = await getBrokerImage(f.broker_id);
+          functionsData = await Promise.all(dbFunctions.map(async func => {
+            const brokerImage = await getBrokerImage(func.broker_id);
             return {
-              id: f.id,
-              broker_id: f.broker_id,
-              broker_name: f.broker_name,
-              function_name: f.function_name,
-              function_description: f.function_description || "",
-              function_slug: f.function_slug,
-              function_enabled: f.function_enabled,
-              is_premium: f.is_premium,
+              id: func.id,
+              broker_id: func.broker_id,
+              broker_name: func.broker_name,
+              function_name: func.function_name,
+              function_description: func.function_description || "",
+              function_slug: func.function_slug,
+              function_enabled: func.function_enabled,
+              is_premium: func.is_premium,
               broker_image: brokerImage
             };
           }));

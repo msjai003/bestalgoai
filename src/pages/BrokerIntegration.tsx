@@ -60,10 +60,24 @@ const BrokerIntegration = () => {
       )
       .subscribe();
     
+    // Add subscription for brokers_admin table changes
+    const brokersAdminChannel = supabase
+      .channel('brokers_admin_realtime')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'brokers_admin' }, 
+        (payload) => {
+          console.log('Broker admin data changed in database:', payload);
+          loadBrokers();
+          toast.info("Broker administration data updated");
+        }
+      )
+      .subscribe();
+    
     // Clean up the interval and subscription on component unmount
     return () => {
       clearInterval(refreshInterval);
       supabase.removeChannel(brokerDetailsChannel);
+      supabase.removeChannel(brokersAdminChannel);
     };
   }, [loadBrokers]);
 

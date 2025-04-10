@@ -64,6 +64,19 @@ const BrokerCredentials = () => {
       )
       .subscribe();
     
+    // Add subscription for brokers_admin table changes for this specific broker
+    const brokersAdminChannel = supabase
+      .channel('brokers_admin_credential_page')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'brokers_admin', filter: `id=eq.${brokerId}` }, 
+        (payload) => {
+          console.log('Broker admin data changed for current broker:', payload);
+          loadBroker();
+          toast.info("Broker administration data updated");
+        }
+      )
+      .subscribe();
+    
     // Set up a refresh interval
     const refreshInterval = setInterval(() => {
       loadBroker();
@@ -73,6 +86,7 @@ const BrokerCredentials = () => {
     return () => {
       clearInterval(refreshInterval);
       supabase.removeChannel(brokerDetailsChannel);
+      supabase.removeChannel(brokersAdminChannel);
     };
   }, [brokerId, navigate]);
 
