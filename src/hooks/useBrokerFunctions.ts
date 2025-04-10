@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BrokerFunction } from "@/types/broker";
 import { supabase } from "@/lib/supabase/client";
 import { brokers } from "@/components/broker-integration/BrokerData";
+import { syncBrokerFunctionsFromDetails } from "@/lib/broker-functions";
 
 export const useBrokerFunctions = (brokerId?: number) => {
   const [functions, setFunctions] = useState<BrokerFunction[]>([]);
@@ -17,6 +18,9 @@ export const useBrokerFunctions = (brokerId?: number) => {
     setError(null);
     
     try {
+      // First, sync broker functions from broker_details to ensure we have the latest data
+      await syncBrokerFunctionsFromDetails();
+      
       let functionsData: BrokerFunction[] = [];
       
       if (brokerId) {
@@ -113,6 +117,26 @@ export const useBrokerFunctions = (brokerId?: number) => {
     }
   }, [brokerId]);
 
+  // Listen for changes in the broker_details table
+  useEffect(() => {
+    const channel = supabase
+      .channel('broker_details_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'broker_details' }, 
+        (payload) => {
+          console.log('Broker details changed:', payload);
+          // Refresh functions when broker details change
+          fetchBrokerFunctions();
+          toast.info("Broker information updated");
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBrokerFunctions]);
+
   // Helper function to fetch broker info
   const fetchBrokerInfo = async (id: number) => {
     try {
@@ -128,6 +152,21 @@ export const useBrokerFunctions = (brokerId?: number) => {
           id: adminBroker.id,
           name: adminBroker.broker_name,
           logo: adminBroker.image_url || "/placeholder.svg"
+        };
+      }
+      
+      // Try broker_details table
+      const { data: brokerDetails, error: detailsError } = await supabase
+        .from('broker_details')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+        
+      if (!detailsError && brokerDetails) {
+        return {
+          id: brokerDetails.id,
+          name: brokerDetails.broker_name,
+          logo: brokerDetails.image_url || "/placeholder.svg"
         };
       }
       
@@ -149,6 +188,19 @@ export const useBrokerFunctions = (brokerId?: number) => {
         
       if (!adminError && adminBrokers && adminBrokers.length > 0) {
         return adminBrokers.map(b => ({
+          id: b.id,
+          name: b.broker_name,
+          logo: b.image_url || "/placeholder.svg"
+        }));
+      }
+      
+      // Try broker_details table
+      const { data: brokersDetails, error: detailsError } = await supabase
+        .from('broker_details')
+        .select('*');
+        
+      if (!detailsError && brokersDetails && brokersDetails.length > 0) {
+        return brokersDetails.map(b => ({
           id: b.id,
           name: b.broker_name,
           logo: b.image_url || "/placeholder.svg"

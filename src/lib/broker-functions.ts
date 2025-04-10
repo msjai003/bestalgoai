@@ -127,7 +127,7 @@ export const getBrokerImage = async (
       return adminBroker.image_url;
     }
     
-    // Try to fetch from database using the broker_details table as fallback
+    // Get from broker_details table as fallback
     const { data, error } = await supabase
       .from('broker_details')
       .select('image_url')
@@ -170,7 +170,7 @@ const getBrokerInfo = async (brokerId: number) => {
       };
     }
     
-    // Try to fetch from database using the broker_details table as fallback
+    // Check broker_details table
     const { data, error } = await supabase
       .from('broker_details')
       .select('*')
@@ -292,7 +292,7 @@ export const getBrokerFunctionRequiredInputs = async (
   functionSlug: string
 ): Promise<string[]> => {
   try {
-    // First check if the broker exists in brokers_admin table
+    // First check if broker exists in brokers_admin table
     const { data: adminBroker, error: adminError } = await supabase
       .from('brokers_admin')
       .select('required_inputs')
@@ -319,11 +319,38 @@ export const getBrokerFunctionRequiredInputs = async (
       }
     }
     
+    // Check broker_details table
+    const { data: brokerDetails, error: brokerError } = await supabase
+      .from('broker_details')
+      .select('required_inputs')
+      .eq('id', brokerId)
+      .maybeSingle();
+      
+    if (!brokerError && brokerDetails && brokerDetails.required_inputs) {
+      // Parse required inputs from broker_details
+      let requiredInputs: string[] = [];
+      if (Array.isArray(brokerDetails.required_inputs)) {
+        requiredInputs = brokerDetails.required_inputs;
+      } else if (typeof brokerDetails.required_inputs === 'string') {
+        try {
+          requiredInputs = JSON.parse(brokerDetails.required_inputs);
+        } catch (e) {
+          console.error("Error parsing required_inputs JSON:", e);
+        }
+      } else if (typeof brokerDetails.required_inputs === 'object') {
+        requiredInputs = Object.keys(brokerDetails.required_inputs);
+      }
+      
+      if (requiredInputs.length > 0) {
+        return requiredInputs;
+      }
+    }
+    
     // Find the broker from static data as fallback
     const broker = brokers.find(b => b.id === brokerId);
     if (!broker) return [];
     
-    // Return broker required inputs based on the function
+    // Return broker required inputs
     if (broker.requiredInputs && broker.requiredInputs.length > 0) {
       return broker.requiredInputs;
     }
@@ -333,5 +360,74 @@ export const getBrokerFunctionRequiredInputs = async (
   } catch (error) {
     console.error("Error getting broker function required inputs:", error);
     return [];
+  }
+};
+
+/**
+ * Synchronizes broker data from broker_details to brokers_functions
+ * Call this when broker_details table is updated
+ */
+export const syncBrokerFunctionsFromDetails = async (): Promise<boolean> => {
+  try {
+    // Get all brokers from broker_details
+    const { data: brokerDetails, error: brokerError } = await supabase
+      .from('broker_details')
+      .select('*');
+      
+    if (brokerError || !brokerDetails) {
+      console.error("Error fetching broker details:", brokerError);
+      return false;
+    }
+    
+    // Update broker functions for each broker
+    for (const broker of brokerDetails) {
+      // First check if functions exist for this broker
+      const { data: existingFunctions, error: funcError } = await supabase
+        .from('brokers_functions')
+        .select('id')
+        .eq('broker_id', broker.id);
+        
+      if (funcError) {
+        console.error(`Error checking functions for broker ${broker.id}:`, funcError);
+        continue;
+      }
+      
+      // If functions already exist, update them
+      if (existingFunctions && existingFunctions.length > 0) {
+        // Update existing functions with current broker details
+        const { error: updateError } = await supabase
+          .from('brokers_functions')
+          .update({
+            broker_name: broker.broker_name,
+            broker_image: broker.image_url
+          })
+          .eq('broker_id', broker.id);
+          
+        if (updateError) {
+          console.error(`Error updating functions for broker ${broker.id}:`, updateError);
+        }
+      } else {
+        // Create default functions for this broker
+        const defaultFunctions = createDefaultFunctions({
+          id: broker.id,
+          name: broker.broker_name,
+          logo: broker.image_url
+        });
+        
+        // Insert new functions
+        const { error: insertError } = await supabase
+          .from('brokers_functions')
+          .insert(defaultFunctions);
+          
+        if (insertError) {
+          console.error(`Error creating functions for broker ${broker.id}:`, insertError);
+        }
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error synchronizing broker functions:", error);
+    return false;
   }
 };
