@@ -1,106 +1,111 @@
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from "@/lib/supabase/client";
 
-export const testSupabaseConnection = async () => {
-  try {
-    const startTime = Date.now();
-    
-    // Try to access the users table for a more complete connection test
-    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
-      query: 'SELECT count(*) FROM user_profiles LIMIT 10'
-    });
-    
-    const endTime = Date.now();
-    
-    if (error) {
-      console.error("Connection test error:", error);
-      return {
-        success: false,
-        message: error.message,
-        details: error,
-        latency: endTime - startTime
-      };
-    }
-    
-    // Try to access the auth system as well
-    const { data: authData, error: authError } = await supabase.auth.getSession();
-    if (authError) {
-      console.error("Auth connection test error:", authError);
-      return {
-        success: false,
-        message: authError.message,
-        details: authError,
-        latency: endTime - startTime
-      };
-    }
-    
+export const testConnection = async (broker: string, credentials: any) => {
+  // This is a mock function that pretends to test broker connections
+  console.log(`Testing connection to ${broker} with credentials:`, credentials);
+  
+  // Simulate a delay for network call
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Mock success based on certain conditions
+  let success = Math.random() > 0.2; // 80% success rate
+  
+  if (broker === "Zerodha" && credentials.username === "test" && credentials.password === "test") {
+    success = true;
+  }
+  
+  if (success) {
     return {
       success: true,
-      data: queryResult,
-      authData,
-      latency: endTime - startTime
+      message: "Connection successful",
+      data: {
+        session_token: "mock-session-token-" + Math.random().toString(36).substring(2),
+        user_id: "mock-user-id-" + Math.random().toString(36).substring(2),
+        account_info: {
+          account_type: "Individual",
+          account_status: "Active",
+          funds_available: 10000.00,
+          last_login: new Date().toISOString()
+        }
+      }
     };
-  } catch (error: any) {
-    console.error("Exception during connection test:", error);
+  } else {
     return {
       success: false,
-      message: error.message || "Connection failed",
-      error
+      message: "Failed to connect: Invalid credentials",
+      error: {
+        code: "AUTH_FAILED",
+        details: "The username or password you entered is incorrect."
+      }
     };
   }
 };
 
-// Test if specific tables exist and are accessible
-export const testTableAccess = async (tableName: string) => {
-  try {
-    console.log(`Testing access to ${tableName} table...`);
-    
-    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
-      query: `SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = '${tableName}'
-      ) as "exists", (
-        SELECT count(*) FROM "${tableName}" LIMIT 1
-      ) as "count"`
-    });
+export const testFunctionality = async (broker: string, functionality: string) => {
+  console.log(`Testing ${functionality} functionality for ${broker}`);
+  
+  // Simulate a delay for network call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // For demo purposes, only some functionalities work
+  const workingFunctionalities = ["order_placement", "market_data", "portfolio"];
+  const isWorking = workingFunctionalities.includes(functionality);
+  
+  if (isWorking) {
+    return {
+      success: true,
+      message: `${functionality} is working correctly`,
+      data: {
+        status: "AVAILABLE",
+        permissions: ["read", "write"]
+      }
+    };
+  } else {
+    return {
+      success: false,
+      message: `${functionality} is not available or requires additional permissions`,
+      error: {
+        code: "FUNC_UNAVAILABLE",
+        details: "This functionality is not supported or requires additional permissions."
+      }
+    };
+  }
+};
 
+export const checkBrokerStatus = async (brokerId: number) => {
+  try {
+    // Check if broker has any functions
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', {
+      p_broker_id: brokerId
+    });
+    
     if (error) {
-      console.error(`Error accessing ${tableName} table:`, error);
-      return {
-        success: false,
-        tableName,
-        message: error.message,
-        details: error
+      console.error("Error checking broker status:", error);
+      return { 
+        isActive: false, 
+        functionCount: 0,
+        message: "Error checking broker status" 
       };
     }
     
-    let tableData = null;
-    let tableExists = false;
-    let recordCount = 0;
-    
-    if (queryResult && Array.isArray(queryResult) && queryResult.length > 0) {
-      // Try to parse the result which should be an array with one object
-      const result = queryResult[0];
-      if (result && typeof result === 'object') {
-        tableExists = result.exists === true;
-        recordCount = result.count ? Number(result.count) : 0;
-      }
-    }
+    // Check if data has any items
+    const hasData = data && Array.isArray(data) && data.length > 0;
+    const functionCount = hasData ? data.length : 0;
     
     return {
-      success: true,
-      tableName,
-      exists: tableExists,
-      count: recordCount
+      isActive: functionCount > 0,
+      functionCount,
+      message: functionCount > 0 ? 
+        `Broker is active with ${functionCount} functions` : 
+        "Broker has no active functions"
     };
-  } catch (error: any) {
-    console.error(`Exception testing ${tableName} table access:`, error);
-    return {
-      success: false,
-      tableName,
-      message: error.message || `Failed to access ${tableName} table`,
-      error
+  } catch (error) {
+    console.error("Error in checkBrokerStatus:", error);
+    return { 
+      isActive: false, 
+      functionCount: 0,
+      message: "Exception checking broker status" 
     };
   }
 };

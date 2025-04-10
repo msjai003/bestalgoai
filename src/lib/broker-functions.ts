@@ -76,7 +76,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     }
     
     // Convert BrokerInfocapFunction to BrokerFunction format
-    return (data as BrokerInfocapFunction[]).map((func: BrokerInfocapFunction) => ({
+    return data.map((func: BrokerInfocapFunction) => ({
       id: func.id,
       broker_id: func.broker_id,
       broker_name: func.broker_name,
@@ -121,7 +121,7 @@ export const hasBrokerFunction = async (
     }
     
     // Filter the returned functions to find the one with the matching slug
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
+    const matchingFunctions = data.filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -157,7 +157,7 @@ export const isBrokerFunctionPremium = async (
     }
     
     // Filter to find the specific function
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
+    const matchingFunctions = data.filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug && func.function_enabled
     );
     
@@ -227,6 +227,7 @@ export const getBrokerImage = async (
       return null;
     }
     
+    // Use image_url from broker_details
     const image = details.image_url || null;
     brokerImageCache[brokerId] = image;
     return image;
@@ -296,7 +297,7 @@ export const getBrokerFunctionConfig = async (
     }
     
     // Find the specific function
-    const matchingFunctions = (data as BrokerInfocapFunction[]).filter((func: BrokerInfocapFunction) => 
+    const matchingFunctions = data.filter((func: BrokerInfocapFunction) => 
       func.function_slug === functionSlug
     );
     
@@ -367,7 +368,7 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
       return [];
     }
     
-    return data as BrokerInfocapFunction[];
+    return data;
   } catch (error) {
     console.error("Error fetching all broker functions:", error);
     return [];

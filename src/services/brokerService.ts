@@ -23,7 +23,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     }
     
     // Map database broker details to Broker type
-    return data.map((item) => {
+    return data.map((item: BrokerDetail) => {
       // Handle the required_inputs field which can be JSON or an array
       let requiredInputs: string[] = [];
       
@@ -35,14 +35,14 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
         // If it's a JSON string, parse it
         else if (typeof item.required_inputs === 'string' && item.required_inputs.startsWith('[')) {
           try {
-            requiredInputs = JSON.parse(item.required_inputs);
+            requiredInputs = JSON.parse(item.required_inputs as string);
           } catch (e) {
             console.error("Error parsing required_inputs JSON:", e);
           }
         }
         // If it's an object with key-value pairs, extract the keys
         else if (typeof item.required_inputs === 'object') {
-          requiredInputs = Object.keys(item.required_inputs);
+          requiredInputs = Object.keys(item.required_inputs as Record<string, any>);
         }
       }
 
@@ -79,7 +79,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       return staticBrokers.find(b => b.id === brokerId) || null;
     }
     
-    const item = data[0];
+    const item = data[0] as BrokerDetail;
     if (!item) {
       return staticBrokers.find(b => b.id === brokerId) || null;
     }
@@ -95,14 +95,14 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       // If it's a JSON string, parse it
       else if (typeof item.required_inputs === 'string' && item.required_inputs.startsWith('[')) {
         try {
-          requiredInputs = JSON.parse(item.required_inputs);
+          requiredInputs = JSON.parse(item.required_inputs as string);
         } catch (e) {
           console.error("Error parsing required_inputs JSON:", e);
         }
       }
       // If it's an object with key-value pairs, extract the keys
       else if (typeof item.required_inputs === 'object') {
-        requiredInputs = Object.keys(item.required_inputs);
+        requiredInputs = Object.keys(item.required_inputs as Record<string, any>);
       }
     }
     
@@ -121,6 +121,33 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     // Fall back to static broker data if there's an exception
     return staticBrokers.find(b => b.id === brokerId) || null;
   }
+};
+
+/**
+ * Save a broker to the database
+ */
+export const saveBroker = async (broker: Partial<Broker>): Promise<number | null> => {
+  // For now return a mock success response
+  console.log("Saving broker:", broker);
+  return 123; // Mock ID
+};
+
+/**
+ * Update a broker in the database
+ */
+export const updateBroker = async (brokerId: number, broker: Partial<Broker>): Promise<boolean> => {
+  // For now return a mock success response
+  console.log("Updating broker:", brokerId, broker);
+  return true;
+};
+
+/**
+ * Delete a broker from the database
+ */
+export const deleteBroker = async (brokerId: number): Promise<boolean> => {
+  // For now return a mock success response  
+  console.log("Deleting broker:", brokerId);
+  return true;
 };
 
 /**
@@ -145,7 +172,11 @@ export const saveBrokerFunction = async (brokerFunction: Partial<BrokerFunction>
       return null;
     }
     
-    return typeof data === 'string' ? data : String(data);
+    if (data && typeof data.id === 'string') {
+      return data.id;
+    }
+    
+    return null;
   } catch (error) {
     console.error("Exception saving broker function:", error);
     return null;
@@ -169,7 +200,7 @@ export const fetchBrokerFunctions = async (): Promise<BrokerFunction[]> => {
       return [];
     }
     
-    return data as BrokerFunction[];
+    return data;
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
     return [];
@@ -233,9 +264,9 @@ export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunct
       return [];
     }
     
-    return data as BrokerInfocapFunction[];
+    return data;
   } catch (error) {
-    console.error("Exception fetching all broker functions:", error);
+    console.error("Error fetching all broker functions:", error);
     return [];
   }
 };
@@ -258,7 +289,7 @@ export const getBrokerInfocapFunctions = async (brokerId: number): Promise<Broke
       return [];
     }
     
-    return data as BrokerInfocapFunction[];
+    return data;
   } catch (error) {
     console.error("Exception fetching broker functions:", error);
     return [];

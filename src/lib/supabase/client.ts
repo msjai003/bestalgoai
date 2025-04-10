@@ -121,6 +121,34 @@ export const supabase = {
       };
     }
     
+    if (functionName === 'get_all_broker_details') {
+      return {
+        data: [
+          {
+            id: 1,
+            broker_name: "Zerodha",
+            description: "India's largest stock broker",
+            image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg",
+            required_inputs: ["username", "password", "api_key"],
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            broker_name: "ICICI Direct",
+            description: "ICICI Bank's trading platform",
+            image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg",
+            required_inputs: ["username", "password"],
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ],
+        error: null
+      };
+    }
+    
     if (functionName === 'get_all_broker_infocap_functions') {
       return {
         data: [
