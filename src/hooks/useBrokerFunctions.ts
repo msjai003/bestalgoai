@@ -20,23 +20,18 @@ export const useBrokerFunctions = (brokerId?: number) => {
       let functionsData: BrokerFunction[] = [];
       
       if (brokerId) {
-        // Fetch functions for a specific broker from the broker_functionality table
-        const { data: dbFunctions, error: functionsError } = await supabase
-          .from('broker_functionality')
+        // Fetch functions for a specific broker from the brokers_functionality table first
+        const { data: newFunctions, error: newFunctionsError } = await supabase
+          .from('brokers_functionality')
           .select('*')
           .eq('broker_id', brokerId);
           
-        if (functionsError) {
-          console.error("Error fetching broker functionalities:", functionsError);
-          throw new Error("Failed to load broker functionalities from database");
-        }
-        
-        if (dbFunctions && dbFunctions.length > 0) {
+        if (!newFunctionsError && newFunctions && newFunctions.length > 0) {
           // Set broker name from the first function
-          setBrokerName(dbFunctions[0].broker_name);
+          setBrokerName(newFunctions[0].broker_name);
           
           // Map database functions to BrokerFunction type
-          functionsData = await Promise.all(dbFunctions.map(async f => {
+          functionsData = await Promise.all(newFunctions.map(async f => {
             const brokerImage = await getBrokerImage(f.broker_id);
             return {
               id: f.id,
@@ -51,28 +46,55 @@ export const useBrokerFunctions = (brokerId?: number) => {
             };
           }));
         } else {
-          // No functions found in database for this broker, fetch broker info to create defaults
-          const broker = await fetchBrokerInfo(brokerId);
+          // Fallback to the broker_functionality table if no data in the new table
+          const { data: dbFunctions, error: functionsError } = await supabase
+            .from('broker_functionality')
+            .select('*')
+            .eq('broker_id', brokerId);
+            
+          if (functionsError) {
+            console.error("Error fetching broker functionalities:", functionsError);
+            throw new Error("Failed to load broker functionalities from database");
+          }
           
-          if (broker) {
-            setBrokerName(broker.name);
-            functionsData = await createAndStoreFunctions(broker);
+          if (dbFunctions && dbFunctions.length > 0) {
+            // Set broker name from the first function
+            setBrokerName(dbFunctions[0].broker_name);
+            
+            // Map database functions to BrokerFunction type
+            functionsData = await Promise.all(dbFunctions.map(async f => {
+              const brokerImage = await getBrokerImage(f.broker_id);
+              return {
+                id: f.id,
+                broker_id: f.broker_id,
+                broker_name: f.broker_name,
+                function_name: f.function_name,
+                function_description: f.function_description || "",
+                function_slug: f.function_slug,
+                function_enabled: f.function_enabled,
+                is_premium: f.is_premium,
+                broker_image: brokerImage
+              };
+            }));
+          } else {
+            // No functions found in database for this broker, fetch broker info to create defaults
+            const broker = await fetchBrokerInfo(brokerId);
+            
+            if (broker) {
+              setBrokerName(broker.name);
+              functionsData = await createAndStoreFunctions(broker);
+            }
           }
         }
       } else {
-        // Fetch all functions for all brokers from the broker_functionality table
-        const { data: allFunctions, error: allFunctionsError } = await supabase
-          .from('broker_functionality')
+        // Fetch all functions for all brokers from the brokers_functionality table
+        const { data: allNewFunctions, error: allNewFunctionsError } = await supabase
+          .from('brokers_functionality')
           .select('*');
           
-        if (allFunctionsError) {
-          console.error("Error fetching all broker functionalities:", allFunctionsError);
-          throw new Error("Failed to load broker functionalities from database");
-        }
-        
-        if (allFunctions && allFunctions.length > 0) {
+        if (!allNewFunctionsError && allNewFunctions && allNewFunctions.length > 0) {
           // Map database functions to BrokerFunction type with broker images
-          for (const func of allFunctions) {
+          for (const func of allNewFunctions) {
             const imageUrl = await getBrokerImage(func.broker_id);
             functionsData.push({
               id: func.id,
@@ -87,13 +109,41 @@ export const useBrokerFunctions = (brokerId?: number) => {
             });
           }
         } else {
-          // No functions found in database, fall back to creating some defaults
-          // Fetch all broker info to create defaults
-          const brokersList = await fetchAllBrokers();
+          // Fallback to broker_functionality table
+          const { data: allFunctions, error: allFunctionsError } = await supabase
+            .from('broker_functionality')
+            .select('*');
+            
+          if (allFunctionsError) {
+            console.error("Error fetching all broker functionalities:", allFunctionsError);
+            throw new Error("Failed to load broker functionalities from database");
+          }
           
-          for (const broker of brokersList) {
-            const defaultFunctions = await createAndStoreFunctions(broker);
-            functionsData = [...functionsData, ...defaultFunctions];
+          if (allFunctions && allFunctions.length > 0) {
+            // Map database functions to BrokerFunction type with broker images
+            for (const func of allFunctions) {
+              const imageUrl = await getBrokerImage(func.broker_id);
+              functionsData.push({
+                id: func.id,
+                broker_id: func.broker_id,
+                broker_name: func.broker_name,
+                function_name: func.function_name,
+                function_description: func.function_description || "",
+                function_slug: func.function_slug,
+                function_enabled: func.function_enabled,
+                is_premium: func.is_premium,
+                broker_image: imageUrl
+              });
+            }
+          } else {
+            // No functions found in database, fall back to creating some defaults
+            // Fetch all broker info to create defaults
+            const brokersList = await fetchAllBrokers();
+            
+            for (const broker of brokersList) {
+              const defaultFunctions = await createAndStoreFunctions(broker);
+              functionsData = [...functionsData, ...defaultFunctions];
+            }
           }
         }
       }
@@ -127,7 +177,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
       )
       .subscribe();
     
-    // 2. Listen for changes in the broker_functionality table
+    // 2. Listen for changes in the broker_functionality and brokers_functionality tables
     const brokerFunctionalityChannel = supabase
       .channel('broker_functionality_changes')
       .on('postgres_changes', 
@@ -140,10 +190,24 @@ export const useBrokerFunctions = (brokerId?: number) => {
         }
       )
       .subscribe();
+      
+    const brokersFunctionalityChannel = supabase
+      .channel('brokers_functionality_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'brokers_functionality' }, 
+        (payload) => {
+          console.log('Brokers functionalities changed:', payload);
+          // Refresh functions when broker functions change
+          fetchBrokerFunctions();
+          toast.info("Broker functionalities updated");
+        }
+      )
+      .subscribe();
     
     return () => {
       supabase.removeChannel(brokerDetailsChannel);
       supabase.removeChannel(brokerFunctionalityChannel);
+      supabase.removeChannel(brokersFunctionalityChannel);
     };
   }, [fetchBrokerFunctions]);
 
@@ -154,14 +218,13 @@ export const useBrokerFunctions = (brokerId?: number) => {
       const { data: adminBroker, error: adminError } = await supabase
         .from('brokers_admin')
         .select('*')
-        .eq('id', id)
-        .maybeSingle();
+        .eq('id', id);
         
-      if (!adminError && adminBroker) {
+      if (!adminError && adminBroker && adminBroker.length > 0) {
         return {
-          id: adminBroker.id,
-          name: adminBroker.broker_name,
-          logo: adminBroker.image_url || "/placeholder.svg"
+          id: adminBroker[0].id,
+          name: adminBroker[0].broker_name,
+          logo: adminBroker[0].image_url || "/placeholder.svg"
         };
       }
       
@@ -169,14 +232,13 @@ export const useBrokerFunctions = (brokerId?: number) => {
       const { data: brokerDetails, error: detailsError } = await supabase
         .from('broker_details')
         .select('*')
-        .eq('id', id)
-        .maybeSingle();
+        .eq('id', id);
         
-      if (!detailsError && brokerDetails) {
+      if (!detailsError && brokerDetails && brokerDetails.length > 0) {
         return {
-          id: brokerDetails.id,
-          name: brokerDetails.broker_name,
-          logo: brokerDetails.image_url || "/placeholder.svg"
+          id: brokerDetails[0].id,
+          name: brokerDetails[0].broker_name,
+          logo: brokerDetails[0].image_url || "/placeholder.svg"
         };
       }
       
@@ -232,22 +294,20 @@ export const useBrokerFunctions = (brokerId?: number) => {
       const { data: adminBroker, error: adminError } = await supabase
         .from('brokers_admin')
         .select('image_url')
-        .eq('id', brokerId)
-        .maybeSingle();
+        .eq('id', brokerId);
         
-      if (!adminError && adminBroker && adminBroker.image_url) {
-        return adminBroker.image_url;
+      if (!adminError && adminBroker && adminBroker.length > 0 && adminBroker[0].image_url) {
+        return adminBroker[0].image_url;
       }
       
       // Try broker_details table
       const { data: brokerDetails, error: detailsError } = await supabase
         .from('broker_details')
         .select('image_url')
-        .eq('id', brokerId)
-        .maybeSingle();
+        .eq('id', brokerId);
         
-      if (!detailsError && brokerDetails && brokerDetails.image_url) {
-        return brokerDetails.image_url;
+      if (!detailsError && brokerDetails && brokerDetails.length > 0 && brokerDetails[0].image_url) {
+        return brokerDetails[0].image_url;
       }
       
       // Fall back to static data
@@ -310,12 +370,13 @@ export const useBrokerFunctions = (brokerId?: number) => {
       }
     ];
     
-    // Insert functions into the database one by one
+    // Try to insert into brokers_functionality table first
+    let successCount = 0;
     for (const func of defaultFunctions) {
       try {
         // First check if function exists
         const { data: existingFuncs, error: checkError } = await supabase
-          .from('broker_functionality')
+          .from('brokers_functionality')
           .select('id')
           .eq('broker_id', func.broker_id)
           .eq('function_slug', func.function_slug);
@@ -323,17 +384,53 @@ export const useBrokerFunctions = (brokerId?: number) => {
         if (!checkError && existingFuncs && existingFuncs.length > 0) {
           // Update existing function
           await supabase
-            .from('broker_functionality')
+            .from('brokers_functionality')
             .update(func)
             .eq('id', existingFuncs[0].id);
+          successCount++;
         } else {
           // Insert new function
-          await supabase
-            .from('broker_functionality')
+          const { error: insertError } = await supabase
+            .from('brokers_functionality')
             .insert(func);
+            
+          if (!insertError) {
+            successCount++;
+          } else {
+            console.error("Error inserting function into brokers_functionality:", insertError);
+          }
         }
       } catch (error) {
-        console.error("Error storing broker function:", error);
+        console.error("Error storing broker function in brokers_functionality:", error);
+      }
+    }
+    
+    // If some inserts failed, try the original table as fallback
+    if (successCount < defaultFunctions.length) {
+      for (const func of defaultFunctions) {
+        try {
+          // First check if function exists
+          const { data: existingFuncs, error: checkError } = await supabase
+            .from('broker_functionality')
+            .select('id')
+            .eq('broker_id', func.broker_id)
+            .eq('function_slug', func.function_slug);
+            
+          if (!checkError && existingFuncs && existingFuncs.length > 0) {
+            // Update existing function
+            await supabase
+              .from('broker_functionality')
+              .update(func)
+              .eq('id', existingFuncs[0].id);
+          } else {
+            // Insert new function
+            await supabase
+              .from('broker_functionality')
+              .insert(func);
+          }
+        } catch (error) {
+          console.error("Error storing broker function in fallback table:", error);
+        }
       }
     }
     
