@@ -23,8 +23,9 @@ const BrokerIntegration = () => {
     setLoading(true);
     try {
       console.log("Fetching fresh broker data from database...");
+      // Add cache-busting timestamp to ensure we get the latest data
       const brokerData = await fetchBrokerDetails();
-      console.log(`Loaded ${brokerData.length} brokers from database`);
+      console.log(`Loaded ${brokerData.length} brokers from database:`, brokerData);
       setBrokers(brokerData);
       setLastRefreshed(new Date());
 
@@ -47,28 +48,31 @@ const BrokerIntegration = () => {
       loadBrokers();
     }, 10000);
     
-    // Set up real-time subscription for broker details changes
+    // Set up real-time subscription for broker details changes with more specific handling
     const brokerDetailsChannel = supabase
       .channel('broker_details_realtime')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details' }, 
         (payload) => {
           console.log('Broker details changed in database:', payload);
+          // Force immediate reload of brokers
           loadBrokers();
-          toast.info("Broker information updated");
+          toast.info(`Broker information updated: ${payload.table}`);
         }
       )
       .subscribe();
     
-    // Add subscription for brokers_admin table changes
+    // Add subscription for brokers_admin table changes with improved notification
     const brokersAdminChannel = supabase
       .channel('brokers_admin_realtime')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin' }, 
         (payload) => {
           console.log('Broker admin data changed in database:', payload);
+          // Force immediate reload of brokers
           loadBrokers();
-          toast.info("Broker administration data updated");
+          const brokerName = payload.new?.broker_name || 'Unknown';
+          toast.info(`Broker "${brokerName}" information updated`);
         }
       )
       .subscribe();

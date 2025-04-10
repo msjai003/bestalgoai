@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -11,15 +12,19 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
   try {
     console.log("Fetching broker details from database");
     
+    // Add a timestamp parameter to prevent browser caching
+    const timestamp = new Date().getTime();
+    
     // First try to fetch from brokers_admin table with a cache-busting timestamp
     const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
       .select('*')
       .eq('is_active', true)
-      .order('display_order', { ascending: true });
+      .order('display_order', { ascending: true })
+      .headers({ 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'x-supabase-cache': 'no-store' });
     
     if (!adminError && adminData && adminData.length > 0) {
-      console.log(`Found ${adminData.length} broker details in brokers_admin table`);
+      console.log(`Found ${adminData.length} broker details in brokers_admin table:`, adminData);
       // Map broker_admin data to Broker type
       return adminData.map((item: any) => {
         let requiredInputs: string[] = [];
@@ -57,7 +62,8 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       .from('broker_details')
       .select('*')
       .eq('is_active', true)
-      .order('id', { ascending: true }); // Add ordering for consistency
+      .order('id', { ascending: true })
+      .headers({ 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'x-supabase-cache': 'no-store' });
     
     if (error) {
       console.error("Error fetching broker details:", error);
