@@ -22,6 +22,11 @@ export const supabase = {
             data: [],
             error: null
           }),
+          // Add headers method at this level
+          headers: () => ({
+            data: [],
+            error: null
+          }),
           data: [],
           error: null
         }),
@@ -30,6 +35,11 @@ export const supabase = {
           error: null
         }),
         eq: (column, value) => ({
+          data: [],
+          error: null
+        }),
+        // Add headers method at this level
+        headers: () => ({
           data: [],
           error: null
         }),
@@ -49,6 +59,11 @@ export const supabase = {
           data: [],
           error: null
         }),
+        // Add headers method at this level
+        headers: () => ({
+          data: [],
+          error: null
+        }),
         data: [],
         error: null
       }),
@@ -59,6 +74,11 @@ export const supabase = {
           data: [],
           error: null 
         })
+      }),
+      // Add headers method at this level also
+      headers: () => ({
+        data: [],
+        error: null
       }),
       count: () => ({ data: 0, error: null }),
       data: [],
