@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { BrokerFunction } from "@/types/broker";
@@ -12,7 +11,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
   const [brokerName, setBrokerName] = useState<string | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  const fetchBrokerFunctions = useCallback(async () => {
+  const fetchBrokerFunctions = useCallback(async (showToast = false) => {
     setIsLoading(true);
     setError(null);
     
@@ -20,6 +19,8 @@ export const useBrokerFunctions = (brokerId?: number) => {
       let functionsData: BrokerFunction[] = [];
       
       if (brokerId) {
+        console.log(`🔄 Fetching broker functions for broker ID ${brokerId} - ${new Date().toISOString()}`);
+        
         // Fetch functions for a specific broker
         const { data: dbFunctions, error: functionsError } = await supabase
           .from('broker_functionality')
@@ -34,6 +35,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         if (dbFunctions && dbFunctions.length > 0) {
           // Set broker name from the first function
           setBrokerName(dbFunctions[0].broker_name);
+          console.log(`Found broker name: ${dbFunctions[0].broker_name}`);
           
           // Map database functions to BrokerFunction type
           functionsData = await Promise.all(dbFunctions.map(async func => {
@@ -100,9 +102,18 @@ export const useBrokerFunctions = (brokerId?: number) => {
       
       setFunctions(functionsData);
       setLastRefreshed(new Date());
+      
+      if (showToast) {
+        toast.success(`Broker functions refreshed - ${functionsData.length} functions loaded`);
+      }
+      
     } catch (err) {
       console.error("Error fetching broker functionalities:", err);
       setError("Failed to load broker functionalities");
+      
+      if (showToast) {
+        toast.error("Failed to refresh broker functions");
+      }
       
       // Fallback to empty array
       setFunctions([]);
@@ -112,17 +123,27 @@ export const useBrokerFunctions = (brokerId?: number) => {
   }, [brokerId]);
 
   // Enhanced real-time subscription: 
-  // 1. Listen for changes in the broker_details table
   useEffect(() => {
+    console.log("🎧 Setting up real-time listeners for broker data changes");
+    
+    // 1. Listen for changes in the broker_details table
     const brokerDetailsChannel = supabase
       .channel('broker_details_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details' }, 
         (payload) => {
-          console.log('Broker details changed:', payload);
-          // Refresh functions when broker details change
-          fetchBrokerFunctions();
-          toast.info("Broker information updated");
+          console.log('⚡ Broker details changed:', payload);
+          
+          // Only refresh if this change affects the current broker
+          if (!brokerId || payload.new?.id === brokerId || payload.old?.id === brokerId) {
+            // Refresh functions when broker details change
+            fetchBrokerFunctions();
+            
+            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+            toast.info(`Broker "${brokerName}" information updated`);
+          } else {
+            console.log("Change doesn't affect current broker, skipping refresh");
+          }
         }
       )
       .subscribe();
@@ -133,10 +154,16 @@ export const useBrokerFunctions = (brokerId?: number) => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_functionality' }, 
         (payload) => {
-          console.log('Broker functionalities changed:', payload);
-          // Refresh functions when broker functions change
-          fetchBrokerFunctions();
-          toast.info("Broker functionalities updated");
+          console.log('⚡ Broker functionalities changed:', payload);
+          
+          // Only refresh if this change affects the current broker
+          if (!brokerId || payload.new?.broker_id === brokerId || payload.old?.broker_id === brokerId) {
+            // Refresh functions when broker functions change
+            fetchBrokerFunctions();
+            toast.info("Broker functionalities updated");
+          } else {
+            console.log("Change doesn't affect current broker, skipping refresh");
+          }
         }
       )
       .subscribe();
@@ -147,20 +174,38 @@ export const useBrokerFunctions = (brokerId?: number) => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin' }, 
         (payload) => {
-          console.log('Broker admin data changed:', payload);
-          // Refresh functions when broker admin data changes
-          fetchBrokerFunctions();
-          toast.info("Broker administration data updated");
+          console.log('⚡ Broker admin data changed:', payload);
+          
+          // Log the changed data for debugging
+          if (payload.new && payload.old) {
+            console.log("Modified broker admin data:", {
+              from: payload.old.broker_name,
+              to: payload.new.broker_name
+            });
+          }
+          
+          // Only refresh if this change affects the current broker
+          if (!brokerId || payload.new?.id === brokerId || payload.old?.id === brokerId) {
+            // Refresh functions when broker admin data changes
+            fetchBrokerFunctions();
+            
+            const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+            toast.info(`Broker "${brokerName}" admin data updated`);
+          } else {
+            console.log("Change doesn't affect current broker, skipping refresh");
+          }
         }
       )
       .subscribe();
     
     return () => {
+      console.log("🛑 Removing real-time listeners for broker data changes");
+      
       supabase.removeChannel(brokerDetailsChannel);
       supabase.removeChannel(brokerFunctionalityChannel);
       supabase.removeChannel(brokersAdminChannel);
     };
-  }, [fetchBrokerFunctions]);
+  }, [fetchBrokerFunctions, brokerId]);
 
   // Helper function to fetch broker info
   const fetchBrokerInfo = async (id: number) => {
@@ -360,10 +405,10 @@ export const useBrokerFunctions = (brokerId?: number) => {
   useEffect(() => {
     fetchBrokerFunctions();
     
-    // Set up an interval to refresh data periodically
+    // Set up an interval to refresh data periodically (every 7 seconds)
     const refreshInterval = setInterval(() => {
       fetchBrokerFunctions();
-    }, 15000); // Refresh every 15 seconds
+    }, 7000);
     
     return () => {
       clearInterval(refreshInterval);
@@ -376,6 +421,6 @@ export const useBrokerFunctions = (brokerId?: number) => {
     isLoading,
     error,
     lastRefreshed,
-    refresh: fetchBrokerFunctions
+    refresh: useCallback(() => fetchBrokerFunctions(true), [fetchBrokerFunctions])
   };
 };

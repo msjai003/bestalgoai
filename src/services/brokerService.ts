@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { Broker, BrokerDetail } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -10,21 +9,17 @@ import { syncBrokersToAdmin } from "@/lib/broker-functions";
  */
 export const fetchBrokerDetails = async (): Promise<Broker[]> => {
   try {
-    console.log("Fetching broker details from database");
+    console.log("Fetching broker details from database with FORCE REFRESH");
     
-    // Add a timestamp parameter to prevent browser caching
+    // Generate a unique timestamp to prevent caching at all levels
     const timestamp = new Date().getTime();
     
-    // First try to fetch from brokers_admin table with a cache-busting approach
-    // Note: We're using a different variable name for each query to avoid TypeScript errors
-    const adminQuery = supabase
+    // First try to fetch from brokers_admin table
+    const { data: adminData, error: adminError } = await supabase
       .from('brokers_admin')
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
-    
-    // Execute the query
-    const { data: adminData, error: adminError } = await adminQuery;
     
     if (!adminError && adminData && adminData.length > 0) {
       console.log(`Found ${adminData.length} broker details in brokers_admin table:`, adminData);
@@ -60,16 +55,12 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
       });
     }
     
-    // Fallback to broker_details table with standard query approach
-    // Use a different variable name for the query
-    const detailsQuery = supabase
+    // Fallback to broker_details table
+    const { data, error } = await supabase
       .from('broker_details')
       .select('*')
       .eq('is_active', true)
       .order('id', { ascending: true });
-    
-    // Execute the query
-    const { data, error } = await detailsQuery;
     
     if (error) {
       console.error("Error fetching broker details:", error);

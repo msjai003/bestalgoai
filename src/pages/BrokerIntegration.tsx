@@ -18,16 +18,29 @@ const BrokerIntegration = () => {
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
-  // Function to load brokers with improved error handling
-  const loadBrokers = useCallback(async () => {
+  // Function to load brokers with improved error handling and force refresh
+  const loadBrokers = useCallback(async (forceRefresh = true) => {
     setLoading(true);
     try {
-      console.log("Fetching fresh broker data from database...");
-      // Add cache-busting timestamp to ensure we get the latest data
+      console.log(`Fetching ${forceRefresh ? 'fresh' : 'cached'} broker data from database...`);
+      
+      // Get fresh broker data
       const brokerData = await fetchBrokerDetails();
       console.log(`Loaded ${brokerData.length} brokers from database:`, brokerData);
-      setBrokers(brokerData);
-      setLastRefreshed(new Date());
+      
+      // Only update state if we have data
+      if (brokerData && brokerData.length > 0) {
+        setBrokers(brokerData);
+        setLastRefreshed(new Date());
+        
+        // Show toast on force refresh
+        if (forceRefresh) {
+          toast.success(`Broker list refreshed - ${brokerData.length} brokers loaded`);
+        }
+      } else {
+        console.warn("No broker data returned from fetch");
+        toast.error("No broker data available");
+      }
 
       // Sync broker functions data
       await syncBrokerFunctionsFromDetails();
@@ -41,23 +54,26 @@ const BrokerIntegration = () => {
 
   useEffect(() => {
     // Load brokers immediately when the component mounts
-    loadBrokers();
+    loadBrokers(false); // Don't show toast on initial load
     
-    // Set up an interval to refresh data every 10 seconds (reduced from 30s)
+    // Set up an interval to refresh data every 5 seconds (reduced from 10s)
     const refreshInterval = setInterval(() => {
-      loadBrokers();
-    }, 10000);
+      loadBrokers(false); // Silent refresh
+    }, 5000);
     
-    // Set up real-time subscription for broker details changes with more specific handling
+    // Set up real-time subscription for broker details changes with improved debugging
     const brokerDetailsChannel = supabase
       .channel('broker_details_realtime')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'broker_details' }, 
         (payload) => {
-          console.log('Broker details changed in database:', payload);
+          console.log('⚡ Broker details changed in database:', payload);
+          // Extract broker name for better notification
+          const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          
           // Force immediate reload of brokers
-          loadBrokers();
-          toast.info(`Broker information updated: ${payload.table}`);
+          loadBrokers(false);
+          toast.info(`Broker "${brokerName}" information updated`);
         }
       )
       .subscribe();
@@ -68,10 +84,20 @@ const BrokerIntegration = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'brokers_admin' }, 
         (payload) => {
-          console.log('Broker admin data changed in database:', payload);
+          console.log('⚡ Broker admin data changed in database:', payload);
+          // Extract broker name for better notification
+          const brokerName = payload.new?.broker_name || payload.old?.broker_name || 'Unknown';
+          
+          // Log the changed data for debugging
+          if (payload.new && payload.old) {
+            console.log("Modified broker data:", {
+              from: payload.old.broker_name,
+              to: payload.new.broker_name
+            });
+          }
+          
           // Force immediate reload of brokers
-          loadBrokers();
-          const brokerName = payload.new?.broker_name || 'Unknown';
+          loadBrokers(false);
           toast.info(`Broker "${brokerName}" information updated`);
         }
       )
@@ -93,8 +119,7 @@ const BrokerIntegration = () => {
 
   // Function to manually refresh broker list
   const handleRefresh = () => {
-    loadBrokers();
-    toast.success("Broker list refreshed");
+    loadBrokers(true); // Force refresh with toast
   };
 
   return (
