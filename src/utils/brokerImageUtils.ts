@@ -39,19 +39,19 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Store the image URL in the broker_image table
-    const { data: imageData, error: insertError } = await supabase
-      .from('broker_image')
-      .insert({
-        broker_id: brokerId,
-        image_url: publicUrl
-      })
-      .select('id');
+    // Store the image URL in the broker_image table using our new RPC function
+    const { data: imageData, error: insertError } = await supabase.rpc(
+      'upsert_broker_image',
+      {
+        p_broker_id: brokerId,
+        p_image_url: publicUrl
+      }
+    );
     
     if (insertError) {
       console.error('Error storing broker image URL:', insertError);
     } else {
-      console.log('Broker image URL stored successfully:', imageData);
+      console.log('Broker image URL stored successfully, ID:', imageData);
     }
     
     return publicUrl;
@@ -68,22 +68,21 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Query the broker_image table directly
-    const { data, error } = await supabase
-      .from('broker_image')
-      .select('image_url')
-      .eq('broker_id', brokerId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
+    // Use our new RPC function to get the broker image URL
+    const { data, error } = await supabase.rpc(
+      'get_broker_image_url',
+      {
+        p_broker_id: brokerId
+      }
+    );
     
     if (error) {
       console.error('Error fetching broker image URL:', error);
       return null;
     }
     
-    console.log('Retrieved broker image URL:', data?.image_url);
-    return data?.image_url || null;
+    console.log('Retrieved broker image URL:', data);
+    return data || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
     return null;
