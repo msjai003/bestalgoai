@@ -15,7 +15,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
   },
   {
     id: "1-order_modification",
@@ -26,7 +26,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_modification",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
   },
   {
     id: "1-market_data",
@@ -37,7 +37,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "market_data",
     function_enabled: true,
     is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
   },
   // ICICI Direct functions
   {
@@ -49,7 +49,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
   },
   {
     id: "2-market_data",
@@ -60,7 +60,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "market_data",
     function_enabled: true,
     is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
   },
   // Angel One functions
   {
@@ -72,7 +72,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
   },
   {
     id: "3-market_data",
@@ -83,7 +83,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "market_data",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
   },
   {
     id: "3-order_modification",
@@ -94,7 +94,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_modification",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"
   },
   // HDFC Securities functions
   {
@@ -106,7 +106,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
   },
   {
     id: "4-market_data",
@@ -117,7 +117,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "market_data",
     function_enabled: true,
     is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
   },
   // Upstox functions
   {
@@ -129,7 +129,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg"
   },
   // Groww functions
   {
@@ -141,7 +141,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
   },
   {
     id: "6-portfolio_import",
@@ -152,7 +152,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "portfolio_import",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
   },
   // 5 Paisa functions
   {
@@ -164,7 +164,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
   },
   {
     id: "7-fund_transfer",
@@ -175,7 +175,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "fund_transfer",
     function_enabled: true,
     is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
   },
   // Bigul functions
   {
@@ -187,7 +187,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
   },
   {
     id: "8-advanced_charting",
@@ -198,18 +198,17 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "advanced_charting",
     function_enabled: true,
     is_premium: true,
-    broker_image: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
   }
 ];
 
 /**
- * Fetches all functions for a specific broker from the broker_infocap table
+ * Fetches all functions for a specific broker from the broker_functions table
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Use the RPC function to get broker functions from broker_infocap
-    const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
-    const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
+    // Use the new RPC function to get broker functions
+    const { data, error } = await supabase.rpc('get_broker_functions', { p_broker_id: brokerId });
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker functions found in database, using static data");
@@ -217,24 +216,11 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       return getStaticBrokerFunctions(brokerId);
     }
     
-    // Get the broker image URL
-    const brokerImage = await getBrokerImageUrl(brokerId);
-    
-    // Convert BrokerInfocapFunction to BrokerFunction format
+    // Return the data directly as it's already in the correct format
     if (Array.isArray(data)) {
-      return data.map((func: BrokerInfocapFunction) => ({
-        id: func.id,
-        broker_id: func.broker_id,
-        broker_name: func.broker_name,
-        function_name: func.function_name,
-        function_description: func.function_description,
-        function_slug: func.function_slug,
-        function_enabled: func.function_enabled,
-        is_premium: func.is_premium,
-        function_order: func.function_order,
-        broker_image: brokerImage, // Set broker_image from the URL we fetched
-        created_at: func.created_at,
-        updated_at: func.updated_at
+      return data.map(func => ({
+        ...func,
+        id: func.id.toString() // Ensure ID is string type for consistency
       }));
     }
     
@@ -247,7 +233,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
 };
 
 /**
- * Checks if a broker has a specific function enabled from broker_infocap
+ * Checks if a broker has a specific function enabled
  */
 export const hasBrokerFunction = async (
   brokerId: number, 
@@ -271,7 +257,7 @@ export const hasBrokerFunction = async (
 };
 
 /**
- * Checks if a broker function is premium from broker_infocap
+ * Checks if a broker function is premium
  */
 export const isBrokerFunctionPremium = async (
   brokerId: number, 
@@ -326,7 +312,20 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Get broker image using the get_broker_image function
+    // Get broker image from the broker_functions table
+    const { data, error } = await supabase
+      .from('broker_functions')
+      .select('image_url')
+      .eq('broker_id', brokerId)
+      .limit(1)
+      .maybeSingle();
+    
+    if (!error && data?.image_url) {
+      brokerImageCache[brokerId] = data.image_url;
+      return data.image_url;
+    }
+    
+    // Fallback to broker_profile_images
     const imageUrl = await getBrokerImageUrl(brokerId);
     
     if (imageUrl) {
@@ -382,7 +381,9 @@ const checkStaticBrokerFunctionPremium = (brokerId: number, functionSlug: string
   return !!functions[0].is_premium;
 };
 
-// Gets function configuration for a broker
+/**
+ * Gets function configuration for a broker
+ */
 export const getBrokerFunctionConfig = async (
   brokerId: number, 
   functionSlug: string
@@ -399,7 +400,10 @@ export const getBrokerFunctionConfig = async (
     );
     
     // Return the function description as configuration (or extend this in the future)
-    return func ? { description: func.function_description } : null;
+    return func ? { 
+      description: func.function_description,
+      required_inputs: func.required_inputs
+    } : null;
   } catch (error) {
     console.error("Error getting broker function config:", error);
     return null;
@@ -407,7 +411,101 @@ export const getBrokerFunctionConfig = async (
 };
 
 /**
- * Save a function to the broker_infocap table
+ * Save a function to the broker_functions table
+ */
+export const saveBrokerFunction = async (
+  brokerId: number,
+  brokerName: string,
+  functionName: string,
+  functionDescription: string,
+  functionSlug: string,
+  requiredInputs: string[] = [],
+  imageUrl: string | null = null,
+  functionOrder: number = 0,
+  functionEnabled: boolean = true,
+  isPremium: boolean = false
+): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.rpc(
+      'save_broker_function',
+      {
+        p_broker_id: brokerId,
+        p_broker_name: brokerName,
+        p_function_name: functionName,
+        p_function_description: functionDescription,
+        p_function_slug: functionSlug,
+        p_required_inputs: requiredInputs,
+        p_image_url: imageUrl,
+        p_function_order: functionOrder,
+        p_function_enabled: functionEnabled,
+        p_is_premium: isPremium
+      }
+    );
+    
+    if (error) {
+      console.error("Error saving broker function:", error);
+      return null;
+    }
+    
+    return data ? data.toString() : null;
+  } catch (error) {
+    console.error("Error saving broker function:", error);
+    return null;
+  }
+};
+
+/**
+ * Get all functions from the broker_functions table
+ */
+export const getAllBrokerFunctions = async (): Promise<BrokerFunction[]> => {
+  try {
+    const { data, error } = await supabase.rpc('get_all_broker_functions');
+    
+    if (error || !data) {
+      console.error("Error fetching all broker functions:", error);
+      return [];
+    }
+    
+    return Array.isArray(data) ? data.map(func => ({
+      ...func,
+      id: func.id.toString() // Ensure ID is string type for consistency
+    })) : [];
+  } catch (error) {
+    console.error("Error fetching all broker functions:", error);
+    return [];
+  }
+};
+
+/**
+ * Legacy function to maintain compatibility with old code
+ */
+export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunction[]> => {
+  try {
+    const functions = await getAllBrokerFunctions();
+    
+    // Convert from new format to old format for compatibility
+    return functions.map(func => ({
+      id: func.id,
+      broker_id: func.broker_id,
+      broker_name: func.broker_name,
+      function_name: func.function_name,
+      function_description: func.function_description,
+      function_slug: func.function_slug,
+      function_order: func.function_order || 0,
+      function_enabled: func.function_enabled,
+      is_premium: func.is_premium,
+      broker_image: func.image_url,
+      created_at: func.created_at,
+      updated_at: func.updated_at
+    }));
+  } catch (error) {
+    console.error("Error fetching all broker functions:", error);
+    return [];
+  }
+};
+
+/**
+ * Legacy function to maintain compatibility with old code
  */
 export const saveBrokerInfocapFunction = async (
   brokerId: number,
@@ -419,48 +517,18 @@ export const saveBrokerInfocapFunction = async (
   functionEnabled: boolean = true,
   isPremium: boolean = false
 ): Promise<number | null> => {
-  try {
-    const params: SaveBrokerFunctionParams = {
-      p_broker_id: brokerId,
-      p_broker_name: brokerName,
-      p_function_name: functionName,
-      p_function_description: functionDescription,
-      p_function_slug: functionSlug,
-      p_function_order: functionOrder,
-      p_function_enabled: functionEnabled,
-      p_is_premium: isPremium
-    };
-    
-    const { data, error } = await supabase.rpc('save_broker_infocap_function', params);
-    
-    if (error) {
-      console.error("Error saving broker function:", error);
-      return null;
-    }
-    
-    // Since we're returning a number from the RPC, we know it's a number
-    return typeof data === 'number' ? data : null;
-  } catch (error) {
-    console.error("Error saving broker function:", error);
-    return null;
-  }
-};
-
-/**
- * Get all functions from the broker_infocap table
- */
-export const getAllBrokerInfocapFunctions = async (): Promise<BrokerInfocapFunction[]> => {
-  try {
-    const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
-    
-    if (error || !data) {
-      console.error("Error fetching all broker functions:", error);
-      return [];
-    }
-    
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error fetching all broker functions:", error);
-    return [];
-  }
+  const result = await saveBrokerFunction(
+    brokerId,
+    brokerName,
+    functionName,
+    functionDescription,
+    functionSlug,
+    [], // No required inputs
+    null, // No image URL
+    functionOrder,
+    functionEnabled,
+    isPremium
+  );
+  
+  return result ? parseInt(result) : null;
 };

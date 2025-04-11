@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
-import { BrokerFunction } from "@/hooks/strategy/types";
+import { BrokerFunction } from "@/types/broker";
 import { CheckCircle, XCircle, Lock, Info } from "lucide-react";
 import { 
   Tooltip,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BrokerFunctionsProps {
@@ -22,28 +21,7 @@ interface BrokerFunctionsProps {
 export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) => {
   const { functions, isLoading, error } = useBrokerFunctions(brokerId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [brokerImageUrl, setBrokerImageUrl] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-
-  // Get the broker image URL
-  useEffect(() => {
-    const fetchBrokerImage = async () => {
-      setImageLoading(true);
-      try {
-        const imageUrl = await getBrokerImageUrl(brokerId);
-        setBrokerImageUrl(imageUrl);
-        setImageError(false);
-      } catch (err) {
-        console.error("Error loading broker image:", err);
-        setImageError(true);
-      } finally {
-        setImageLoading(false);
-      }
-    };
-
-    fetchBrokerImage();
-  }, [brokerId]);
 
   // Get unique categories from function slugs
   const categories = Array.from(new Set(functions.map(func => {
@@ -78,15 +56,8 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold">Available Functions</h2>
         <Avatar className="w-6 h-6">
-          {brokerImageUrl && !imageError ? (
-            <AvatarImage 
-              src={brokerImageUrl} 
-              alt={brokerName}
-              onError={() => setImageError(true)}
-            />
-          ) : null}
           <AvatarFallback className="bg-gray-700 text-gray-300 text-xs">
-            {imageLoading ? "..." : fallbackInitial}
+            {fallbackInitial}
           </AvatarFallback>
         </Avatar>
       </div>
@@ -125,8 +96,7 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
           {filteredFunctions.map((func) => (
             <FunctionCard 
               key={func.id} 
-              func={func} 
-              brokerImageUrl={brokerImageUrl}
+              func={func}
             />
           ))}
         </div>
@@ -136,11 +106,9 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
 };
 
 const FunctionCard = ({ 
-  func, 
-  brokerImageUrl 
+  func
 }: { 
-  func: BrokerFunction, 
-  brokerImageUrl: string | null 
+  func: BrokerFunction
 }) => {
   const [imageError, setImageError] = useState(false);
   const fallbackInitial = func.broker_name ? func.broker_name.charAt(0).toUpperCase() : 'B';
@@ -156,9 +124,9 @@ const FunctionCard = ({
         <div className="flex items-start gap-3">
           {/* Display broker image */}
           <Avatar className="w-8 h-8 rounded-md">
-            {brokerImageUrl && !imageError ? (
+            {func.image_url && !imageError ? (
               <AvatarImage 
-                src={brokerImageUrl} 
+                src={func.image_url} 
                 alt={func.broker_name}
                 className="object-cover rounded-md"
                 onError={handleImageError}
@@ -184,6 +152,12 @@ const FunctionCard = ({
             </div>
             {func.function_description && (
               <p className="text-sm text-gray-400 mt-1">{func.function_description}</p>
+            )}
+            {func.required_inputs && func.required_inputs.length > 0 && (
+              <div className="mt-2">
+                <span className="text-xs text-gray-500">Required inputs: </span>
+                <span className="text-xs text-gray-400">{func.required_inputs.join(', ')}</span>
+              </div>
             )}
           </div>
         </div>

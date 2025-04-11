@@ -59,7 +59,8 @@ export interface BrokerFunction {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  broker_image?: string;  // This property holds the broker image URL
+  image_url?: string;  // Updated to use image_url instead of broker_image
+  required_inputs?: string[];  // Added required_inputs property
   created_at?: string;
   updated_at?: string;
   function_order?: number;
@@ -75,7 +76,7 @@ export interface BrokerFunctionConfig {
   updated_at?: string;
 }
 
-// Interface representing the broker_infocap table structure
+// Interface representing the broker_infocap table structure (legacy)
 export interface BrokerInfocapFunction {
   id: string;
   broker_id: number;
@@ -86,7 +87,7 @@ export interface BrokerInfocapFunction {
   function_order: number;
   function_enabled: boolean;
   is_premium: boolean;
-  broker_image?: string;  // Added the broker_image property
+  broker_image?: string;  // Legacy property
   created_at?: string;
   updated_at?: string;
 }
@@ -126,6 +127,8 @@ export interface SaveBrokerFunctionParams {
   p_function_order: number;
   p_function_enabled: boolean;
   p_is_premium: boolean;
+  p_required_inputs?: string[];
+  p_image_url?: string;
 }
 
 export interface ExecuteSqlParams {

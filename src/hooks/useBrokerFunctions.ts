@@ -26,7 +26,7 @@ export const useBrokerFunctions = (brokerId?: number) => {
         }
         
         try {
-          // Use our updated function that now fetches from broker_infocap
+          // Use our updated function that now fetches from broker_functions
           const brokerFunctions = await getFunctionsForBroker(brokerId);
           setFunctions(brokerFunctions);
           

@@ -12,17 +12,18 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download } from 'lucide-react';
+import { Pencil, Save, Trash, RefreshCw, PlusCircle, XCircle, Download, Upload } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { BrokerFunction, BrokerInfocapFunction, SaveBrokerFunctionParams } from '@/types/broker';
+import { BrokerFunction } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { 
-  getAllBrokerInfocapFunctions, 
-  saveBrokerInfocapFunction 
+  getAllBrokerFunctions, 
+  saveBrokerFunction
 } from '@/lib/broker-functions';
-import { supabase } from '@/integrations/supabase/client';
+import { getBrokerImageUrl, uploadBrokerImage } from '@/utils/brokerImageUtils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface FormValues {
   broker_id: number;
@@ -33,16 +34,19 @@ interface FormValues {
   function_enabled: boolean;
   is_premium: boolean;
   function_order: number;
+  required_inputs: string[];
 }
 
 const BrokerFunctionsAdmin = () => {
   const { user } = useAuth();
-  const [functions, setFunctions] = useState<BrokerInfocapFunction[]>([]);
+  const [functions, setFunctions] = useState<BrokerFunction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<BrokerInfocapFunction>>({});
+  const [editForm, setEditForm] = useState<Partial<BrokerFunction>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedBrokerId, setSelectedBrokerId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -53,15 +57,21 @@ const BrokerFunctionsAdmin = () => {
       function_slug: '',
       function_order: 0,
       function_enabled: true,
-      is_premium: false
+      is_premium: false,
+      required_inputs: []
     }
   });
+
+  // Available inputs that can be required
+  const availableInputs = [
+    'username', 'password', 'api_key', 'secret_key', 'session_id', 'two_factor'
+  ];
 
   // Fetch broker functions
   const fetchBrokerFunctions = async () => {
     setLoading(true);
     try {
-      let functionsList = await getAllBrokerInfocapFunctions();
+      let functionsList = await getAllBrokerFunctions();
       
       if (selectedBrokerId !== null) {
         functionsList = functionsList.filter(func => func.broker_id === selectedBrokerId);
@@ -82,8 +92,21 @@ const BrokerFunctionsAdmin = () => {
     }
   }, [user, selectedBrokerId]);
 
+  // Handle image change
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    setImageFile(file);
+  };
+
   // Start editing a function
-  const handleEdit = (func: BrokerInfocapFunction) => {
+  const handleEdit = async (func: BrokerFunction) => {
     setEditingId(func.id);
     setEditForm({
       broker_id: func.broker_id,
@@ -93,13 +116,20 @@ const BrokerFunctionsAdmin = () => {
       function_slug: func.function_slug,
       function_enabled: func.function_enabled,
       is_premium: func.is_premium,
-      function_order: func.function_order || 0
+      function_order: func.function_order || 0,
+      required_inputs: func.required_inputs || [],
+      image_url: func.image_url
     });
+    
+    setImagePreview(func.image_url || null);
+    setImageFile(null);
   };
 
   // Cancel editing
   const handleCancelEdit = () => {
     setEditingId(null);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   // Save function changes
@@ -110,13 +140,29 @@ const BrokerFunctionsAdmin = () => {
     }
 
     try {
-      // Use the RPC function to save the changes
-      const result = await saveBrokerInfocapFunction(
-        editForm.broker_id, 
-        editForm.broker_name, 
-        editForm.function_name, 
+      let imageUrl = editForm.image_url;
+      
+      // Upload image if a new one was selected
+      if (imageFile) {
+        const uploadedUrl = await uploadBrokerImage(
+          imageFile, 
+          editForm.broker_id
+        );
+        
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+      
+      // Use the new function to save changes
+      const result = await saveBrokerFunction(
+        editForm.broker_id!, 
+        editForm.broker_name!, 
+        editForm.function_name!, 
         editForm.function_description || '', 
-        editForm.function_slug, 
+        editForm.function_slug!,
+        editForm.required_inputs as string[],
+        imageUrl,
         editForm.function_order || 0,
         editForm.function_enabled === true,
         editForm.is_premium === true
@@ -129,12 +175,18 @@ const BrokerFunctionsAdmin = () => {
       // Update local state
       setFunctions(prevFunctions => 
         prevFunctions.map(func => 
-          func.id === id ? { ...func, ...editForm as BrokerInfocapFunction } : func
+          func.id === id ? { 
+            ...func, 
+            ...editForm as BrokerFunction,
+            image_url: imageUrl
+          } : func
         )
       );
       
       toast.success('Function updated successfully');
       setEditingId(null);
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error: any) {
       toast.error(`Failed to update function: ${error.message}`);
     }
@@ -153,12 +205,14 @@ const BrokerFunctionsAdmin = () => {
         throw new Error('Function not found');
       }
       
-      const result = await saveBrokerInfocapFunction(
+      const result = await saveBrokerFunction(
         funcToDelete.broker_id,
         funcToDelete.broker_name,
         funcToDelete.function_name,
         funcToDelete.function_description || '',
         funcToDelete.function_slug,
+        funcToDelete.required_inputs || [],
+        funcToDelete.image_url,
         funcToDelete.function_order || 0,
         false, // Set function_enabled to false instead of deleting
         funcToDelete.is_premium
@@ -179,6 +233,37 @@ const BrokerFunctionsAdmin = () => {
     }
   };
 
+  // Toggle required input in edit mode
+  const toggleRequiredInput = (input: string) => {
+    const currentInputs = editForm.required_inputs || [];
+    let newInputs: string[];
+    
+    if (currentInputs.includes(input)) {
+      newInputs = currentInputs.filter(i => i !== input);
+    } else {
+      newInputs = [...currentInputs, input];
+    }
+    
+    setEditForm({
+      ...editForm,
+      required_inputs: newInputs
+    });
+  };
+
+  // Handle required inputs in add form
+  const handleRequiredInputChange = (input: string, checked: boolean) => {
+    const currentInputs = form.watch('required_inputs') || [];
+    let newInputs: string[];
+    
+    if (checked) {
+      newInputs = [...currentInputs, input];
+    } else {
+      newInputs = currentInputs.filter(i => i !== input);
+    }
+    
+    form.setValue('required_inputs', newInputs);
+  };
+
   // Add new function
   const handleAddFunction = async (values: FormValues) => {
     try {
@@ -188,13 +273,29 @@ const BrokerFunctionsAdmin = () => {
         toast.error('Invalid broker selected');
         return;
       }
+      
+      let imageUrl = null;
+      
+      // Upload image if one was selected
+      if (imageFile) {
+        const uploadedUrl = await uploadBrokerImage(
+          imageFile, 
+          values.broker_id
+        );
+        
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
 
-      const result = await saveBrokerInfocapFunction(
+      const result = await saveBrokerFunction(
         values.broker_id,
         broker.name,
         values.function_name,
         values.function_description || '',
         values.function_slug,
+        values.required_inputs,
+        imageUrl,
         values.function_order || 0,
         values.function_enabled,
         values.is_premium
@@ -209,6 +310,8 @@ const BrokerFunctionsAdmin = () => {
       
       toast.success('Function added successfully');
       setShowAddForm(false);
+      setImageFile(null);
+      setImagePreview(null);
       form.reset({
         broker_id: 0,
         broker_name: '',
@@ -217,29 +320,30 @@ const BrokerFunctionsAdmin = () => {
         function_slug: '',
         function_order: 0,
         function_enabled: true,
-        is_premium: false
+        is_premium: false,
+        required_inputs: []
       });
     } catch (error: any) {
       toast.error(`Failed to add function: ${error.message}`);
     }
   };
 
-  // Seed default functions for new brokers (5 Paisa and Bigil)
+  // Seed default functions for new brokers
   const seedDefaultFunctions = async () => {
     try {
       setLoading(true);
       
       // Define default functions for brokers
       const defaultFunctions = [
-        { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker' },
-        { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders' },
-        { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders' },
-        { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions' },
-        { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data' },
-        { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions' }
+        { slug: 'order_placement', name: 'Order Placement', description: 'Place new orders with the broker', required: ['username', 'password'] },
+        { slug: 'order_modification', name: 'Order Modification', description: 'Modify existing orders', required: ['username', 'password'] },
+        { slug: 'order_cancellation', name: 'Order Cancellation', description: 'Cancel pending orders', required: ['username', 'password'] },
+        { slug: 'portfolio_view', name: 'Portfolio View', description: 'View current holdings and positions', required: ['username', 'password'] },
+        { slug: 'market_data', name: 'Market Data', description: 'Access real-time market data', required: ['api_key'] },
+        { slug: 'trade_history', name: 'Trade History', description: 'View past trades and executions', required: ['username', 'password'] }
       ];
       
-      // Check which brokers need default functions (specifically 5 Paisa and Bigil)
+      // Target brokers
       const targetBrokers = [
         { id: 7, name: "5 Paisa" },
         { id: 8, name: "Bigul" }
@@ -253,14 +357,19 @@ const BrokerFunctionsAdmin = () => {
           
         if (!existingFunctions || existingFunctions.length === 0) {
           // Add default functions for this broker
-          for (const func of defaultFunctions) {
-            const result = await saveBrokerInfocapFunction(
+          for (const [index, func] of defaultFunctions.entries()) {
+            // Get broker image
+            const imageUrl = await getBrokerImageUrl(broker.id);
+            
+            const result = await saveBrokerFunction(
               broker.id,
               broker.name,
               func.name,
               func.description,
               func.slug,
-              addedCount, // Use count as order
+              func.required,
+              imageUrl,
+              index, // Use index as order
               true,
               func.slug === 'market_data' // Make market data premium as an example
             );
@@ -396,6 +505,49 @@ const BrokerFunctionsAdmin = () => {
                     />
                   </div>
                   
+                  <div>
+                    <Label>Required Inputs</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {availableInputs.map(input => (
+                        <div key={input} className="flex items-center space-x-2">
+                          <Switch 
+                            id={`input-${input}`} 
+                            checked={form.watch('required_inputs')?.includes(input) || false}
+                            onCheckedChange={(checked) => handleRequiredInputChange(input, checked)}
+                          />
+                          <Label htmlFor={`input-${input}`} className="capitalize">{input.replace('_', ' ')}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="function_image">Function Image</Label>
+                    <div className="flex items-center mt-2 space-x-4">
+                      {imagePreview && (
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-16 h-16 rounded-lg object-cover border border-gray-700"
+                        />
+                      )}
+                      <Label 
+                        htmlFor="function-image-upload" 
+                        className="cursor-pointer bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-lg flex items-center space-x-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Image</span>
+                      </Label>
+                      <Input
+                        id="function-image-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+                  </div>
+                  
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <Switch 
@@ -452,6 +604,7 @@ const BrokerFunctionsAdmin = () => {
                   <TableHead>Function Name</TableHead>
                   <TableHead>Slug</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead>Required Inputs</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Premium</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -461,33 +614,48 @@ const BrokerFunctionsAdmin = () => {
                 {functions.map((func) => (
                   <TableRow key={func.id}>
                     <TableCell>
-                      {editingId === func.id ? (
-                        <Select
-                          value={editForm.broker_id?.toString()}
-                          onValueChange={(value) => {
-                            const brokerId = parseInt(value);
-                            const broker = brokers.find(b => b.id === brokerId);
-                            setEditForm({
-                              ...editForm,
-                              broker_id: brokerId,
-                              broker_name: broker?.name || ''
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select broker" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {brokers.map(broker => (
-                              <SelectItem key={broker.id} value={broker.id.toString()}>
-                                {broker.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        func.broker_name
-                      )}
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="w-6 h-6">
+                          {func.image_url ? (
+                            <AvatarImage 
+                              src={func.image_url}
+                              alt={func.broker_name}
+                            />
+                          ) : null}
+                          <AvatarFallback>
+                            {func.broker_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>
+                          {editingId === func.id ? (
+                            <Select
+                              value={editForm.broker_id?.toString()}
+                              onValueChange={(value) => {
+                                const brokerId = parseInt(value);
+                                const broker = brokers.find(b => b.id === brokerId);
+                                setEditForm({
+                                  ...editForm,
+                                  broker_id: brokerId,
+                                  broker_name: broker?.name || ''
+                                });
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select broker" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {brokers.map(broker => (
+                                  <SelectItem key={broker.id} value={broker.id.toString()}>
+                                    {broker.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            func.broker_name
+                          )}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {editingId === func.id ? (
@@ -526,6 +694,30 @@ const BrokerFunctionsAdmin = () => {
                     </TableCell>
                     <TableCell>
                       {editingId === func.id ? (
+                        <div className="flex flex-col gap-1">
+                          {availableInputs.map(input => (
+                            <div key={input} className="flex items-center space-x-2">
+                              <Switch 
+                                id={`edit-input-${input}`} 
+                                checked={(editForm.required_inputs || []).includes(input)}
+                                onCheckedChange={() => toggleRequiredInput(input)}
+                              />
+                              <Label htmlFor={`edit-input-${input}`} className="text-xs capitalize">{input.replace('_', ' ')}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {func.required_inputs?.map(input => (
+                            <Badge key={input} variant="outline" className="text-xs">
+                              {input}
+                            </Badge>
+                          )) || 'None'}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingId === func.id ? (
                         <Switch 
                           checked={!!editForm.function_enabled}
                           onCheckedChange={(checked) => setEditForm({...editForm, function_enabled: checked})}
@@ -551,6 +743,28 @@ const BrokerFunctionsAdmin = () => {
                     <TableCell className="text-right">
                       {editingId === func.id ? (
                         <div className="flex justify-end gap-2">
+                          {imagePreview && (
+                            <div className="flex-shrink-0 mr-2">
+                              <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="w-8 h-8 rounded-lg object-cover border border-gray-700"
+                              />
+                            </div>
+                          )}
+                          <Label 
+                            htmlFor={`edit-image-${func.id}`} 
+                            className="cursor-pointer bg-gray-800 hover:bg-gray-700 text-white p-1 rounded-lg flex items-center"
+                          >
+                            <Upload className="w-4 h-4" />
+                          </Label>
+                          <Input
+                            id={`edit-image-${func.id}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageChange}
+                          />
                           <Button
                             size="sm"
                             variant="outline"
@@ -600,8 +814,10 @@ const BrokerFunctionsAdmin = () => {
         <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
           <h3 className="text-lg font-medium mb-2">Admin Panel Information</h3>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>This panel allows you to manage broker functions in the database.</li>
+            <li>This panel allows you to manage broker functions in the new broker_functions table.</li>
             <li>Functions define what capabilities are available for each broker.</li>
+            <li>You can specify required inputs for each function.</li>
+            <li>Upload custom images for brokers and functions.</li>
             <li>Premium functions will be displayed with a special badge.</li>
             <li>You can enable or disable functions as needed.</li>
             <li>Use the "Seed Default Functions" button to add standard functions to new brokers.</li>
