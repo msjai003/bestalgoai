@@ -39,7 +39,7 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Insert the image URL directly into the broker_profile_images table
+    // Insert the image URL into the broker_profile_images table
     try {
       // First, mark any existing images as inactive
       const { error: updateError } = await supabase
@@ -96,7 +96,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Get broker image directly from broker_profile_images table
+    // First try to get broker image from broker_profile_images table
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
       .select('image_url')

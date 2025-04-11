@@ -23,11 +23,13 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
   const { functions, isLoading, error } = useBrokerFunctions(brokerId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [brokerImageUrl, setBrokerImageUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
   // Get the broker image URL
   useEffect(() => {
     const fetchBrokerImage = async () => {
+      setImageLoading(true);
       try {
         const imageUrl = await getBrokerImageUrl(brokerId);
         setBrokerImageUrl(imageUrl);
@@ -35,6 +37,8 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
       } catch (err) {
         console.error("Error loading broker image:", err);
         setImageError(true);
+      } finally {
+        setImageLoading(false);
       }
     };
 
@@ -67,14 +71,25 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
     );
   }
 
-  const handleImageError = () => {
-    console.log("Broker image failed to load in functions component");
-    setImageError(true);
-  };
+  const fallbackInitial = brokerName ? brokerName.charAt(0).toUpperCase() : 'B';
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Available Functions</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold">Available Functions</h2>
+        <Avatar className="w-6 h-6">
+          {brokerImageUrl && !imageError ? (
+            <AvatarImage 
+              src={brokerImageUrl} 
+              alt={brokerName}
+              onError={() => setImageError(true)}
+            />
+          ) : null}
+          <AvatarFallback className="bg-gray-700 text-gray-300 text-xs">
+            {imageLoading ? "..." : fallbackInitial}
+          </AvatarFallback>
+        </Avatar>
+      </div>
       
       {/* Category filter */}
       {categories.length > 0 && (

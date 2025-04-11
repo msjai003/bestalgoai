@@ -5,6 +5,7 @@ import { Broker } from "@/types/broker";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
 import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BrokerListProps {
   brokers: Broker[];
@@ -69,37 +70,41 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 };
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   
   useEffect(() => {
     const fetchBrokerImage = async () => {
+      setIsLoading(true);
       try {
         const img = await getBrokerImageUrl(broker.id);
         if (img) {
-          console.log(`Updated image URL for broker ${broker.id} from database:`, img);
+          console.log(`Updated image URL for broker ${broker.id}:`, img);
           setImageUrl(img);
           setImageError(false);
+        } else {
+          // Fallback to the static logo if no image in database
+          setImageUrl(broker.logo);
         }
       } catch (error) {
         console.error("Error fetching broker image:", error);
         setImageError(true);
+        setImageUrl(broker.logo);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchBrokerImage();
-    
-    // Refresh images every 30 seconds (optional)
-    const intervalId = setInterval(fetchBrokerImage, 30000);
-    
-    return () => clearInterval(intervalId);
-  }, [broker.id]);
+  }, [broker.id, broker.logo]);
   
   const handleImageError = () => {
     console.log(`Image loading error for broker ${broker.id}, falling back to placeholder`);
     setImageError(true);
   };
   
+  const fallbackInitial = broker.name ? broker.name.charAt(0).toUpperCase() : 'B';
   const hasRequiredInputs = broker.requiredInputs && broker.requiredInputs.length > 0;
 
   return (
@@ -107,18 +112,20 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       className="flex items-center p-4 bg-gray-800/30 rounded-xl border border-gray-700 cursor-pointer hover:border-pink-500 transition-colors"
       onClick={() => onSelect(broker.id)}
     >
-      {imageUrl && !imageError ? (
-        <img
-          src={imageUrl}
-          className="w-10 h-10 rounded-lg object-cover bg-gray-700"
-          alt={broker.name}
-          onError={handleImageError}
-        />
-      ) : (
-        <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-gray-500">
-          {broker.name.charAt(0).toUpperCase()}
-        </div>
-      )}
+      <Avatar className="w-10 h-10 rounded-lg">
+        {!isLoading && imageUrl && !imageError ? (
+          <AvatarImage
+            src={imageUrl}
+            alt={broker.name}
+            className="rounded-lg object-cover"
+            onError={handleImageError}
+          />
+        ) : null}
+        <AvatarFallback className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-gray-300">
+          {isLoading ? "..." : fallbackInitial}
+        </AvatarFallback>
+      </Avatar>
+      
       <div className="ml-3 flex-1">
         <h3 className="font-semibold">{broker.name}</h3>
         <div className="flex items-center gap-2 mt-1">
