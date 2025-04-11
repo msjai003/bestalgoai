@@ -37,4 +37,8 @@
   .curved-button {
     @apply rounded-3xl overflow-hidden;
   }
+  
+  .pill-button {
+    @apply rounded-full overflow-hidden;
+  }
 }
