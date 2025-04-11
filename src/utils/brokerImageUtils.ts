@@ -39,31 +39,21 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Insert the image URL into the broker_profile_images table
+    // Insert the image URL into the broker_profile_images table using the save_broker_profile_image function
     try {
-      // First, mark any existing images as inactive
-      const { error: updateError } = await supabase
-        .from('broker_profile_images')
-        .update({ is_active: false })
-        .eq('broker_id', brokerId);
+      // Use the dedicated RPC function for broker_profile_images
+      const { data: saveData, error: saveError } = await supabase.rpc(
+        'save_broker_profile_image',
+        {
+          p_broker_id: brokerId,
+          p_image_url: publicUrl
+        }
+      );
       
-      if (updateError) {
-        console.error('Error deactivating existing broker images:', updateError);
-      }
-      
-      // Now insert the new image
-      const { data: insertData, error: insertError } = await supabase
-        .from('broker_profile_images')
-        .insert({
-          broker_id: brokerId,
-          image_url: publicUrl,
-          is_active: true
-        });
-      
-      if (insertError) {
-        console.error('Error inserting broker image URL to database:', insertError);
+      if (saveError) {
+        console.error('Error saving broker profile image:', saveError);
       } else {
-        console.log('Successfully saved broker image URL to database:', insertData);
+        console.log('Successfully saved broker profile image:', saveData);
       }
       
       // Also update broker_infocap for backward compatibility
@@ -96,7 +86,18 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // First try to get broker image from broker_profile_images table
+    // First try to get broker image from broker_profile_images table using the RPC function
+    const { data: profileImageData, error: profileImageError } = await supabase.rpc(
+      'get_broker_profile_image',
+      { p_broker_id: brokerId }
+    );
+    
+    if (!profileImageError && profileImageData) {
+      console.log('Retrieved broker image URL from profile_images function:', profileImageData);
+      return profileImageData;
+    }
+    
+    // If RPC fails, try direct query to broker_profile_images
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
       .select('image_url')
@@ -107,7 +108,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       .maybeSingle();
     
     if (!imageError && imageData?.image_url) {
-      console.log('Retrieved broker image URL from profile_images:', imageData.image_url);
+      console.log('Retrieved broker image URL from profile_images table:', imageData.image_url);
       return imageData.image_url;
     }
     

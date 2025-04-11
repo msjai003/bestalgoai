@@ -71,11 +71,16 @@ const BrokerManagement = () => {
     setEditingBroker(broker);
     setRequiredInputs(broker.requiredInputs || []);
     
-    // Get the latest image URL from our new table
-    const imageUrl = await getBrokerImageUrl(broker.id);
-    setImagePreview(imageUrl || broker.logo);
-    setImageFile(null);
+    try {
+      const imageUrl = await getBrokerImageUrl(broker.id);
+      console.log(`Retrieved image for broker ${broker.id}:`, imageUrl);
+      setImagePreview(imageUrl || broker.logo);
+    } catch (error) {
+      console.error("Error fetching broker image:", error);
+      setImagePreview(broker.logo);
+    }
     
+    setImageFile(null);
     setDialogOpen(true);
   };
 
@@ -113,9 +118,8 @@ const BrokerManagement = () => {
     try {
       let imageUrl = editingBroker.logo;
       
-      // If we have a new image file, upload it using our updated function
       if (imageFile) {
-        // For new brokers without ID, use a temporary ID (will be replaced after save)
+        console.log("Uploading new image for broker...");
         const tempBrokerId = editingBroker.id || Math.floor(Math.random() * -1000);
         
         const uploadedUrl = await uploadBrokerImage(
@@ -138,20 +142,18 @@ const BrokerManagement = () => {
       };
 
       let success = false;
+      let newId: number | null = null;
+      
       if (editingBroker.id) {
         success = await updateBroker(editingBroker.id, brokerData);
         if (success) {
-          // If we uploaded an image with a temporary ID, re-upload it with the real ID
-          if (imageFile && imageUrl && !editingBroker.id) {
-            await uploadBrokerImage(imageFile, editingBroker.id);
-          }
           toast.success("Broker updated successfully");
         }
       } else {
-        const newId = await saveBroker(brokerData);
+        newId = await saveBroker(brokerData);
         if (newId) {
-          // If we have a new image, re-upload it with the real broker ID
-          if (imageFile && imageUrl) {
+          if (imageFile && imageUrl && tempBrokerId !== newId) {
+            console.log(`Re-uploading image with real broker ID: ${newId}`);
             await uploadBrokerImage(imageFile, newId);
           }
           toast.success("Broker added successfully");

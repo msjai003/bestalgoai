@@ -1,4 +1,3 @@
-
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -77,12 +76,12 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
   useEffect(() => {
     const fetchBrokerImage = async () => {
       setIsLoading(true);
+      setImageError(false);
       try {
         const img = await getBrokerImageUrl(broker.id);
+        console.log(`Image URL result for broker ${broker.id}:`, img);
         if (img) {
-          console.log(`Updated image URL for broker ${broker.id}:`, img);
           setImageUrl(img);
-          setImageError(false);
         } else {
           // Fallback to the static logo if no image in database
           setImageUrl(broker.logo);
