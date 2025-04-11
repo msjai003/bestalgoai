@@ -132,7 +132,7 @@ const Auth = () => {
           </Alert>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6 premium-card p-6 border border-cyan/30">
+        <form onSubmit={handleLogin} className="space-y-6 premium-card p-6 border border-cyan/30 max-w-md mx-auto">
           <div className="space-y-4">
             <div>
               <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
