@@ -39,7 +39,8 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Store the image URL in the broker_image table using our new RPC function
+    // Store the image URL in the broker_image table using our RPC function
+    // The function now returns an integer ID instead of UUID
     const { data: imageData, error: insertError } = await supabase.rpc(
       'upsert_broker_image',
       {
@@ -68,7 +69,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use our new RPC function to get the broker image URL
+    // Use our RPC function to get the broker image URL
     const { data, error } = await supabase.rpc(
       'get_broker_image_url',
       {

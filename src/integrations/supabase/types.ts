@@ -313,21 +313,21 @@ export type Database = {
         Row: {
           broker_id: number
           created_at: string
-          id: string
+          id: number
           image_url: string
           updated_at: string
         }
         Insert: {
           broker_id: number
           created_at?: string
-          id?: string
+          id?: number
           image_url: string
           updated_at?: string
         }
         Update: {
           broker_id?: number
           created_at?: string
-          id?: string
+          id?: number
           image_url?: string
           updated_at?: string
         }
@@ -1731,7 +1731,7 @@ export type Database = {
       }
       upsert_broker_image: {
         Args: { p_broker_id: number; p_image_url: string }
-        Returns: string
+        Returns: number
       }
     }
     Enums: {
