@@ -71,20 +71,23 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
   
-  // Fetch image from broker_image table if needed
+  // Fetch image from broker_infocap table
   useEffect(() => {
     const fetchBrokerImage = async () => {
-      // Only fetch if we don't already have an image
-      if (!imageUrl) {
-        const img = await getBrokerImageUrl(broker.id);
-        if (img) {
-          setImageUrl(img);
-        }
+      // Always fetch the latest image from the broker_infocap table
+      const img = await getBrokerImageUrl(broker.id);
+      if (img) {
+        setImageUrl(img);
       }
     };
     
     fetchBrokerImage();
-  }, [broker.id, imageUrl]);
+    
+    // Set up a refresh interval every 30 seconds to check for image updates
+    const intervalId = setInterval(fetchBrokerImage, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, [broker.id]);
   
   // Use broker name
   const displayName = broker.name;

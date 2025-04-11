@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -39,35 +38,18 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Store the image URL in the broker_image table - first try direct insert
+    // Update the broker_infocap table with the new image URL
     try {
-      // Try direct insert first (using the insert policy)
-      const { error: insertError } = await supabase
-        .from('broker_image')
-        .insert({
-          broker_id: brokerId,
-          image_url: publicUrl
-        });
+      // Find all functions for this broker and update the broker_image field
+      const { data: infocapData, error: infocapError } = await supabase
+        .from('broker_infocap')
+        .update({ broker_image: publicUrl })
+        .eq('broker_id', brokerId);
       
-      if (insertError) {
-        console.warn('Could not insert directly, falling back to RPC function:', insertError);
-        
-        // Fall back to RPC function if direct insert fails
-        const { data: imageData, error: rpcError } = await supabase.rpc(
-          'upsert_broker_image',
-          {
-            p_broker_id: brokerId,
-            p_image_url: publicUrl
-          }
-        );
-        
-        if (rpcError) {
-          console.error('Error storing broker image URL via RPC:', rpcError);
-        } else {
-          console.log('Broker image URL stored successfully via RPC, ID:', imageData);
-        }
+      if (infocapError) {
+        console.error('Error updating broker_infocap table with image URL:', infocapError);
       } else {
-        console.log('Broker image URL stored successfully via direct insert');
+        console.log('Successfully updated broker_infocap table with image URL');
       }
     } catch (dbError) {
       console.error('Exception during database operation:', dbError);
@@ -87,24 +69,23 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // First try direct query
-    const { data: directData, error: directError } = await supabase
-      .from('broker_image')
-      .select('image_url')
+    // Get image from broker_infocap table
+    const { data: infocapData, error: infocapError } = await supabase
+      .from('broker_infocap')
+      .select('broker_image')
       .eq('broker_id', brokerId)
-      .order('updated_at', { ascending: false })
       .limit(1)
       .single();
     
-    if (!directError && directData) {
-      console.log('Retrieved broker image URL via direct query:', directData.image_url);
-      return directData.image_url;
+    if (!infocapError && infocapData && infocapData.broker_image) {
+      console.log('Retrieved broker image URL from broker_infocap:', infocapData.broker_image);
+      return infocapData.broker_image;
     }
     
-    // Fall back to RPC function if direct query fails
-    console.log('Direct query failed, falling back to RPC function');
+    // Fall back to using get_broker_image function if direct query fails
+    console.log('Direct query failed or no image found, falling back to get_broker_image function');
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_broker_image_url',
+      'get_broker_image',
       {
         p_broker_id: brokerId
       }
@@ -115,7 +96,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return null;
     }
     
-    console.log('Retrieved broker image URL via RPC:', rpcData);
+    console.log('Retrieved broker image URL via get_broker_image function:', rpcData);
     return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);

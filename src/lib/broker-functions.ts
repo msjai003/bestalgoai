@@ -210,9 +210,6 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     // Use the RPC function to get broker functions from broker_infocap
     const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
-    
-    // Get the broker image from the broker_image table
-    const brokerImage = await getBrokerImageUrl(brokerId);
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker functions found in database, using static data");
@@ -232,7 +229,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
         function_enabled: func.function_enabled,
         is_premium: func.is_premium,
         function_order: func.function_order,
-        broker_image: brokerImage || getBrokerImageFromCache(func.broker_id),
+        broker_image: func.broker_image, // Use broker_image from broker_infocap table
         created_at: func.created_at,
         updated_at: func.updated_at
       }));
@@ -326,7 +323,20 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Get broker image from the broker_image table
+    // Get broker image directly from the broker_infocap table
+    const { data, error } = await supabase
+      .from('broker_infocap')
+      .select('broker_image')
+      .eq('broker_id', brokerId)
+      .limit(1)
+      .single();
+    
+    if (!error && data && data.broker_image) {
+      brokerImageCache[brokerId] = data.broker_image;
+      return data.broker_image;
+    }
+    
+    // Fall back to get_broker_image function
     const imageUrl = await getBrokerImageUrl(brokerId);
     
     if (imageUrl) {
