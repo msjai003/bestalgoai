@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { BrokerFunction } from "@/hooks/strategy/types";
@@ -114,7 +115,7 @@ const FunctionCard = ({
   func: BrokerFunction, 
   brokerImageUrl: string | null 
 }) => {
-  // Use the broker image URL from the broker_images table
+  // Use the broker image URL from the broker_profile_images table
   const displayImage = brokerImageUrl || '/placeholder.svg';
 
   return (

@@ -1,4 +1,3 @@
-
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -71,10 +70,8 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
   
-  // Fetch image for broker from broker_images table
   useEffect(() => {
     const fetchBrokerImage = async () => {
-      // Always fetch the latest image from the broker_images table
       const img = await getBrokerImageUrl(broker.id);
       if (img) {
         console.log(`Updated image URL for broker ${broker.id} from database:`, img);
@@ -84,16 +81,13 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     
     fetchBrokerImage();
     
-    // Set up a refresh interval every 30 seconds to check for image updates
     const intervalId = setInterval(fetchBrokerImage, 30000);
     
     return () => clearInterval(intervalId);
   }, [broker.id]);
   
-  // Use broker name
   const displayName = broker.name;
   
-  // Check if broker has required inputs
   const hasRequiredInputs = broker.requiredInputs && broker.requiredInputs.length > 0;
 
   return (
@@ -106,7 +100,6 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         className="w-10 h-10 rounded-lg object-cover"
         alt={displayName}
         onError={(e) => {
-          // Fallback to placeholder if image fails to load
           (e.target as HTMLImageElement).src = "/placeholder.svg";
         }}
       />

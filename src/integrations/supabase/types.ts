@@ -354,6 +354,33 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_profile_images: {
+        Row: {
+          broker_id: number
+          created_at: string | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_strategies: {
         Row: {
           broker_username: string | null
@@ -1680,6 +1707,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_broker_profile_image: {
+        Args: { p_broker_id: number }
+        Returns: string
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1700,6 +1731,10 @@ export type Database = {
           p_is_premium: boolean
         }
         Returns: number
+      }
+      save_broker_profile_image: {
+        Args: { p_broker_id: number; p_image_url: string }
+        Returns: string
       }
       sync_brokers_to_admin: {
         Args: Record<PropertyKey, never>

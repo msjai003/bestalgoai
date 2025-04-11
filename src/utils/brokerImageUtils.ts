@@ -39,9 +39,9 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Save the image URL to the broker_infocap table using upsert_broker_image function
+    // Save the image URL to the broker_profile_images table using save_broker_profile_image function
     const { data: saveData, error: saveError } = await supabase.rpc(
-      'upsert_broker_image',
+      'save_broker_profile_image',
       {
         p_broker_id: brokerId,
         p_image_url: publicUrl
@@ -68,9 +68,9 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use get_broker_image function to retrieve broker image URL from broker_infocap
+    // Use get_broker_profile_image function to retrieve broker image URL from broker_profile_images
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_broker_image',
+      'get_broker_profile_image',
       {
         p_broker_id: brokerId
       }
@@ -78,10 +78,25 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (rpcError) {
       console.error('Error fetching broker image URL:', rpcError);
-      return null;
+      
+      // Fall back to checking broker_infocap table if profile image not found
+      const { data: fallbackData, error: fallbackError } = await supabase.rpc(
+        'get_broker_image',
+        {
+          p_broker_id: brokerId
+        }
+      );
+      
+      if (fallbackError) {
+        console.error('Error fetching fallback broker image URL:', fallbackError);
+        return null;
+      }
+      
+      console.log('Retrieved fallback broker image URL:', fallbackData);
+      return fallbackData || null;
     }
     
-    console.log('Retrieved broker image URL:', rpcData);
+    console.log('Retrieved broker profile image URL:', rpcData);
     return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);

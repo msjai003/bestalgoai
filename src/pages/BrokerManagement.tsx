@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   fetchBrokerDetails, 
@@ -68,11 +67,15 @@ const BrokerManagement = () => {
     setDialogOpen(true);
   };
 
-  const handleEditBroker = (broker: Broker) => {
+  const handleEditBroker = async (broker: Broker) => {
     setEditingBroker(broker);
     setRequiredInputs(broker.requiredInputs || []);
-    setImagePreview(broker.logo);
+    
+    // Get the latest image URL from our new table
+    const imageUrl = await getBrokerImageUrl(broker.id);
+    setImagePreview(imageUrl || broker.logo);
     setImageFile(null);
+    
     setDialogOpen(true);
   };
 
@@ -110,7 +113,7 @@ const BrokerManagement = () => {
     try {
       let imageUrl = editingBroker.logo;
       
-      // If we have a new image file, upload it and get the URL
+      // If we have a new image file, upload it using our updated function
       if (imageFile) {
         // For new brokers without ID, use a temporary ID (will be replaced after save)
         const tempBrokerId = editingBroker.id || Math.floor(Math.random() * -1000);
