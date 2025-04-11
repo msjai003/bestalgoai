@@ -1,4 +1,3 @@
-
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
 import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 interface BrokerListProps {
   brokers: Broker[];
@@ -73,6 +73,7 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
   useEffect(() => {
     const fetchBrokerImage = async () => {
@@ -88,29 +89,52 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         if (img) {
           // Add cache busting parameter
           const imgWithTimestamp = img.includes('?') 
-            ? `${img}&_t=${timestamp}` 
-            : `${img}?_t=${timestamp}`;
+            ? `${img}&_t=${timestamp}&retry=${retryCount}` 
+            : `${img}?_t=${timestamp}&retry=${retryCount}`;
           
+          console.log(`Using image URL with cache busting: ${imgWithTimestamp}`);
           setImageUrl(imgWithTimestamp);
+          
+          // For Zerodha (broker ID 1), show more debug info
+          if (broker.id === 1) {
+            console.log("Zerodha broker image debug:", {
+              originalUrl: img,
+              withTimestamp: imgWithTimestamp,
+              brokerId: broker.id,
+              brokerName: broker.name
+            });
+          }
         } else {
           // Fallback to the static logo if no image in database
+          console.log(`No image found in DB for broker ${broker.id}, using fallback:`, broker.logo);
           setImageUrl(broker.logo);
         }
       } catch (error) {
         console.error("Error fetching broker image:", error);
         setImageError(true);
         setImageUrl(broker.logo);
+        
+        // Notify user about image loading issues for Zerodha specifically
+        if (broker.id === 1) {
+          toast.error("Failed to load Zerodha image, using fallback");
+        }
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchBrokerImage();
-  }, [broker.id, broker.logo]);
+  }, [broker.id, broker.logo, retryCount]);
   
   const handleImageError = () => {
     console.log(`Image loading error for broker ${broker.id}, falling back to placeholder`);
     setImageError(true);
+    
+    // For Zerodha, attempt to retry once
+    if (broker.id === 1 && retryCount < 2) {
+      console.log(`Retrying Zerodha image load, attempt ${retryCount + 1}`);
+      setRetryCount(prev => prev + 1);
+    }
   };
   
   const fallbackInitial = broker.name ? broker.name.charAt(0).toUpperCase() : 'B';

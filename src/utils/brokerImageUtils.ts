@@ -21,7 +21,7 @@ export const uploadBrokerImage = async (
     const { data, error } = await supabase.storage
       .from('broker-logos')
       .upload(filePath, file, {
-        cacheControl: '3600',
+        cacheControl: '0', // Disable caching to ensure fresh content
         upsert: true
       });
     
@@ -88,18 +88,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // First try to get broker image from broker_profile_images table using the RPC function
-    const { data: profileImageData, error: profileImageError } = await supabase.rpc(
-      'get_broker_profile_image',
-      { p_broker_id: brokerId }
-    );
-    
-    if (!profileImageError && profileImageData) {
-      console.log('Retrieved broker image URL from profile_images function:', profileImageData);
-      return profileImageData;
-    }
-    
-    // If RPC fails, try direct query to broker_profile_images
+    // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
       .select('image_url')
@@ -114,6 +103,17 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return imageData.image_url;
     }
     
+    // If direct query fails, try the RPC function
+    const { data: profileImageData, error: profileImageError } = await supabase.rpc(
+      'get_broker_profile_image',
+      { p_broker_id: brokerId }
+    );
+    
+    if (!profileImageError && profileImageData) {
+      console.log('Retrieved broker image URL from profile_images function:', profileImageData);
+      return profileImageData;
+    }
+    
     // Fall back to checking broker_infocap table
     const { data: fallbackData, error: fallbackError } = await supabase
       .from('broker_infocap')
@@ -125,6 +125,17 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     if (!fallbackError && fallbackData?.broker_image_url) {
       console.log('Retrieved fallback broker image URL:', fallbackData.broker_image_url);
       return fallbackData.broker_image_url;
+    }
+    
+    // Last resort: use the get_broker_image function
+    const { data: legacyImageData, error: legacyImageError } = await supabase.rpc(
+      'get_broker_image',
+      { p_broker_id: brokerId }
+    );
+    
+    if (!legacyImageError && legacyImageData) {
+      console.log('Retrieved legacy broker image URL:', legacyImageData);
+      return legacyImageData;
     }
     
     console.log('No image URL found for broker:', brokerId);
