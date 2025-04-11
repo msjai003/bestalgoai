@@ -309,6 +309,30 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_image: {
+        Row: {
+          broker_id: number
+          created_at: string
+          id: string
+          image_url: string
+          updated_at: string
+        }
+        Insert: {
+          broker_id: number
+          created_at?: string
+          id?: string
+          image_url: string
+          updated_at?: string
+        }
+        Update: {
+          broker_id?: number
+          created_at?: string
+          id?: string
+          image_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       broker_infocap: {
         Row: {
           broker_id: number
@@ -1660,6 +1684,10 @@ export type Database = {
         Args: { p_broker_id: number }
         Returns: string
       }
+      get_broker_image_url: {
+        Args: { p_broker_id: number }
+        Returns: string
+      }
       get_broker_infocap_functions: {
         Args: { p_broker_id: number }
         Returns: {
@@ -1700,6 +1728,10 @@ export type Database = {
       update_broker_logo: {
         Args: { p_broker_id: number; p_logo_image: string }
         Returns: undefined
+      }
+      upsert_broker_image: {
+        Args: { p_broker_id: number; p_image_url: string }
+        Returns: string
       }
     }
     Enums: {

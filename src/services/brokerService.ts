@@ -1,7 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Broker, BrokerFunction, BrokerInfocapFunction, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
 import { getAllBrokerInfocapFunctions, saveBrokerInfocapFunction } from "@/lib/broker-functions";
+import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
 
 /**
  * Fetch all broker details
@@ -23,16 +25,20 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
     if (Array.isArray(data)) {
       const brokerMap = new Map<number, Broker>();
       
-      data.forEach((func: BrokerInfocapFunction) => {
+      // Process each function to extract broker info
+      for (const func of data) {
         if (!brokerMap.has(func.broker_id)) {
           // Try to find this broker in static data first
           const staticBroker = staticBrokers.find(b => b.id === func.broker_id);
+          
+          // Get broker image from the broker_image table
+          const brokerImage = await getBrokerImageUrl(func.broker_id);
           
           if (staticBroker) {
             brokerMap.set(func.broker_id, {
               ...staticBroker,
               name: func.broker_name, // Use broker name from infocap
-              logo: func.broker_image || staticBroker.logo // Use broker_image if available
+              logo: brokerImage || staticBroker.logo // Use broker_image if available
             });
           } else {
             // Create new broker entry from function data
@@ -40,13 +46,13 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
               id: func.broker_id,
               name: func.broker_name,
               description: `${func.broker_name} broker integration`,
-              logo: func.broker_image || `/broker-logos/${func.broker_id}.png`, // Use broker_image if available
+              logo: brokerImage || `/broker-logos/${func.broker_id}.png`, // Use broker_image if available
               apiRequired: false,
               requiresSecretKey: false
             });
           }
         }
-      });
+      }
       
       return Array.from(brokerMap.values());
     }
@@ -71,14 +77,23 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
     
+    // Get broker image from the broker_image table
+    const brokerImage = await getBrokerImageUrl(brokerId);
+    
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
+      // If no broker functions, use static data with the image if available
+      if (staticBroker && brokerImage) {
+        return {
+          ...staticBroker,
+          logo: brokerImage
+        };
+      }
       return staticBroker || null;
     }
     
     // If we have functions data, update the broker name and image
     if (Array.isArray(data) && data.length > 0) {
       const brokerName = data[0].broker_name;
-      const brokerImage = data[0].broker_image;
       
       if (staticBroker) {
         return {

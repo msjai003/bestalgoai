@@ -1,6 +1,7 @@
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
+import { getBrokerImageUrl } from '@/utils/brokerImageUtils';
 
 // Static broker functions data as fallback
 const staticBrokerFunctions: BrokerFunction[] = [
@@ -209,6 +210,9 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
     // Use the RPC function to get broker functions from broker_infocap
     const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
+    
+    // Get the broker image from the broker_image table
+    const brokerImage = await getBrokerImageUrl(brokerId);
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker functions found in database, using static data");
@@ -228,7 +232,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
         function_enabled: func.function_enabled,
         is_premium: func.is_premium,
         function_order: func.function_order,
-        broker_image: func.broker_image || getBrokerImageFromCache(func.broker_id),
+        broker_image: brokerImage || getBrokerImageFromCache(func.broker_id),
         created_at: func.created_at,
         updated_at: func.updated_at
       }));
@@ -322,26 +326,15 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Try to get broker image from the database using the function
-    const { data, error } = await supabase.rpc('get_broker_image', {
-      p_broker_id: brokerId
-    });
+    // Get broker image from the broker_image table
+    const imageUrl = await getBrokerImageUrl(brokerId);
     
-    if (error || !data) {
-      // Try to get broker from static data if database fails
-      const broker = brokers.find(b => b.id === brokerId);
-      const image = broker?.logo || null;
-      brokerImageCache[brokerId] = image;
-      return image;
+    if (imageUrl) {
+      brokerImageCache[brokerId] = imageUrl;
+      return imageUrl;
     }
     
-    // If we got an image from the database, cache and return it
-    if (data) {
-      brokerImageCache[brokerId] = data;
-      return data;
-    }
-    
-    // Try to get broker from static data
+    // Try to get broker from static data if database query returns no results
     const broker = brokers.find(b => b.id === brokerId);
     if (broker) {
       const image = broker.logo || null;

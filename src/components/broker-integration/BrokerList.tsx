@@ -1,9 +1,10 @@
 
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton"; 
+import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
 
 interface BrokerListProps {
   brokers: Broker[];
@@ -68,8 +69,22 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 };
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
-  // Get broker image from broker.logo
-  const brokerImage = broker.logo;
+  const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
+  
+  // Fetch image from broker_image table if needed
+  useEffect(() => {
+    const fetchBrokerImage = async () => {
+      // Only fetch if we don't already have an image
+      if (!imageUrl) {
+        const img = await getBrokerImageUrl(broker.id);
+        if (img) {
+          setImageUrl(img);
+        }
+      }
+    };
+    
+    fetchBrokerImage();
+  }, [broker.id, imageUrl]);
   
   // Use broker name
   const displayName = broker.name;
@@ -83,7 +98,7 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       onClick={() => onSelect(broker.id)}
     >
       <img
-        src={brokerImage}
+        src={imageUrl || "/placeholder.svg"}
         className="w-10 h-10 rounded-lg object-cover"
         alt={displayName}
         onError={(e) => {

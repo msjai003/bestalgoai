@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Broker, BrokerPermissions } from "@/types/broker";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
 
 interface SuccessDialogProps {
   open: boolean;
@@ -31,14 +31,12 @@ export const SuccessDialog = ({
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
-          // Get broker image from the database using a function call
-          const { data: imageData, error: imageError } = await supabase.rpc('get_broker_image', {
-            p_broker_id: selectedBroker.id
-          });
+          // Get broker image from the broker_image table
+          const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
-          if (imageData && !imageError) {
-            console.log("Retrieved broker image from database:", imageData);
-            setBrokerImage(imageData);
+          if (imageUrl) {
+            console.log("Retrieved broker image from database:", imageUrl);
+            setBrokerImage(imageUrl);
           } else {
             // Fall back to the logo from the broker object
             console.log("Using fallback broker image:", selectedBroker.logo);
@@ -85,6 +83,10 @@ export const SuccessDialog = ({
                 src={displayImage}
                 className="w-8 h-8 rounded-md mr-3"
                 alt={displayName}
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
               />
             )}
             <div>

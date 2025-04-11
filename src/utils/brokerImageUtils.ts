@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -33,58 +32,48 @@ export const uploadBrokerImage = async (
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    // Update the broker_image field in the broker_infocap table
-    // First check if we have any records for this broker, if not create one
-    const { data: brokerData, error: fetchError } = await supabase
-      .from('broker_infocap')
-      .select('id')
-      .eq('broker_id', brokerId)
-      .limit(1);
-      
-    if (fetchError) {
-      console.error('Error checking broker existence:', fetchError);
-    }
+    // Store the image URL in the broker_image table using the upsert function
+    const { data: upsertData, error: upsertError } = await supabase.rpc(
+      'upsert_broker_image',
+      {
+        p_broker_id: brokerId,
+        p_image_url: publicUrl
+      }
+    );
     
-    if (brokerData && brokerData.length > 0) {
-      // Update existing broker records
-      const { error: updateError } = await supabase
-        .from('broker_infocap')
-        .update({ broker_image: publicUrl })
-        .eq('broker_id', brokerId);
-      
-      if (updateError) {
-        console.error('Error updating broker image in database:', updateError);
-      }
+    if (upsertError) {
+      console.error('Error storing broker image URL:', upsertError);
     } else {
-      // Create a placeholder record to store the image URL
-      const brokerInfo = await supabase
-        .from('broker_infocap')
-        .select('*')
-        .eq('broker_id', brokerId)
-        .limit(1);
-        
-      // If no records exist, create a basic one with the image
-      if (!brokerInfo.data || brokerInfo.data.length === 0) {
-        const { error: insertError } = await supabase
-          .from('broker_infocap')
-          .insert({
-            broker_id: brokerId,
-            broker_name: `Broker ${brokerId}`,
-            function_name: 'default',
-            function_slug: 'default',
-            broker_image: publicUrl,
-            function_order: 0
-          });
-          
-        if (insertError) {
-          console.error('Error inserting broker placeholder with image:', insertError);
-        }
-      }
+      console.log('Broker image URL stored successfully:', publicUrl);
     }
     
     return publicUrl;
   } catch (error) {
     console.error('Exception uploading broker image:', error);
+    return null;
+  }
+};
+
+/**
+ * Get the latest image URL for a broker by ID
+ */
+export const getBrokerImageUrl = async (brokerId: number): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.rpc(
+      'get_broker_image_url',
+      {
+        p_broker_id: brokerId
+      }
+    );
+    
+    if (error) {
+      console.error('Error fetching broker image URL:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception fetching broker image URL:', error);
     return null;
   }
 };

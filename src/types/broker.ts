@@ -1,4 +1,3 @@
-
 export interface Broker {
   id: number;
   name: string;
@@ -60,7 +59,7 @@ export interface BrokerFunction {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  broker_image?: string;  // Added the broker_image property
+  broker_image?: string;  // This property holds the broker image URL
   created_at?: string;
   updated_at?: string;
   function_order?: number;
@@ -131,4 +130,13 @@ export interface SaveBrokerFunctionParams {
 
 export interface ExecuteSqlParams {
   query: string;
+}
+
+// Add a new interface for the broker_image table
+export interface BrokerImage {
+  id: string;
+  broker_id: number;
+  image_url: string;
+  created_at?: string;
+  updated_at?: string;
 }
