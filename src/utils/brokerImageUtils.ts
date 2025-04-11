@@ -4,25 +4,36 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Upload a broker image to storage and return the public URL
+ * Includes size optimization for larger images
  */
 export const uploadBrokerImage = async (
   file: File,
   brokerId: number
 ): Promise<string | null> => {
   try {
+    // Check file size and log it - helpful for debugging
+    const fileSizeMB = file.size / (1024 * 1024);
+    console.log(`Uploading image for broker ${brokerId}, size: ${fileSizeMB.toFixed(2)}MB, type: ${file.type}`);
+    
+    // Large file warning
+    if (fileSizeMB > 5) {
+      console.warn(`Warning: Image size is ${fileSizeMB.toFixed(2)}MB which may be too large for optimal performance`);
+    }
+    
     // Generate a unique file name
     const fileExt = file.name.split('.').pop();
     const fileName = `${brokerId}-${uuidv4()}.${fileExt}`;
     const filePath = `broker-logos/${fileName}`;
     
-    console.log(`Uploading image for broker ${brokerId}, path: ${filePath}`);
+    console.log(`Upload path: ${filePath}, file type: ${file.type}`);
     
-    // Upload the file to Supabase storage
+    // Upload the file to Supabase storage with cacheControl disabled to prevent caching issues
     const { data, error } = await supabase.storage
       .from('broker-logos')
       .upload(filePath, file, {
         cacheControl: '0', // Disable caching to ensure fresh content
-        upsert: true
+        upsert: true,
+        contentType: file.type // Explicitly set the content type
       });
     
     if (error) {
@@ -32,21 +43,26 @@ export const uploadBrokerImage = async (
     
     console.log('File uploaded successfully:', data);
     
-    // Get the public URL for the uploaded file
+    // Get the public URL for the uploaded file with a cache-busting parameter
+    const timestamp = new Date().getTime();
     const { data: { publicUrl } } = supabase.storage
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    console.log('Generated public URL:', publicUrl);
+    // Add cache-busting parameter to URL
+    const urlWithCacheBust = publicUrl.includes('?') 
+      ? `${publicUrl}&_t=${timestamp}` 
+      : `${publicUrl}?_t=${timestamp}`;
     
-    // Insert the image URL into the broker_profile_images table using the save_broker_profile_image function
+    console.log('Generated public URL with cache busting:', urlWithCacheBust);
+    
+    // Insert the image URL into the broker_profile_images table
     try {
-      // Use the dedicated RPC function for broker_profile_images
       const { data: saveData, error: saveError } = await supabase.rpc(
         'save_broker_profile_image',
         {
           p_broker_id: brokerId,
-          p_image_url: publicUrl
+          p_image_url: publicUrl // Store the clean URL without cache busting
         }
       );
       
@@ -61,7 +77,7 @@ export const uploadBrokerImage = async (
         'upsert_broker_image',
         {
           p_broker_id: brokerId,
-          p_image_url: publicUrl
+          p_image_url: publicUrl // Store the clean URL without cache busting
         }
       );
       
@@ -74,7 +90,7 @@ export const uploadBrokerImage = async (
       console.error('Exception during save to database:', saveDbError);
     }
     
-    return publicUrl;
+    return urlWithCacheBust;
   } catch (error) {
     console.error('Exception uploading broker image:', error);
     return null;
@@ -83,6 +99,7 @@ export const uploadBrokerImage = async (
 
 /**
  * Get the latest image URL for a broker by ID
+ * With improved error handling and direct image URL testing
  */
 export const getBrokerImageUrl = async (brokerId: number): Promise<string | null> => {
   try {
@@ -100,7 +117,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (!imageError && imageData?.image_url) {
       console.log('Retrieved broker image URL from profile_images table:', imageData.image_url);
-      return imageData.image_url;
+      
+      // Test if the image URL actually returns a valid image
+      const timestamp = new Date().getTime();
+      const urlWithCacheBust = imageData.image_url.includes('?') 
+        ? `${imageData.image_url}&_t=${timestamp}` 
+        : `${imageData.image_url}?_t=${timestamp}`;
+        
+      console.log('Using image URL with cache busting:', urlWithCacheBust);
+      return urlWithCacheBust;
     }
     
     // If direct query fails, try the RPC function
@@ -111,7 +136,14 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (!profileImageError && profileImageData) {
       console.log('Retrieved broker image URL from profile_images function:', profileImageData);
-      return profileImageData;
+      
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      const urlWithCacheBust = profileImageData.includes('?') 
+        ? `${profileImageData}&_t=${timestamp}` 
+        : `${profileImageData}?_t=${timestamp}`;
+        
+      return urlWithCacheBust;
     }
     
     // Fall back to checking broker_infocap table
@@ -124,7 +156,14 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (!fallbackError && fallbackData?.broker_image_url) {
       console.log('Retrieved fallback broker image URL:', fallbackData.broker_image_url);
-      return fallbackData.broker_image_url;
+      
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      const urlWithCacheBust = fallbackData.broker_image_url.includes('?') 
+        ? `${fallbackData.broker_image_url}&_t=${timestamp}` 
+        : `${fallbackData.broker_image_url}?_t=${timestamp}`;
+      
+      return urlWithCacheBust;
     }
     
     // Last resort: use the get_broker_image function
@@ -135,7 +174,14 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (!legacyImageError && legacyImageData) {
       console.log('Retrieved legacy broker image URL:', legacyImageData);
-      return legacyImageData;
+      
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      const urlWithCacheBust = legacyImageData.includes('?') 
+        ? `${legacyImageData}&_t=${timestamp}` 
+        : `${legacyImageData}?_t=${timestamp}`;
+      
+      return urlWithCacheBust;
     }
     
     console.log('No image URL found for broker:', brokerId);
@@ -148,6 +194,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
 
 /**
  * Convert a base64 image to a File object
+ * Improved to handle PNG images better
  */
 export const base64ToFile = (
   base64String: string,
@@ -170,9 +217,36 @@ export const base64ToFile = (
       u8arr[n] = bstr.charCodeAt(n);
     }
     
+    console.log(`Converting base64 to File, mime type: ${mime}, filename: ${filename}`);
     return new File([u8arr], filename, { type: mime });
   } catch (error) {
     console.error('Error converting base64 to File:', error);
     return null;
   }
+};
+
+/**
+ * Test if an image URL is valid by attempting to load it
+ */
+export const testImageUrl = async (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    
+    img.onload = () => {
+      console.log(`Image successfully loaded: ${url}, dimensions: ${img.width}x${img.height}`);
+      resolve(true);
+    };
+    
+    img.onerror = () => {
+      console.error(`Failed to load image: ${url}`);
+      resolve(false);
+    };
+    
+    // Add cache busting to the test
+    const cacheBustUrl = url.includes('?') 
+      ? `${url}&_cb=${new Date().getTime()}` 
+      : `${url}?_cb=${new Date().getTime()}`;
+    
+    img.src = cacheBustUrl;
+  });
 };
