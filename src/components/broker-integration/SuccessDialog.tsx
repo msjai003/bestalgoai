@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Broker, BrokerPermissions } from "@/types/broker";
 import { useEffect, useState } from "react";
 import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SuccessDialogProps {
   open: boolean;
@@ -25,11 +26,16 @@ export const SuccessDialog = ({
 }: SuccessDialogProps) => {
   const [brokerName, setBrokerName] = useState<string | null>(null);
   const [brokerImage, setBrokerImage] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
+          setIsImageLoading(true);
+          setImageError(false);
+          
           // Get broker image from broker_profile_images table
           const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
@@ -44,8 +50,11 @@ export const SuccessDialog = ({
           setBrokerName(selectedBroker.name);
         } catch (error) {
           console.error("Error fetching broker details:", error);
+          setImageError(true);
           setBrokerName(selectedBroker.name);
           setBrokerImage(selectedBroker.logo);
+        } finally {
+          setIsImageLoading(false);
         }
       }
     };
@@ -54,7 +63,12 @@ export const SuccessDialog = ({
   }, [selectedBroker, open]);
 
   const displayName = brokerName || (selectedBroker ? selectedBroker.name : '');
-  const displayImage = brokerImage || (selectedBroker ? selectedBroker.logo : '');
+  const fallbackInitial = displayName ? displayName.charAt(0).toUpperCase() : '?';
+
+  const handleImageError = () => {
+    console.log("Image failed to load, using fallback");
+    setImageError(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,16 +85,18 @@ export const SuccessDialog = ({
 
         <div className="bg-gray-900 rounded-lg p-4 mt-2">
           <div className="flex items-center mb-3">
-            {displayImage && (
-              <img
-                src={displayImage}
-                className="w-8 h-8 rounded-md mr-3"
-                alt={displayName}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-              />
-            )}
+            <Avatar className="w-8 h-8 mr-3">
+              {brokerImage && !imageError ? (
+                <AvatarImage 
+                  src={brokerImage}
+                  alt={displayName}
+                  onError={handleImageError}
+                />
+              ) : null}
+              <AvatarFallback className="bg-gray-700 text-gray-300">
+                {isImageLoading ? "..." : fallbackInitial}
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h4 className="font-medium">{displayName}</h4>
               <p className="text-sm text-gray-400">{selectedAccount}</p>

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { BrokerFunction } from "@/hooks/strategy/types";
 import { CheckCircle, XCircle, Lock, Info } from "lucide-react";
@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
-import { useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BrokerFunctionsProps {
   brokerId: number;
@@ -23,12 +23,19 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
   const { functions, isLoading, error } = useBrokerFunctions(brokerId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [brokerImageUrl, setBrokerImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   // Get the broker image URL
   useEffect(() => {
     const fetchBrokerImage = async () => {
-      const imageUrl = await getBrokerImageUrl(brokerId);
-      setBrokerImageUrl(imageUrl);
+      try {
+        const imageUrl = await getBrokerImageUrl(brokerId);
+        setBrokerImageUrl(imageUrl);
+        setImageError(false);
+      } catch (err) {
+        console.error("Error loading broker image:", err);
+        setImageError(true);
+      }
     };
 
     fetchBrokerImage();
@@ -59,6 +66,11 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
       </div>
     );
   }
+
+  const handleImageError = () => {
+    console.log("Broker image failed to load in functions component");
+    setImageError(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -115,22 +127,32 @@ const FunctionCard = ({
   func: BrokerFunction, 
   brokerImageUrl: string | null 
 }) => {
-  // Use the broker image URL from the broker_profile_images table
-  const displayImage = brokerImageUrl || '/placeholder.svg';
+  const [imageError, setImageError] = useState(false);
+  const fallbackInitial = func.broker_name ? func.broker_name.charAt(0).toUpperCase() : 'B';
+
+  const handleImageError = () => {
+    console.log(`Image error in function card for ${func.function_name}`);
+    setImageError(true);
+  };
 
   return (
     <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
           {/* Display broker image */}
-          <img 
-            src={displayImage} 
-            alt={func.broker_name}
-            className="w-8 h-8 rounded-md object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
-            }}
-          />
+          <Avatar className="w-8 h-8 rounded-md">
+            {brokerImageUrl && !imageError ? (
+              <AvatarImage 
+                src={brokerImageUrl} 
+                alt={func.broker_name}
+                className="object-cover rounded-md"
+                onError={handleImageError}
+              />
+            ) : null}
+            <AvatarFallback className="bg-gray-700 text-gray-300 rounded-md">
+              {fallbackInitial}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-white">{func.function_name}</h3>

@@ -1,3 +1,4 @@
+
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -69,24 +70,35 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
+  const [imageError, setImageError] = useState(false);
   
   useEffect(() => {
     const fetchBrokerImage = async () => {
-      const img = await getBrokerImageUrl(broker.id);
-      if (img) {
-        console.log(`Updated image URL for broker ${broker.id} from database:`, img);
-        setImageUrl(img);
+      try {
+        const img = await getBrokerImageUrl(broker.id);
+        if (img) {
+          console.log(`Updated image URL for broker ${broker.id} from database:`, img);
+          setImageUrl(img);
+          setImageError(false);
+        }
+      } catch (error) {
+        console.error("Error fetching broker image:", error);
+        setImageError(true);
       }
     };
     
     fetchBrokerImage();
     
+    // Refresh images every 30 seconds (optional)
     const intervalId = setInterval(fetchBrokerImage, 30000);
     
     return () => clearInterval(intervalId);
   }, [broker.id]);
   
-  const displayName = broker.name;
+  const handleImageError = () => {
+    console.log(`Image loading error for broker ${broker.id}, falling back to placeholder`);
+    setImageError(true);
+  };
   
   const hasRequiredInputs = broker.requiredInputs && broker.requiredInputs.length > 0;
 
@@ -95,16 +107,20 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       className="flex items-center p-4 bg-gray-800/30 rounded-xl border border-gray-700 cursor-pointer hover:border-pink-500 transition-colors"
       onClick={() => onSelect(broker.id)}
     >
-      <img
-        src={imageUrl || "/placeholder.svg"}
-        className="w-10 h-10 rounded-lg object-cover"
-        alt={displayName}
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = "/placeholder.svg";
-        }}
-      />
+      {imageUrl && !imageError ? (
+        <img
+          src={imageUrl}
+          className="w-10 h-10 rounded-lg object-cover bg-gray-700"
+          alt={broker.name}
+          onError={handleImageError}
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-gray-500">
+          {broker.name.charAt(0).toUpperCase()}
+        </div>
+      )}
       <div className="ml-3 flex-1">
-        <h3 className="font-semibold">{displayName}</h3>
+        <h3 className="font-semibold">{broker.name}</h3>
         <div className="flex items-center gap-2 mt-1">
           {hasRequiredInputs ? (
             <>
