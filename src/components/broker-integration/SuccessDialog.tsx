@@ -37,9 +37,11 @@ export const SuccessDialog = ({
           });
           
           if (imageData && !imageError) {
+            console.log("Retrieved broker image from database:", imageData);
             setBrokerImage(imageData);
           } else {
             // Fall back to the logo from the broker object
+            console.log("Using fallback broker image:", selectedBroker.logo);
             setBrokerImage(selectedBroker.logo);
           }
           

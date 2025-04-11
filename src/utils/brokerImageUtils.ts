@@ -34,13 +34,52 @@ export const uploadBrokerImage = async (
       .getPublicUrl(filePath);
     
     // Update the broker_image field in the broker_infocap table
-    const { error: updateError } = await supabase
+    // First check if we have any records for this broker, if not create one
+    const { data: brokerData, error: fetchError } = await supabase
       .from('broker_infocap')
-      .update({ broker_image: publicUrl })
-      .eq('broker_id', brokerId);
+      .select('id')
+      .eq('broker_id', brokerId)
+      .limit(1);
+      
+    if (fetchError) {
+      console.error('Error checking broker existence:', fetchError);
+    }
     
-    if (updateError) {
-      console.error('Error updating broker image in database:', updateError);
+    if (brokerData && brokerData.length > 0) {
+      // Update existing broker records
+      const { error: updateError } = await supabase
+        .from('broker_infocap')
+        .update({ broker_image: publicUrl })
+        .eq('broker_id', brokerId);
+      
+      if (updateError) {
+        console.error('Error updating broker image in database:', updateError);
+      }
+    } else {
+      // Create a placeholder record to store the image URL
+      const brokerInfo = await supabase
+        .from('broker_infocap')
+        .select('*')
+        .eq('broker_id', brokerId)
+        .limit(1);
+        
+      // If no records exist, create a basic one with the image
+      if (!brokerInfo.data || brokerInfo.data.length === 0) {
+        const { error: insertError } = await supabase
+          .from('broker_infocap')
+          .insert({
+            broker_id: brokerId,
+            broker_name: `Broker ${brokerId}`,
+            function_name: 'default',
+            function_slug: 'default',
+            broker_image: publicUrl,
+            function_order: 0
+          });
+          
+        if (insertError) {
+          console.error('Error inserting broker placeholder with image:', insertError);
+        }
+      }
     }
     
     return publicUrl;

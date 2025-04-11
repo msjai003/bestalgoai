@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   fetchBrokerDetails, 
@@ -43,7 +42,6 @@ const BrokerManagement = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Load brokers on component mount
   useEffect(() => {
     loadBrokers();
   }, []);
@@ -81,7 +79,6 @@ const BrokerManagement = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview the image
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -112,7 +109,6 @@ const BrokerManagement = () => {
     try {
       let imageUrl = editingBroker.logo;
       
-      // Upload image if a new file is selected
       if (imageFile) {
         const uploadedUrl = await uploadBrokerImage(
           imageFile, 
@@ -120,6 +116,9 @@ const BrokerManagement = () => {
         );
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
+          console.log("Image uploaded successfully:", uploadedUrl);
+        } else {
+          console.warn("Failed to upload image");
         }
       }
 
@@ -131,13 +130,11 @@ const BrokerManagement = () => {
 
       let success = false;
       if (editingBroker.id) {
-        // Update existing broker
         success = await updateBroker(editingBroker.id, brokerData);
         if (success) {
           toast.success("Broker updated successfully");
         }
       } else {
-        // Save new broker
         const newId = await saveBroker(brokerData);
         if (newId) {
           toast.success("Broker added successfully");
