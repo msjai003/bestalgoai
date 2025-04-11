@@ -39,19 +39,24 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Save the image URL to the broker_profile_images table using save_broker_profile_image function
-    const { data: saveData, error: saveError } = await supabase.rpc(
-      'save_broker_profile_image',
-      {
-        p_broker_id: brokerId,
-        p_image_url: publicUrl
+    // Save the image URL to the broker_profile_images table
+    try {
+      // Use custom RPC call to avoid type issues
+      const { data: saveData, error: saveError } = await supabase.rpc(
+        'upsert_broker_image',
+        {
+          p_broker_id: brokerId,
+          p_image_url: publicUrl
+        }
+      );
+      
+      if (saveError) {
+        console.error('Error saving broker image URL to database:', saveError);
+      } else {
+        console.log('Successfully saved broker image URL to database:', saveData);
       }
-    );
-    
-    if (saveError) {
-      console.error('Error saving broker image URL to database:', saveError);
-    } else {
-      console.log('Successfully saved broker image URL to database:', saveData);
+    } catch (saveDbError) {
+      console.error('Exception during save to broker_infocap:', saveDbError);
     }
     
     return publicUrl;
@@ -68,36 +73,38 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use get_broker_profile_image function to retrieve broker image URL from broker_profile_images
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_broker_profile_image',
+    // Try to get broker image URL from broker_profile_images first via direct query
+    // This avoids RPC type issues
+    const { data: profileImageData, error: profileImageError } = await supabase
+      .from('broker_profile_images')
+      .select('image_url')
+      .eq('broker_id', brokerId)
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (!profileImageError && profileImageData?.image_url) {
+      console.log('Retrieved broker profile image URL from direct query:', profileImageData.image_url);
+      return profileImageData.image_url;
+    }
+    
+    // Fall back to checking broker_infocap table
+    const { data: fallbackData, error: fallbackError } = await supabase.rpc(
+      'get_broker_image',
       {
         p_broker_id: brokerId
       }
     );
     
-    if (rpcError) {
-      console.error('Error fetching broker image URL:', rpcError);
-      
-      // Fall back to checking broker_infocap table if profile image not found
-      const { data: fallbackData, error: fallbackError } = await supabase.rpc(
-        'get_broker_image',
-        {
-          p_broker_id: brokerId
-        }
-      );
-      
-      if (fallbackError) {
-        console.error('Error fetching fallback broker image URL:', fallbackError);
-        return null;
-      }
-      
-      console.log('Retrieved fallback broker image URL:', fallbackData);
-      return fallbackData || null;
+    if (fallbackError) {
+      console.error('Error fetching fallback broker image URL:', fallbackError);
+      return null;
     }
     
-    console.log('Retrieved broker profile image URL:', rpcData);
-    return rpcData || null;
+    const imageUrl = typeof fallbackData === 'string' ? fallbackData : null;
+    console.log('Retrieved fallback broker image URL:', imageUrl);
+    return imageUrl;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
     return null;
