@@ -1,7 +1,7 @@
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
-import { getBrokerImageUrl } from '@/utils/brokerImageUtils';
+import { getBrokerImageUrl, getDefaultBrokerImage } from '@/utils/brokerImageUtils';
 
 // Static broker functions data as fallback
 const staticBrokerFunctions: BrokerFunction[] = [
@@ -15,7 +15,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg"
+    image_url: "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png"
   },
   {
     id: "1-order_modification",
@@ -306,8 +306,8 @@ const getBrokerImageFromCache = (brokerId: number): string | undefined => {
     return brokerImageCache[brokerId] || undefined;
   }
   
-  const broker = brokers.find(b => b.id === brokerId);
-  const image = broker?.logo || null;
+  // Use the default image function
+  const image = getDefaultBrokerImage(brokerId);
   brokerImageCache[brokerId] = image;
   return image || undefined;
 };
@@ -318,6 +318,13 @@ const getBrokerImageFromCache = (brokerId: number): string | undefined => {
 export const getBrokerImage = async (
   brokerId: number
 ): Promise<string | null> => {
+  // Special case for Zerodha (broker ID 1)
+  if (brokerId === 1) {
+    const zerodhaImage = "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+    brokerImageCache[brokerId] = zerodhaImage;
+    return zerodhaImage;
+  }
+  
   // First check cache
   if (brokerId in brokerImageCache) {
     return brokerImageCache[brokerId];

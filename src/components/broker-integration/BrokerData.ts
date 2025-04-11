@@ -1,4 +1,3 @@
-
 import { Broker } from "@/types/broker";
 
 export interface AccountType {
@@ -16,12 +15,11 @@ export const brokers: Broker[] = [
   {
     id: 1,
     name: "Zerodha",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg",
-    description: "India's largest stock broker offering the lowest, most competitive brokerage rates",
-    supportedAssets: ["Stocks", "Options", "Futures", "Commodities"],
-    fees: "₹0 for equity delivery, ₹20 per order for intraday",
+    description: "India's largest stock broker offering the lowest, flat-fee brokerage rates.",
+    logo: "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png",
     apiRequired: true,
-    requiresSecretKey: true
+    requiresSecretKey: true,
+    requiredInputs: ["api_key", "secret_key", "user_id"]
   },
   {
     id: 2,

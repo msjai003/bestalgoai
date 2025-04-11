@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -105,6 +104,12 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
+    // Special case for Zerodha (broker ID 1)
+    if (brokerId === 1) {
+      console.log("Using custom Zerodha logo");
+      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -188,6 +193,12 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     return null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
+    
+    // Special case for Zerodha when there's an error
+    if (brokerId === 1) {
+      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+    }
+    
     return null;
   }
 };
@@ -249,4 +260,31 @@ export const testImageUrl = async (url: string): Promise<boolean> => {
     
     img.src = cacheBustUrl;
   });
+};
+
+/**
+ * Get a default broker image URL based on broker ID
+ * Used as a fallback when no image is available in the database
+ */
+export const getDefaultBrokerImage = (brokerId: number): string => {
+  switch (brokerId) {
+    case 1: // Zerodha
+      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+    case 2: // ICICI Direct
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg";
+    case 3: // Angel One
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg";
+    case 4: // HDFC Securities
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg";
+    case 5: // Upstox
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg";
+    case 6: // Groww
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg";
+    case 7: // 5 Paisa
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg";
+    case 8: // Bigul
+      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg";
+    default:
+      return `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${Math.floor(Math.random() * 8) + 1}.jpg`;
+  }
 };
