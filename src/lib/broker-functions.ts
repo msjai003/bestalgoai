@@ -325,6 +325,13 @@ export const getBrokerImage = async (
     return zerodhaImage;
   }
   
+  // Special case for Angel One (broker ID 3)
+  if (brokerId === 3) {
+    const angelOneImage = "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
+    brokerImageCache[brokerId] = angelOneImage;
+    return angelOneImage;
+  }
+  
   // First check cache
   if (brokerId in brokerImageCache) {
     return brokerImageCache[brokerId];

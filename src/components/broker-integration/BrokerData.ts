@@ -1,3 +1,4 @@
+
 import { Broker } from "@/types/broker";
 
 export interface AccountType {
@@ -33,7 +34,7 @@ export const brokers: Broker[] = [
   {
     id: 3,
     name: "Angel One",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg",
+    logo: "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png",
     description: "Tech-first stockbroking platform with advanced trading tools",
     supportedAssets: ["Stocks", "Options", "Futures", "Commodities", "Currencies"],
     fees: "₹20 per order flat fee structure",

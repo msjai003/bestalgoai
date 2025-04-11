@@ -1,3 +1,4 @@
+
 import { Search, ChevronRight, Check, AlertCircle, ImageOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -90,6 +91,14 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
           return;
         }
         
+        if (broker.id === 3) {
+          const angelOneImage = "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
+          console.log("Using direct Angel One image:", angelOneImage);
+          setImageUrl(`${angelOneImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
@@ -126,7 +135,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         setImageError(true);
         setImageUrl(broker.logo);
         
-        if (broker.id === 1 || broker.name.toLowerCase().includes('zerodha')) {
+        if (broker.id === 1 || broker.name.toLowerCase().includes('zerodha') || 
+            broker.id === 3 || broker.name.toLowerCase().includes('angel')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
       } finally {
@@ -141,7 +151,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     console.log(`Image loading error for broker ${broker.id} (${broker.name}), falling back to placeholder`);
     setImageError(true);
     
-    if ((broker.id === 1 || broker.name.toLowerCase().includes('zerodha')) && retryCount < 2) {
+    if ((broker.id === 1 || broker.name.toLowerCase().includes('zerodha') || 
+         broker.id === 3 || broker.name.toLowerCase().includes('angel')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {

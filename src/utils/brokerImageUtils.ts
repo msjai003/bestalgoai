@@ -113,6 +113,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${zerodhaImage}?_t=${timestamp}`;
     }
     
+    // Special case for Angel One (broker ID 3)
+    if (brokerId === 3) {
+      const angelOneImage = "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
+      console.log("Using custom Angel One logo:", angelOneImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${angelOneImage}?_t=${timestamp}`;
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -202,6 +211,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png?_t=" + new Date().getTime();
     }
     
+    // Special case for Angel One when there's an error
+    if (brokerId === 3) {
+      return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -276,7 +290,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 2: // ICICI Direct
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg";
     case 3: // Angel One
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg";
+      return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
     case 4: // HDFC Securities
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg";
     case 5: // Upstox
