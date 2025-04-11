@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -265,10 +264,7 @@ const PricingPage = () => {
                 </ul>
                 <div className="flex justify-center">
                   <Button 
-                    className={`${plan.popular 
-                      ? 'bg-gradient-to-r from-accentPink to-accentPurple' 
-                      : 'bg-surfaceBg border border-accentPink/50 hover:bg-accentPink/10'} 
-                      text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity px-4`}
+                    className="bg-gradient-to-r from-accentPink to-accentPurple text-textPrimary font-semibold shadow-lg hover:opacity-90 transition-opacity px-4"
                     onClick={() => handlePlanSelection(plan.name, plan.price)}
                     disabled={isLoading === `${plan.name}-${plan.price}` || hasPremium}
                     size="sm"
