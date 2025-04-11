@@ -170,15 +170,15 @@ const Subscription = () => {
 
   return (
     <div className="bg-appBg min-h-screen text-textPrimary">
-      <header className="fixed top-0 left-0 right-0 bg-appBg/95 backdrop-blur-lg border-b border-gray-800 z-50">
+      <header className="fixed top-0 left-0 right-0 bg-appBg/95 backdrop-blur-lg border-t border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Button
             onClick={() => navigate('/dashboard')}
-            className="bg-surfaceBg border border-gray-700 text-textPrimary hover:bg-surfaceBg/80"
+            className="bg-gray-200 border border-gray-300 text-charcoalPrimary hover:bg-gray-300"
             size="sm"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            <span className="text-xs">Back</span>
+            <span className="text-xs font-medium">Back</span>
           </Button>
           <h1 className="text-lg font-semibold">Subscription & Billing</h1>
           <button className="p-2">
