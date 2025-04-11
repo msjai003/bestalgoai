@@ -74,7 +74,7 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
   // Fetch image for broker
   useEffect(() => {
     const fetchBrokerImage = async () => {
-      // Always fetch the latest image
+      // Always fetch the latest image from the broker_infocap table
       const img = await getBrokerImageUrl(broker.id);
       if (img) {
         setImageUrl(img);

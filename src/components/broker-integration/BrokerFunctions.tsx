@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getBrokerImageUrl } from "@/utils/brokerImageUtils";
+import { useEffect } from "react";
 
 interface BrokerFunctionsProps {
   brokerId: number;
@@ -20,6 +22,17 @@ interface BrokerFunctionsProps {
 export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) => {
   const { functions, isLoading, error } = useBrokerFunctions(brokerId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [brokerImageUrl, setBrokerImageUrl] = useState<string | null>(null);
+
+  // Get the broker image URL
+  useEffect(() => {
+    const fetchBrokerImage = async () => {
+      const imageUrl = await getBrokerImageUrl(brokerId);
+      setBrokerImageUrl(imageUrl);
+    };
+
+    fetchBrokerImage();
+  }, [brokerId]);
 
   // Get unique categories from function slugs
   const categories = Array.from(new Set(functions.map(func => {
@@ -84,7 +97,11 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {filteredFunctions.map((func) => (
-            <FunctionCard key={func.id} func={func} />
+            <FunctionCard 
+              key={func.id} 
+              func={func} 
+              brokerImageUrl={brokerImageUrl}
+            />
           ))}
         </div>
       )}
@@ -92,22 +109,29 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
   );
 };
 
-const FunctionCard = ({ func }: { func: BrokerFunction }) => {
+const FunctionCard = ({ 
+  func, 
+  brokerImageUrl 
+}: { 
+  func: BrokerFunction, 
+  brokerImageUrl: string | null 
+}) => {
+  // Use the broker image URL from the broker_infocap table
+  const displayImage = brokerImageUrl || '/placeholder.svg';
+
   return (
     <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
-          {/* Display broker image if available */}
-          {func.broker_image && (
-            <img 
-              src={func.broker_image} 
-              alt={func.broker_name}
-              className="w-8 h-8 rounded-md object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
-          )}
+          {/* Display broker image */}
+          <img 
+            src={displayImage} 
+            alt={func.broker_name}
+            className="w-8 h-8 rounded-md object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
+          />
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-white">{func.function_name}</h3>

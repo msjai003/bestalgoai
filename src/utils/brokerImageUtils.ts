@@ -39,6 +39,21 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
+    // Update the broker_image_url column in the broker_infocap table
+    const { error: updateError } = await supabase.rpc(
+      'update_broker_image_url',
+      {
+        p_broker_id: brokerId,
+        p_image_url: publicUrl
+      }
+    );
+    
+    if (updateError) {
+      console.error('Error updating broker image URL in database:', updateError);
+    } else {
+      console.log('Successfully updated broker image URL in database');
+    }
+    
     return publicUrl;
   } catch (error) {
     console.error('Exception uploading broker image:', error);
@@ -53,8 +68,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Fall back to using get_broker_image function
-    console.log('Using get_broker_image function to retrieve broker image');
+    // Use get_broker_image function to retrieve broker image URL
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       'get_broker_image',
       {
@@ -67,7 +81,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return null;
     }
     
-    console.log('Retrieved broker image URL via get_broker_image function:', rpcData);
+    console.log('Retrieved broker image URL:', rpcData);
     return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
