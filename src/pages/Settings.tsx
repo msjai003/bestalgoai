@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -137,7 +138,7 @@ const Settings = () => {
         </div>
       </header>
 
-      <main className="pt-16 pb-24">
+      <main className="pt-16 pb-8">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin h-8 w-8 border-4 border-cyan rounded-full border-t-transparent"></div>
@@ -185,7 +186,7 @@ const Settings = () => {
                   </div>
                 </div>
                 
-                {/* New Integration Settings Section */}
+                {/* Integration Settings Section */}
                 <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
                   <h3 className="text-sm font-medium text-cyan/80 mb-3">Integration Settings</h3>
                   <div className="space-y-3">
@@ -206,22 +207,23 @@ const Settings = () => {
                     />
                   </div>
                 </div>
+                
+                {/* Account Actions Section (Logout) */}
+                <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
+                  <h3 className="text-sm font-medium text-cyan/80 mb-3">Account Actions</h3>
+                  <div className="space-y-3">
+                    <SettingsLink 
+                      icon={<LogOut className="w-5 h-5 text-cyan" />} 
+                      label="Logout" 
+                      onClick={() => navigate("/logout")}
+                      className="hover:bg-red-500/10"
+                    />
+                  </div>
+                </div>
               </div>
             </section>
           </>
         )}
-
-        <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-gray-800">
-          <Button 
-            variant="logout"
-            size="default"
-            className="w-full flex items-center justify-center gap-2 shadow-lg transition-colors"
-            onClick={() => navigate('/logout')}
-          >
-            <LogOut className="w-5 h-5" />
-            Logout
-          </Button>
-        </section>
       </main>
 
       <SecuritySettingsDialog
