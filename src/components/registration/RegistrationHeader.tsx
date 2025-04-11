@@ -14,10 +14,10 @@ const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ handleBack }) =
       <div className="flex items-center gap-3">
         <Button 
           onClick={handleBack}
-          className="bg-gray-200 border border-gray-300 text-charcoalPrimary hover:bg-gray-300"
+          className="bg-gray-200 border border-cyan text-charcoalPrimary hover:bg-gray-100"
           size="sm"
         >
-          <ChevronLeft className="h-4 w-4 mr-1" />
+          <ChevronLeft className="h-4 w-4 mr-1 text-cyan" />
           <span className="text-xs font-medium">Back</span>
         </Button>
         <Link to="/" className="flex items-center">

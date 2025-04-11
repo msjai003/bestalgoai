@@ -174,10 +174,10 @@ const Subscription = () => {
         <div className="flex items-center justify-between px-4 h-16">
           <Button
             onClick={() => navigate('/dashboard')}
-            className="bg-gray-200 border border-gray-300 text-charcoalPrimary hover:bg-gray-300"
+            className="bg-gray-200 border border-cyan text-charcoalPrimary hover:bg-gray-100"
             size="sm"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-1 text-cyan" />
             <span className="text-xs font-medium">Back</span>
           </Button>
           <h1 className="text-lg font-semibold">Subscription & Billing</h1>
