@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import PortfolioChart from "./PortfolioChart";
+import { Button } from "@/components/ui/button";
 
 interface PortfolioOverviewProps {
   performanceData: any[];
@@ -23,12 +24,14 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
             <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
             <p className="text-2xl font-bold text-white">{formattedValue}</p>
           </div>
-          <Link 
-            to="/subscription" 
-            className="text-cyan bg-cyan/10 px-3 py-1.5 rounded-lg text-sm hover:bg-cyan/20 transition-colors border border-cyan/20"
+          <Button 
+            variant="logout"
+            size="sm"
+            asChild
+            className="text-charcoalPrimary px-4"
           >
-            Upgrade
-          </Link>
+            <Link to="/subscription">Upgrade</Link>
+          </Button>
         </div>
         
         <PortfolioChart performanceData={performanceData} />
