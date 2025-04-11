@@ -86,7 +86,7 @@ export interface BrokerInfocapFunction {
   function_order: number;
   function_enabled: boolean;
   is_premium: boolean;
-  logo_image?: string;
+  broker_image?: string;
   created_at?: string;
   updated_at?: string;
 }

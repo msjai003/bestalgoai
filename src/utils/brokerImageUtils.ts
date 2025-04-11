@@ -33,14 +33,14 @@ export const uploadBrokerImage = async (
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    // Update the logo_image field in the broker_infocap table
+    // Update the broker_image field in the broker_infocap table
     const { error: updateError } = await supabase
       .from('broker_infocap')
-      .update({ logo_image: publicUrl })
+      .update({ broker_image: publicUrl })
       .eq('broker_id', brokerId);
     
     if (updateError) {
-      console.error('Error updating broker logo in database:', updateError);
+      console.error('Error updating broker image in database:', updateError);
     }
     
     return publicUrl;

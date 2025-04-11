@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Broker, BrokerFunction, BrokerInfocapFunction, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from "@/types/broker";
 import { brokers as staticBrokers } from "@/components/broker-integration/BrokerData";
@@ -32,7 +31,8 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
           if (staticBroker) {
             brokerMap.set(func.broker_id, {
               ...staticBroker,
-              name: func.broker_name // Use broker name from infocap
+              name: func.broker_name, // Use broker name from infocap
+              logo: func.broker_image || staticBroker.logo // Use broker_image if available
             });
           } else {
             // Create new broker entry from function data
@@ -40,7 +40,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
               id: func.broker_id,
               name: func.broker_name,
               description: `${func.broker_name} broker integration`,
-              logo: `/broker-logos/${func.broker_id}.png`, // Fallback path
+              logo: func.broker_image || `/broker-logos/${func.broker_id}.png`, // Use broker_image if available
               apiRequired: false,
               requiresSecretKey: false
             });
@@ -75,14 +75,16 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
       return staticBroker || null;
     }
     
-    // If we have functions data, update the broker name
+    // If we have functions data, update the broker name and image
     if (Array.isArray(data) && data.length > 0) {
       const brokerName = data[0].broker_name;
+      const brokerImage = data[0].broker_image;
       
       if (staticBroker) {
         return {
           ...staticBroker,
-          name: brokerName
+          name: brokerName,
+          logo: brokerImage || staticBroker.logo
         };
       } else {
         // Create a new broker record from the function data
@@ -90,7 +92,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
           id: brokerId,
           name: brokerName,
           description: `${brokerName} broker integration`,
-          logo: `/broker-logos/${brokerId}.png`, // Fallback path
+          logo: brokerImage || `/broker-logos/${brokerId}.png`,
           apiRequired: false,
           requiresSecretKey: false
         };

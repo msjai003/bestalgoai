@@ -228,7 +228,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
         function_enabled: func.function_enabled,
         is_premium: func.is_premium,
         function_order: func.function_order,
-        broker_image: func.logo_image || getBrokerImageFromCache(func.broker_id),
+        broker_image: func.broker_image || getBrokerImageFromCache(func.broker_id),
         created_at: func.created_at,
         updated_at: func.updated_at
       }));

@@ -312,6 +312,7 @@ export type Database = {
       broker_infocap: {
         Row: {
           broker_id: number
+          broker_image: string | null
           broker_name: string
           created_at: string
           function_description: string | null
@@ -325,6 +326,7 @@ export type Database = {
         }
         Insert: {
           broker_id: number
+          broker_image?: string | null
           broker_name: string
           created_at?: string
           function_description?: string | null
@@ -338,6 +340,7 @@ export type Database = {
         }
         Update: {
           broker_id?: number
+          broker_image?: string | null
           broker_name?: string
           created_at?: string
           function_description?: string | null
