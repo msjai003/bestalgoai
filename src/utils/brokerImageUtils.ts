@@ -39,9 +39,9 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Update the broker_image_url column in the broker_infocap table
+    // Update the broker_image_url column in the broker_infocap table using upsert_broker_image
     const { error: updateError } = await supabase.rpc(
-      'update_broker_image_url',
+      'upsert_broker_image',
       {
         p_broker_id: brokerId,
         p_image_url: publicUrl
