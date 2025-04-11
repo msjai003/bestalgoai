@@ -1,4 +1,3 @@
-
 import { Check, Plug, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,28 +25,23 @@ export const SuccessDialog = ({
   const [brokerName, setBrokerName] = useState<string | null>(null);
   const [brokerImage, setBrokerImage] = useState<string | null>(null);
 
-  // Fetch the correct broker name and image from the database when the dialog opens
   useEffect(() => {
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
-          // Get broker image from the broker_infocap table
           const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
           if (imageUrl) {
             console.log("Retrieved broker image from database:", imageUrl);
             setBrokerImage(imageUrl);
           } else {
-            // Fall back to the logo from the broker object
             console.log("Using fallback broker image:", selectedBroker.logo);
             setBrokerImage(selectedBroker.logo);
           }
           
-          // Use the name from the broker object
           setBrokerName(selectedBroker.name);
         } catch (error) {
           console.error("Error fetching broker details:", error);
-          // Fallback to the name from the broker object
           setBrokerName(selectedBroker.name);
           setBrokerImage(selectedBroker.logo);
         }
@@ -57,10 +51,7 @@ export const SuccessDialog = ({
     fetchBrokerDetails();
   }, [selectedBroker, open]);
 
-  // Display name should be the database name if available, otherwise fallback to the prop
   const displayName = brokerName || (selectedBroker ? selectedBroker.name : '');
-  
-  // Display image should be the database image if available, otherwise fallback to the broker logo
   const displayImage = brokerImage || (selectedBroker ? selectedBroker.logo : '');
 
   return (
@@ -84,7 +75,6 @@ export const SuccessDialog = ({
                 className="w-8 h-8 rounded-md mr-3"
                 alt={displayName}
                 onError={(e) => {
-                  // Fallback to placeholder if image fails to load
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />

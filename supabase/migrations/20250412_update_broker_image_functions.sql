@@ -10,3 +10,4 @@ BEGIN
   WHERE broker_id = p_broker_id;
 END;
 $$;
+
