@@ -33,8 +33,7 @@ export const uploadBrokerImage = async (
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    // Update the logo_image field in the broker_infocap table
-    // We're using an RPC function instead of a direct update to work around type issues
+    // Update the logo_image field in the broker_infocap table using the RPC function
     const { error: updateError } = await supabase.rpc('update_broker_logo', {
       p_broker_id: brokerId,
       p_logo_image: publicUrl

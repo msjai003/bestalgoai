@@ -1694,6 +1694,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_broker_logo: {
+        Args: { p_broker_id: number; p_logo_image: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
