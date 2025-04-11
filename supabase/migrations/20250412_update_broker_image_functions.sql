@@ -16,7 +16,8 @@ BEGIN
   -- If record exists, update it
   IF v_id IS NOT NULL THEN
     UPDATE public.broker_infocap
-    SET broker_image_url = p_image_url
+    SET broker_image_url = p_image_url,
+        updated_at = now()
     WHERE broker_id = p_broker_id;
     
     RETURN v_id;
@@ -25,5 +26,20 @@ BEGIN
     -- we'll just return null (this shouldn't generally happen)
     RETURN NULL;
   END IF;
+END;
+$$;
+
+-- Create a function to get broker_image_url from broker_infocap
+CREATE OR REPLACE FUNCTION public.get_broker_image(p_broker_id INTEGER)
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN (
+    SELECT broker_image_url
+    FROM public.broker_infocap
+    WHERE broker_id = p_broker_id
+    LIMIT 1
+  );
 END;
 $$;

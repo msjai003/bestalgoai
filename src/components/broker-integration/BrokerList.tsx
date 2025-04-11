@@ -71,12 +71,13 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
 const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(broker.logo);
   
-  // Fetch image for broker
+  // Fetch image for broker from broker_infocap table
   useEffect(() => {
     const fetchBrokerImage = async () => {
       // Always fetch the latest image from the broker_infocap table
       const img = await getBrokerImageUrl(broker.id);
       if (img) {
+        console.log(`Updated image URL for broker ${broker.id} from database:`, img);
         setImageUrl(img);
       }
     };

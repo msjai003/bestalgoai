@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   fetchBrokerDetails, 
@@ -30,7 +31,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash, ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
-import { uploadBrokerImage } from "@/utils/brokerImageUtils";
+import { uploadBrokerImage, getBrokerImageUrl } from "@/utils/brokerImageUtils";
 
 const BrokerManagement = () => {
   const navigate = useNavigate();
@@ -109,11 +110,16 @@ const BrokerManagement = () => {
     try {
       let imageUrl = editingBroker.logo;
       
+      // If we have a new image file, upload it and get the URL
       if (imageFile) {
+        // For new brokers without ID, use a temporary ID (will be replaced after save)
+        const tempBrokerId = editingBroker.id || Math.floor(Math.random() * -1000);
+        
         const uploadedUrl = await uploadBrokerImage(
           imageFile, 
-          editingBroker.id || 0
+          tempBrokerId
         );
+        
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
           console.log("Image uploaded successfully:", uploadedUrl);
@@ -132,11 +138,19 @@ const BrokerManagement = () => {
       if (editingBroker.id) {
         success = await updateBroker(editingBroker.id, brokerData);
         if (success) {
+          // If we uploaded an image with a temporary ID, re-upload it with the real ID
+          if (imageFile && imageUrl && !editingBroker.id) {
+            await uploadBrokerImage(imageFile, editingBroker.id);
+          }
           toast.success("Broker updated successfully");
         }
       } else {
         const newId = await saveBroker(brokerData);
         if (newId) {
+          // If we have a new image, re-upload it with the real broker ID
+          if (imageFile && imageUrl) {
+            await uploadBrokerImage(imageFile, newId);
+          }
           toast.success("Broker added successfully");
           success = true;
         }
