@@ -1,3 +1,4 @@
+
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy

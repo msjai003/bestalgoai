@@ -60,7 +60,7 @@ export interface BrokerFunction {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  broker_image?: string;
+  broker_image?: string;  // Added the broker_image property
   created_at?: string;
   updated_at?: string;
   function_order?: number;
@@ -87,7 +87,7 @@ export interface BrokerInfocapFunction {
   function_order: number;
   function_enabled: boolean;
   is_premium: boolean;
-  broker_image?: string;
+  broker_image?: string;  // Added the broker_image property
   created_at?: string;
   updated_at?: string;
 }
