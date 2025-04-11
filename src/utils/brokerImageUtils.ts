@@ -39,9 +39,9 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Save the image URL to the broker_images table using the new save_broker_image function
+    // Save the image URL to the broker_infocap table using upsert_broker_image function
     const { data: saveData, error: saveError } = await supabase.rpc(
-      'save_broker_image',
+      'upsert_broker_image',
       {
         p_broker_id: brokerId,
         p_image_url: publicUrl
@@ -68,35 +68,20 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use get_broker_image_url function to retrieve broker image URL from the new table
+    // Use get_broker_image function to retrieve broker image URL from broker_infocap
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_broker_image_url',
+      'get_broker_image',
       {
         p_broker_id: brokerId
       }
     );
     
     if (rpcError) {
-      console.error('Error fetching broker image URL via RPC:', rpcError);
-      
-      // Fallback to the original get_broker_image function for compatibility
-      const { data: fallbackData, error: fallbackError } = await supabase.rpc(
-        'get_broker_image',
-        {
-          p_broker_id: brokerId
-        }
-      );
-      
-      if (fallbackError) {
-        console.error('Error fetching broker image URL from fallback:', fallbackError);
-        return null;
-      }
-      
-      console.log('Retrieved broker image URL from fallback:', fallbackData);
-      return fallbackData || null;
+      console.error('Error fetching broker image URL:', rpcError);
+      return null;
     }
     
-    console.log('Retrieved broker image URL from broker_images table:', rpcData);
+    console.log('Retrieved broker image URL:', rpcData);
     return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);

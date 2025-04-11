@@ -309,33 +309,6 @@ export type Database = {
         }
         Relationships: []
       }
-      broker_images: {
-        Row: {
-          broker_id: number
-          created_at: string | null
-          id: string
-          image_url: string
-          is_active: boolean | null
-          updated_at: string | null
-        }
-        Insert: {
-          broker_id: number
-          created_at?: string | null
-          id?: string
-          image_url: string
-          is_active?: boolean | null
-          updated_at?: string | null
-        }
-        Update: {
-          broker_id?: number
-          created_at?: string | null
-          id?: string
-          image_url?: string
-          is_active?: boolean | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       broker_infocap: {
         Row: {
           broker_id: number
