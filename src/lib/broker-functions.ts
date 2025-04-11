@@ -203,12 +203,12 @@ const staticBrokerFunctions: BrokerFunction[] = [
 ];
 
 /**
- * Fetches all functions for a specific broker from the broker_functions table
+ * Fetches all functions for a specific broker from the broker_infocap table
  */
 export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFunction[]> => {
   try {
-    // Use the new RPC function to get broker functions
-    const { data, error } = await supabase.rpc('get_broker_functions', { p_broker_id: brokerId });
+    // Use the broker_infocap RPC function
+    const { data, error } = await supabase.rpc('get_broker_infocap_functions', { p_broker_id: brokerId });
       
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       console.log("No broker functions found in database, using static data");
@@ -216,11 +216,23 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       return getStaticBrokerFunctions(brokerId);
     }
     
-    // Return the data directly as it's already in the correct format
+    // Convert the broker_infocap data to the BrokerFunction format
     if (Array.isArray(data)) {
+      const brokerImage = await getBrokerImageUrl(brokerId);
+      
       return data.map(func => ({
-        ...func,
-        id: func.id.toString() // Ensure ID is string type for consistency
+        id: func.id.toString(),
+        broker_id: func.broker_id,
+        broker_name: func.broker_name,
+        function_name: func.function_name,
+        function_description: func.function_description,
+        function_slug: func.function_slug,
+        function_enabled: func.function_enabled,
+        is_premium: func.is_premium,
+        function_order: func.function_order,
+        image_url: brokerImage || undefined,
+        created_at: func.created_at,
+        updated_at: func.updated_at
       }));
     }
     
@@ -312,17 +324,17 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Get broker image from the broker_functions table
+    // Get broker image from the broker_infocap table
     const { data, error } = await supabase
-      .from('broker_functions')
-      .select('image_url')
+      .from('broker_infocap')
+      .select('broker_image_url')
       .eq('broker_id', brokerId)
       .limit(1)
       .maybeSingle();
     
-    if (!error && data?.image_url) {
-      brokerImageCache[brokerId] = data.image_url;
-      return data.image_url;
+    if (!error && data?.broker_image_url) {
+      brokerImageCache[brokerId] = data.broker_image_url;
+      return data.broker_image_url;
     }
     
     // Fallback to broker_profile_images
@@ -411,7 +423,7 @@ export const getBrokerFunctionConfig = async (
 };
 
 /**
- * Save a function to the broker_functions table
+ * Save a function to the broker_infocap table
  */
 export const saveBrokerFunction = async (
   brokerId: number,
@@ -426,16 +438,15 @@ export const saveBrokerFunction = async (
   isPremium: boolean = false
 ): Promise<string | null> => {
   try {
+    // Save to broker_infocap table instead
     const { data, error } = await supabase.rpc(
-      'save_broker_function',
+      'save_broker_infocap_function',
       {
         p_broker_id: brokerId,
         p_broker_name: brokerName,
         p_function_name: functionName,
         p_function_description: functionDescription,
         p_function_slug: functionSlug,
-        p_required_inputs: requiredInputs,
-        p_image_url: imageUrl,
         p_function_order: functionOrder,
         p_function_enabled: functionEnabled,
         p_is_premium: isPremium
@@ -447,6 +458,14 @@ export const saveBrokerFunction = async (
       return null;
     }
     
+    // If an image URL was provided, update the broker image
+    if (imageUrl) {
+      await supabase.rpc('upsert_broker_image', {
+        p_broker_id: brokerId,
+        p_image_url: imageUrl
+      });
+    }
+    
     return data ? data.toString() : null;
   } catch (error) {
     console.error("Error saving broker function:", error);
@@ -455,21 +474,45 @@ export const saveBrokerFunction = async (
 };
 
 /**
- * Get all functions from the broker_functions table
+ * Get all functions from the broker_infocap table
  */
 export const getAllBrokerFunctions = async (): Promise<BrokerFunction[]> => {
   try {
-    const { data, error } = await supabase.rpc('get_all_broker_functions');
+    const { data, error } = await supabase.rpc('get_all_broker_infocap_functions');
     
     if (error || !data) {
       console.error("Error fetching all broker functions:", error);
       return [];
     }
     
-    return Array.isArray(data) ? data.map(func => ({
-      ...func,
-      id: func.id.toString() // Ensure ID is string type for consistency
-    })) : [];
+    // Convert to BrokerFunction format
+    if (Array.isArray(data)) {
+      const result: BrokerFunction[] = [];
+      
+      for (const func of data) {
+        // Get the broker image
+        const brokerImage = await getBrokerImageUrl(func.broker_id);
+        
+        result.push({
+          id: func.id.toString(),
+          broker_id: func.broker_id,
+          broker_name: func.broker_name,
+          function_name: func.function_name,
+          function_description: func.function_description,
+          function_slug: func.function_slug,
+          function_enabled: func.function_enabled,
+          is_premium: func.is_premium,
+          function_order: func.function_order,
+          image_url: brokerImage || undefined,
+          created_at: func.created_at,
+          updated_at: func.updated_at
+        });
+      }
+      
+      return result;
+    }
+    
+    return [];
   } catch (error) {
     console.error("Error fetching all broker functions:", error);
     return [];

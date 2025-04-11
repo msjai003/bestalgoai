@@ -18,6 +18,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { BrokerFunction } from '@/types/broker';
 import { Broker } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
+import { Badge } from '@/components/ui/badge';
 import { 
   getAllBrokerFunctions, 
   saveBrokerFunction

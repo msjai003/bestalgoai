@@ -309,54 +309,6 @@ export type Database = {
         }
         Relationships: []
       }
-      broker_functions: {
-        Row: {
-          broker_id: number
-          broker_name: string
-          created_at: string
-          function_description: string | null
-          function_enabled: boolean
-          function_name: string
-          function_order: number
-          function_slug: string
-          id: string
-          image_url: string | null
-          is_premium: boolean
-          required_inputs: string[] | null
-          updated_at: string
-        }
-        Insert: {
-          broker_id: number
-          broker_name: string
-          created_at?: string
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name: string
-          function_order?: number
-          function_slug: string
-          id?: string
-          image_url?: string | null
-          is_premium?: boolean
-          required_inputs?: string[] | null
-          updated_at?: string
-        }
-        Update: {
-          broker_id?: number
-          broker_name?: string
-          created_at?: string
-          function_description?: string | null
-          function_enabled?: boolean
-          function_name?: string
-          function_order?: number
-          function_slug?: string
-          id?: string
-          image_url?: string | null
-          is_premium?: boolean
-          required_inputs?: string[] | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       broker_infocap: {
         Row: {
           broker_id: number
@@ -1707,24 +1659,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      get_all_broker_functions: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          id: string
-          broker_id: number
-          broker_name: string
-          function_name: string
-          function_slug: string
-          function_description: string
-          required_inputs: string[]
-          image_url: string
-          is_premium: boolean
-          function_enabled: boolean
-          function_order: number
-          created_at: string
-          updated_at: string
-        }[]
-      }
       get_all_broker_infocap_functions: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1747,24 +1681,6 @@ export type Database = {
           name: string
           schema: string
           row_count: number
-        }[]
-      }
-      get_broker_functions: {
-        Args: { p_broker_id: number }
-        Returns: {
-          id: string
-          broker_id: number
-          broker_name: string
-          function_name: string
-          function_slug: string
-          function_description: string
-          required_inputs: string[]
-          image_url: string
-          is_premium: boolean
-          function_enabled: boolean
-          function_order: number
-          created_at: string
-          updated_at: string
         }[]
       }
       get_broker_image: {
@@ -1798,21 +1714,6 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
-      }
-      save_broker_function: {
-        Args: {
-          p_broker_id: number
-          p_broker_name: string
-          p_function_name: string
-          p_function_slug: string
-          p_function_description: string
-          p_required_inputs: string[]
-          p_image_url: string
-          p_is_premium: boolean
-          p_function_enabled: boolean
-          p_function_order: number
-        }
-        Returns: string
       }
       save_broker_image: {
         Args: { p_broker_id: number; p_image_url: string }

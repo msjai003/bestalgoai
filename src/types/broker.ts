@@ -1,3 +1,4 @@
+
 export interface Broker {
   id: number;
   name: string;
@@ -59,8 +60,8 @@ export interface BrokerFunction {
   function_slug: string;
   function_enabled: boolean;
   is_premium: boolean;
-  image_url?: string;  // Updated to use image_url instead of broker_image
-  required_inputs?: string[];  // Added required_inputs property
+  image_url?: string;
+  required_inputs?: string[];
   created_at?: string;
   updated_at?: string;
   function_order?: number;
