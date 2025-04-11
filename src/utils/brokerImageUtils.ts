@@ -39,20 +39,38 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Store the image URL in the broker_image table using our RPC function
-    // The function now returns an integer ID instead of UUID
-    const { data: imageData, error: insertError } = await supabase.rpc(
-      'upsert_broker_image',
-      {
-        p_broker_id: brokerId,
-        p_image_url: publicUrl
+    // Store the image URL in the broker_image table - first try direct insert
+    try {
+      // Try direct insert first (using the insert policy)
+      const { error: insertError } = await supabase
+        .from('broker_image')
+        .insert({
+          broker_id: brokerId,
+          image_url: publicUrl
+        });
+      
+      if (insertError) {
+        console.warn('Could not insert directly, falling back to RPC function:', insertError);
+        
+        // Fall back to RPC function if direct insert fails
+        const { data: imageData, error: rpcError } = await supabase.rpc(
+          'upsert_broker_image',
+          {
+            p_broker_id: brokerId,
+            p_image_url: publicUrl
+          }
+        );
+        
+        if (rpcError) {
+          console.error('Error storing broker image URL via RPC:', rpcError);
+        } else {
+          console.log('Broker image URL stored successfully via RPC, ID:', imageData);
+        }
+      } else {
+        console.log('Broker image URL stored successfully via direct insert');
       }
-    );
-    
-    if (insertError) {
-      console.error('Error storing broker image URL:', insertError);
-    } else {
-      console.log('Broker image URL stored successfully, ID:', imageData);
+    } catch (dbError) {
+      console.error('Exception during database operation:', dbError);
     }
     
     return publicUrl;
@@ -69,21 +87,36 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use our RPC function to get the broker image URL
-    const { data, error } = await supabase.rpc(
+    // First try direct query
+    const { data: directData, error: directError } = await supabase
+      .from('broker_image')
+      .select('image_url')
+      .eq('broker_id', brokerId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (!directError && directData) {
+      console.log('Retrieved broker image URL via direct query:', directData.image_url);
+      return directData.image_url;
+    }
+    
+    // Fall back to RPC function if direct query fails
+    console.log('Direct query failed, falling back to RPC function');
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
       'get_broker_image_url',
       {
         p_broker_id: brokerId
       }
     );
     
-    if (error) {
-      console.error('Error fetching broker image URL:', error);
+    if (rpcError) {
+      console.error('Error fetching broker image URL via RPC:', rpcError);
       return null;
     }
     
-    console.log('Retrieved broker image URL:', data);
-    return data || null;
+    console.log('Retrieved broker image URL via RPC:', rpcData);
+    return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
     return null;
