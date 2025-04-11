@@ -36,12 +36,20 @@ export const SuccessDialog = ({
           setIsImageLoading(true);
           setImageError(false);
           
+          // Force cache bust with timestamp
+          const timestamp = new Date().getTime();
+          
           // Get broker image from broker_profile_images table
           const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
           if (imageUrl) {
-            console.log("Retrieved broker image from database:", imageUrl);
-            setBrokerImage(imageUrl);
+            // Add cache busting parameter
+            const imageWithTimestamp = imageUrl.includes('?') 
+              ? `${imageUrl}&_t=${timestamp}` 
+              : `${imageUrl}?_t=${timestamp}`;
+              
+            console.log("Retrieved broker image from database:", imageWithTimestamp);
+            setBrokerImage(imageWithTimestamp);
           } else {
             console.log("Using fallback broker image:", selectedBroker.logo);
             setBrokerImage(selectedBroker.logo);

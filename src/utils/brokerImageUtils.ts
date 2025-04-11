@@ -67,6 +67,8 @@ export const uploadBrokerImage = async (
       
       if (upsertError) {
         console.error('Error updating broker_infocap with image URL:', upsertError);
+      } else {
+        console.log('Successfully updated broker_infocap with image URL');
       }
     } catch (saveDbError) {
       console.error('Exception during save to database:', saveDbError);

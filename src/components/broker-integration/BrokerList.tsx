@@ -1,3 +1,4 @@
+
 import { Search, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -78,10 +79,19 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       setIsLoading(true);
       setImageError(false);
       try {
+        // Force timestamp to avoid caching issues with Supabase storage
+        const timestamp = new Date().getTime();
         const img = await getBrokerImageUrl(broker.id);
+        
         console.log(`Image URL result for broker ${broker.id}:`, img);
+        
         if (img) {
-          setImageUrl(img);
+          // Add cache busting parameter
+          const imgWithTimestamp = img.includes('?') 
+            ? `${img}&_t=${timestamp}` 
+            : `${img}?_t=${timestamp}`;
+          
+          setImageUrl(imgWithTimestamp);
         } else {
           // Fallback to the static logo if no image in database
           setImageUrl(broker.logo);

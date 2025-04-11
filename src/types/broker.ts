@@ -144,3 +144,13 @@ export interface BrokerImage {
   created_at?: string;
   updated_at?: string;
 }
+
+// Add interface for broker_profile_images table
+export interface BrokerProfileImage {
+  id: string;
+  broker_id: number;
+  image_url: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
