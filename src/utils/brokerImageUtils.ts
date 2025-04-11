@@ -15,6 +15,8 @@ export const uploadBrokerImage = async (
     const fileName = `${brokerId}-${uuidv4()}.${fileExt}`;
     const filePath = `broker-logos/${fileName}`;
     
+    console.log(`Uploading image for broker ${brokerId}, path: ${filePath}`);
+    
     // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
       .from('broker-logos')
@@ -28,26 +30,28 @@ export const uploadBrokerImage = async (
       return null;
     }
     
+    console.log('File uploaded successfully:', data);
+    
     // Get the public URL for the uploaded file
     const { data: { publicUrl } } = supabase.storage
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    // Store the image URL in the broker_image table using a direct insert
-    // instead of the RPC function, since TypeScript doesn't recognize it yet
-    const { data: insertData, error: insertError } = await supabase
+    console.log('Generated public URL:', publicUrl);
+    
+    // Store the image URL in the broker_image table
+    const { data: imageData, error: insertError } = await supabase
       .from('broker_image')
       .insert({
         broker_id: brokerId,
         image_url: publicUrl
       })
-      .select('id')
-      .single();
+      .select('id');
     
     if (insertError) {
       console.error('Error storing broker image URL:', insertError);
     } else {
-      console.log('Broker image URL stored successfully:', publicUrl);
+      console.log('Broker image URL stored successfully:', imageData);
     }
     
     return publicUrl;
@@ -62,7 +66,9 @@ export const uploadBrokerImage = async (
  */
 export const getBrokerImageUrl = async (brokerId: number): Promise<string | null> => {
   try {
-    // Query the broker_image table directly instead of using the RPC function
+    console.log(`Fetching image URL for broker ${brokerId}`);
+    
+    // Query the broker_image table directly
     const { data, error } = await supabase
       .from('broker_image')
       .select('image_url')
@@ -76,6 +82,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return null;
     }
     
+    console.log('Retrieved broker image URL:', data?.image_url);
     return data?.image_url || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
