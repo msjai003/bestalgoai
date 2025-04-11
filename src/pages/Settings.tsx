@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -212,11 +211,11 @@ const Settings = () => {
           </>
         )}
 
-        <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-gray-800 flex justify-center">
+        <section className="fixed bottom-0 left-0 right-0 p-4 bg-charcoalPrimary/95 backdrop-blur-lg border-t border-gray-800">
           <Button 
             variant="logout"
             size="default"
-            className="flex items-center justify-center gap-2 shadow-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 shadow-lg transition-colors"
             onClick={() => navigate('/logout')}
           >
             <LogOut className="w-5 h-5" />
