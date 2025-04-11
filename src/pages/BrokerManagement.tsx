@@ -152,6 +152,7 @@ const BrokerManagement = () => {
       } else {
         newId = await saveBroker(brokerData);
         if (newId) {
+          const tempBrokerId = Math.floor(Math.random() * -1000);
           if (imageFile && imageUrl && tempBrokerId !== newId) {
             console.log(`Re-uploading image with real broker ID: ${newId}`);
             await uploadBrokerImage(imageFile, newId);
