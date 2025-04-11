@@ -103,6 +103,9 @@ const FunctionCard = ({ func }: { func: BrokerFunction }) => {
               src={func.broker_image} 
               alt={func.broker_name}
               className="w-8 h-8 rounded-md object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
             />
           )}
           <div>

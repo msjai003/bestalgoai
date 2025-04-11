@@ -31,7 +31,7 @@ export const SuccessDialog = ({
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
-          // Get broker image from the broker_image table
+          // Get broker image
           const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
           if (imageUrl) {

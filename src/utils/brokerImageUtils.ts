@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -38,23 +39,6 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Update the broker_infocap table with the new image URL
-    try {
-      // Find all functions for this broker and update the broker_image field
-      const { data: infocapData, error: infocapError } = await supabase
-        .from('broker_infocap')
-        .update({ broker_image: publicUrl })
-        .eq('broker_id', brokerId);
-      
-      if (infocapError) {
-        console.error('Error updating broker_infocap table with image URL:', infocapError);
-      } else {
-        console.log('Successfully updated broker_infocap table with image URL');
-      }
-    } catch (dbError) {
-      console.error('Exception during database operation:', dbError);
-    }
-    
     return publicUrl;
   } catch (error) {
     console.error('Exception uploading broker image:', error);
@@ -69,21 +53,8 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Get image from broker_infocap table
-    const { data: infocapData, error: infocapError } = await supabase
-      .from('broker_infocap')
-      .select('broker_image')
-      .eq('broker_id', brokerId)
-      .limit(1)
-      .single();
-    
-    if (!infocapError && infocapData && infocapData.broker_image) {
-      console.log('Retrieved broker image URL from broker_infocap:', infocapData.broker_image);
-      return infocapData.broker_image;
-    }
-    
-    // Fall back to using get_broker_image function if direct query fails
-    console.log('Direct query failed or no image found, falling back to get_broker_image function');
+    // Fall back to using get_broker_image function
+    console.log('Using get_broker_image function to retrieve broker image');
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       'get_broker_image',
       {

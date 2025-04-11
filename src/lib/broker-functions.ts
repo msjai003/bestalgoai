@@ -217,6 +217,9 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
       return getStaticBrokerFunctions(brokerId);
     }
     
+    // Get the broker image URL
+    const brokerImage = await getBrokerImageUrl(brokerId);
+    
     // Convert BrokerInfocapFunction to BrokerFunction format
     if (Array.isArray(data)) {
       return data.map((func: BrokerInfocapFunction) => ({
@@ -229,7 +232,7 @@ export const getFunctionsForBroker = async (brokerId: number): Promise<BrokerFun
         function_enabled: func.function_enabled,
         is_premium: func.is_premium,
         function_order: func.function_order,
-        broker_image: func.broker_image, // Use broker_image from broker_infocap table
+        broker_image: brokerImage, // Set broker_image from the URL we fetched
         created_at: func.created_at,
         updated_at: func.updated_at
       }));
@@ -323,20 +326,7 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Get broker image directly from the broker_infocap table
-    const { data, error } = await supabase
-      .from('broker_infocap')
-      .select('broker_image')
-      .eq('broker_id', brokerId)
-      .limit(1)
-      .single();
-    
-    if (!error && data && data.broker_image) {
-      brokerImageCache[brokerId] = data.broker_image;
-      return data.broker_image;
-    }
-    
-    // Fall back to get_broker_image function
+    // Get broker image using the get_broker_image function
     const imageUrl = await getBrokerImageUrl(brokerId);
     
     if (imageUrl) {
