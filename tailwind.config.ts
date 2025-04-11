@@ -53,19 +53,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Main app color scheme
-        appBg: "#121212",      // Primary Background
-        surfaceBg: "#1A1A1A",  // Secondary Background
-        accentPink: "#00BCD4", // Cyan accent
-        accentPurple: "#00BCD4", // Also Cyan for consistency
+        // Applying the Charcoal & Cyan theme color codes
+        appBg: "#121212",      // Updated to Charcoal Primary Background
+        surfaceBg: "#1F1F1F",  // Updated to Charcoal Secondary Background
+        accentPink: "#00BCD4", // Updated to Cyan
+        accentPurple: "#00BCD4", // Also updated to Cyan for consistency
         textPrimary: "#FFFFFF", // Primary Text
         textSecondary: "#B0B0B0", // Secondary Text
-        success: "#4CAF50",    // Success color
-        danger: "#F44336",     // Danger color
+        success: "#4CAF50",    // Updated Success
+        danger: "#F44336",     // Updated Danger
         
         // Charcoal & Cyan theme
         charcoalPrimary: "#121212",   // Primary Background
-        charcoalSecondary: "#1A1A1A", // Secondary Background
+        charcoalSecondary: "#1F1F1F", // Secondary Background
         cyan: "#00BCD4",              // Accent (Cyan)
         charcoalTextPrimary: "#FFFFFF",    // Primary Text
         charcoalTextSecondary: "#B0B0B0",  // Secondary Text

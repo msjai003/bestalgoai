@@ -11,6 +11,7 @@ import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
+import { supabase } from '@/integrations/supabase/client';
 
 const LiveTrading = () => {
   const {
@@ -41,7 +42,7 @@ const LiveTrading = () => {
   return (
     <div className="bg-[#121212] min-h-screen flex flex-col">
       <Header />
-      <main className="pt-16 pb-20 px-4 flex-grow">
+      <main className="pt-16 pb-24 px-4 flex-grow">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-white">Live Trading</h1>
           <Button 
@@ -79,6 +80,7 @@ const LiveTrading = () => {
           />
         )}
       </main>
+      <BottomNav />
       
       <TradingModeConfirmationDialog
         open={showConfirmationDialog}
@@ -102,8 +104,6 @@ const LiveTrading = () => {
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
       />
-      
-      <BottomNav />
     </div>
   );
 };

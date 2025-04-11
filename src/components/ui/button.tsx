@@ -6,30 +6,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0 active:scale-[0.98] duration-200",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0 active:scale-[0.98] duration-200",
   {
     variants: {
       variant: {
-        default: "bg-cyan text-[#121212] shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
+        default: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
         destructive:
-          "bg-red-500 text-white shadow-md hover:bg-red-600 hover:shadow-red-500/20 hover:shadow-lg",
+          "bg-charcoalDanger text-white shadow-md hover:bg-charcoalDanger/90 hover:shadow-charcoalDanger/20 hover:shadow-lg",
         outline:
           "border border-gray-700 bg-transparent text-foreground hover:bg-accent/10 hover:text-cyan hover:border-cyan/40 shadow-sm",
         secondary:
-          "bg-[#1A1A1A] text-white border border-gray-800/50 shadow-md hover:bg-[#202020] hover:border-gray-700/60 hover:shadow-lg",
+          "bg-charcoalSecondary text-white border border-white/10 shadow-md hover:bg-charcoalSecondary/90 hover:border-cyan/20 hover:shadow-lg",
         ghost: "hover:bg-gray-800/40 hover:text-white",
         link: "text-cyan underline-offset-4 hover:underline",
-        cyan: "bg-cyan text-[#121212] shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
-        gradient: "bg-gradient-to-r from-cyan to-cyan/90 text-[#121212] shadow-md hover:shadow-cyan/20 hover:shadow-lg hover:from-cyan hover:to-cyan/80",
-        success: "bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-emerald-500/20 hover:shadow-lg",
+        cyan: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
+        gradient: "bg-gradient-to-r from-cyan to-cyan/90 text-charcoalPrimary shadow-md hover:shadow-cyan/20 hover:shadow-lg hover:from-cyan hover:to-cyan/80",
       },
       size: {
         default: "h-10 px-4 py-2 [&_svg]:size-4",
-        sm: "h-9 rounded-lg px-3 text-xs [&_svg]:size-3.5",
-        md: "h-10 rounded-lg px-4 [&_svg]:size-4",
-        lg: "h-12 rounded-lg px-5 text-base [&_svg]:size-5",
-        xl: "h-14 rounded-lg px-6 text-base [&_svg]:size-5",
-        icon: "h-9 w-9 rounded-lg [&_svg]:size-4",
+        sm: "h-9 rounded-xl px-3 text-xs [&_svg]:size-3.5",
+        md: "h-10 rounded-xl px-4 [&_svg]:size-4",
+        lg: "h-12 rounded-xl px-5 text-base [&_svg]:size-5",
+        xl: "h-14 rounded-xl px-6 text-base [&_svg]:size-5",
+        icon: "h-9 w-9 rounded-xl [&_svg]:size-4",
       },
     },
     defaultVariants: {

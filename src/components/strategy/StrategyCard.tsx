@@ -60,7 +60,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   return (
-    <Card className="bg-[#1A1A1A] rounded-xl border border-gray-800/50 shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:border-gray-700/60 mb-4">
+    <Card className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl border border-gray-700/50 shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10 hover:-translate-y-1">
       <CardContent className="p-0">
         <div className="p-5 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/5 to-cyan/0 rounded-full -mr-16 -mt-16 blur-3xl"></div>
@@ -78,12 +78,12 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-[#191919] border border-gray-800/50 rounded-full h-10 w-10 cursor-pointer hover:bg-[#202020]`}
+                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md`}
                       onClick={toggleWishlist}
                     >
                       <HeartIcon 
                         size={24} 
-                        className={`${strategy.isWishlisted ? "fill-red-400" : ""} transform transition-all duration-300`} 
+                        className={`${strategy.isWishlisted ? "fill-red-400 filter drop-shadow-[0_0_3px_rgba(244,67,54,0.7)]" : ""} transform transition-all duration-300 hover:scale-110`} 
                       />
                     </Button>
                   </TooltipTrigger>
@@ -100,17 +100,17 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500" : (strategy.isLive ? "text-green-400" : "text-cyan")} 
-                        transition-all duration-300 bg-[#191919] border border-gray-800/50 rounded-full h-10 w-10 
-                        flex items-center justify-center cursor-pointer hover:bg-[#202020]`}
+                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
-                        <LockIcon size={26} className="animate-pulse" />
+                        <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                       ) : (
                         strategy.isLive ? 
-                          <StopCircleIcon size={24} /> : 
-                          <PlayIcon size={24} className="animate-pulse" />
+                          <StopCircleIcon size={24} className="cursor-pointer" /> : 
+                          <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
                       )}
                     </Button>
                   </TooltipTrigger>
@@ -130,7 +130,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           {canAccess ? (
             <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-              {strategy.description || "Uses volume and price action to identify breakouts from consolidation patterns, entering positions in the direction of the breakout."}
+              {strategy.description}
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
@@ -139,11 +139,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
 
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-[#121212] rounded-lg p-3">
+            <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">
               <p className="text-gray-400 text-xs mb-1">Success Rate</p>
               <p className="text-cyan text-lg font-semibold">{strategy.performance?.winRate || "N/A"}</p>
             </div>
-            <div className="bg-[#121212] rounded-lg p-3">
+            <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">
               <p className="text-gray-400 text-xs mb-1">Avg. Profit</p>
               <p className="text-emerald-400 text-lg font-semibold">{strategy.performance?.avgProfit || "N/A"}</p>
             </div>
@@ -151,7 +151,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           <div className="flex justify-center">
             <Button 
-              className="w-full bg-cyan text-[#121212] font-medium hover:bg-cyan/90 shadow-md shadow-cyan/10 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium 
+                hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 
+                transition-all duration-300 cursor-pointer"
               onClick={handleViewFullStrategy}
             >
               <Eye className="mr-2 h-4 w-4" />
@@ -161,13 +163,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           
           {strategy.isLive && canAccess && (
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="bg-[#121212] rounded-lg p-2">
+              <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
                 <p className="text-xs text-gray-400">Quantity</p>
                 <p className="text-white font-medium">{strategy.quantity || 0}</p>
               </div>
               
               {strategy.selectedBroker && (
-                <div className="bg-[#121212] rounded-lg p-2">
+                <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
                   <p className="text-xs text-gray-400">Broker</p>
                   <p className="text-white font-medium">{strategy.selectedBroker}</p>
                 </div>

@@ -1,45 +1,47 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Home, Heart, GraduationCap, LineChart, Settings } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export const BottomNav = () => {
   const location = useLocation();
+  const { toast } = useToast();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="h-16 bg-black bg-opacity-95 backdrop-blur-md border-t border-gray-800/50">
-        <div className="flex justify-between h-full items-center px-6">
+    <nav className="fixed bottom-0 w-full z-50 pb-safe">
+      <div className="h-16 bg-black/60 backdrop-blur-lg border-t border-gray-800/50">
+        <div className="flex justify-around h-full items-center px-4">
           <NavItem 
             to="/dashboard" 
-            icon={<Home size={22} />} 
+            icon="fa-house" 
             label="Home" 
             isActive={location.pathname === '/dashboard'}
           />
           
           <NavItem 
             to="/strategy-management" 
-            icon={<Heart size={22} />}
+            icon="fa-heart" 
             label="Wishlist" 
             isActive={location.pathname === '/strategy-management'}
           />
           
           <NavItem 
             to="/classes" 
-            icon={<GraduationCap size={22} />}
+            icon="fa-graduation-cap" 
             label="Classes" 
             isActive={location.pathname === '/classes'}
           />
           
           <NavItem 
             to="/live-trading" 
-            icon={<LineChart size={22} />}
+            icon="fa-chart-line" 
             label="Trading" 
             isActive={location.pathname === '/live-trading'}
           />
           
           <NavItem 
             to="/settings" 
-            icon={<Settings size={22} />}
+            icon="fa-gear" 
             label="Settings" 
             isActive={location.pathname === '/settings'}
           />
@@ -56,19 +58,34 @@ const NavItem = ({
   isActive 
 }: { 
   to: string; 
-  icon: React.ReactNode; 
+  icon: string; 
   label: string; 
   isActive: boolean;
 }) => {
   return (
     <Link 
       to={to} 
-      className="flex flex-col items-center"
+      className={cn(
+        "flex flex-col items-center w-16 transition-all duration-300",
+        isActive ? "scale-100" : "opacity-80 hover:opacity-100"
+      )}
     >
-      <div className={`flex items-center justify-center h-6 w-6 mb-1 ${isActive ? 'text-cyan' : 'text-gray-500'}`}>
-        {icon}
+      <div className={cn(
+        "flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300",
+        isActive 
+          ? "bg-transparent" 
+          : "bg-transparent hover:bg-cyan/5"
+      )}>
+        <i className={cn(
+          "fa-solid", 
+          icon, 
+          isActive ? "text-cyan" : "text-gray-300 hover:text-cyan transition-colors"
+        )}></i>
       </div>
-      <span className={`text-xs ${isActive ? 'text-cyan' : 'text-gray-500'}`}>
+      <span className={cn(
+        "text-[10px] font-medium tracking-wide transition-all duration-300",
+        isActive ? "text-cyan" : "text-gray-300"
+      )}>
         {label}
       </span>
     </Link>

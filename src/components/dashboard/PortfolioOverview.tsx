@@ -17,7 +17,7 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
 
   return (
     <section id="portfolio-overview" className="mt-4">
-      <div className="bg-[#1A1A1A] rounded-xl p-6 border border-gray-800/40 shadow-lg">
+      <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
