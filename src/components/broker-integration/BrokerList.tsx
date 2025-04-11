@@ -1,4 +1,3 @@
-
 import { Search, ChevronRight, Check, AlertCircle, ImageOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -81,21 +80,27 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
       setIsLoading(true);
       setImageError(false);
       try {
-        // Force timestamp to avoid caching issues with Supabase storage
         const timestamp = new Date().getTime();
+        
+        if (broker.id === 1) {
+          const zerodhaImage = "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+          console.log("Using direct Zerodha image:", zerodhaImage);
+          setImageUrl(`${zerodhaImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
         
         if (img) {
-          // Add cache busting parameter
           const imgWithTimestamp = img.includes('?') 
             ? `${img}&_t=${timestamp}&retry=${retryCount}` 
             : `${img}?_t=${timestamp}&retry=${retryCount}`;
           
           console.log(`Using image URL with cache busting: ${imgWithTimestamp}`);
           
-          // For Zerodha or other specific brokers, add extra logging
           if (broker.id === 1 || broker.name.toLowerCase().includes('zerodha')) {
             console.log("Zerodha broker image debug:", {
               originalUrl: img,
@@ -104,18 +109,15 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
               brokerName: broker.name
             });
             
-            // Test if the image URL is actually valid
             const isValid = await testImageUrl(img);
             if (!isValid) {
               console.warn(`Image URL for ${broker.name} failed validation test`);
-              // Still try to use it, but show a warning
               toast.warning(`Image for ${broker.name} may not display correctly`);
             }
           }
           
           setImageUrl(imgWithTimestamp);
         } else {
-          // Fallback to the static logo if no image in database
           console.log(`No image found in DB for broker ${broker.id}, using fallback:`, broker.logo);
           setImageUrl(broker.logo);
         }
@@ -124,7 +126,6 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         setImageError(true);
         setImageUrl(broker.logo);
         
-        // Notify user about image loading issues for specific brokers
         if (broker.id === 1 || broker.name.toLowerCase().includes('zerodha')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
@@ -140,12 +141,10 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     console.log(`Image loading error for broker ${broker.id} (${broker.name}), falling back to placeholder`);
     setImageError(true);
     
-    // For specific brokers, attempt to retry load
     if ((broker.id === 1 || broker.name.toLowerCase().includes('zerodha')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {
-      // After multiple retries, show helpful message
       toast.error(`Having trouble loading ${broker.name} image. This might be due to an issue with the image size or format.`);
     }
   };
@@ -165,6 +164,7 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
             alt={broker.name}
             className="rounded-lg object-cover"
             onError={handleImageError}
+            key={`${broker.id}-${retryCount}-${new Date().getTime()}`}
           />
         ) : null}
         <AvatarFallback className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-gray-300">

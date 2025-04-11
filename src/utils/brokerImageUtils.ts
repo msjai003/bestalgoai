@@ -106,8 +106,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     // Special case for Zerodha (broker ID 1)
     if (brokerId === 1) {
-      console.log("Using custom Zerodha logo");
-      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+      const zerodhaImage = "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+      console.log("Using custom Zerodha logo:", zerodhaImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${zerodhaImage}?_t=${timestamp}`;
     }
     
     // First try direct query to broker_profile_images - most reliable
@@ -196,7 +199,7 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     // Special case for Zerodha when there's an error
     if (brokerId === 1) {
-      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
+      return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png?_t=" + new Date().getTime();
     }
     
     return null;
