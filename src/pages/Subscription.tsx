@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader } from "lucide-react";
+import { Loader, ArrowLeft, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePriceAdmin } from "@/hooks/usePriceAdmin";
 
@@ -175,14 +174,15 @@ const Subscription = () => {
         <div className="flex items-center justify-between px-4 h-16">
           <Button
             onClick={() => navigate('/dashboard')}
-            className="p-2"
+            className="bg-surfaceBg border border-gray-700 text-textPrimary hover:bg-surfaceBg/80"
             size="sm"
           >
-            <i className="fa-solid fa-arrow-left text-textSecondary"></i>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            <span className="text-xs">Back</span>
           </Button>
           <h1 className="text-lg font-semibold">Subscription & Billing</h1>
           <button className="p-2">
-            <i className="fa-solid fa-gear text-textSecondary"></i>
+            <Settings className="h-5 w-5 text-textSecondary" />
           </button>
         </div>
       </header>
@@ -302,7 +302,7 @@ const Subscription = () => {
               <div className="flex items-center">
                 <i className="fa-regular fa-credit-card text-textSecondary mr-3"></i>
                 <div>
-                  <p className="font-medium text-sm">•••• 4242</p>
+                  <p className="font-medium text-sm">•���•• 4242</p>
                   <p className="text-xs text-textSecondary">Expires 08/25</p>
                 </div>
               </div>
