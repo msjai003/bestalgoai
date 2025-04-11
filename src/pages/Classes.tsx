@@ -7,15 +7,36 @@ import { BookOpen, Brain, Infinity } from 'lucide-react';
 import BasicQuestionsSection from '@/components/classes/BasicQuestionsSection';
 import IntermediateQuestionsSection from '@/components/classes/IntermediateQuestionsSection';
 import ProQuestionsSection from '@/components/classes/ProQuestionsSection';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Classes = () => {
   const [activeTab, setActiveTab] = useState('basic');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white">
       <Header />
       
       <main className="pt-16 pb-20 px-4">
+        {!user && (
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="logout"
+              className="font-medium"
+              onClick={handleSignIn}
+            >
+              Sign In
+            </Button>
+          </div>
+        )}
+        
         <div className="my-6">
           <h1 className="text-2xl font-bold mb-4">Trading Classes</h1>
           <p className="text-gray-300">Explore our trading questions and answers to boost your knowledge</p>
@@ -23,15 +44,15 @@ const Classes = () => {
         
         <Tabs defaultValue="basic" onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
-            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
               <BookOpen className="h-4 w-4" />
               <span>Basic</span>
             </TabsTrigger>
-            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
               <Brain className="h-4 w-4" />
               <span>Intermediate</span>
             </TabsTrigger>
-            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
               <Infinity className="h-4 w-4" />
               <span>Pro</span>
             </TabsTrigger>

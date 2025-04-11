@@ -119,10 +119,10 @@ const ProQuestionsSection = () => {
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-2 mb-6 bg-charcoalSecondary border border-gray-800/40">
-          <TabsTrigger value="flashcards" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+          <TabsTrigger value="flashcards" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
             <span>Flashcards</span>
           </TabsTrigger>
-          <TabsTrigger value="quiz" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary">
+          <TabsTrigger value="quiz" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
             <span>Quiz</span>
           </TabsTrigger>
         </TabsList>
