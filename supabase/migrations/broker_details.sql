@@ -1,5 +1,4 @@
 
-
 -- Create a storage bucket for broker images
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('broker-images', 'Broker Images', true)
@@ -21,11 +20,10 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   RETURN (
-    SELECT image_url
-    FROM public.broker_details
-    WHERE id = p_broker_id
+    SELECT logo_image
+    FROM public.broker_infocap
+    WHERE broker_id = p_broker_id
     LIMIT 1
   );
 END;
 $$;
-

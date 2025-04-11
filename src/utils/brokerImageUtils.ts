@@ -17,7 +17,7 @@ export const uploadBrokerImage = async (
     
     // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
-      .from('broker-images')
+      .from('broker-logos')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
@@ -30,7 +30,7 @@ export const uploadBrokerImage = async (
     
     // Get the public URL for the uploaded file
     const { data: { publicUrl } } = supabase.storage
-      .from('broker-images')
+      .from('broker-logos')
       .getPublicUrl(filePath);
     
     return publicUrl;

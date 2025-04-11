@@ -322,7 +322,26 @@ export const getBrokerImage = async (
   }
   
   try {
-    // Try to get broker from static data first
+    // Try to get broker image from the database using the function
+    const { data, error } = await supabase.rpc('get_broker_image', {
+      p_broker_id: brokerId
+    });
+    
+    if (error || !data) {
+      // Try to get broker from static data if database fails
+      const broker = brokers.find(b => b.id === brokerId);
+      const image = broker?.logo || null;
+      brokerImageCache[brokerId] = image;
+      return image;
+    }
+    
+    // If we got an image from the database, cache and return it
+    if (data) {
+      brokerImageCache[brokerId] = data;
+      return data;
+    }
+    
+    // Try to get broker from static data
     const broker = brokers.find(b => b.id === brokerId);
     if (broker) {
       const image = broker.logo || null;
