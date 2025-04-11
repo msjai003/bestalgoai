@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -32,17 +33,19 @@ export const uploadBrokerImage = async (
       .from('broker-logos')
       .getPublicUrl(filePath);
     
-    // Store the image URL in the broker_image table using the upsert function
-    const { data: upsertData, error: upsertError } = await supabase.rpc(
-      'upsert_broker_image',
-      {
-        p_broker_id: brokerId,
-        p_image_url: publicUrl
-      }
-    );
+    // Store the image URL in the broker_image table using a direct insert
+    // instead of the RPC function, since TypeScript doesn't recognize it yet
+    const { data: insertData, error: insertError } = await supabase
+      .from('broker_image')
+      .insert({
+        broker_id: brokerId,
+        image_url: publicUrl
+      })
+      .select('id')
+      .single();
     
-    if (upsertError) {
-      console.error('Error storing broker image URL:', upsertError);
+    if (insertError) {
+      console.error('Error storing broker image URL:', insertError);
     } else {
       console.log('Broker image URL stored successfully:', publicUrl);
     }
@@ -59,19 +62,21 @@ export const uploadBrokerImage = async (
  */
 export const getBrokerImageUrl = async (brokerId: number): Promise<string | null> => {
   try {
-    const { data, error } = await supabase.rpc(
-      'get_broker_image_url',
-      {
-        p_broker_id: brokerId
-      }
-    );
+    // Query the broker_image table directly instead of using the RPC function
+    const { data, error } = await supabase
+      .from('broker_image')
+      .select('image_url')
+      .eq('broker_id', brokerId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
     
     if (error) {
       console.error('Error fetching broker image URL:', error);
       return null;
     }
     
-    return data;
+    return data?.image_url || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);
     return null;
