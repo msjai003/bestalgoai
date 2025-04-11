@@ -39,19 +39,19 @@ export const uploadBrokerImage = async (
     
     console.log('Generated public URL:', publicUrl);
     
-    // Update the broker_image_url column in the broker_infocap table using upsert_broker_image
-    const { error: updateError } = await supabase.rpc(
-      'upsert_broker_image',
+    // Save the image URL to the broker_images table using the new save_broker_image function
+    const { data: saveData, error: saveError } = await supabase.rpc(
+      'save_broker_image',
       {
         p_broker_id: brokerId,
         p_image_url: publicUrl
       }
     );
     
-    if (updateError) {
-      console.error('Error updating broker image URL in database:', updateError);
+    if (saveError) {
+      console.error('Error saving broker image URL to database:', saveError);
     } else {
-      console.log('Successfully updated broker image URL in database');
+      console.log('Successfully saved broker image URL to database:', saveData);
     }
     
     return publicUrl;
@@ -68,9 +68,9 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
   try {
     console.log(`Fetching image URL for broker ${brokerId}`);
     
-    // Use get_broker_image function to retrieve broker image URL
+    // Use get_broker_image_url function to retrieve broker image URL from the new table
     const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_broker_image',
+      'get_broker_image_url',
       {
         p_broker_id: brokerId
       }
@@ -78,10 +78,25 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
     
     if (rpcError) {
       console.error('Error fetching broker image URL via RPC:', rpcError);
-      return null;
+      
+      // Fallback to the original get_broker_image function for compatibility
+      const { data: fallbackData, error: fallbackError } = await supabase.rpc(
+        'get_broker_image',
+        {
+          p_broker_id: brokerId
+        }
+      );
+      
+      if (fallbackError) {
+        console.error('Error fetching broker image URL from fallback:', fallbackError);
+        return null;
+      }
+      
+      console.log('Retrieved broker image URL from fallback:', fallbackData);
+      return fallbackData || null;
     }
     
-    console.log('Retrieved broker image URL:', rpcData);
+    console.log('Retrieved broker image URL from broker_images table:', rpcData);
     return rpcData || null;
   } catch (error) {
     console.error('Exception fetching broker image URL:', error);

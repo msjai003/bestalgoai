@@ -31,7 +31,7 @@ export const fetchBrokerDetails = async (): Promise<Broker[]> => {
           // Try to find this broker in static data first
           const staticBroker = staticBrokers.find(b => b.id === func.broker_id);
           
-          // Get broker image from the broker_image table
+          // Get broker image from the broker_images table
           const brokerImage = await getBrokerImageUrl(func.broker_id);
           
           if (staticBroker) {
@@ -77,7 +77,7 @@ export const fetchBrokerById = async (brokerId: number): Promise<Broker | null> 
     const params: GetBrokerFunctionsParams = { p_broker_id: brokerId };
     const { data, error } = await supabase.rpc('get_broker_infocap_functions', params);
     
-    // Get broker image from the broker_image table
+    // Get broker image from the broker_images table
     const brokerImage = await getBrokerImageUrl(brokerId);
     
     if (error || !data || (Array.isArray(data) && data.length === 0)) {

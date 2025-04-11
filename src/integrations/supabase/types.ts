@@ -309,6 +309,33 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_images: {
+        Row: {
+          broker_id: number
+          created_at: string | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          broker_id: number
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          broker_id?: number
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       broker_infocap: {
         Row: {
           broker_id: number
@@ -1683,6 +1710,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      save_broker_image: {
+        Args: { p_broker_id: number; p_image_url: string }
+        Returns: string
       }
       save_broker_infocap_function: {
         Args: {

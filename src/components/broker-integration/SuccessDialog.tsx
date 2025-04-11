@@ -1,4 +1,3 @@
-
 import { Check, Plug, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,7 +29,7 @@ export const SuccessDialog = ({
     const fetchBrokerDetails = async () => {
       if (selectedBroker && open) {
         try {
-          // Get broker image from broker_infocap table
+          // Get broker image from broker_images table
           const imageUrl = await getBrokerImageUrl(selectedBroker.id);
           
           if (imageUrl) {

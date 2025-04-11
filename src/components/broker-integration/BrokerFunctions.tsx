@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBrokerFunctions } from "@/hooks/useBrokerFunctions";
 import { BrokerFunction } from "@/hooks/strategy/types";
@@ -36,7 +35,6 @@ export const BrokerFunctions = ({ brokerId, brokerName }: BrokerFunctionsProps) 
 
   // Get unique categories from function slugs
   const categories = Array.from(new Set(functions.map(func => {
-    // Extract category from slug (e.g., "order_placement" -> "order")
     return func.function_slug.split('_')[0];
   }))).sort();
 
@@ -116,7 +114,7 @@ const FunctionCard = ({
   func: BrokerFunction, 
   brokerImageUrl: string | null 
 }) => {
-  // Use the broker image URL from the broker_infocap table
+  // Use the broker image URL from the broker_images table
   const displayImage = brokerImageUrl || '/placeholder.svg';
 
   return (
