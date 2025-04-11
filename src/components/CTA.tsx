@@ -12,9 +12,9 @@ export const CTA = () => {
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">Ready to <span className="text-cyan">Transform</span> Your Trading?</h2>
           <p className="text-charcoalTextSecondary mb-6 font-medium">Join thousands of successful traders using BestAlgo.ai</p>
           <Button 
-            variant="gradient" 
+            variant="logout" 
             size="md"
-            className="w-full sm:w-auto sm:px-6 font-semibold shadow-lg rounded-3xl"
+            className="w-full sm:w-auto sm:px-6 font-semibold shadow-lg"
           >
             Get Started Free
           </Button>
