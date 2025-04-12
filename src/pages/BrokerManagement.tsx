@@ -1,11 +1,64 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BrokerImageManager from '@/components/broker-integration/BrokerImageManager';
+import { supabase } from "@/integrations/supabase/client";
+import { ensureAllBrokerImagesInDatabase } from '@/utils/ensureBrokerImages';
+import { toast } from 'sonner';
 
 const BrokerManagement = () => {
   const [activeTab, setActiveTab] = useState('images');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check if the storage bucket exists and create it if it doesn't
+  const ensureStorageBucket = async () => {
+    try {
+      // Check if the bucket already exists
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .getBucket('broker-logos');
+      
+      // If the bucket doesn't exist, create it
+      if (bucketError && bucketError.message.includes('does not exist')) {
+        console.log('Creating broker-logos bucket...');
+        const { data, error } = await supabase
+          .storage
+          .createBucket('broker-logos', {
+            public: true,  // Make the bucket public
+            fileSizeLimit: 5242880  // 5MB file size limit
+          });
+          
+        if (error) {
+          console.error('Error creating broker-logos bucket:', error);
+          toast.error('Failed to set up storage for broker images');
+        } else {
+          console.log('Broker-logos bucket created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking/creating broker-logos bucket:', error);
+    }
+  };
+
+  useEffect(() => {
+    const initializeBrokerData = async () => {
+      setIsLoading(true);
+      try {
+        // Ensure storage bucket exists
+        await ensureStorageBucket();
+        
+        // Ensure all broker images are in the database
+        await ensureAllBrokerImagesInDatabase();
+      } catch (error) {
+        console.error('Error initializing broker data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    initializeBrokerData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">

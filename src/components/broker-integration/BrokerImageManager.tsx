@@ -7,6 +7,7 @@ import { updateBrokerImageInDatabase, refreshBrokerImagesFromDatabase } from "@/
 import { brokers } from "./BrokerData";
 import { toast } from "sonner";
 import { Loader, RefreshCw, Upload } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const BrokerImageManager: React.FC = () => {
   const [brokerImages, setBrokerImages] = useState<{ [key: number]: string | null }>({});
@@ -60,18 +61,46 @@ const BrokerImageManager: React.FC = () => {
           // Upload the file to storage
           const broker = brokers.find(b => b.id === brokerId);
           if (broker) {
-            // Create a custom URL for the database
-            const fileExt = file.name.split('.').pop();
-            const customUrl = `/broker-logos/${brokerId}-custom.${fileExt}`;
-            
-            // Update the image in the database
-            const success = await updateBrokerImageInDatabase(brokerId, customUrl);
-            
-            if (success) {
-              // Refresh the image from database
-              const newImageUrl = await getBrokerImageUrl(brokerId, true);
-              setBrokerImages((prev) => ({ ...prev, [brokerId]: newImageUrl }));
-              toast.success(`Image for ${broker.name} updated successfully`);
+            try {
+              // Create a unique filename
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${brokerId}-${Date.now()}.${fileExt}`;
+              const filePath = `broker-logos/${fileName}`;
+              
+              // Upload to Supabase Storage
+              const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('broker-logos')
+                .upload(filePath, file, {
+                  cacheControl: '0',
+                  upsert: true,
+                  contentType: file.type
+                });
+              
+              if (uploadError) {
+                console.error('Error uploading file:', uploadError);
+                toast.error(`Error uploading image: ${uploadError.message}`);
+                return;
+              }
+              
+              // Get the public URL
+              const { data: { publicUrl } } = supabase.storage
+                .from('broker-logos')
+                .getPublicUrl(filePath);
+              
+              // Update the image in the database with the new URL
+              const success = await updateBrokerImageInDatabase(brokerId, publicUrl);
+              
+              if (success) {
+                // Refresh the image from database
+                const newImageUrl = await getBrokerImageUrl(brokerId, true);
+                setBrokerImages((prev) => ({ ...prev, [brokerId]: newImageUrl }));
+                toast.success(`Image for ${broker.name} updated successfully`);
+              } else {
+                toast.error(`Failed to update image for ${broker.name} in the database`);
+              }
+            } catch (err) {
+              console.error(`Error processing upload for broker ${brokerId}:`, err);
+              toast.error("Error processing upload");
             }
           }
         }
