@@ -28,11 +28,9 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-cyan text-white border-white/20",
-        destructive:
-          "bg-charcoalDanger text-white border-white/20",
-        success:
-          "bg-cyan text-black border-white/20",
+        default: "bg-cyan text-black border-white/20",
+        destructive: "bg-charcoalDanger text-black border-white/20",
+        success: "bg-cyan text-black border-white/20",
       },
     },
     defaultVariants: {
@@ -63,7 +61,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-transparent px-4 text-sm font-medium text-white ring-offset-background transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-transparent px-4 text-sm font-medium text-black ring-offset-background transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}
@@ -78,7 +76,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1.5 text-white/70 opacity-100 transition-opacity hover:text-white focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-white/30",
+      "absolute right-2 top-2 rounded-md p-1.5 text-black/70 opacity-100 transition-opacity hover:text-black focus:opacity-100 focus:outline-none focus:ring-1 focus:ring-white/30",
       className
     )}
     toast-close=""
@@ -89,34 +87,38 @@ const ToastClose = React.forwardRef<
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName
 
+// Define interface extending the ToastPrimitives props to include variant
+interface ToastTitleProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title> {
+  variant?: "default" | "destructive" | "success";
+}
+
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, variant, ...props }, ref) => {
-  const variantClass = variant === 'success' ? 'text-black' : 'text-white';
-  return (
-    <ToastPrimitives.Title
-      ref={ref}
-      className={cn("text-base font-semibold", variantClass, className)}
-      {...props}
-    />
-  );
-})
+  ToastTitleProps
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Title
+    ref={ref}
+    className={cn("text-base font-semibold text-black", className)}
+    {...props}
+  />
+))
 ToastTitle.displayName = ToastPrimitives.Title.displayName
+
+// Define interface extending the ToastPrimitives props to include variant
+interface ToastDescriptionProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description> {
+  variant?: "default" | "destructive" | "success";
+}
 
 const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, variant, ...props }, ref) => {
-  const variantClass = variant === 'success' ? 'text-black' : 'text-white';
-  return (
-    <ToastPrimitives.Description
-      ref={ref}
-      className={cn("text-sm", variantClass, className)}
-      {...props}
-    />
-  );
-})
+  ToastDescriptionProps
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Description
+    ref={ref}
+    className={cn("text-sm text-black", className)}
+    {...props}
+  />
+))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
