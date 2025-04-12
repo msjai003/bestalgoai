@@ -23,7 +23,10 @@ const InstallButton = ({
   onClick 
 }: InstallButtonProps) => {
   const handleInstallClick = async () => {
-    if (!deferredPrompt && !isIOS && !isAndroid) return;
+    if (!deferredPrompt && !isIOS && !isAndroid) {
+      toast.error("Installation not supported on this device or browser");
+      return;
+    }
     
     if (deferredPrompt) {
       try {

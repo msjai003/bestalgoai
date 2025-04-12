@@ -52,6 +52,15 @@ const InstallPrompt = () => {
       window.deferredInstallPrompt = promptEvent;
       setDeferredPrompt(promptEvent);
       setIsInstallable(true);
+      
+      // Show a toast notification to inform the user they can install the app
+      toast.info("This app can be installed on your device!", {
+        duration: 5000,
+        action: {
+          label: "Install Now",
+          onClick: () => window.showInstallPrompt?.()
+        }
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);

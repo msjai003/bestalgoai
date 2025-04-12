@@ -76,6 +76,14 @@ const Header = () => {
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+
+  const handleDownloadClick = () => {
+    if (window.showInstallPrompt) {
+      window.showInstallPrompt();
+    } else {
+      toast.info("Installation not available in this browser or device");
+    }
+  };
   
   const navigation = [
     { name: 'Home', href: '/' },
@@ -116,15 +124,11 @@ const Header = () => {
             
             {isInstallable && (
               <button
-                className="flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200"
-                onClick={() => {
-                  if (window.showInstallPrompt) {
-                    window.showInstallPrompt();
-                  }
-                }}
+                className="flex items-center text-sm font-medium text-[#FF00D4] hover:text-white transition-colors duration-200"
+                onClick={handleDownloadClick}
               >
                 <Download className="mr-1 h-4 w-4" />
-                <span>Download</span>
+                <span>Download App</span>
               </button>
             )}
           </div>
@@ -133,14 +137,12 @@ const Header = () => {
         <div className="flex items-center space-x-2">
           {isInstallable && (
             <div className="hidden sm:block md:hidden">
-              <InstallButton 
-                isIOS={isIOS} 
-                isAndroid={isAndroid} 
-                deferredPrompt={deferredPrompt}
-                className="text-sm hover:text-white flex items-center"
+              <Button 
+                onClick={handleDownloadClick}
+                className="text-sm hover:text-white flex items-center bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg"
               >
                 <Download className="h-4 w-4 mr-1" /> Download
-              </InstallButton>
+              </Button>
             </div>
           )}
           
@@ -191,15 +193,15 @@ const Header = () => {
             ))}
             
             {isInstallable && (
-              <InstallButton 
-                isIOS={isIOS} 
-                isAndroid={isAndroid} 
-                deferredPrompt={deferredPrompt}
-                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#FF00D4] hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleDownloadClick();
+                }}
               >
-                Download <Download className="h-4 w-4 inline ml-1" />
-              </InstallButton>
+                Download App <Download className="h-4 w-4 inline ml-1" />
+              </button>
             )}
             
             {user ? (
