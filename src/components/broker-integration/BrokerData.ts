@@ -70,7 +70,7 @@ export const brokers: Broker[] = [
   {
     id: 7,
     name: "5 Paisa",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg",
+    logo: "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png",
     description: "Low-cost broker with advanced trading platforms",
     supportedAssets: ["Stocks", "Options", "Futures", "Commodities", "Currencies"],
     fees: "₹10 per order flat fee structure",

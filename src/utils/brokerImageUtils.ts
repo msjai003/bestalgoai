@@ -149,6 +149,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${growwImage}?_t=${timestamp}`;
     }
     
+    // Special case for 5 Paisa (broker ID 7)
+    if (brokerId === 7) {
+      const fivePaisaImage = "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
+      console.log("Using custom 5 Paisa logo:", fivePaisaImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${fivePaisaImage}?_t=${timestamp}`;
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -258,6 +267,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png?_t=" + new Date().getTime();
     }
     
+    // Special case for 5 Paisa when there's an error
+    if (brokerId === 7) {
+      return "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -340,7 +354,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 6: // Groww
       return "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png";
     case 7: // 5 Paisa
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg";
+      return "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
     case 8: // Bigul
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg";
     default:

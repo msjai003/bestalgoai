@@ -1,3 +1,4 @@
+
 import { Search, ChevronRight, Check, AlertCircle, ImageOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -122,6 +123,14 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
           return;
         }
         
+        if (broker.id === 7) {
+          const fivePaisaImage = "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
+          console.log("Using direct 5 Paisa image:", fivePaisaImage);
+          setImageUrl(`${fivePaisaImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
@@ -162,7 +171,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
             broker.id === 2 || broker.name.toLowerCase().includes('icici') ||
             broker.id === 3 || broker.name.toLowerCase().includes('angel') || 
             broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
-            broker.id === 6 || broker.name.toLowerCase().includes('groww')) {
+            broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
+            broker.id === 7 || broker.name.toLowerCase().includes('5 paisa')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
       } finally {
@@ -181,7 +191,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
          broker.id === 2 || broker.name.toLowerCase().includes('icici') ||
          broker.id === 3 || broker.name.toLowerCase().includes('angel') ||
          broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
-         broker.id === 6 || broker.name.toLowerCase().includes('groww')) && retryCount < 2) {
+         broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
+         broker.id === 7 || broker.name.toLowerCase().includes('5 paisa')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {
