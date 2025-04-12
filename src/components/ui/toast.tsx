@@ -32,7 +32,7 @@ const toastVariants = cva(
         destructive:
           "bg-charcoalDanger text-white border-white/20",
         success:
-          "bg-cyan text-white border-white/20",
+          "bg-cyan text-black border-white/20",
       },
     },
     defaultVariants: {
@@ -92,25 +92,31 @@ ToastClose.displayName = ToastPrimitives.Close.displayName
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Title
-    ref={ref}
-    className={cn("text-base font-semibold text-white", className)}
-    {...props}
-  />
-))
+>(({ className, variant, ...props }, ref) => {
+  const variantClass = variant === 'success' ? 'text-black' : 'text-white';
+  return (
+    <ToastPrimitives.Title
+      ref={ref}
+      className={cn("text-base font-semibold", variantClass, className)}
+      {...props}
+    />
+  );
+})
 ToastTitle.displayName = ToastPrimitives.Title.displayName
 
 const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Description
-    ref={ref}
-    className={cn("text-sm text-white", className)}
-    {...props}
-  />
-))
+>(({ className, variant, ...props }, ref) => {
+  const variantClass = variant === 'success' ? 'text-black' : 'text-white';
+  return (
+    <ToastPrimitives.Description
+      ref={ref}
+      className={cn("text-sm", variantClass, className)}
+      {...props}
+    />
+  );
+})
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
