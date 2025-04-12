@@ -8,7 +8,7 @@ export const saveGoogleUserDetails = async (userId: string, googleData: Omit<Goo
     
     const { error } = await supabase.from('google_user_details')
       .upsert({
-        user_id: userId,
+        id: userId,  // Using id as the primary key instead of user_id
         email: googleData.email,
         google_id: googleData.google_id,
         picture_url: googleData.picture_url,
@@ -17,7 +17,7 @@ export const saveGoogleUserDetails = async (userId: string, googleData: Omit<Goo
         locale: googleData.locale,
         verified_email: googleData.verified_email
       }, {
-        onConflict: 'user_id'
+        onConflict: 'id'  // Changed from user_id to id
       });
     
     if (error) {
@@ -39,7 +39,7 @@ export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUser
     const { data, error } = await supabase
       .from('google_user_details')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId)  // Changed from user_id to id
       .single();
     
     if (error) {
@@ -58,7 +58,7 @@ export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUser
     }
     
     return {
-      id: data.user_id,
+      id: data.id,  // Changed from user_id to id
       email: data.email,
       google_id: data.google_id,
       picture_url: data.picture_url,

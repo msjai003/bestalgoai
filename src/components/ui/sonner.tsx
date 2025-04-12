@@ -14,13 +14,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-cyan group-[.toaster]:text-black group-[.toaster]:border-2 group-[.toaster]:border-white/20 group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl",
-          description: "group-[.toast]:text-black",
-          success: "group-[.toast]:bg-cyan group-[.toast]:text-black group-[.toast]:border-white/20",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-black group-[.toaster]:border group-[.toaster]:border-gray-200 group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl",
+          description: "group-[.toast]:text-black/90",
+          success: "group-[.toast]:bg-green-50 group-[.toast]:text-green-900 group-[.toast]:border-green-200",
+          error: "group-[.toast]:bg-red-50 group-[.toast]:text-red-900 group-[.toast]:border-red-200",
           actionButton:
-            "group-[.toast]:bg-white group-[.toast]:text-cyan group-[.toast]:rounded-lg",
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-md",
           cancelButton:
-            "group-[.toast]:bg-transparent group-[.toast]:text-black group-[.toast]:border-2 group-[.toast]:border-white/30 group-[.toast]:rounded-lg",
+            "group-[.toast]:bg-transparent group-[.toast]:text-muted-foreground group-[.toast]:border group-[.toast]:border-gray-200 group-[.toast]:rounded-md",
         },
       }}
       {...props}

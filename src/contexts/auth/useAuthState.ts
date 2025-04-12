@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchGoogleUserDetails, saveGoogleUserDetails } from './utils';
 import { AuthUser, GoogleUserDetails } from './types';
@@ -122,6 +122,8 @@ export const useAuthState = () => {
     setGoogleUserDetails,
     isLoading,
     setIsLoading,
-    fetchUserGoogleDetails
+    fetchUserGoogleDetails,
+    handleGoogleSignIn
   };
 };
+
