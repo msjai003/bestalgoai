@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +17,6 @@ const Header = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           (window.navigator as any).standalone || 
                           document.referrer.includes('android-app://');
@@ -28,11 +26,8 @@ const Header = () => {
       return;
     }
     
-    // Handle the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
-      // Store the event for later use
       const promptEvent = e as BeforeInstallPromptEvent;
       window.deferredInstallPrompt = promptEvent;
       setDeferredPrompt(promptEvent);
@@ -41,7 +36,6 @@ const Header = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Check for iOS and Android
     const userAgent = navigator.userAgent || '';
     const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
     const isAndroidDevice = /Android/.test(userAgent);
@@ -57,13 +51,10 @@ const Header = () => {
       setIsInstallable(true);
     }
 
-    // Listen for app installed event
     window.addEventListener('appinstalled', () => {
-      // Clear the prompt
       window.deferredInstallPrompt = null;
       setDeferredPrompt(null);
       setIsInstallable(false);
-      // Show success message
       toast.success("App installed successfully!");
     });
 
@@ -90,8 +81,7 @@ const Header = () => {
     { name: 'Pricing', href: '/pricing' },
     { name: 'Education', href: '/education' },
     { name: 'About', href: '/about' },
-    // Add Download as a navigation item to ensure it appears in all menus
-    ...(isInstallable ? [{ name: 'Download App', href: '#', isDownload: true }] : []),
+    { name: 'Download', href: '#', isDownload: true },
   ];
   
   const isActive = (path: string) => {
@@ -138,17 +128,6 @@ const Header = () => {
         </div>
         
         <div className="flex items-center space-x-2">
-          {isInstallable && (
-            <div className="hidden sm:block md:hidden">
-              <Button 
-                onClick={handleDownloadClick}
-                className="text-sm hover:text-white flex items-center bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-lg"
-              >
-                <Download className="h-4 w-4 mr-1" /> Download
-              </Button>
-            </div>
-          )}
-          
           {user ? (
             <Link to="/dashboard">
               <Button variant="gradient" className="hidden md:block">
@@ -176,7 +155,6 @@ const Header = () => {
         </div>
       </nav>
       
-      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
