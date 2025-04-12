@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +13,6 @@ const Header = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           (window.navigator as any).standalone || 
                           document.referrer.includes('android-app://');
@@ -24,18 +22,14 @@ const Header = () => {
       return;
     }
     
-    // Handle the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
-      // Store the event for later use
       window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
       setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Check for iOS
     const userAgent = navigator.userAgent || '';
     const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
     
@@ -43,12 +37,9 @@ const Header = () => {
       setIsInstallable(true);
     }
 
-    // Listen for app installed event
     window.addEventListener('appinstalled', () => {
-      // Clear the prompt
       window.deferredInstallPrompt = null;
       setIsInstallable(false);
-      // Show success message
       toast.success("App installed successfully!");
     });
 
@@ -65,10 +56,7 @@ const Header = () => {
   const handleInstallClick = async () => {
     if (window.deferredInstallPrompt) {
       try {
-        // Show the install prompt
         await window.deferredInstallPrompt.prompt();
-        
-        // Wait for the user to respond to the prompt
         const choiceResult = await window.deferredInstallPrompt.userChoice;
         
         if (choiceResult.outcome === 'accepted') {
@@ -79,14 +67,12 @@ const Header = () => {
           toast.info("Installation declined. You can install later if needed.");
         }
         
-        // Clear the saved prompt since it can't be used again
         window.deferredInstallPrompt = null;
       } catch (error) {
         console.error('Error during installation:', error);
         toast.error("Installation failed. Please try again.");
       }
     } else {
-      // For iOS or other platforms where the deferredInstallPrompt is not available
       const userAgent = navigator.userAgent || '';
       const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
       const isAndroidDevice = /Android/.test(userAgent);
@@ -161,13 +147,13 @@ const Header = () => {
           
           {user ? (
             <Link to="/dashboard">
-              <Button variant="gradient" className="hidden md:block">
+              <Button variant="gradient" className="hidden md:block rounded-full">
                 Dashboard
               </Button>
             </Link>
           ) : (
             <Link to="/auth">
-              <Button variant="gradient" className="hidden md:block">
+              <Button variant="gradient" className="hidden md:block rounded-full">
                 Sign In
               </Button>
             </Link>
@@ -186,7 +172,6 @@ const Header = () => {
         </div>
       </nav>
       
-      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
