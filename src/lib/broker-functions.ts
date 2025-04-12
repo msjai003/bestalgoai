@@ -1,3 +1,4 @@
+
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
@@ -344,6 +345,27 @@ export const getBrokerImage = async (
     const hdfcSecuritiesImage = "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png";
     brokerImageCache[brokerId] = hdfcSecuritiesImage;
     return hdfcSecuritiesImage;
+  }
+  
+  // Special case for Groww (broker ID 6)
+  if (brokerId === 6) {
+    const growwImage = "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png";
+    brokerImageCache[brokerId] = growwImage;
+    return growwImage;
+  }
+  
+  // Special case for 5 Paisa (broker ID 7)
+  if (brokerId === 7) {
+    const fivePaisaImage = "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
+    brokerImageCache[brokerId] = fivePaisaImage;
+    return fivePaisaImage;
+  }
+  
+  // Special case for Bigul (broker ID 8)
+  if (brokerId === 8) {
+    const bigulImage = "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
+    brokerImageCache[brokerId] = bigulImage;
+    return bigulImage;
   }
   
   // First check cache

@@ -79,7 +79,7 @@ export const brokers: Broker[] = [
   {
     id: 8,
     name: "Bigul",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg",
+    logo: "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png",
     description: "New-age trading platform with innovative features",
     supportedAssets: ["Stocks", "Options", "Futures", "ETFs"],
     fees: "₹15 per order or 0.03% (whichever is lower)",

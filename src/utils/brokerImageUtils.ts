@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -158,6 +159,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${fivePaisaImage}?_t=${timestamp}`;
     }
     
+    // Special case for Bigul (broker ID 8)
+    if (brokerId === 8) {
+      const bigulImage = "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
+      console.log("Using custom Bigul logo:", bigulImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${bigulImage}?_t=${timestamp}`;
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -272,6 +282,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png?_t=" + new Date().getTime();
     }
     
+    // Special case for Bigul when there's an error
+    if (brokerId === 8) {
+      return "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -356,7 +371,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 7: // 5 Paisa
       return "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
     case 8: // Bigul
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg";
+      return "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
     default:
       return `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${Math.floor(Math.random() * 8) + 1}.jpg`;
   }

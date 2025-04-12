@@ -131,6 +131,14 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
           return;
         }
         
+        if (broker.id === 8) {
+          const bigulImage = "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
+          console.log("Using direct Bigul image:", bigulImage);
+          setImageUrl(`${bigulImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
@@ -172,7 +180,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
             broker.id === 3 || broker.name.toLowerCase().includes('angel') || 
             broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
             broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
-            broker.id === 7 || broker.name.toLowerCase().includes('5 paisa')) {
+            broker.id === 7 || broker.name.toLowerCase().includes('5 paisa') ||
+            broker.id === 8 || broker.name.toLowerCase().includes('bigul')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
       } finally {
@@ -192,7 +201,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
          broker.id === 3 || broker.name.toLowerCase().includes('angel') ||
          broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
          broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
-         broker.id === 7 || broker.name.toLowerCase().includes('5 paisa')) && retryCount < 2) {
+         broker.id === 7 || broker.name.toLowerCase().includes('5 paisa') ||
+         broker.id === 8 || broker.name.toLowerCase().includes('bigul')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {
