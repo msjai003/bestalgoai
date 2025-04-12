@@ -13,16 +13,16 @@ const Logout = () => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // Let AuthContext handle the toast, don't show one here
+        // Sign out without showing a toast notification
         await signOut();
-        // We'll show the success message in the component UI instead
+        // We won't redirect here - we'll just show the UI below
       } catch (error) {
         console.error("Logout error:", error);
       }
     };
 
     handleLogout();
-  }, [navigate, signOut]);
+  }, [signOut]);
 
   return (
     <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center text-white">
