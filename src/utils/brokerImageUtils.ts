@@ -57,6 +57,7 @@ export const uploadBrokerImage = async (
     console.log('Generated public URL with cache busting:', urlWithCacheBust);
     
     // Insert the image URL into the broker_profile_images table
+    // This ensures consistent storage of all broker images
     try {
       const { data: saveData, error: saveError } = await supabase.rpc(
         'save_broker_profile_image',

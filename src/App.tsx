@@ -181,6 +181,11 @@ function AppRoutes() {
 
 function App() {
   useEffect(() => {
+    // Import and run the function to ensure all broker images are in the database
+    import('./utils/ensureBrokerImages').then(({ ensureAllBrokerImagesInDatabase }) => {
+      ensureAllBrokerImagesInDatabase().catch(console.error);
+    });
+
     // Initialize Capacitor when the app starts
     const platform = window.navigator.userAgent;
     const isNative = platform.includes('android') || platform.includes('ios');
