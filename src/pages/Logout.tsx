@@ -11,11 +11,9 @@ const Logout = () => {
     const performLogout = async () => {
       try {
         await signOut();
-        // We don't need to show an error if the session is already gone
-        // as that's actually the desired end state
+        // We don't show any toast notifications here anymore
       } catch (error) {
         console.error("Logout error:", error);
-        // We're not showing an error alert anymore for session not found errors
       }
     };
     
