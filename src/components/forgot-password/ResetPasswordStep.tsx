@@ -159,7 +159,7 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
       <Button
         type="submit"
         disabled={isLoading || !newPassword || !confirmPassword || (newPassword !== confirmPassword)}
-        className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
+        className="w-full bg-cyan text-charcoalPrimary py-6 rounded-3xl shadow-lg hover:bg-cyan/90"
       >
         {isLoading ? 'Resetting Password...' : 'Reset Password'}
       </Button>
