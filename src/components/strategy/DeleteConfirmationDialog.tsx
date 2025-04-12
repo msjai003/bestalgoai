@@ -48,7 +48,8 @@ export const DeleteConfirmationDialog = ({
             Cancel
           </Button>
           <Button 
-            variant="destructive"
+            variant="cyan"
+            className="text-charcoalPrimary"
             onClick={onConfirm}
           >
             Yes, Remove From Wishlist

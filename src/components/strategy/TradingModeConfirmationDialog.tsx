@@ -1,6 +1,5 @@
 
 import React from "react";
-import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,12 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AlertTriangle, Zap } from "lucide-react";
 
 interface TradingModeConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetMode: "live" | "paper" | null;
-  brokerName?: string | null;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -24,47 +23,54 @@ export const TradingModeConfirmationDialog = ({
   open,
   onOpenChange,
   targetMode,
-  brokerName,
   onConfirm,
   onCancel,
 }: TradingModeConfirmationDialogProps) => {
-  const dialogTitle = targetMode === "live" 
-    ? "Enable Live Trading" 
-    : "Switch to Paper Trading";
-    
-  const dialogDescription = targetMode === "live" 
-    ? `Are you sure you want to switch to live trading${brokerName ? ` with ${brokerName}` : ''}? This will use real funds for trading operations.`
-    : `Are you sure you want to switch to paper trading${brokerName ? ` with ${brokerName}` : ''}? This will use simulated funds for trading operations.`;
-  
-  const confirmButtonText = targetMode === "live" 
-    ? "Yes, Enable Live Trading" 
-    : "Yes, Switch to Paper Trading";
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
+      <DialogContent className="bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            {dialogTitle}
+            {targetMode === "live" ? (
+              <>
+                <Zap className="h-5 w-5 text-yellow-500" />
+                Confirm Live Trading
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="h-5 w-5 text-blue-400" />
+                Confirm Paper Trading
+              </>
+            )}
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            {dialogDescription}
+            {targetMode === "live" ? (
+              <>
+                Are you sure you want to enable <span className="font-semibold text-green-400">live trading</span> for this strategy? 
+                Real funds will be used for trades based on this strategy.
+              </>
+            ) : (
+              <>
+                Are you sure you want to switch to <span className="font-semibold text-cyan">paper trading</span> mode? 
+                No real funds will be used, but the strategy will continue to generate signals.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2 sm:justify-end">
           <Button 
             variant="secondary" 
-            className="text-gray-200"
+            className="bg-gray-700 hover:bg-gray-600 text-gray-200"
             onClick={onCancel}
           >
             Cancel
           </Button>
           <Button 
-            variant={targetMode === "live" ? "destructive" : "cyan"}
+            variant="cyan"
+            className="text-charcoalPrimary"
             onClick={onConfirm}
           >
-            {confirmButtonText}
+            {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
           </Button>
         </DialogFooter>
       </DialogContent>
