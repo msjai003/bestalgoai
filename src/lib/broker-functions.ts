@@ -325,6 +325,13 @@ export const getBrokerImage = async (
     return zerodhaImage;
   }
   
+  // Special case for ICICI Direct (broker ID 2)
+  if (brokerId === 2) {
+    const iciciDirectImage = "/lovable-uploads/b6f29d4f-ea6d-46c7-bfdd-f79050fc22cb.png";
+    brokerImageCache[brokerId] = iciciDirectImage;
+    return iciciDirectImage;
+  }
+  
   // Special case for Angel One (broker ID 3)
   if (brokerId === 3) {
     const angelOneImage = "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";

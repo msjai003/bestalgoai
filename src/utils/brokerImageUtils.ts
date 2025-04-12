@@ -113,6 +113,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${zerodhaImage}?_t=${timestamp}`;
     }
     
+    // Special case for ICICI Direct (broker ID 2)
+    if (brokerId === 2) {
+      const iciciDirectImage = "/lovable-uploads/b6f29d4f-ea6d-46c7-bfdd-f79050fc22cb.png";
+      console.log("Using custom ICICI Direct logo:", iciciDirectImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${iciciDirectImage}?_t=${timestamp}`;
+    }
+    
     // Special case for Angel One (broker ID 3)
     if (brokerId === 3) {
       const angelOneImage = "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
@@ -211,6 +220,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png?_t=" + new Date().getTime();
     }
     
+    // Special case for ICICI Direct when there's an error
+    if (brokerId === 2) {
+      return "/lovable-uploads/b6f29d4f-ea6d-46c7-bfdd-f79050fc22cb.png?_t=" + new Date().getTime();
+    }
+    
     // Special case for Angel One when there's an error
     if (brokerId === 3) {
       return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png?_t=" + new Date().getTime();
@@ -288,7 +302,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 1: // Zerodha
       return "/lovable-uploads/9de2890f-d6a8-443f-9e22-64a47566a9fa.png";
     case 2: // ICICI Direct
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg";
+      return "/lovable-uploads/b6f29d4f-ea6d-46c7-bfdd-f79050fc22cb.png";
     case 3: // Angel One
       return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
     case 4: // HDFC Securities

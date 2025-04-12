@@ -25,7 +25,7 @@ export const brokers: Broker[] = [
   {
     id: 2,
     name: "ICICI Direct",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg",
+    logo: "/lovable-uploads/b6f29d4f-ea6d-46c7-bfdd-f79050fc22cb.png",
     description: "Full-service broker offering investment products across asset classes",
     supportedAssets: ["Stocks", "Options", "Futures", "Mutual Funds"],
     fees: "0.275% for delivery, 0.05% for intraday",
