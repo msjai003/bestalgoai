@@ -5,35 +5,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Home } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
 const Logout = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     const handleLogout = async () => {
       try {
+        // Sign out without showing any toast notification
         await signOut();
-        // Show a success toast notification
-        toast({
-          title: "Signed out successfully",
-          description: "You have been logged out of your account",
-          variant: "success",
-        });
+        // No toast notifications here
       } catch (error) {
         console.error("Logout error:", error);
-        toast({
-          title: "Sign out failed",
-          description: "There was a problem signing you out",
-          variant: "destructive",
-        });
+        // No toast notifications for errors either
       }
     };
 
     handleLogout();
-  }, [signOut, toast]);
+  }, [signOut]);
 
   return (
     <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center text-white p-4">
