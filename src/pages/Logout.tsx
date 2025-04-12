@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { toast } from "@/hooks/use-toast";
 
 const Logout = () => {
   const { signOut } = useAuth();
@@ -19,13 +18,6 @@ const Logout = () => {
         // We're not showing an error alert anymore for session not found errors
       }
     };
-
-    // Show toast notification for successful logout
-    toast({
-      title: "Signed Out",
-      description: "You have been successfully signed out.",
-      variant: "success",
-    });
     
     performLogout();
   }, [signOut]);
