@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -212,7 +213,7 @@ export const Hero = () => {
         <div className="relative container mx-auto flex justify-end mb-4">
           <Button
             variant="outline"
-            className="rounded-lg font-medium border-cyan/40 text-cyan hover:bg-cyan/10"
+            className="rounded-full font-medium border-cyan/40 text-cyan hover:bg-cyan/10 px-6"
             onClick={handleSignIn}
           >
             Sign In
@@ -269,3 +270,4 @@ export const Hero = () => {
     </section>
   );
 };
+
