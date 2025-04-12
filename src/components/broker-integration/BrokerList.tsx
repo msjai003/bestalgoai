@@ -1,3 +1,4 @@
+
 import { Search, ChevronRight, Check, AlertCircle, ImageOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -106,6 +107,14 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
           return;
         }
         
+        if (broker.id === 4) {
+          const hdfcSecuritiesImage = "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png";
+          console.log("Using direct HDFC Securities image:", hdfcSecuritiesImage);
+          setImageUrl(`${hdfcSecuritiesImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
@@ -144,7 +153,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         
         if (broker.id === 1 || broker.name.toLowerCase().includes('zerodha') || 
             broker.id === 2 || broker.name.toLowerCase().includes('icici') ||
-            broker.id === 3 || broker.name.toLowerCase().includes('angel')) {
+            broker.id === 3 || broker.name.toLowerCase().includes('angel') || 
+            broker.id === 4 || broker.name.toLowerCase().includes('hdfc')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
       } finally {
@@ -161,7 +171,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
     
     if ((broker.id === 1 || broker.name.toLowerCase().includes('zerodha') || 
          broker.id === 2 || broker.name.toLowerCase().includes('icici') ||
-         broker.id === 3 || broker.name.toLowerCase().includes('angel')) && retryCount < 2) {
+         broker.id === 3 || broker.name.toLowerCase().includes('angel') ||
+         broker.id === 4 || broker.name.toLowerCase().includes('hdfc')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {

@@ -131,6 +131,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${angelOneImage}?_t=${timestamp}`;
     }
     
+    // Special case for HDFC Securities (broker ID 4)
+    if (brokerId === 4) {
+      const hdfcSecuritiesImage = "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png";
+      console.log("Using custom HDFC Securities logo:", hdfcSecuritiesImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${hdfcSecuritiesImage}?_t=${timestamp}`;
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -230,6 +239,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png?_t=" + new Date().getTime();
     }
     
+    // Special case for HDFC Securities when there's an error
+    if (brokerId === 4) {
+      return "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -306,7 +320,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 3: // Angel One
       return "/lovable-uploads/e4eaf527-5b68-4f06-99e7-5969dcfa6810.png";
     case 4: // HDFC Securities
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg";
+      return "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png";
     case 5: // Upstox
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg";
     case 6: // Groww

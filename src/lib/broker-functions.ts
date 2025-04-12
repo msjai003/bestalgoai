@@ -339,6 +339,13 @@ export const getBrokerImage = async (
     return angelOneImage;
   }
   
+  // Special case for HDFC Securities (broker ID 4)
+  if (brokerId === 4) {
+    const hdfcSecuritiesImage = "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png";
+    brokerImageCache[brokerId] = hdfcSecuritiesImage;
+    return hdfcSecuritiesImage;
+  }
+  
   // First check cache
   if (brokerId in brokerImageCache) {
     return brokerImageCache[brokerId];

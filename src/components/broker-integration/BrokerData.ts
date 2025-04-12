@@ -43,7 +43,7 @@ export const brokers: Broker[] = [
   {
     id: 4,
     name: "HDFC Securities",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg",
+    logo: "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png",
     description: "Full-service broker with research-backed investment advice",
     supportedAssets: ["Stocks", "Options", "Futures", "Mutual Funds"],
     fees: "0.25% for delivery, 0.05% for intraday",
