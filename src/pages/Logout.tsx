@@ -10,13 +10,17 @@ const Logout = () => {
   const { signOut } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(true);
   const [countdown, setCountdown] = useState(3);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    let countdownTimer: NodeJS.Timeout;
+    
     const handleLogout = async () => {
       try {
         setIsLoggingOut(true);
         
-        // Let AuthContext handle the toast, don't show one here
+        // Perform the sign out operation
         await signOut();
         
         // Signal success
@@ -26,26 +30,37 @@ const Logout = () => {
         let seconds = 3;
         setCountdown(seconds);
         
-        const timer = setInterval(() => {
+        countdownTimer = setInterval(() => {
           seconds -= 1;
           setCountdown(seconds);
           
           if (seconds <= 0) {
-            clearInterval(timer);
-            navigate('/');
+            clearInterval(countdownTimer);
+            // Use a timeout to ensure the state updates before navigation
+            timer = setTimeout(() => {
+              navigate('/');
+            }, 100);
           }
         }, 1000);
-        
-        return () => clearInterval(timer);
       } catch (error) {
         console.error("Logout error:", error);
-        // Even if there's an error, redirect to home
-        navigate('/');
+        setError("There was a problem signing out. Please try again.");
+        setIsLoggingOut(false);
       }
     };
 
     handleLogout();
+
+    // Clean up all timers to prevent memory leaks
+    return () => {
+      clearTimeout(timer);
+      clearInterval(countdownTimer);
+    };
   }, [navigate, signOut]);
+
+  const handleManualRedirect = () => {
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
@@ -57,6 +72,10 @@ const Logout = () => {
               <div className="absolute inset-0 rounded-full border-t-4 border-gray-400 animate-spin"></div>
               <LogOut className="text-gray-300 h-8 w-8" />
             </>
+          ) : error ? (
+            <div className="text-amber-400">
+              <LogOut className="h-12 w-12" />
+            </div>
           ) : (
             <div className="text-green-400 animate-scale-in">
               <CheckCircle className="h-12 w-12" />
@@ -65,7 +84,11 @@ const Logout = () => {
         </div>
         
         <h1 className="text-2xl font-bold text-center text-white mb-4">
-          {isLoggingOut ? "Signing Out" : "Successfully Signed Out"}
+          {isLoggingOut 
+            ? "Signing Out" 
+            : error 
+              ? "Sign Out Issue" 
+              : "Successfully Signed Out"}
         </h1>
         
         {isLoggingOut ? (
@@ -75,6 +98,15 @@ const Logout = () => {
             </AlertTitle>
             <AlertDescription className="text-gray-300 mt-1">
               We're securely ending your session and clearing your credentials.
+            </AlertDescription>
+          </Alert>
+        ) : error ? (
+          <Alert className="bg-gray-700/70 border-l-4 border-amber-500 border-gray-600/50 shadow-md mb-4 animate-fade-in">
+            <AlertTitle className="text-white font-medium flex items-center gap-2">
+              Sign Out Issue
+            </AlertTitle>
+            <AlertDescription className="text-gray-300 mt-1">
+              {error} You can still return to the home page.
             </AlertDescription>
           </Alert>
         ) : (
@@ -91,17 +123,26 @@ const Logout = () => {
         <p className="text-gray-400 text-center text-sm mt-4">
           {isLoggingOut 
             ? "Please wait while we complete the process..." 
-            : "You'll be redirected to the home page shortly."}
+            : error 
+              ? "You can manually return to the home page by clicking below." 
+              : "You'll be redirected to the home page shortly."}
         </p>
         
         <div className="mt-6 flex justify-center">
-          {isLoggingOut && (
+          {isLoggingOut ? (
             <div className="flex space-x-2 items-center">
               <div className="h-2 w-2 rounded-full bg-gray-500 animate-ping"></div>
               <div className="h-2 w-2 rounded-full bg-gray-500 animate-ping" style={{ animationDelay: "0.2s" }}></div>
               <div className="h-2 w-2 rounded-full bg-gray-500 animate-ping" style={{ animationDelay: "0.4s" }}></div>
             </div>
-          )}
+          ) : error ? (
+            <button
+              onClick={handleManualRedirect}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
+            >
+              Return to Home
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
