@@ -73,6 +73,46 @@ export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUser
   }
 };
 
+export const sendWelcomeEmail = async (userId: string, fullName: string) => {
+  try {
+    // First fetch the user's email from user_profiles
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('email')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (profileError) {
+      console.error('Error fetching user profile for welcome email:', profileError);
+      return;
+    }
+    
+    if (!userProfile || !userProfile.email) {
+      console.error('No email found in user profile for ID:', userId);
+      return;
+    }
+    
+    console.log(`Preparing to send welcome email to ${userProfile.email}`);
+    
+    // Call the edge function to send welcome email
+    const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+      body: JSON.stringify({
+        email: userProfile.email,
+        name: fullName,
+        welcomeMessage: "Thank you for signing up with InfoCap Company!"
+      })
+    });
+    
+    if (error) {
+      console.error("Error calling send-welcome-email function:", error);
+    } else {
+      console.log("Email function response:", data);
+    }
+  } catch (error) {
+    console.error("Exception sending welcome email:", error);
+  }
+};
+
 export const sendWelcomeSMS = async (userId: string, fullName: string, mobileNumber: string) => {
   if (!mobileNumber) return;
   
@@ -94,6 +134,9 @@ export const sendWelcomeSMS = async (userId: string, fullName: string, mobileNum
     } else {
       console.log("SMS function response:", data);
     }
+    
+    // Also send a welcome email
+    await sendWelcomeEmail(userId, fullName);
   } catch (error) {
     console.error("Exception sending welcome SMS:", error);
   }

@@ -100,6 +100,19 @@ const Signup = () => {
       // If signup was successful and we have a user ID, send the welcome SMS
       if (data?.user?.id) {
         await sendWelcomeSMS(data.user.id, name);
+        
+        // Also directly call our welcome email function
+        try {
+          await supabase.functions.invoke('send-welcome-email', {
+            body: JSON.stringify({
+              email: email,
+              name: name,
+              welcomeMessage: "Thank you for signing up with InfoCap Company!"
+            })
+          });
+        } catch (emailError) {
+          console.error("Error sending welcome email:", emailError);
+        }
       }
       
       navigate('/dashboard');
