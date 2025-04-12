@@ -41,8 +41,8 @@ serve(async (req) => {
       );
     }
     
-    const { email, name, welcomeMessage } = requestBody;
-    console.log(`Request payload received - Email: ${email}, Name: ${name}, Message: ${welcomeMessage}`);
+    const { email, name } = requestBody;
+    console.log(`Email request received for: ${email}, Name: ${name}`);
 
     if (!email || !name) {
       console.error("Missing required fields in request");
@@ -58,44 +58,25 @@ serve(async (req) => {
     }
 
     // Send actual email using SMTP
-    const message = welcomeMessage || "Thank you for signing up with InfoCap Company!";
-    console.log(`Preparing to send welcome message: "${message}"`);
+    const welcomeMessage = requestBody.welcomeMessage || "Thank you for signing up with InfoCap Company!";
+    console.log(`Preparing to send welcome message: "${welcomeMessage}"`);
     
     try {
-      // Check if the issue might be with the Gmail password having spaces
-      // Try using the password with and without spaces to see if that helps
-      const passwordWithoutSpaces = SMTP_PASSWORD.replace(/\s+/g, '');
-      console.log("Attempting SMTP connection with formatted password");
-
       const client = new SmtpClient();
       
-      // Connect to SMTP server - adding detailed connection logs
-      console.log("Connecting to SMTP server:", SMTP_HOST, SMTP_PORT);
+      // Connect to SMTP server with detailed logs
+      console.log(`Connecting to SMTP server: ${SMTP_HOST}:${SMTP_PORT}`);
       try {
         await client.connectTLS({
           hostname: SMTP_HOST,
           port: SMTP_PORT,
           username: SMTP_USERNAME,
-          password: SMTP_PASSWORD, // First try with original password
+          password: SMTP_PASSWORD,
         });
         console.log("Successfully connected to SMTP server");
       } catch (connectError) {
-        console.error("SMTP connection error with original password:", connectError);
-        
-        // Try again with password without spaces in case that's the issue
-        try {
-          console.log("Retrying SMTP connection with password without spaces");
-          await client.connectTLS({
-            hostname: SMTP_HOST,
-            port: SMTP_PORT,
-            username: SMTP_USERNAME,
-            password: passwordWithoutSpaces,
-          });
-          console.log("Successfully connected to SMTP server with formatted password");
-        } catch (retryError) {
-          console.error("SMTP connection failed on retry:", retryError);
-          throw new Error(`SMTP connection failed: ${retryError.message}`);
-        }
+        console.error("SMTP connection error:", connectError);
+        throw new Error(`SMTP connection failed: ${connectError.message}`);
       }
       
       // HTML email content
@@ -117,7 +98,7 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <p>Hello ${name},</p>
-                <p>${message}</p>
+                <p>${welcomeMessage}</p>
                 <p>If you have any questions, please don't hesitate to contact our support team.</p>
                 <p>Best regards,<br>The InfoCap Team</p>
               </div>
@@ -131,29 +112,18 @@ serve(async (req) => {
       
       // Send the email
       console.log("Sending email to:", email);
-      let result;
-      try {
-        result = await client.send({
-          from: SENDER_EMAIL,
-          to: email,
-          subject: "Welcome to InfoCap Company!",
-          content: "Welcome to InfoCap Company!",
-          html: htmlContent,
-        });
-        console.log("Email sent successfully via SMTP:", result);
-      } catch (sendError) {
-        console.error("SMTP send error:", sendError);
-        throw new Error(`Failed to send email: ${sendError.message}`);
-      } finally {
-        // Always close the connection, even if sending fails
-        try {
-          console.log("Closing SMTP connection...");
-          await client.close();
-          console.log("SMTP connection closed");
-        } catch (closeError) {
-          console.error("Error closing SMTP connection:", closeError);
-        }
-      }
+      const result = await client.send({
+        from: SENDER_EMAIL,
+        to: email,
+        subject: "Welcome to InfoCap Company!",
+        content: "Welcome to InfoCap Company!",
+        html: htmlContent,
+      });
+      console.log("Email sent successfully via SMTP:", result);
+      
+      // Close the connection
+      await client.close();
+      console.log("SMTP connection closed");
       
       return new Response(
         JSON.stringify({ success: true, message: "Email sent successfully", result }),

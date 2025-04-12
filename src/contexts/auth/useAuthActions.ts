@@ -158,6 +158,26 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
           if (profileError) {
             console.error('Error creating profile for new user:', profileError);
           } else {
+            // Send welcome email directly after successful signup
+            try {
+              console.log("Sending welcome email to:", data.user.email);
+              const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+                body: JSON.stringify({
+                  email: data.user.email,
+                  name: userData.fullName,
+                  welcomeMessage: "Thank you for signing up with InfoCap Company!"
+                })
+              });
+              
+              if (emailError) {
+                console.error("Error sending welcome email:", emailError);
+              } else {
+                console.log("Welcome email sent successfully:", emailData);
+              }
+            } catch (emailSendError) {
+              console.error("Exception sending welcome email:", emailSendError);
+            }
+            
             if (userData.mobileNumber) {
               await sendWelcomeSMS(
                 data.user.id,
