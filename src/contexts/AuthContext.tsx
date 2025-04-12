@@ -24,8 +24,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-let logoutToastShown = false;
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [googleUserDetails, setGoogleUserDetails] = useState<GoogleUserDetails | null>(null);
@@ -33,8 +31,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    logoutToastShown = false;
-    
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -389,9 +385,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error during sign out:', error);
           toast.error(error.message);
-        } else if (!logoutToastShown) {
-          toast.success('Successfully signed out');
-          logoutToastShown = true;
         }
       } else {
         console.log('No active session found, clearing local user state');
