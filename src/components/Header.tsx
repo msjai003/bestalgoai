@@ -90,6 +90,8 @@ const Header = () => {
     { name: 'Pricing', href: '/pricing' },
     { name: 'Education', href: '/education' },
     { name: 'About', href: '/about' },
+    // Add Download as a navigation item to ensure it appears in all menus
+    ...(isInstallable ? [{ name: 'Download App', href: '#', isDownload: true }] : []),
   ];
   
   const isActive = (path: string) => {
@@ -108,28 +110,29 @@ const Header = () => {
           </Link>
           
           <div className="hidden md:ml-10 md:flex md:space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 ${
-                  isActive(item.href)
-                    ? 'text-cyan'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-            
-            {isInstallable && (
-              <button
-                className="flex items-center text-sm font-medium text-[#FF00D4] hover:text-white transition-colors duration-200"
-                onClick={handleDownloadClick}
-              >
-                <Download className="mr-1 h-4 w-4" />
-                <span>Download App</span>
-              </button>
+            {navigation.map((item) => 
+              item.isDownload ? (
+                <button
+                  key={item.name}
+                  className="flex items-center text-sm font-medium text-[#FF00D4] hover:text-white transition-colors duration-200"
+                  onClick={handleDownloadClick}
+                >
+                  <Download className="mr-1 h-4 w-4" />
+                  <span>{item.name}</span>
+                </button>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? 'text-cyan'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
             )}
           </div>
         </div>
@@ -177,31 +180,32 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive(item.href)
-                    ? 'text-cyan bg-charcoalPrimary/40'
-                    : 'text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white'
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            
-            {isInstallable && (
-              <button
-                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#FF00D4] hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleDownloadClick();
-                }}
-              >
-                Download App <Download className="h-4 w-4 inline ml-1" />
-              </button>
+            {navigation.map((item) => 
+              item.isDownload ? (
+                <button
+                  key={item.name}
+                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#FF00D4] hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleDownloadClick();
+                  }}
+                >
+                  {item.name} <Download className="h-4 w-4 inline ml-1" />
+                </button>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(item.href)
+                      ? 'text-cyan bg-charcoalPrimary/40'
+                      : 'text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
             )}
             
             {user ? (
