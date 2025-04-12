@@ -101,10 +101,15 @@ export const uploadBrokerImage = async (
 /**
  * Get the latest image URL for a broker by ID
  * With improved error handling and direct image URL testing
+ * @param brokerId The broker ID
+ * @param forceRefresh Whether to force refresh from database (ignore cache)
  */
-export const getBrokerImageUrl = async (brokerId: number): Promise<string | null> => {
+export const getBrokerImageUrl = async (
+  brokerId: number, 
+  forceRefresh: boolean = false
+): Promise<string | null> => {
   try {
-    console.log(`Fetching image URL for broker ${brokerId}`);
+    console.log(`Fetching image URL for broker ${brokerId}${forceRefresh ? ' (force refresh)' : ''}`);
     
     // Special case for Zerodha (broker ID 1)
     if (brokerId === 1) {
@@ -169,6 +174,9 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${bigulImage}?_t=${timestamp}`;
     }
     
+    // Get additional cache-busting seed from localStorage if available
+    const refreshSeed = localStorage.getItem('broker_image_refresh') || '';
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -185,8 +193,8 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       // Test if the image URL actually returns a valid image
       const timestamp = new Date().getTime();
       const urlWithCacheBust = imageData.image_url.includes('?') 
-        ? `${imageData.image_url}&_t=${timestamp}` 
-        : `${imageData.image_url}?_t=${timestamp}`;
+        ? `${imageData.image_url}&_t=${timestamp}&refresh=${refreshSeed}` 
+        : `${imageData.image_url}?_t=${timestamp}&refresh=${refreshSeed}`;
         
       console.log('Using image URL with cache busting:', urlWithCacheBust);
       return urlWithCacheBust;
@@ -204,8 +212,8 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       // Add cache busting parameter
       const timestamp = new Date().getTime();
       const urlWithCacheBust = profileImageData.includes('?') 
-        ? `${profileImageData}&_t=${timestamp}` 
-        : `${profileImageData}?_t=${timestamp}`;
+        ? `${profileImageData}&_t=${timestamp}&refresh=${refreshSeed}` 
+        : `${profileImageData}?_t=${timestamp}&refresh=${refreshSeed}`;
         
       return urlWithCacheBust;
     }
@@ -224,8 +232,8 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       // Add cache busting parameter
       const timestamp = new Date().getTime();
       const urlWithCacheBust = fallbackData.broker_image_url.includes('?') 
-        ? `${fallbackData.broker_image_url}&_t=${timestamp}` 
-        : `${fallbackData.broker_image_url}?_t=${timestamp}`;
+        ? `${fallbackData.broker_image_url}&_t=${timestamp}&refresh=${refreshSeed}` 
+        : `${fallbackData.broker_image_url}?_t=${timestamp}&refresh=${refreshSeed}`;
       
       return urlWithCacheBust;
     }
@@ -242,8 +250,8 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       // Add cache busting parameter
       const timestamp = new Date().getTime();
       const urlWithCacheBust = legacyImageData.includes('?') 
-        ? `${legacyImageData}&_t=${timestamp}` 
-        : `${legacyImageData}?_t=${timestamp}`;
+        ? `${legacyImageData}&_t=${timestamp}&refresh=${refreshSeed}` 
+        : `${legacyImageData}?_t=${timestamp}&refresh=${refreshSeed}`;
       
       return urlWithCacheBust;
     }
