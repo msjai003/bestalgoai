@@ -6,10 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, Download } from 'lucide-react';
 import { BeforeInstallPromptEvent } from '@/types/installation';
 import { toast } from 'sonner';
+import InstallButton from '@/components/install/InstallButton';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
   
@@ -29,17 +33,27 @@ const Header = () => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Store the event for later use
-      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.deferredInstallPrompt = promptEvent;
+      setDeferredPrompt(promptEvent);
       setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Check for iOS
+    // Check for iOS and Android
     const userAgent = navigator.userAgent || '';
     const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    const isAndroidDevice = /Android/.test(userAgent);
+    
+    setIsIOS(isIOSDevice);
+    setIsAndroid(isAndroidDevice);
     
     if (isIOSDevice && !isStandalone) {
+      setIsInstallable(true);
+    }
+
+    if (isAndroidDevice && !isStandalone) {
       setIsInstallable(true);
     }
 
@@ -47,6 +61,7 @@ const Header = () => {
     window.addEventListener('appinstalled', () => {
       // Clear the prompt
       window.deferredInstallPrompt = null;
+      setDeferredPrompt(null);
       setIsInstallable(false);
       // Show success message
       toast.success("App installed successfully!");
@@ -60,51 +75,6 @@ const Header = () => {
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-  };
-  
-  const handleInstallClick = async () => {
-    if (window.deferredInstallPrompt) {
-      try {
-        // Show the install prompt
-        await window.deferredInstallPrompt.prompt();
-        
-        // Wait for the user to respond to the prompt
-        const choiceResult = await window.deferredInstallPrompt.userChoice;
-        
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-          toast.success("Installation started! You'll find the app on your home screen soon.");
-        } else {
-          console.log('User dismissed the install prompt');
-          toast.info("Installation declined. You can install later if needed.");
-        }
-        
-        // Clear the saved prompt since it can't be used again
-        window.deferredInstallPrompt = null;
-      } catch (error) {
-        console.error('Error during installation:', error);
-        toast.error("Installation failed. Please try again.");
-      }
-    } else {
-      // For iOS or other platforms where the deferredInstallPrompt is not available
-      const userAgent = navigator.userAgent || '';
-      const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-      const isAndroidDevice = /Android/.test(userAgent);
-      
-      if (isIOSDevice) {
-        toast.info("To install: tap the share button and select 'Add to Home Screen'", {
-          duration: 5000
-        });
-      } else if (isAndroidDevice) {
-        toast.info("To install: tap the menu button and select 'Add to Home screen'", {
-          duration: 5000
-        });
-      } else {
-        toast.info("To install, use your browser's menu options to add this site to your home screen", {
-          duration: 5000
-        });
-      }
-    }
   };
   
   const navigation = [
@@ -143,20 +113,35 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {isInstallable && (
+              <button
+                className="flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200"
+                onClick={() => {
+                  if (window.showInstallPrompt) {
+                    window.showInstallPrompt();
+                  }
+                }}
+              >
+                <Download className="mr-1 h-4 w-4" />
+                <span>Download</span>
+              </button>
+            )}
           </div>
         </div>
         
         <div className="flex items-center space-x-2">
           {isInstallable && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-charcoalSecondary border-cyan/30 text-cyan rounded-full shadow-glow hover:bg-charcoalSecondary/80 hover:border-cyan/60"
-              onClick={handleInstallClick}
-              title="Install App"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+            <div className="hidden sm:block md:hidden">
+              <InstallButton 
+                isIOS={isIOS} 
+                isAndroid={isAndroid} 
+                deferredPrompt={deferredPrompt}
+                className="text-sm hover:text-white flex items-center"
+              >
+                <Download className="h-4 w-4 mr-1" /> Download
+              </InstallButton>
+            </div>
           )}
           
           {user ? (
@@ -206,15 +191,15 @@ const Header = () => {
             ))}
             
             {isInstallable && (
-              <button
-                className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white"
-                onClick={() => {
-                  handleInstallClick();
-                  setMobileMenuOpen(false);
-                }}
+              <InstallButton 
+                isIOS={isIOS} 
+                isAndroid={isAndroid} 
+                deferredPrompt={deferredPrompt}
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                Install App <Download className="h-4 w-4 inline ml-1" />
-              </button>
+                Download <Download className="h-4 w-4 inline ml-1" />
+              </InstallButton>
             )}
             
             {user ? (

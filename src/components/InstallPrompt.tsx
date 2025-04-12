@@ -12,6 +12,7 @@ import InstallButton from './install/InstallButton';
 // Save a global reference to the deferredPrompt for use by other components
 declare global {
   interface Window {
+    deferredInstallPrompt: BeforeInstallPromptEvent | null;
     showInstallPrompt: () => void;
   }
 }
@@ -21,6 +22,7 @@ const InstallPrompt = () => {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // Check for various platform types
@@ -46,7 +48,9 @@ const InstallPrompt = () => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Store the event for later use
-      window.deferredInstallPrompt = e as BeforeInstallPromptEvent;
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.deferredInstallPrompt = promptEvent;
+      setDeferredPrompt(promptEvent);
       setIsInstallable(true);
     };
 
@@ -60,7 +64,7 @@ const InstallPrompt = () => {
     // Create a global function to show the install prompt
     window.showInstallPrompt = () => {
       const installPromptDismissed = localStorage.getItem('installPromptDismissed');
-      if (!installPromptDismissed && isInstallable) {
+      if (!installPromptDismissed || isInstallable) {
         setShowPrompt(true);
       } else {
         toast.info("You've previously dismissed the install prompt. The app is still available to install.");
@@ -71,6 +75,7 @@ const InstallPrompt = () => {
     window.addEventListener('appinstalled', () => {
       // Clear the prompt
       window.deferredInstallPrompt = null;
+      setDeferredPrompt(null);
       setShowPrompt(false);
       setIsInstallable(false);
       // Show success message
@@ -81,7 +86,7 @@ const InstallPrompt = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', () => {});
     };
-  }, [isInstallable]);
+  }, []);
 
   const dismissPrompt = () => {
     setShowPrompt(false);
@@ -93,7 +98,7 @@ const InstallPrompt = () => {
     });
   };
 
-  if (!showPrompt || !isInstallable) return null;
+  if (!showPrompt) return null;
 
   return (
     <div className="fixed bottom-20 left-4 right-4 bg-gradient-to-r from-gray-800/95 to-gray-900/95 backdrop-blur-lg border border-purple-700 rounded-xl p-4 shadow-lg z-50 animate-in fade-in duration-300">
