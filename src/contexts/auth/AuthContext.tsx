@@ -68,8 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signOut: async () => {
+      // Remove the toast notification after logout
       await signOut();
-      toast.info("You have been logged out.");
+      // No toast message here
     },
     resetPassword,
     updatePassword: async (newPassword) => {

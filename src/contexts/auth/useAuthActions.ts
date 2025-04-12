@@ -233,7 +233,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         
         if (error) {
           console.error('Error during sign out:', error);
-          toast.error(error.message);
+          // Removed toast notification for error during sign out
         }
       } else {
         console.log('No active session found, clearing local user state');

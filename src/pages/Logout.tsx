@@ -13,7 +13,7 @@ const Logout = () => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // Sign out without showing a toast notification
+        // Sign out without showing any toast notification
         await signOut();
         // We won't redirect here - we'll just show the UI below
       } catch (error) {
