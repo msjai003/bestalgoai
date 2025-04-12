@@ -140,6 +140,15 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return `${hdfcSecuritiesImage}?_t=${timestamp}`;
     }
     
+    // Special case for Groww (broker ID 6)
+    if (brokerId === 6) {
+      const growwImage = "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png";
+      console.log("Using custom Groww logo:", growwImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${growwImage}?_t=${timestamp}`;
+    }
+    
     // First try direct query to broker_profile_images - most reliable
     const { data: imageData, error: imageError } = await supabase
       .from('broker_profile_images')
@@ -244,6 +253,11 @@ export const getBrokerImageUrl = async (brokerId: number): Promise<string | null
       return "/lovable-uploads/22134556-ddbb-46aa-b837-cc1b1e3a6260.png?_t=" + new Date().getTime();
     }
     
+    // Special case for Groww when there's an error
+    if (brokerId === 6) {
+      return "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -324,7 +338,7 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
     case 5: // Upstox
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg";
     case 6: // Groww
-      return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg";
+      return "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png";
     case 7: // 5 Paisa
       return "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg";
     case 8: // Bigul

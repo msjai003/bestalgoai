@@ -61,7 +61,7 @@ export const brokers: Broker[] = [
   {
     id: 6,
     name: "Groww",
-    logo: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg",
+    logo: "/lovable-uploads/65c8e983-a72d-472b-9f46-caad015f5cf4.png",
     description: "User-friendly investment platform for stocks, mutual funds & more",
     supportedAssets: ["Stocks", "Mutual Funds", "ETFs", "US Stocks"],
     fees: "₹20 per order for intraday and F&O",
