@@ -1,59 +1,38 @@
 
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Logout = () => {
+  const navigate = useNavigate();
   const { signOut } = useAuth();
 
   useEffect(() => {
-    const performLogout = async () => {
+    const handleLogout = async () => {
       try {
+        // Let AuthContext handle the toast, don't show one here
         await signOut();
-        // We don't show any toast notifications here anymore
+        // Redirect to home page after logout
+        navigate('/');
       } catch (error) {
         console.error("Logout error:", error);
+        // Even if there's an error, redirect to home
+        navigate('/');
       }
     };
-    
-    performLogout();
-  }, [signOut]);
 
-  const handleGoHome = () => {
-    window.location.href = '/';
-  };
+    handleLogout();
+  }, [navigate, signOut]);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <div className="max-w-md w-full bg-gray-800/70 p-8 shadow-2xl backdrop-blur-lg border border-gray-700/50 rounded-xl">
-        <div className="relative mx-auto mb-6 w-16 h-16 flex items-center justify-center">
-          <div className="text-green-400 animate-scale-in">
-            <CheckCircle className="h-12 w-12" />
-          </div>
+    <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center text-white">
+      <div className="text-center premium-card p-8 shadow-xl backdrop-blur-md">
+        <div className="relative mx-auto mb-6 w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-cyan/20 animate-pulse"></div>
+          <div className="absolute inset-0 rounded-full border-t-4 border-cyan animate-spin"></div>
         </div>
-        
-        <h1 className="text-2xl font-bold text-center text-white mb-4">
-          Successfully Signed Out
-        </h1>
-        
-        <Alert className="bg-gray-700/70 border-l-4 border-green-500 border-gray-600/50 shadow-md mb-4 animate-fade-in">
-          <AlertTitle className="text-white font-medium flex items-center gap-2">
-            Session Ended
-          </AlertTitle>
-          <AlertDescription className="text-gray-300 mt-1">
-            You have been securely logged out.
-          </AlertDescription>
-        </Alert>
-        
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleGoHome}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
-          >
-            Return to Home
-          </button>
-        </div>
+        <h1 className="text-xl font-medium gradient-text mb-2">Logging out...</h1>
+        <p className="text-gray-400 mt-2">Please wait while we sign you out.</p>
       </div>
     </div>
   );
