@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -104,7 +105,7 @@ const Header = () => {
               item.isDownload ? (
                 <button
                   key={item.name}
-                  className="flex items-center text-sm font-medium text-[#FF00D4] hover:text-white transition-colors duration-200"
+                  className="flex items-center text-sm font-medium text-cyan hover:text-white transition-colors duration-200"
                   onClick={handleDownloadClick}
                 >
                   <Download className="mr-1 h-4 w-4" />
@@ -162,7 +163,7 @@ const Header = () => {
               item.isDownload ? (
                 <button
                   key={item.name}
-                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#FF00D4] hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
+                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-cyan hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     handleDownloadClick();
