@@ -1,8 +1,7 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, CheckCircle } from "lucide-react";
+import { LogOut, CheckCircle, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Logout = () => {
@@ -11,39 +10,50 @@ const Logout = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(true);
   const [countdown, setCountdown] = useState(3);
   const [error, setError] = useState<string | null>(null);
+  
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimers = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    let countdownTimer: NodeJS.Timeout;
-    
     const handleLogout = async () => {
       try {
         setIsLoggingOut(true);
         
-        // Perform the sign out operation
+        clearTimers();
+        
         await signOut();
         
-        // Signal success
         setIsLoggingOut(false);
         
-        // Start countdown before redirect
         let seconds = 3;
         setCountdown(seconds);
         
-        countdownTimer = setInterval(() => {
+        countdownTimerRef.current = setInterval(() => {
           seconds -= 1;
           setCountdown(seconds);
           
           if (seconds <= 0) {
-            clearInterval(countdownTimer);
-            // Use a timeout to ensure the state updates before navigation
-            timer = setTimeout(() => {
-              navigate('/');
-            }, 100);
+            clearTimers();
+            timerRef.current = setTimeout(() => {
+              window.location.href = '/';
+            }, 200);
           }
         }, 1000);
       } catch (error) {
         console.error("Logout error:", error);
+        clearTimers();
         setError("There was a problem signing out. Please try again.");
         setIsLoggingOut(false);
       }
@@ -51,15 +61,14 @@ const Logout = () => {
 
     handleLogout();
 
-    // Clean up all timers to prevent memory leaks
     return () => {
-      clearTimeout(timer);
-      clearInterval(countdownTimer);
+      clearTimers();
     };
-  }, [navigate, signOut]);
+  }, [signOut]);
 
   const handleManualRedirect = () => {
-    navigate('/');
+    clearTimers();
+    window.location.href = '/';
   };
 
   return (
@@ -74,7 +83,7 @@ const Logout = () => {
             </>
           ) : error ? (
             <div className="text-amber-400">
-              <LogOut className="h-12 w-12" />
+              <AlertTriangle className="h-12 w-12" />
             </div>
           ) : (
             <div className="text-green-400 animate-scale-in">
@@ -142,7 +151,14 @@ const Logout = () => {
             >
               Return to Home
             </button>
-          ) : null}
+          ) : (
+            <button
+              onClick={handleManualRedirect}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
+            >
+              Go to Home Now
+            </button>
+          )}
         </div>
       </div>
     </div>
