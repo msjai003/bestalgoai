@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const alertVariants = cva(
-  "relative w-full rounded-xl border-2 p-5 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-white shadow-lg",
+  "relative w-full rounded-xl border p-5 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-white shadow-lg",
   {
     variants: {
       variant: {
-        default: "bg-cyan text-white border-white/20",
+        default: "bg-cyan/10 text-white border-cyan/30",
         destructive:
-          "bg-charcoalDanger text-white border-white/20",
+          "bg-charcoalDanger/10 text-white border-charcoalDanger/30",
         success: 
-          "bg-cyan text-white border-white/20",
+          "bg-green-500/10 text-white border-green-500/30",
         info: 
-          "bg-cyan text-white border-white/20",
+          "bg-blue-500/10 text-white border-blue-500/30",
       },
     },
     defaultVariants: {
@@ -55,7 +55,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed text-white", className)}
+    className={cn("text-sm [&_p]:leading-relaxed text-gray-300", className)}
     {...props}
   />
 ))

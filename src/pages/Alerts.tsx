@@ -176,11 +176,11 @@ const Alerts = () => {
             {notifications.map((notification, index) => (
               <div
                 key={notification.id}
-                className="p-4 rounded-xl bg-charcoalSecondary border border-gray-700/50 shadow-lg"
+                className="p-5 rounded-xl bg-charcoalSecondary border border-gray-700/50 shadow-lg"
               >
                 <div className="flex items-start gap-4">
-                  <div className={cn("p-3 rounded-lg", notification.iconBgColor, notification.iconColor)}>
-                    <i className={`fa-solid ${notification.icon}`}></i>
+                  <div className={cn("p-3 rounded-lg flex items-center justify-center", notification.iconBgColor, notification.iconColor)}>
+                    <i className={`fa-solid ${notification.icon} text-lg`}></i>
                   </div>
                   <div className="flex-1">
                     <h3 className="text-white font-medium">{notification.title}</h3>
@@ -189,7 +189,7 @@ const Alerts = () => {
                   </div>
                 </div>
                 {index < notifications.length - 1 && (
-                  <div className="border-t border-gray-700/30 mt-4 pt-1"></div>
+                  <div className="border-t border-gray-700/30 mt-4 pt-2"></div>
                 )}
               </div>
             ))}

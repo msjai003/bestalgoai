@@ -17,7 +17,7 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
   }).format(currentValue);
 
   return (
-    <section id="portfolio-overview" className="mt-4 mb-8">
+    <section id="portfolio-overview" className="mt-6 mb-8">
       <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -28,7 +28,7 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
             variant="logout"
             size="sm"
             asChild
-            className="text-charcoalPrimary px-5"
+            className="text-charcoalPrimary px-5 ml-auto"
           >
             <Link to="/subscription">Upgrade</Link>
           </Button>
@@ -39,11 +39,11 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
         <div className="flex justify-between text-sm mt-8">
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <p className="text-gray-400 mb-2">Today's P&L</p>
-            <p className="text-emerald-400 font-medium">+₹24,500</p>
+            <p className="text-emerald-400 font-medium text-lg">+₹24,500</p>
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <p className="text-gray-400 mb-2">Overall P&L</p>
-            <p className="text-emerald-400 font-medium">+₹1,45,500</p>
+            <p className="text-emerald-400 font-medium text-lg">+₹1,45,500</p>
           </div>
         </div>
       </div>

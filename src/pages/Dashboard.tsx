@@ -78,7 +78,7 @@ const Dashboard = () => {
         {/* Dashboard Metrics */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {dashboardMetrics.map((metric, index) => (
-            <div key={index} className="metric-card fade-in" style={{animationDelay: `${index * 0.1}s`}}>
+            <div key={index} className="bg-charcoalSecondary p-4 rounded-xl border border-gray-800/40 shadow-sm fade-in" style={{animationDelay: `${index * 0.1}s`}}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-400 text-xs">{metric.title}</span>
                 {metric.icon}
@@ -97,7 +97,7 @@ const Dashboard = () => {
         <div className="fixed bottom-24 right-6 z-40">
           <Button
             onClick={handleStartNewStrategy}
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20 hover-scale active-scale"
+            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20 hover:scale-105 active:scale-95 transition-all"
             aria-label="Start New Strategy"
           >
             <Plus className="h-6 w-6" />

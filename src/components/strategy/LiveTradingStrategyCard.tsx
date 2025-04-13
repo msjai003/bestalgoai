@@ -36,7 +36,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
   
   return (
-    <div className="strategy-card">
+    <div className="bg-charcoalSecondary rounded-xl p-5 border border-gray-800/40 shadow-lg relative overflow-hidden hover:border-gray-700/60 transition-all duration-300">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
@@ -49,18 +49,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-5">
-          <div className="metric-card">
+          <div className="bg-charcoalPrimary/60 p-4 rounded-lg">
             <p className="text-gray-400 text-xs mb-1">Current P&L</p>
             <p className="text-emerald-400 text-lg font-semibold">{strategy.pnl || "+₹0"}</p>
           </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="metric-card cursor-pointer transition-all duration-300 hover:bg-gray-800/60" onClick={onViewDetails}>
+                <div className="bg-charcoalPrimary/60 p-4 rounded-lg cursor-pointer transition-all duration-300 hover:bg-gray-800/60" onClick={onViewDetails}>
                   <p className="text-gray-400 text-xs mb-1">Success Rate</p>
                   <div className="flex items-center">
                     <p className="text-white text-lg font-semibold">{strategy.successRate || strategy.performance?.winRate || "N/A"}</p>
-                    <BarChart2 className="w-4 h-4 text-gray-400 ml-1 cursor-pointer pointer-events-auto" />
+                    <BarChart2 className="w-4 h-4 text-gray-400 ml-2" />
                   </div>
                 </div>
               </TooltipTrigger>
@@ -79,16 +79,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-gray-400 hover:text-white p-1 h-auto glass hover:bg-gray-700/50 cursor-pointer"
+                className="text-gray-400 hover:text-white p-1 h-auto hover:bg-gray-700/50"
                 onClick={onEditQuantity}
               >
-                <Settings className="w-4 h-4 cursor-pointer pointer-events-auto" />
+                <Settings className="w-4 h-4" />
               </Button>
             </div>
           </div>
           
           {strategy.selectedBroker && (
-            <div className="glass-card p-3 rounded-lg mb-3">
+            <div className="bg-charcoalPrimary/60 p-3 rounded-lg mb-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-gray-300 text-sm">Broker</span>
                 <span className="text-white font-medium">{strategy.selectedBroker}</span>
@@ -139,7 +139,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 onClick={onToggleLiveMode}
                 className={`min-w-[112px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
               >
-                <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
+                <Power className="h-3.5 w-3.5" />
                 {buttonText}
               </Button>
             </div>
@@ -148,10 +148,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             variant="outline"
             size="sm"
             onClick={onViewDetails}
-            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 glass-card cursor-pointer ml-auto"
+            className="text-cyan bg-gray-800/50 border-gray-700 hover:bg-gray-700 hover:text-cyan md:flex-grow-0 ml-auto"
           >
             View Details
-            <ChevronRight className="ml-1 h-4 w-4 cursor-pointer pointer-events-auto" />
+            <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
       </div>
