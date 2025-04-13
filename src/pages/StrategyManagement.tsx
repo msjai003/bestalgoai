@@ -66,7 +66,7 @@ const StrategyManagement = () => {
             onClick={() => navigate('/strategy-selection')}
             variant="outline" 
             size="sm"
-            className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90 ml-auto"
+            className="ml-auto"
           >
             <Plus className="h-4 w-4 mr-1" />
             Add Strategy

@@ -25,10 +25,10 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
             <p className="text-2xl font-bold text-white">{formattedValue}</p>
           </div>
           <Button 
-            variant="logout"
+            variant="default"
             size="sm"
             asChild
-            className="text-charcoalPrimary px-5 ml-auto"
+            className="text-white"
           >
             <Link to="/subscription">Upgrade</Link>
           </Button>

@@ -7,7 +7,7 @@ export const QuickAccessSection = () => {
   return (
     <section className="mt-8">
       <h2 className="text-xl font-semibold text-white mb-5">Quick Access</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <QuickAccessItem
           icon={TrendingUp}
           text="Trading"

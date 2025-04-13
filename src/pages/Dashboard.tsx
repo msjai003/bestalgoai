@@ -97,7 +97,7 @@ const Dashboard = () => {
         <div className="fixed bottom-24 right-6 z-40">
           <Button
             onClick={handleStartNewStrategy}
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20 hover:scale-105 active:scale-95 transition-all"
+            variant="fab"
             aria-label="Start New Strategy"
           >
             <Plus className="h-6 w-6" />

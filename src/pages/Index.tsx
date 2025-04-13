@@ -100,7 +100,7 @@ const Index = () => {
                     window.showInstallPrompt();
                   }
                 }}
-                className="bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white rounded-2xl shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity w-16 h-16"
+                variant="fab"
                 aria-label="Download App"
               >
                 <InstallButton 
@@ -109,7 +109,7 @@ const Index = () => {
                   deferredPrompt={deferredPrompt}
                   className="w-full h-full flex items-center justify-center"
                 >
-                  <Download className="h-8 w-8" />
+                  <Download className="h-6 w-6" />
                 </InstallButton>
               </Button>
             </div>
@@ -121,7 +121,9 @@ const Index = () => {
             <div className="text-center mb-16 mt-10">
               <Button 
                 onClick={handleGetStarted}
-                className="bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary px-8 py-6 rounded-lg font-semibold text-lg"
+                variant="default"
+                size="lg"
+                className="px-8 py-6 font-semibold text-lg"
               >
                 Get Started Now
                 <ArrowRight className="ml-2 h-5 w-5" />
