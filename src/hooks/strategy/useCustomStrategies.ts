@@ -65,9 +65,10 @@ export const useCustomStrategies = () => {
               winRate,
               profitFactor: "N/A",
               avgProfit,
-              avgLoss: "N/A"
+              avgLoss: "N/A",
+              drawdown
             }
-          };
+          } as Strategy; // Explicitly cast the return value to Strategy
         });
 
         setCustomStrategies(formattedStrategies);
