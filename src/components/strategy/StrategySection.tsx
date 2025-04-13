@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,7 +32,6 @@ export const StrategySection = ({
 
   // Helper function to determine if a strategy is premium based on its ID
   const isPremiumStrategy = (strategyId: number | string) => {
-    // Use the same logic as in StrategyCard component
     return Number(strategyId) > 1;
   };
 
@@ -70,12 +68,12 @@ export const StrategySection = ({
         </div>
         {actionButtonText && (
           <Button 
-            variant="outline"
+            variant="default"
             size="sm"
-            className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90 cursor-pointer transition-all duration-300"
+            className="shadow-md"
             onClick={() => navigate(actionButtonPath)}
           >
-            <Plus className="h-4 w-4 mr-1.5 text-cyan" />
+            <Plus className="h-4 w-4 mr-1.5" />
             {actionButtonText}
           </Button>
         )}
@@ -92,10 +90,10 @@ export const StrategySection = ({
             {title !== "Predefined Strategies" && showEmptyStateButton && actionButtonText && actionButtonPath && (
               <Button 
                 onClick={() => navigate(actionButtonPath)}
-                variant="outline"
-                className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90 cursor-pointer transition-all duration-300"
+                variant="default"
+                className="shadow-md"
               >
-                <Plus className="h-4 w-4 mr-1.5 text-cyan" />
+                <Plus className="h-4 w-4 mr-1.5" />
                 Browse Strategies
               </Button>
             )}

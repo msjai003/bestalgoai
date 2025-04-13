@@ -11,13 +11,11 @@ import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategie
 import { ChartBar, Briefcase, CheckCircle, Plus } from "lucide-react";
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { TradingModeFilter } from "@/components/strategy/TradingModeFilter";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("live");
-  const [tradingMode, setTradingMode] = useState<"all" | "live" | "paper">("all");
   const { data: predefinedStrategies } = usePredefinedStrategies();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<{ id: number, name: string } | null>(null);
@@ -28,9 +26,9 @@ const StrategyManagement = () => {
     handleToggleLiveMode
   } = useStrategy(predefinedStrategies || []);
   
-  // Filter strategies based on their tradeType and trading mode
-  const liveStrategies = strategies.filter(s => s.isLive === true && (tradingMode === "all" || (tradingMode === "live" && s.isLive) || (tradingMode === "paper" && !s.isLive)));
-  const paperStrategies = strategies.filter(s => s.isLive === false && s.tradeType !== 'completed' && (tradingMode === "all" || (tradingMode === "live" && s.isLive) || (tradingMode === "paper" && !s.isLive)));
+  // Filter strategies based on their tradeType
+  const liveStrategies = strategies.filter(s => s.isLive === true);
+  const paperStrategies = strategies.filter(s => s.isLive === false && s.tradeType !== 'completed');
   const completedStrategies = strategies.filter(s => s.tradeType === 'completed');
 
   // Create a delete strategy handler function
@@ -64,7 +62,7 @@ const StrategyManagement = () => {
           <h1 className="section-title">Strategy Management</h1>
           <Button 
             onClick={() => navigate('/strategy-selection')}
-            variant="outline" 
+            variant="default" 
             size="sm"
             className="ml-auto"
           >
@@ -84,17 +82,8 @@ const StrategyManagement = () => {
           size="md"
           variant="primary"
           fullWidth
-          className="mb-5"
+          className="mb-8" // Increased spacing between tabs and content
         />
-        
-        {activeTab !== "completed" && (
-          <div className="mb-6">
-            <TradingModeFilter
-              selectedMode={tradingMode}
-              onModeChange={setTradingMode}
-            />
-          </div>
-        )}
         
         <div className="content-container">
           {activeTab === "live" && (
