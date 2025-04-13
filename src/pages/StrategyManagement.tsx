@@ -10,12 +10,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { ChartBar, Briefcase, CheckCircle, Plus } from "lucide-react";
+import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("live");
   const { data: predefinedStrategies } = usePredefinedStrategies();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [strategyToDelete, setStrategyToDelete] = useState<{ id: number, name: string } | null>(null);
   
   const {
     strategies,
@@ -27,6 +30,30 @@ const StrategyManagement = () => {
   const liveStrategies = strategies.filter(s => s.isLive === true);
   const paperStrategies = strategies.filter(s => s.isLive === false && s.tradeType !== 'completed');
   const completedStrategies = strategies.filter(s => s.tradeType === 'completed');
+
+  // Create a delete strategy handler function
+  const handleDeleteStrategy = (id: number) => {
+    const strategy = strategies.find(s => s.id === id);
+    if (strategy) {
+      setStrategyToDelete({ id, name: strategy.name });
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  // Function to actually delete the strategy after confirmation
+  const confirmDeleteStrategy = async () => {
+    if (strategyToDelete) {
+      try {
+        // In a real app, you would call an API to delete the strategy
+        // For now, we'll just close the dialog
+        console.log(`Strategy ${strategyToDelete.id} deleted`);
+        setDeleteDialogOpen(false);
+        setStrategyToDelete(null);
+      } catch (error) {
+        console.error("Error deleting strategy:", error);
+      }
+    }
+  };
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
@@ -78,6 +105,7 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any live trading strategies yet."
               actionButtonText="Add Strategy"
               actionButtonPath="/strategy-selection"
+              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
           </TabsContent>
@@ -90,6 +118,7 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any paper trading strategies yet."
               actionButtonText="Add Strategy"
               actionButtonPath="/strategy-selection"
+              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
           </TabsContent>
@@ -102,12 +131,25 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any completed strategies yet."
               actionButtonText=""
               actionButtonPath=""
+              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
               showEmptyStateButton={false}
             />
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Delete Confirmation Dialog */}
+      {strategyToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          strategyName={strategyToDelete.name}
+          onConfirm={confirmDeleteStrategy}
+          onCancel={() => setDeleteDialogOpen(false)}
+        />
+      )}
+      
       <BottomNav />
     </div>
   );
