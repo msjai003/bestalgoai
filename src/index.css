@@ -58,6 +58,57 @@
     margin: 2rem; /* 32px */
   }
   
+  /* Padding utilities */
+  .p-8 {
+    padding: 8px;
+  }
+  
+  .p-16 {
+    padding: 16px;
+  }
+  
+  .p-24 {
+    padding: 24px;
+  }
+  
+  .p-32 {
+    padding: 32px;
+  }
+  
+  /* Margin utilities */
+  .m-8 {
+    margin: 8px;
+  }
+  
+  .m-16 {
+    margin: 16px;
+  }
+  
+  .m-24 {
+    margin: 24px;
+  }
+  
+  .m-32 {
+    margin: 32px;
+  }
+  
+  /* Gap utilities */
+  .gap-8 {
+    gap: 8px;
+  }
+  
+  .gap-16 {
+    gap: 16px;
+  }
+  
+  .gap-24 {
+    gap: 24px;
+  }
+  
+  .gap-32 {
+    gap: 32px;
+  }
+  
   /* Grid system for alignment */
   .grid-8 {
     display: grid;
@@ -116,6 +167,19 @@
       opacity: 1;
     }
   }
+  
+  /* Accessibility utilities */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 }
 
 @layer components {
@@ -161,7 +225,7 @@
   }
   
   .metric-card {
-    @apply glass-card p-3 rounded-lg;
+    @apply glass-card p-4 rounded-lg;
   }
   
   /* Status indicators */
@@ -214,5 +278,35 @@
   
   .content-container {
     @apply flex-1 overflow-auto scrollbar-none pb-2;
+  }
+  
+  /* Typography system */
+  .text-heading {
+    @apply text-xl md:text-2xl font-bold text-white;
+  }
+  
+  .text-subheading {
+    @apply text-lg font-semibold text-white;
+  }
+  
+  .text-body {
+    @apply text-base text-gray-200;
+  }
+  
+  .text-caption {
+    @apply text-sm text-gray-400;
+  }
+  
+  .text-small {
+    @apply text-xs text-gray-400;
+  }
+  
+  /* Dividers */
+  .divider {
+    @apply w-full h-px bg-gray-800/50 my-4;
+  }
+  
+  .divider-vertical {
+    @apply h-full w-px bg-gray-800/50 mx-4;
   }
 }

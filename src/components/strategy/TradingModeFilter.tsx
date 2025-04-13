@@ -30,7 +30,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         variant="ghost"
         onClick={() => onModeChange("live")}
         className={cn(
-          "flex-1 rounded-md text-sm font-medium transition-all",
+          "flex-1 rounded-md text-sm font-medium transition-all mx-1",
           selectedMode === "live" 
             ? "bg-emerald-500 text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"

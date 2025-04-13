@@ -47,7 +47,6 @@ const StrategyManagement = () => {
     if (strategyToDelete) {
       try {
         // In a real app, you would call an API to delete the strategy
-        // For now, we'll just close the dialog
         console.log(`Strategy ${strategyToDelete.id} deleted`);
         setDeleteDialogOpen(false);
         setStrategyToDelete(null);
@@ -60,8 +59,8 @@ const StrategyManagement = () => {
   return (
     <div className="main-container">
       <Header />
-      <main className="page-container">
-        <div className="section-header">
+      <main className="page-container pb-24">
+        <div className="section-header mb-6">
           <h1 className="section-title">Strategy Management</h1>
           <Button 
             onClick={() => navigate('/strategy-selection')}
@@ -85,11 +84,11 @@ const StrategyManagement = () => {
           size="md"
           variant="primary"
           fullWidth
-          className="mb-4"
+          className="mb-5"
         />
         
         {activeTab !== "completed" && (
-          <div className="mb-4">
+          <div className="mb-6">
             <TradingModeFilter
               selectedMode={tradingMode}
               onModeChange={setTradingMode}

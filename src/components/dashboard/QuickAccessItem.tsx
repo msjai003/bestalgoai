@@ -15,8 +15,8 @@ interface QuickAccessItemProps {
 const QuickAccessItem = ({ icon: Icon, text, route, className, onClick }: QuickAccessItemProps) => {
   return (
     <Link to={route} className={cn("block", className)} onClick={onClick}>
-      <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
-        <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
+      <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all h-full">
+        <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3 flex-shrink-0">
           <Icon className="h-5 w-5 text-cyan" />
         </div>
         <span className="text-gray-200">{text}</span>

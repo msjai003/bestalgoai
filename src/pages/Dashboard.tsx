@@ -64,7 +64,7 @@ const Dashboard = () => {
     navigate('/strategy-selection');
   };
 
-  // Mock data for the dashboard metrics
+  // Dashboard metrics with improved styling
   const dashboardMetrics = [
     { title: "Daily P&L", value: "+₹12,450", change: "+2.3%", icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, color: "text-emerald-400" },
     { title: "Capital Used", value: "₹3,25,000", change: "65%", icon: <Wallet className="h-5 w-5 text-cyan" />, color: "text-white" },
@@ -74,12 +74,12 @@ const Dashboard = () => {
   return (
     <div className="main-container">
       <Header />
-      <main className="page-container">
+      <main className="page-container pb-24">
         {/* Dashboard Metrics */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {dashboardMetrics.map((metric, index) => (
             <div key={index} className="metric-card fade-in" style={{animationDelay: `${index * 0.1}s`}}>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-400 text-xs">{metric.title}</span>
                 {metric.icon}
               </div>
