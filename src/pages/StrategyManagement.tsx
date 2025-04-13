@@ -20,14 +20,13 @@ const StrategyManagement = () => {
   const {
     strategies,
     isLoading,
-    handleDeleteStrategy,
     handleToggleLiveMode
   } = useStrategy(predefinedStrategies || []);
   
-  // Filter strategies based on their status
+  // Filter strategies based on their isLive property
   const liveStrategies = strategies.filter(s => s.isLive === true);
-  const paperStrategies = strategies.filter(s => s.isLive === false && s.status !== 'completed');
-  const completedStrategies = strategies.filter(s => s.status === 'completed');
+  const paperStrategies = strategies.filter(s => s.isLive === false && s.tradeType !== 'completed');
+  const completedStrategies = strategies.filter(s => s.tradeType === 'completed');
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
@@ -79,7 +78,6 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any live trading strategies yet."
               actionButtonText="Add Strategy"
               actionButtonPath="/strategy-selection"
-              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
           </TabsContent>
@@ -92,7 +90,6 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any paper trading strategies yet."
               actionButtonText="Add Strategy"
               actionButtonPath="/strategy-selection"
-              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
           </TabsContent>
@@ -105,7 +102,6 @@ const StrategyManagement = () => {
               emptyMessage="You don't have any completed strategies yet."
               actionButtonText=""
               actionButtonPath=""
-              onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
               showEmptyStateButton={false}
             />

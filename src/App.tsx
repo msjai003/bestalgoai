@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -64,13 +63,15 @@ function AppRoutes() {
       
       if (session?.session?.user) {
         try {
+          // Check if the user exists in user_profiles
           const { data, error } = await supabase
             .from('user_profiles')
-            .select('has_completed_onboarding')
+            .select('*')
             .eq('id', session.session.user.id)
             .maybeSingle();
             
-          setIsFirstTimeUser(data?.has_completed_onboarding !== true);
+          // If there's no explicit flag for onboarding, we'll just check if the user exists
+          setIsFirstTimeUser(data === null);
         } catch (error) {
           console.error('Error checking onboarding status:', error);
           setIsFirstTimeUser(false); // Default to false if error
