@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +15,6 @@ import {
 } from "./strategy/useStrategyWishlist";
 import { saveStrategyConfiguration } from "./strategy/useStrategyConfiguration";
 import { supabase } from "@/integrations/supabase/client";
-import { TradeType } from "@/types/strategy";
 
 export type { Strategy } from "./strategy/types";
 
@@ -175,11 +175,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     setStrategies(prev => 
       prev.map(strategy => {
         if (strategy.id === id) {
-          const newTradeType: TradeType = isLive ? "live trade" : "paper";
           return { 
             ...strategy, 
             isLive,
-            tradeType: newTradeType
+            tradeType: isLive ? "live trade" : "paper"
           };
         }
         return strategy;
@@ -322,15 +321,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         
         const uniqueId = `${selectedStrategyId}-${brokerName}-${brokerUsername}`;
         
-        const tradeTypeValue: TradeType = "live trade";
-        
-        const newStrategy: Strategy = { 
+        const newStrategy = { 
           ...strategy, 
           isLive: true,
           quantity: pendingQuantity, 
           selectedBroker: brokerName,
           brokerUsername: brokerUsername,
-          tradeType: tradeTypeValue,
+          tradeType: "live trade",
           uniqueId: uniqueId
         };
         

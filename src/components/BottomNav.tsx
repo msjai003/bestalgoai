@@ -1,9 +1,11 @@
 
 import { Link, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export const BottomNav = () => {
   const location = useLocation();
+  const { toast } = useToast();
 
   return (
     <nav className="fixed bottom-0 w-full z-50 pb-safe">
@@ -18,29 +20,29 @@ export const BottomNav = () => {
           
           <NavItem 
             to="/strategy-management" 
-            icon="fa-chart-line" 
-            label="Strategies" 
-            isActive={location.pathname.includes('/strategy')}
+            icon="fa-heart" 
+            label="Wishlist" 
+            isActive={location.pathname === '/strategy-management'}
           />
           
           <NavItem 
             to="/classes" 
             icon="fa-graduation-cap" 
-            label="Learn" 
-            isActive={location.pathname === '/classes' || location.pathname === '/education'}
+            label="Classes" 
+            isActive={location.pathname === '/classes'}
           />
           
           <NavItem 
-            to="/alerts" 
-            icon="fa-bell" 
-            label="Alerts" 
-            isActive={location.pathname === '/alerts'}
+            to="/live-trading" 
+            icon="fa-chart-line" 
+            label="Trading" 
+            isActive={location.pathname === '/live-trading'}
           />
           
           <NavItem 
             to="/settings" 
             icon="fa-gear" 
-            label="Account" 
+            label="Settings" 
             isActive={location.pathname === '/settings'}
           />
         </div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,7 +5,6 @@ import { RegistrationData, RegistrationState } from '@/types/registration';
 import { getBrowserInfo } from '@/utils/browserUtils';
 import { registerUser, testRegistrationConnection } from '@/services/registrationService';
 import { supabase } from '@/integrations/supabase/client';
-import { sendWelcomeEmail } from '@/contexts/auth/utils';
 
 // Initial registration data
 const initialFormData: RegistrationData = {
@@ -79,9 +77,6 @@ export const useRegistration = () => {
       } else {
         console.error("Failed to send welcome SMS:", data.error);
       }
-      
-      // Now also send welcome email using the new function
-      await sendWelcomeEmail(userId, fullName);
     } catch (error) {
       console.error("Exception sending welcome SMS:", error);
     }

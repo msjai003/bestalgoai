@@ -1,35 +1,45 @@
 
-// Add the TradeType import if it's not already there
-import { TradeType } from "@/types/strategy";
+export interface Strategy {
+  id: number;
+  uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
+  rowId?: string; // Add rowId to store the actual database row ID
+  name: string;
+  description: string;
+  performance: {
+    winRate: string;
+    avgProfit: string;
+    drawdown: string;
+  };
+  isWishlisted: boolean;
+  isLive: boolean;
+  quantity: number;
+  selectedBroker?: string;
+  brokerUsername?: string;
+  tradeType?: string;
+  pnl?: string;
+  successRate?: string;
+  isPremium?: boolean; // Whether this is a premium strategy
+  isPaid?: boolean; // Whether the user has paid for this strategy
+  isCustom?: boolean; // Whether this is a custom strategy or predefined
+}
 
 export interface StrategySelection {
   strategy_id: number;
   quantity?: number;
   selected_broker?: string;
+  broker_username?: string;
+  trade_type?: string;
 }
 
-export interface Strategy {
-  id: number;
-  name: string;
-  description?: string;
-  isWishlisted?: boolean;
-  isLive?: boolean;
-  isPremium?: boolean;
-  isPaid?: boolean;
-  isCustom?: boolean;
-  quantity?: number;
-  selectedBroker?: string;
-  brokerUsername?: string;
-  tradeType?: TradeType;
-  rowId?: string;
-  uniqueId?: string;
-  successRate?: string;
-  pnl?: string;
-  performance?: {
-    winRate: string;
-    profitFactor: string;
-    avgProfit: string;
-    avgLoss: string;
-    drawdown?: string; // Added for compatibility
-  };
+export interface BrokerFunction {
+  id: string;
+  broker_id: number;
+  broker_name: string;
+  function_name: string;
+  function_description?: string;
+  function_slug: string;
+  function_enabled: boolean;
+  is_premium: boolean;
+  broker_image?: string;
+  configuration?: any;
 }

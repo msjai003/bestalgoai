@@ -151,45 +151,6 @@ const Registration = () => {
       }
       
       if (data?.user) {
-        // Create user profile if it doesn't exist
-        try {
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              id: data.user.id,
-              full_name: formData.fullName,
-              email: data.user.email || '',
-              mobile_number: formData.mobile,
-              trading_experience: formData.tradingExperience
-            });
-            
-          if (profileError) {
-            console.error("Error creating user profile:", profileError);
-          }
-        } catch (profileError) {
-          console.error("Exception creating user profile:", profileError);
-        }
-        
-        // Send welcome email
-        try {
-          console.log("Sending welcome email to:", data.user.email);
-          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-            body: JSON.stringify({
-              email: data.user.email,
-              name: formData.fullName,
-              welcomeMessage: "Thank you for signing up with InfoCap Company!"
-            })
-          });
-          
-          if (emailError) {
-            console.error("Error sending welcome email:", emailError);
-          } else {
-            console.log("Welcome email sent successfully:", emailData);
-          }
-        } catch (emailError) {
-          console.error("Exception sending welcome email:", emailError);
-        }
-        
         toast.success('Account created successfully! Please check your email inbox.');
         
         // Redirect after a short delay

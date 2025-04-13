@@ -2,13 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
-import { supabase } from "@/integrations/supabase/client";
 
 // Import all the pages that are used in the routes
 import Index from "@/pages/Index";
@@ -54,36 +53,6 @@ import BrokerManagement from "@/pages/BrokerManagement";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean | null>(null);
-  
-  useEffect(() => {
-    // Check if user has completed onboarding
-    const checkOnboardingStatus = async () => {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (session?.session?.user) {
-        try {
-          // Check if the user exists in user_profiles
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', session.session.user.id)
-            .maybeSingle();
-            
-          // If there's no explicit flag for onboarding, we'll just check if the user exists
-          setIsFirstTimeUser(data === null);
-        } catch (error) {
-          console.error('Error checking onboarding status:', error);
-          setIsFirstTimeUser(false); // Default to false if error
-        }
-      } else {
-        setIsFirstTimeUser(null); // Not logged in
-      }
-    };
-    
-    checkOnboardingStatus();
-  }, []);
-  
   return (
     <Routes>
       {/* Public routes */}
@@ -106,7 +75,7 @@ function AppRoutes() {
       {/* Protected routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          {isFirstTimeUser ? <Navigate to="/onboarding" /> : <Dashboard />}
+          <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/onboarding" element={

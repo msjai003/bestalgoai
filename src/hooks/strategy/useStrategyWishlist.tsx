@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Strategy } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { TradeType } from "@/types/strategy";
 
 // Helper function to add strategy to wishlist using the new wishlist_maintain table
 export const addToWishlist = async (
@@ -230,12 +230,10 @@ export const useStrategyWishlist = () => {
             isWishlisted: true,
             isLive: false, // Default value for isLive
             quantity: 1,    // Default value for quantity
-            tradeType: "paper" as TradeType, // Explicitly cast to TradeType
             performance: {
               winRate: "N/A",
-              profitFactor: "N/A",
               avgProfit: "N/A",
-              avgLoss: "N/A"
+              drawdown: "N/A" // Added missing property from Strategy interface
             }
           }));
           

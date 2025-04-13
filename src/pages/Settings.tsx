@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Bell, User, HelpCircle, Shield, ChevronRight, LogOut } from "lucide-react";
+import { Bell, User, HelpCircle, Shield, ChevronRight, LogOut, Key } from "lucide-react";
 import { SecuritySettingsDialog } from "@/components/settings/SecuritySettingsDialog";
 import { PersonalDetailsDialog } from "@/components/settings/PersonalDetails/PersonalDetailsDialog";
 import { ProfilePictureUpload } from "@/components/settings/ProfilePictureUpload";
@@ -189,6 +190,16 @@ const Settings = () => {
                 <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
                   <h3 className="text-sm font-medium text-cyan/80 mb-3">Integration Settings</h3>
                   <div className="space-y-3">
+                    <SettingsLink 
+                      icon={<Key className="w-5 h-5 text-cyan" />} 
+                      label="API Keys" 
+                      onClick={() => navigate("/api-keys")}
+                      className="relative"
+                    >
+                      <span className="absolute right-8 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-cyan/20 text-cyan text-xs rounded-full">
+                        New
+                      </span>
+                    </SettingsLink>
                     <SettingsLink 
                       icon={<i className="fa-solid fa-exchange-alt w-5 h-5 text-cyan flex items-center justify-center" />} 
                       label="Broker Integration" 

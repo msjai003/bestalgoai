@@ -19,23 +19,6 @@
   .rotate-y-180 {
     transform: rotateY(180deg);
   }
-  
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-  
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0);
-  }
-  
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 @layer components {
@@ -57,21 +40,5 @@
   
   .pill-button {
     @apply rounded-full overflow-hidden;
-  }
-  
-  .section-padding {
-    @apply px-4 py-5;
-  }
-  
-  .card-spacing {
-    @apply space-y-4;
-  }
-  
-  .card-shadow {
-    @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
-  }
-  
-  .input-field {
-    @apply bg-charcoalSecondary/50 border border-gray-700/40 rounded-lg px-4 py-2 text-white focus:border-cyan/50 focus:outline-none focus:ring-1 focus:ring-cyan/30;
   }
 }

@@ -1,7 +1,6 @@
 
 export type StrategyType = "predefined" | "custom";
 export type StrategyCategory = "intraday" | "btst" | "positional";
-export type TradeType = "live trade" | "paper" | "completed";
 
 export interface FormData {
   strategy: string;
