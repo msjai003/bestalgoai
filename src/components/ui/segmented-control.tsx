@@ -14,10 +14,11 @@ interface SegmentedControlProps {
   fullWidth?: boolean;
   size?: "sm" | "md" | "lg";
   variant?: "primary" | "secondary";
+  className?: string;
 }
 
 export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedControlProps>(
-  ({ segments, value, onChange, fullWidth = true, size = "md", variant = "primary" }, ref) => {
+  ({ segments, value, onChange, fullWidth = true, size = "md", variant = "primary", className }, ref) => {
     const containerClasses = cn(
       "flex rounded-lg p-1 bg-charcoalSecondary/80 border border-gray-700/30",
       {
@@ -26,7 +27,8 @@ export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedContro
         "p-0.5": size === "sm",
         "p-1": size === "md",
         "p-1.5": size === "lg",
-      }
+      },
+      className
     );
 
     const getSegmentClasses = (segmentValue: string) => {
