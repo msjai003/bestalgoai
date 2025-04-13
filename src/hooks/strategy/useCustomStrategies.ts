@@ -44,11 +44,9 @@ export const useCustomStrategies = () => {
           // Ensure tradeType is properly cast as TradeType
           const tradeTypeValue = strategy.trade_type || "paper";
           const parsedTradeType: TradeType = 
-            tradeTypeValue === "live trade" || 
-            tradeTypeValue === "paper" || 
-            tradeTypeValue === "completed" 
-              ? tradeTypeValue as TradeType 
-              : "paper";
+            tradeTypeValue === "live trade" ? "live trade" :
+            tradeTypeValue === "paper" ? "paper" :
+            tradeTypeValue === "completed" ? "completed" : "paper";
           
           return {
             id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),

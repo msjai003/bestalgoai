@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,12 +35,13 @@ export const useLiveTrading = () => {
       
       try {
         const userStrategies = await loadUserStrategies(user.id);
-        // Convert customStrategies to proper Strategy type to fix TypeScript errors
-        const typedCustomStrategies = customStrategies as Strategy[];
+        // Ensure both arrays are of Strategy type
+        const combinedStrategies: Strategy[] = [
+          ...userStrategies,
+          ...(customStrategies as Strategy[])
+        ];
         
         setStrategies(prev => {
-          const combinedStrategies = [...userStrategies, ...typedCustomStrategies];
-          
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
               (selectedMode === "live" && strategy.isLive) || 
@@ -113,20 +113,24 @@ export const useLiveTrading = () => {
     
     try {
       if (currentCustomId) {
+        const tradeTypeValue: TradeType = targetMode === "live" ? "live trade" : "paper";
+        
         const { error } = await supabase
           .from('custom_strategies')
           .update({
-            trade_type: targetMode === "live" ? "live trade" : "paper"
+            trade_type: tradeTypeValue
           })
           .eq('id', currentCustomId)
           .eq('user_id', user.id);
           
         if (error) throw error;
       } else if (currentStrategyId !== null && currentBroker) {
+        const tradeTypeValue: TradeType = targetMode === "live" ? "live trade" : "paper";
+        
         await updateStrategyTradeType(
           user.id,
           currentStrategyId,
-          targetMode === "live" ? "live trade" : "paper",
+          tradeTypeValue,
           currentBroker
         );
       }
