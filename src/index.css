@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -319,7 +320,8 @@
     @apply text-label text-gray-400;
   }
   
-  .text-small {
+  /* Fixed the circular dependency here */
+  .text-small-style {
     @apply text-small text-gray-400;
   }
   
