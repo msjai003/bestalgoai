@@ -58,11 +58,11 @@ const StrategyManagement = () => {
     <div className="main-container">
       <Header />
       <main className="page-container pb-24">
-        <div className="section-header mb-6">
-          <h1 className="section-title">Strategy Management</h1>
+        <div className="section-header mb-5">
+          <h1 className="section-title text-xl font-bold">Strategy Management</h1>
           <Button 
             onClick={() => navigate('/strategy-selection')}
-            variant="default" 
+            variant="cyan" 
             size="sm"
             className="ml-auto"
           >
@@ -82,7 +82,7 @@ const StrategyManagement = () => {
           size="md"
           variant="primary"
           fullWidth
-          className="mb-8" // Increased spacing between tabs and content
+          className="mb-8" 
         />
         
         <div className="content-container">
@@ -105,7 +105,7 @@ const StrategyManagement = () => {
               icon={<Briefcase className="h-5 w-5 text-cyan" />}
               strategies={paperStrategies}
               emptyMessage="You don't have any paper trading strategies yet."
-              actionButtonText="Add Strategy"
+              actionButtonText="Browse Strategies"
               actionButtonPath="/strategy-selection"
               onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}

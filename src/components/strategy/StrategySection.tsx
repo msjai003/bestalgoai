@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -68,7 +69,7 @@ export const StrategySection = ({
         </div>
         {actionButtonText && (
           <Button 
-            variant="default"
+            variant="cyan"
             size="sm"
             className="shadow-md"
             onClick={() => navigate(actionButtonPath)}
@@ -90,7 +91,7 @@ export const StrategySection = ({
             {title !== "Predefined Strategies" && showEmptyStateButton && actionButtonText && actionButtonPath && (
               <Button 
                 onClick={() => navigate(actionButtonPath)}
-                variant="default"
+                variant="cyan"
                 className="shadow-md"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
@@ -118,7 +119,7 @@ export const StrategySection = ({
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer p-2 transition-colors duration-300"
+                        className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer p-2 transition-colors duration-300 h-10 w-10"
                         onClick={(e) => handleDeleteStrategy(strategy.id, e)}
                         aria-label="Remove from wishlist"
                       >
@@ -136,7 +137,7 @@ export const StrategySection = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 cursor-pointer transition-colors duration-300"
+                          className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 cursor-pointer transition-colors duration-300 h-10 w-10"
                           onClick={(e) => handlePremiumClick(strategy.id, e)}
                           aria-label="Premium strategy"
                         >
@@ -147,7 +148,7 @@ export const StrategySection = ({
                           size="icon"
                           variant="ghost"
                           className={cn(
-                            "p-2 cursor-pointer transition-colors duration-300",
+                            "p-2 cursor-pointer transition-colors duration-300 h-10 w-10",
                             strategy.isLive ? "text-green-500 hover:text-green-400 hover:bg-green-500/10" : "text-gray-400 hover:text-gray-300 hover:bg-white/5"
                           )}
                           onClick={(e) => handleToggleLiveMode(strategy.id, e)}
@@ -182,7 +183,7 @@ export const StrategySection = ({
                   </div>
                   
                   <div className={cn(
-                    "px-3 py-1.5 rounded-md text-xs font-medium",
+                    "px-3 py-1.5 rounded-xl text-xs font-medium",
                     isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) 
                       ? 'bg-yellow-500/20 text-yellow-400' 
                       : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-cyan/20 text-cyan')

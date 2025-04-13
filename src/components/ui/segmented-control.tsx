@@ -20,13 +20,13 @@ interface SegmentedControlProps {
 export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedControlProps>(
   ({ segments, value, onChange, fullWidth = true, size = "md", variant = "primary", className }, ref) => {
     const containerClasses = cn(
-      "flex rounded-lg p-1 bg-charcoalSecondary/80 border border-gray-700/30",
+      "flex rounded-2xl p-1.5 bg-charcoalSecondary/80 border border-gray-700/30 shadow-sm",
       {
         "w-full": fullWidth,
         "inline-flex": !fullWidth,
-        "p-0.5": size === "sm",
-        "p-1": size === "md",
-        "p-1.5": size === "lg",
+        "p-1": size === "sm",
+        "p-1.5": size === "md",
+        "p-2": size === "lg",
       },
       className
     );
@@ -49,15 +49,15 @@ export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedContro
           "px-5": !fullWidth && size === "lg",
           
           // Active state - primary variant
-          "bg-cyan text-charcoalPrimary font-medium rounded-md shadow-sm": 
+          "bg-cyan text-charcoalPrimary font-medium rounded-xl shadow-md": 
             isActive && variant === "primary",
           
           // Active state - secondary variant
-          "bg-gray-700/80 text-white font-medium rounded-md shadow-sm": 
+          "bg-gray-700/80 text-white font-medium rounded-xl shadow-md": 
             isActive && variant === "secondary",
           
           // Inactive state
-          "text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-md": !isActive,
+          "text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-xl": !isActive,
         }
       );
     };
@@ -77,7 +77,7 @@ export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedContro
               </span>
             )}
             
-            <span>{segment.label}</span>
+            <span className="font-medium">{segment.label}</span>
             
             {segment.count !== undefined && (
               <span 
