@@ -7,14 +7,16 @@ import { Code, Zap } from "lucide-react";
 interface StrategyTabNavigationProps {
   selectedTab: "predefined" | "custom";
   onTabChange: (tab: "predefined" | "custom") => void;
+  className?: string; // Add className prop
 }
 
 export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   selectedTab,
-  onTabChange
+  onTabChange,
+  className
 }) => {
   return (
-    <div className="bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30">
+    <div className={cn("bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30", className)}>
       <div className="grid grid-cols-2 gap-2">
         <Button 
           variant={selectedTab === "predefined" ? "cyan" : "ghost"}
