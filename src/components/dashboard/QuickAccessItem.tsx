@@ -14,12 +14,12 @@ interface QuickAccessItemProps {
 
 const QuickAccessItem = ({ icon: Icon, text, route, className, onClick }: QuickAccessItemProps) => {
   return (
-    <Link to={route} className={cn("block h-full", className)} onClick={onClick}>
-      <div className="bg-charcoalSecondary rounded-[20px] p-5 border border-gray-800/40 flex items-center hover:border-cyan/30 hover:bg-charcoalSecondary/90 transition-all h-full shadow-sm hover:shadow-md group">
-        <div className="bg-charcoalPrimary/60 p-3 rounded-xl mr-4 flex-shrink-0 group-hover:bg-charcoalPrimary/80 transition-all">
+    <Link to={route} className={cn("block", className)} onClick={onClick}>
+      <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 flex items-center hover:border-cyan/30 transition-all">
+        <div className="bg-charcoalPrimary/60 p-2.5 rounded-lg mr-3">
           <Icon className="h-5 w-5 text-cyan" />
         </div>
-        <span className="text-gray-200 font-medium text-button group-hover:text-white transition-colors">{text}</span>
+        <span className="text-gray-200">{text}</span>
       </div>
     </Link>
   );

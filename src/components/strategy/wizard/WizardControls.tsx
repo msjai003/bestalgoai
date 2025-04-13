@@ -18,8 +18,9 @@ export const WizardControls = ({
     <div className="flex justify-between pt-4">
       {currentStep > 0 && (
         <Button 
-          variant="secondary" 
+          variant="outline" 
           onClick={onPrevious}
+          className="bg-charcoalSecondary border-gray-600 text-white hover:bg-charcoalSecondary/70 hover:border-cyan/30 rounded-xl px-5"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
@@ -27,9 +28,9 @@ export const WizardControls = ({
       
       {currentStep < WizardStep.CONFIRMATION && (
         <Button 
-          variant="default"
+          variant="cyan"
           onClick={onNext}
-          className="ml-auto"
+          className="ml-auto rounded-xl px-5 hover:shadow-cyan/30 hover:shadow-md"
         >
           Next <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -37,9 +38,9 @@ export const WizardControls = ({
       
       {currentStep === WizardStep.CONFIRMATION && (
         <Button 
-          variant="default"
+          variant="cyan"
           onClick={onNext}
-          className="ml-auto"
+          className="ml-auto rounded-xl px-5 hover:shadow-cyan/30 hover:shadow-md"
         >
           <InfoIcon className="mr-2 h-4 w-4" />
           Strategy Details

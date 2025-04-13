@@ -3,29 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html {
-    font-family: 'Inter', 'DM Sans', 'Manrope', sans-serif;
-  }
-  
-  body {
-    @apply bg-charcoalPrimary text-charcoalTextPrimary;
-    line-height: 1.4;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
-  }
-  
-  h1 {
-    font-size: 20px;
-  }
-  
-  h2 {
-    font-size: 18px;
-  }
-}
-
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;
@@ -59,159 +36,15 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-  
-  /* Consistent spacing system based on 8px grid */
-  .spacing-1 {
-    padding: 0.5rem; /* 8px */
-    margin: 0.5rem; /* 8px */
-  }
-  
-  .spacing-2 {
-    padding: 1rem; /* 16px */
-    margin: 1rem; /* 16px */
-  }
-  
-  .spacing-3 {
-    padding: 1.5rem; /* 24px */
-    margin: 1.5rem; /* 24px */
-  }
-  
-  .spacing-4 {
-    padding: 2rem; /* 32px */
-    margin: 2rem; /* 32px */
-  }
-  
-  /* Padding utilities */
-  .p-8 {
-    padding: 8px;
-  }
-  
-  .p-16 {
-    padding: 16px;
-  }
-  
-  .p-24 {
-    padding: 24px;
-  }
-  
-  .p-32 {
-    padding: 32px;
-  }
-  
-  /* Margin utilities */
-  .m-8 {
-    margin: 8px;
-  }
-  
-  .m-16 {
-    margin: 16px;
-  }
-  
-  .m-24 {
-    margin: 24px;
-  }
-  
-  .m-32 {
-    margin: 32px;
-  }
-  
-  /* Gap utilities */
-  .gap-8 {
-    gap: 8px;
-  }
-  
-  .gap-16 {
-    gap: 16px;
-  }
-  
-  .gap-24 {
-    gap: 24px;
-  }
-  
-  .gap-32 {
-    gap: 32px;
-  }
-  
-  /* Grid system for alignment */
-  .grid-8 {
-    display: grid;
-    gap: 0.5rem; /* 8px */
-  }
-  
-  .grid-16 {
-    display: grid;
-    gap: 1rem; /* 16px */
-  }
-  
-  .grid-24 {
-    display: grid;
-    gap: 1.5rem; /* 24px */
-  }
-  
-  /* Animation utilities */
-  .transition-smooth {
-    transition: all 0.3s ease;
-  }
-  
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
-  }
-  
-  .active-scale {
-    @apply transition-transform duration-200 active:scale-95;
-  }
-  
-  .fade-in {
-    animation: fadeIn 0.3s ease-in-out forwards;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .slide-in-bottom {
-    animation: slideInBottom 0.3s ease-in-out forwards;
-  }
-  
-  @keyframes slideInBottom {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  /* Accessibility utilities */
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-charcoalSecondary/40 backdrop-blur-md rounded-[20px] border border-white/5 shadow-xl;
+    @apply bg-charcoalSecondary/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-xl;
   }
   
   .premium-card {
-    @apply bg-gradient-to-b from-charcoalSecondary/60 to-charcoalSecondary/30 backdrop-blur-md rounded-[20px] border border-cyan/10 shadow-xl;
+    @apply bg-gradient-to-b from-charcoalSecondary/60 to-charcoalSecondary/30 backdrop-blur-md rounded-2xl border border-cyan/10 shadow-xl;
   }
   
   .gradient-text {
@@ -219,7 +52,7 @@
   }
   
   .curved-button {
-    @apply rounded-pill overflow-hidden;
+    @apply rounded-3xl overflow-hidden;
   }
   
   .pill-button {
@@ -239,98 +72,6 @@
   }
   
   .input-field {
-    @apply bg-charcoalSecondary/50 border border-gray-700/40 rounded-[16px] px-4 py-2 text-white focus:border-cyan/50 focus:outline-none focus:ring-1 focus:ring-cyan/30;
-  }
-  
-  /* Standardized card components */
-  .strategy-card {
-    @apply premium-card p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10;
-  }
-  
-  .metric-card {
-    @apply glass-card p-4 rounded-lg;
-  }
-  
-  /* Status indicators */
-  .status-active {
-    @apply flex items-center gap-2 text-emerald-400;
-  }
-  
-  .status-inactive {
-    @apply flex items-center gap-2 text-cyan;
-  }
-  
-  .status-completed {
-    @apply flex items-center gap-2 text-gray-400;
-  }
-  
-  /* Bottom navigation */
-  .bottom-nav-item {
-    @apply flex flex-col items-center w-16 transition-all duration-300;
-  }
-  
-  .bottom-nav-icon {
-    @apply flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300;
-  }
-  
-  .bottom-nav-label {
-    @apply text-[10px] font-medium tracking-wide transition-all duration-300;
-  }
-  
-  /* Standardized headers */
-  .section-header {
-    @apply flex items-center gap-2 mb-4;
-  }
-  
-  .section-title {
-    @apply text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300;
-  }
-  
-  .section-subtitle {
-    @apply text-gray-400 text-sm;
-  }
-  
-  /* Consistent layout containers */
-  .main-container {
-    @apply bg-charcoalPrimary min-h-screen flex flex-col;
-  }
-  
-  .page-container {
-    @apply pt-16 pb-20 px-4;
-  }
-  
-  .content-container {
-    @apply flex-1 overflow-auto scrollbar-none pb-2;
-  }
-  
-  /* Typography system */
-  .text-heading {
-    @apply text-heading-lg md:text-heading-lg font-bold text-white;
-  }
-  
-  .text-subheading {
-    @apply text-heading-md font-semibold text-white;
-  }
-  
-  .text-body {
-    @apply text-button text-gray-200;
-  }
-  
-  .text-caption {
-    @apply text-label text-gray-400;
-  }
-  
-  /* Fixed the circular dependency here */
-  .text-small-style {
-    @apply text-small text-gray-400;
-  }
-  
-  /* Dividers */
-  .divider {
-    @apply w-full h-px bg-gray-800/50 my-4;
-  }
-  
-  .divider-vertical {
-    @apply h-full w-px bg-gray-800/50 mx-4;
+    @apply bg-charcoalSecondary/50 border border-gray-700/40 rounded-lg px-4 py-2 text-white focus:border-cyan/50 focus:outline-none focus:ring-1 focus:ring-cyan/30;
   }
 }

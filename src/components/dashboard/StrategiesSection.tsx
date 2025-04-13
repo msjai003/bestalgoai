@@ -24,8 +24,8 @@ const StrategiesSection = ({
   showSignupPromo = false 
 }: StrategiesSectionProps) => {
   return (
-    <section className="mt-8">
-      <div className="flex items-center justify-between mb-5">
+    <section className="mt-6">
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold text-white">Your Strategies</h2>
         <Link to="/strategy-selection" className="flex items-center text-cyan text-sm">
           See all <ChevronRight className="h-4 w-4" />
@@ -33,15 +33,15 @@ const StrategiesSection = ({
       </div>
       
       {showSignupPromo && (
-        <div className="bg-gradient-to-r from-cyan/20 to-cyan/10 p-5 rounded-xl mb-6 border border-cyan/30">
+        <div className="bg-gradient-to-r from-cyan/20 to-cyan/10 p-4 rounded-lg mb-6 border border-cyan/30">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold mb-2">Save Your Trading Strategies</h3>
+              <h3 className="text-lg font-bold mb-1">Save Your Trading Strategies</h3>
               <p className="text-sm text-gray-300">Create an account to save and manage your trading strategies</p>
             </div>
             <Link to="/auth">
               <Button 
-                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary ml-4" 
+                className="bg-cyan hover:bg-cyan/80 text-charcoalPrimary" 
                 size="sm"
               >
                 Sign Up
@@ -51,16 +51,14 @@ const StrategiesSection = ({
         </div>
       )}
       
-      <div className="space-y-4">
-        {strategies.map((strategy) => (
-          <StrategyItem 
-            key={strategy.id} 
-            strategy={strategy} 
-            hasPremium={hasPremium} 
-            onPremiumClick={onPremiumClick} 
-          />
-        ))}
-      </div>
+      {strategies.map((strategy) => (
+        <StrategyItem 
+          key={strategy.id} 
+          strategy={strategy} 
+          hasPremium={hasPremium} 
+          onPremiumClick={onPremiumClick} 
+        />
+      ))}
     </section>
   );
 };

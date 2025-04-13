@@ -24,17 +24,17 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            variant="default"
-            width="full"
-            className="font-semibold"
+            variant="gradient"
+            size="default"
+            className="w-full font-semibold rounded-3xl"
             disabled={true}
           >
             Continue
           </Button>
           <Button
-            variant="secondary"
-            width="full"
-            className="font-semibold mt-3"
+            variant="outline"
+            size="default"
+            className="w-full border border-gray-700 bg-transparent text-white font-semibold rounded-3xl"
             onClick={() => navigate("/settings")}
           >
             Cancel
@@ -45,17 +45,17 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            variant="default"
-            width="full"
-            className="font-semibold"
+            variant="gradient"
+            size="default"
+            className="w-full font-semibold rounded-3xl"
             onClick={handleCredentialsSubmit}
           >
             Continue to Settings
           </Button>
           <Button
-            variant="secondary"
-            width="full"
-            className="font-semibold mt-3"
+            variant="outline"
+            size="default"
+            className="w-full border border-gray-700 bg-transparent text-white font-semibold rounded-3xl"
             onClick={handleReset}
           >
             Cancel
@@ -66,17 +66,17 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            variant="default"
-            width="full"
-            className="font-semibold"
+            variant="gradient"
+            size="default"
+            className="w-full font-semibold rounded-3xl"
             onClick={handleSettingsSubmit}
           >
             Connect Broker
           </Button>
           <Button
-            variant="secondary"
-            width="full"
-            className="font-semibold mt-3"
+            variant="outline"
+            size="default"
+            className="w-full border border-gray-700 bg-transparent text-white font-semibold rounded-3xl"
             onClick={() => setConnectionStep("credentials")}
           >
             Back
@@ -87,17 +87,17 @@ export const ActionButtons = ({
       return (
         <>
           <Button
-            variant="default"
-            width="full"
-            className="font-semibold"
+            variant="gradient"
+            size="default"
+            className="w-full font-semibold rounded-3xl"
             onClick={() => navigate("/settings")}
           >
             Continue
           </Button>
           <Button
-            variant="secondary"
-            width="full"
-            className="font-semibold mt-3"
+            variant="outline"
+            size="default"
+            className="w-full border border-gray-700 bg-transparent text-white font-semibold rounded-3xl"
             onClick={() => navigate("/settings")}
           >
             Cancel

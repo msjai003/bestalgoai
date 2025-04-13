@@ -7,21 +7,19 @@ import { Code, Zap } from "lucide-react";
 interface StrategyTabNavigationProps {
   selectedTab: "predefined" | "custom";
   onTabChange: (tab: "predefined" | "custom") => void;
-  className?: string;
 }
 
 export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   selectedTab,
-  onTabChange,
-  className
+  onTabChange
 }) => {
   return (
-    <div className={cn("bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-[24px] mb-4 shadow-lg border border-gray-700/30", className)}>
+    <div className="bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30">
       <div className="grid grid-cols-2 gap-2">
         <Button 
           variant={selectedTab === "predefined" ? "cyan" : "ghost"}
           className={cn(
-            "py-2 rounded-[20px] text-label font-medium transition-all duration-300",
+            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
             selectedTab === "predefined" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
@@ -35,7 +33,7 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
         <Button 
           variant={selectedTab === "custom" ? "cyan" : "ghost"}
           className={cn(
-            "py-2 rounded-[20px] text-label font-medium transition-all duration-300",
+            "py-2 rounded-lg text-xs font-medium transition-all duration-300",
             selectedTab === "custom" 
               ? "shadow-md shadow-cyan/20" 
               : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"

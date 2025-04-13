@@ -17,18 +17,18 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
   }).format(currentValue);
 
   return (
-    <section id="portfolio-overview" className="mt-6 mb-8">
+    <section id="portfolio-overview" className="mt-4">
       <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
             <p className="text-2xl font-bold text-white">{formattedValue}</p>
           </div>
           <Button 
-            variant="default"
+            variant="logout"
             size="sm"
             asChild
-            className="text-white"
+            className="text-charcoalPrimary px-4"
           >
             <Link to="/subscription">Upgrade</Link>
           </Button>
@@ -36,14 +36,14 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
         
         <PortfolioChart performanceData={performanceData} />
         
-        <div className="flex justify-between text-sm mt-8">
+        <div className="flex justify-between text-sm mt-4">
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <p className="text-gray-400 mb-2">Today's P&L</p>
-            <p className="text-emerald-400 font-medium text-lg">+₹24,500</p>
+            <p className="text-gray-400">Today's P&L</p>
+            <p className="text-emerald-400 font-medium">+₹24,500</p>
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <p className="text-gray-400 mb-2">Overall P&L</p>
-            <p className="text-emerald-400 font-medium text-lg">+₹1,45,500</p>
+            <p className="text-gray-400">Overall P&L</p>
+            <p className="text-emerald-400 font-medium">+₹1,45,500</p>
           </div>
         </div>
       </div>

@@ -26,7 +26,7 @@ const StrategyManagement = () => {
     handleToggleLiveMode
   } = useStrategy(predefinedStrategies || []);
   
-  // Filter strategies based on their tradeType
+  // Filter strategies based on their isLive property
   const liveStrategies = strategies.filter(s => s.isLive === true);
   const paperStrategies = strategies.filter(s => s.isLive === false && s.tradeType !== 'completed');
   const completedStrategies = strategies.filter(s => s.tradeType === 'completed');
@@ -45,6 +45,7 @@ const StrategyManagement = () => {
     if (strategyToDelete) {
       try {
         // In a real app, you would call an API to delete the strategy
+        // For now, we'll just close the dialog
         console.log(`Strategy ${strategyToDelete.id} deleted`);
         setDeleteDialogOpen(false);
         setStrategyToDelete(null);
@@ -55,16 +56,16 @@ const StrategyManagement = () => {
   };
 
   return (
-    <div className="main-container">
+    <div className="bg-charcoalPrimary min-h-screen">
       <Header />
-      <main className="page-container pb-24">
-        <div className="section-header mb-5">
-          <h1 className="section-title text-xl font-bold">Strategy Management</h1>
+      <main className="pt-16 pb-20 px-4">
+        <div className="flex items-center justify-between my-5">
+          <h1 className="text-xl font-bold text-white">Strategy Management</h1>
           <Button 
             onClick={() => navigate('/strategy-selection')}
-            variant="cyan" 
+            variant="outline" 
             size="sm"
-            className="ml-auto"
+            className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90"
           >
             <Plus className="h-4 w-4 mr-1" />
             Add Strategy
@@ -82,10 +83,9 @@ const StrategyManagement = () => {
           size="md"
           variant="primary"
           fullWidth
-          className="mb-8" 
         />
         
-        <div className="content-container">
+        <div className="mt-5">
           {activeTab === "live" && (
             <StrategySection
               title="Live Trading Strategies"
@@ -105,7 +105,7 @@ const StrategyManagement = () => {
               icon={<Briefcase className="h-5 w-5 text-cyan" />}
               strategies={paperStrategies}
               emptyMessage="You don't have any paper trading strategies yet."
-              actionButtonText="Browse Strategies"
+              actionButtonText="Add Strategy"
               actionButtonPath="/strategy-selection"
               onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
