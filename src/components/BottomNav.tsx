@@ -65,25 +65,22 @@ const NavItem = ({
     <Link 
       to={to} 
       className={cn(
-        "bottom-nav-item",
-        isActive ? "scale-100" : "opacity-80 hover:opacity-100"
+        "flex flex-col items-center justify-center w-16 transition-all duration-300",
+        isActive 
+          ? "text-cyan transform scale-105" 
+          : "text-gray-300 hover:text-white"
       )}
     >
       <div className={cn(
-        "bottom-nav-icon",
+        "flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300",
         isActive 
-          ? "bg-transparent" 
-          : "bg-transparent hover:bg-cyan/5"
+          ? "bg-cyan/10" 
+          : "bg-transparent hover:bg-gray-800/40"
       )}>
-        <div className={cn(
-          isActive ? "text-cyan" : "text-gray-300 hover:text-cyan transition-colors"
-        )}>
-          {icon}
-        </div>
+        {icon}
       </div>
       <span className={cn(
-        "bottom-nav-label",
-        isActive ? "text-cyan" : "text-gray-300"
+        "text-[10px] font-medium tracking-wide transition-colors duration-300"
       )}>
         {label}
       </span>
