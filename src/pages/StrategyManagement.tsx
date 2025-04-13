@@ -1,157 +1,117 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Strategy } from "@/hooks/strategy/types";
-import { useStrategyWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
-import { StrategySection } from "@/components/strategy/StrategySection";
-import { Heart, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
+
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { useToast } from "@/hooks/use-toast";
-import { NoStrategiesFound } from "@/components/strategy/NoStrategiesFound";
+import { StrategySection } from "@/components/strategy/StrategySection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
+import { useStrategy } from "@/hooks/useStrategy";
+import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
+import { ChartBar, Briefcase, CheckCircle, Plus } from "lucide-react";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user } = useAuth();
-  const { wishlistedStrategies, isLoading, hasPremium } = useStrategyWishlist();
-  const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
-  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [strategyToDelete, setStrategyToDelete] = useState<Strategy | null>(null);
-
-  const handleToggleLiveMode = (id: number | string) => {
-    const strategy = wishlistedStrategies.find(s => s.id === id);
-    if (!strategy) return;
-    
-    const isPremium = typeof id === 'number' && id > 1;
-    if (isPremium && !hasPremium && !strategy.isPaid) {
-      sessionStorage.setItem('selectedStrategyId', id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/pricing');
-      navigate('/pricing');
-      return;
-    }
-    
-    setCurrentStrategyId(typeof id === 'string' ? parseInt(id, 10) : id);
-    setTargetMode(strategy.isLive ? "paper" : "live");
-    setConfirmationOpen(true);
-  };
-
-  const handleDeleteStrategy = async (id: number) => {
-    const strategy = wishlistedStrategies.find(s => s.id === id);
-    if (!strategy || !user) return;
-    
-    setStrategyToDelete(strategy);
-    setDeleteConfirmationOpen(true);
-  };
+  const [activeTab, setActiveTab] = useState("live");
+  const { data: predefinedStrategies } = usePredefinedStrategies();
   
-  const confirmDeleteStrategy = async () => {
-    if (!user || !strategyToDelete) return;
-    
-    try {
-      await removeFromWishlist(user.id, strategyToDelete.id);
-      setDeleteConfirmationOpen(false);
-      
-      toast({
-        title: "Success",
-        description: "Strategy removed from wishlist",
-      });
-      window.location.reload();
-    } catch (error) {
-      console.error("Error removing strategy from wishlist:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove strategy from wishlist",
-        variant: "destructive",
-      });
-    }
-  };
+  const {
+    strategies,
+    isLoading,
+    handleDeleteStrategy,
+    handleToggleLiveMode
+  } = useStrategy(predefinedStrategies || []);
   
-  const cancelDeleteStrategy = () => {
-    setDeleteConfirmationOpen(false);
-    setStrategyToDelete(null);
-  };
-
-  const handleConfirmLiveMode = () => {
-    setConfirmationOpen(false);
-    toast({
-      title: "Mode Change",
-      description: `Strategy mode changed to ${targetMode === "live" ? "Live Trading" : "Paper Trading"}`,
-    });
-  };
-
-  const handleCancelLiveMode = () => {
-    setConfirmationOpen(false);
-  };
+  // Filter strategies based on their status
+  const liveStrategies = strategies.filter(s => s.isLive === true);
+  const paperStrategies = strategies.filter(s => s.isLive === false && s.status !== 'completed');
+  const completedStrategies = strategies.filter(s => s.status === 'completed');
 
   return (
-    <div className="bg-charcoalPrimary min-h-screen pb-16">
+    <div className="bg-charcoalPrimary min-h-screen">
       <Header />
-      <main className="pt-16 px-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="text-gray-400 hover:text-white"
-              onClick={() => navigate('/dashboard')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-white">Strategy Wishlist</h1>
-          </div>
+      <main className="pt-16 pb-20 px-4">
+        <div className="flex items-center justify-between my-4">
+          <h1 className="text-xl font-bold text-white">Strategy Management</h1>
+          <Button 
+            onClick={() => navigate('/strategy-selection')}
+            variant="outline" 
+            size="sm"
+            className="bg-charcoalSecondary hover:bg-charcoalSecondary/90 border border-gray-700/50 text-cyan hover:text-cyan/90"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Strategy
+          </Button>
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center my-8">
-            <div className="animate-pulse flex space-x-4">
-              <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : wishlistedStrategies.length > 0 ? (
-          <StrategySection
-            title="My Wishlisted Strategies"
-            icon={<Heart className="h-5 w-5 text-red-400" />}
-            strategies={wishlistedStrategies}
-            emptyMessage="You haven't added any strategies to your wishlist yet."
-            actionButtonText="Browse Strategies"
-            actionButtonPath="/strategy-selection"
-            onDeleteStrategy={handleDeleteStrategy}
-            onToggleLiveMode={handleToggleLiveMode}
-          />
-        ) : (
-          <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
-        )}
+        
+        <Tabs defaultValue="live" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-charcoalSecondary border border-gray-800/40">
+            <TabsTrigger 
+              value="live" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <ChartBar className="h-4 w-4" />
+              <span>Live ({liveStrategies.length})</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="paper" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <Briefcase className="h-4 w-4" />
+              <span>Paper ({paperStrategies.length})</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="completed" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <CheckCircle className="h-4 w-4" />
+              <span>Completed ({completedStrategies.length})</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="live">
+            <StrategySection
+              title="Live Trading Strategies"
+              icon={<ChartBar className="h-5 w-5 text-cyan" />}
+              strategies={liveStrategies}
+              emptyMessage="You don't have any live trading strategies yet."
+              actionButtonText="Add Strategy"
+              actionButtonPath="/strategy-selection"
+              onDeleteStrategy={handleDeleteStrategy}
+              onToggleLiveMode={handleToggleLiveMode}
+            />
+          </TabsContent>
+          
+          <TabsContent value="paper">
+            <StrategySection
+              title="Paper Trading Strategies"
+              icon={<Briefcase className="h-5 w-5 text-cyan" />}
+              strategies={paperStrategies}
+              emptyMessage="You don't have any paper trading strategies yet."
+              actionButtonText="Add Strategy"
+              actionButtonPath="/strategy-selection"
+              onDeleteStrategy={handleDeleteStrategy}
+              onToggleLiveMode={handleToggleLiveMode}
+            />
+          </TabsContent>
+          
+          <TabsContent value="completed">
+            <StrategySection
+              title="Completed Strategies"
+              icon={<CheckCircle className="h-5 w-5 text-cyan" />}
+              strategies={completedStrategies}
+              emptyMessage="You don't have any completed strategies yet."
+              actionButtonText=""
+              actionButtonPath=""
+              onDeleteStrategy={handleDeleteStrategy}
+              onToggleLiveMode={handleToggleLiveMode}
+              showEmptyStateButton={false}
+            />
+          </TabsContent>
+        </Tabs>
       </main>
-
-      <TradingModeConfirmationDialog 
-        open={confirmationOpen}
-        onOpenChange={setConfirmationOpen}
-        targetMode={targetMode}
-        onConfirm={handleConfirmLiveMode}
-        onCancel={handleCancelLiveMode}
-      />
-      
-      {strategyToDelete && (
-        <DeleteConfirmationDialog
-          open={deleteConfirmationOpen}
-          onOpenChange={setDeleteConfirmationOpen}
-          strategyName={strategyToDelete.name}
-          onConfirm={confirmDeleteStrategy}
-          onCancel={cancelDeleteStrategy}
-        />
-      )}
-
       <BottomNav />
     </div>
   );

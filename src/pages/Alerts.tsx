@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Bell, FileText, Clock } from "lucide-react";
 
-type AlertType = "all" | "trade" | "system";
+type AlertType = "all" | "trade" | "system" | "summary";
 type Notification = {
   id: number;
   type: "success" | "info" | "warning";
@@ -49,8 +52,42 @@ const notifications: Notification[] = [
   },
 ];
 
+const summaries = [
+  {
+    id: 1,
+    date: "April 13, 2025",
+    totalTrades: 12,
+    successfulTrades: 9,
+    profitLoss: "+₹15,280",
+  },
+  {
+    id: 2,
+    date: "April 12, 2025",
+    totalTrades: 8,
+    successfulTrades: 5,
+    profitLoss: "+₹8,350",
+  },
+  {
+    id: 3,
+    date: "April 11, 2025",
+    totalTrades: 10,
+    successfulTrades: 6,
+    profitLoss: "-₹2,470",
+  },
+];
+
 const Alerts = () => {
   const [activeTab, setActiveTab] = useState<AlertType>("all");
+
+  const handleExportSummary = (id: number) => {
+    // Mock function - would implement actual export functionality
+    console.log(`Exporting summary ${id}`);
+  };
+
+  const handleEmailSummary = (id: number) => {
+    // Mock function - would implement actual email sending
+    console.log(`Emailing summary ${id}`);
+  };
 
   return (
     <div className="bg-gray-900 min-h-screen">
@@ -59,69 +96,133 @@ const Alerts = () => {
           <Link to="/dashboard" className="p-2">
             <i className="fa-solid fa-arrow-left text-gray-300"></i>
           </Link>
-          <h1 className="text-lg font-semibold text-white">Alerts & Notifications</h1>
+          <h1 className="text-lg font-semibold text-white">Alerts & Trading Logs</h1>
           <button className="p-2">
             <i className="fa-solid fa-sliders text-gray-300"></i>
           </button>
         </div>
       </header>
 
-      <div className="fixed top-16 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-40">
-        <div className="flex space-x-2 p-2">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
-              activeTab === "all"
-                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
-                : "bg-gray-800/50 text-gray-400"
-            )}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveTab("trade")}
-            className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
-              activeTab === "trade"
-                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
-                : "bg-gray-800/50 text-gray-400"
-            )}
-          >
-            Trade Alerts
-          </button>
-          <button
-            onClick={() => setActiveTab("system")}
-            className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
-              activeTab === "system"
-                ? "bg-gradient-to-r from-[#FF00D4]/20 to-purple-900/20 border border-[#FF00D4]/30 text-[#FF00D4]"
-                : "bg-gray-800/50 text-gray-400"
-            )}
-          >
-            System
-          </button>
-        </div>
-      </div>
-
-      <main className="pt-32 pb-20 px-4 space-y-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="p-4 rounded-xl bg-gray-800/50 border border-gray-700 shadow-lg"
-          >
-            <div className="flex items-start gap-3">
-              <div className={cn("p-2 rounded-lg", notification.iconBgColor, notification.iconColor)}>
-                <i className={`fa-solid ${notification.icon}`}></i>
+      <main className="pt-20 pb-20 px-4">
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-800/50 mb-6">
+            <TabsTrigger 
+              value="all" 
+              onClick={() => setActiveTab("all")}
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <Bell className="h-4 w-4" />
+              <span>All</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="trade"
+              onClick={() => setActiveTab("trade")}
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Trades</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="summary"
+              onClick={() => setActiveTab("summary")}
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
+            >
+              <Clock className="h-4 w-4" />
+              <span>Summary</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all" className="space-y-4">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className="p-4 rounded-xl bg-gray-800/50 border border-gray-700 shadow-lg"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={cn("p-2 rounded-lg", notification.iconBgColor, notification.iconColor)}>
+                    <i className={`fa-solid ${notification.icon}`}></i>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-medium">{notification.title}</h3>
+                    <p className="text-sm text-gray-400 mt-1">{notification.message}</p>
+                    <span className="text-xs text-gray-500 mt-2 block">{notification.time}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-white font-medium">{notification.title}</h3>
-                <p className="text-sm text-gray-400 mt-1">{notification.message}</p>
-                <span className="text-xs text-gray-500 mt-2 block">{notification.time}</span>
+            ))}
+          </TabsContent>
+          
+          <TabsContent value="trade" className="space-y-4">
+            {notifications
+              .filter(n => n.title.includes("Trade") || n.message.includes("order"))
+              .map((notification) => (
+                <div
+                  key={notification.id}
+                  className="p-4 rounded-xl bg-gray-800/50 border border-gray-700 shadow-lg"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={cn("p-2 rounded-lg", notification.iconBgColor, notification.iconColor)}>
+                      <i className={`fa-solid ${notification.icon}`}></i>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-medium">{notification.title}</h3>
+                      <p className="text-sm text-gray-400 mt-1">{notification.message}</p>
+                      <span className="text-xs text-gray-500 mt-2 block">{notification.time}</span>
+                    </div>
+                  </div>
+                </div>
+            ))}
+          </TabsContent>
+          
+          <TabsContent value="summary" className="space-y-4">
+            {summaries.map((summary) => (
+              <div
+                key={summary.id}
+                className="p-4 rounded-xl bg-gray-800/50 border border-gray-700 shadow-lg"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-medium">{summary.date}</h3>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-400"
+                      onClick={() => handleEmailSummary(summary.id)}
+                    >
+                      <i className="fa-solid fa-envelope"></i>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-400"
+                      onClick={() => handleExportSummary(summary.id)}
+                    >
+                      <i className="fa-solid fa-download"></i>
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-gray-700/30 rounded-lg p-2">
+                    <p className="text-xs text-gray-400">Total Trades</p>
+                    <p className="text-lg font-semibold text-white">{summary.totalTrades}</p>
+                  </div>
+                  <div className="bg-gray-700/30 rounded-lg p-2">
+                    <p className="text-xs text-gray-400">Success Rate</p>
+                    <p className="text-lg font-semibold text-green-400">
+                      {Math.round((summary.successfulTrades / summary.totalTrades) * 100)}%
+                    </p>
+                  </div>
+                  <div className="bg-gray-700/30 rounded-lg p-2">
+                    <p className="text-xs text-gray-400">P&L</p>
+                    <p className={`text-lg font-semibold ${summary.profitLoss.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                      {summary.profitLoss}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
+          </TabsContent>
+        </Tabs>
       </main>
       <BottomNav />
     </div>

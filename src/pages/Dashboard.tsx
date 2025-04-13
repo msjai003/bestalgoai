@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader } from "lucide-react";
+import { Loader, Plus } from "lucide-react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
@@ -59,6 +60,10 @@ const Dashboard = () => {
     );
   }
 
+  const handleStartNewStrategy = () => {
+    navigate('/strategy-selection');
+  };
+
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <Header />
@@ -67,6 +72,17 @@ const Dashboard = () => {
           performanceData={mockPerformanceData} 
           currentValue={currentValue} 
         />
+        
+        <div className="fixed bottom-24 right-6 z-40">
+          <Button
+            onClick={handleStartNewStrategy}
+            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20"
+            aria-label="Start New Strategy"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+        
         <QuickAccessSection />
       </main>
       <BottomNav />

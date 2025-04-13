@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { Features } from '@/components/Features';
@@ -7,16 +8,19 @@ import { CTA } from '@/components/CTA';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { BeforeInstallPromptEvent } from '@/types/installation';
 import InstallButton from '@/components/install/InstallButton';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const [isInstallable, setIsInstallable] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if app is already installed
@@ -74,6 +78,14 @@ const Index = () => {
     };
   }, []);
 
+  const handleGetStarted = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
       <Header />
@@ -105,6 +117,19 @@ const Index = () => {
           <Features />
           <div className="max-w-4xl mx-auto">
             <CTA />
+            
+            <div className="text-center mb-16 mt-10">
+              <Button 
+                onClick={handleGetStarted}
+                className="bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary px-8 py-6 rounded-lg font-semibold text-lg"
+              >
+                Get Started Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <p className="mt-3 text-gray-400">
+                Start your algorithmic trading journey today
+              </p>
+            </div>
           </div>
         </div>
       </main>

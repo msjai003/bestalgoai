@@ -1,13 +1,15 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import all the pages that are used in the routes
 import Index from "@/pages/Index";
@@ -53,6 +55,34 @@ import BrokerManagement from "@/pages/BrokerManagement";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    // Check if user has completed onboarding
+    const checkOnboardingStatus = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (session?.session?.user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('has_completed_onboarding')
+            .eq('id', session.session.user.id)
+            .maybeSingle();
+            
+          setIsFirstTimeUser(data?.has_completed_onboarding !== true);
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+          setIsFirstTimeUser(false); // Default to false if error
+        }
+      } else {
+        setIsFirstTimeUser(null); // Not logged in
+      }
+    };
+    
+    checkOnboardingStatus();
+  }, []);
+  
   return (
     <Routes>
       {/* Public routes */}
@@ -75,7 +105,7 @@ function AppRoutes() {
       {/* Protected routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <Dashboard />
+          {isFirstTimeUser ? <Navigate to="/onboarding" /> : <Dashboard />}
         </ProtectedRoute>
       } />
       <Route path="/onboarding" element={
