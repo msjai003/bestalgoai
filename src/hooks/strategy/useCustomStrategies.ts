@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Strategy } from "./types";
+import { TradeType } from "@/types/strategy";
 
 export const useCustomStrategies = () => {
   const [customStrategies, setCustomStrategies] = useState<Strategy[]>([]);
@@ -40,6 +41,15 @@ export const useCustomStrategies = () => {
             drawdown = perf.drawdown ? String(perf.drawdown) : "N/A";
           }
           
+          // Ensure tradeType is properly cast as TradeType
+          const tradeTypeValue = strategy.trade_type || "paper";
+          const parsedTradeType: TradeType = 
+            tradeTypeValue === "live trade" || 
+            tradeTypeValue === "paper" || 
+            tradeTypeValue === "completed" 
+              ? tradeTypeValue as TradeType 
+              : "paper";
+          
           return {
             id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),
             name: strategy.name,
@@ -50,13 +60,14 @@ export const useCustomStrategies = () => {
             quantity: strategy.quantity || 0,
             selectedBroker: strategy.selected_broker || "",
             brokerUsername: strategy.broker_username || "",
-            tradeType: strategy.trade_type || "paper trade",
+            tradeType: parsedTradeType,
             rowId: strategy.id,
             uniqueId: `custom-${strategy.id}`,
             performance: {
               winRate,
+              profitFactor: "N/A",
               avgProfit,
-              drawdown
+              avgLoss: "N/A"
             }
           };
         });
