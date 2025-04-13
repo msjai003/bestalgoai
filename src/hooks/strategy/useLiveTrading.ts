@@ -37,19 +37,19 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         
-        // Ensure all strategies have the correct type for tradeType
-        const typedCombinedStrategies: Strategy[] = [
+        // Create a properly typed combined strategies array
+        const combinedStrategies = [
           ...userStrategies,
           ...customStrategies
-        ];
+        ] as Strategy[];
         
         // Filter strategies based on selectedMode
         const filteredStrategies = selectedMode !== "all" 
-          ? typedCombinedStrategies.filter(strategy => 
+          ? combinedStrategies.filter(strategy => 
               (selectedMode === "live" && strategy.isLive) || 
               (selectedMode === "paper" && !strategy.isLive)
             )
-          : typedCombinedStrategies;
+          : combinedStrategies;
         
         setStrategies(filteredStrategies);
       } catch (error) {

@@ -36,6 +36,43 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Consistent spacing system based on 8px grid */
+  .spacing-1 {
+    padding: 0.5rem; /* 8px */
+    margin: 0.5rem; /* 8px */
+  }
+  
+  .spacing-2 {
+    padding: 1rem; /* 16px */
+    margin: 1rem; /* 16px */
+  }
+  
+  .spacing-3 {
+    padding: 1.5rem; /* 24px */
+    margin: 1.5rem; /* 24px */
+  }
+  
+  .spacing-4 {
+    padding: 2rem; /* 32px */
+    margin: 2rem; /* 32px */
+  }
+  
+  /* Grid system for alignment */
+  .grid-8 {
+    display: grid;
+    gap: 0.5rem; /* 8px */
+  }
+  
+  .grid-16 {
+    display: grid;
+    gap: 1rem; /* 16px */
+  }
+  
+  .grid-24 {
+    display: grid;
+    gap: 1.5rem; /* 24px */
+  }
 }
 
 @layer components {
@@ -73,5 +110,40 @@
   
   .input-field {
     @apply bg-charcoalSecondary/50 border border-gray-700/40 rounded-lg px-4 py-2 text-white focus:border-cyan/50 focus:outline-none focus:ring-1 focus:ring-cyan/30;
+  }
+  
+  /* Standardized card components */
+  .strategy-card {
+    @apply premium-card p-5 relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10;
+  }
+  
+  .metric-card {
+    @apply glass-card p-3 rounded-lg;
+  }
+  
+  /* Status indicators */
+  .status-active {
+    @apply flex items-center gap-2 text-emerald-400;
+  }
+  
+  .status-inactive {
+    @apply flex items-center gap-2 text-cyan;
+  }
+  
+  .status-completed {
+    @apply flex items-center gap-2 text-gray-400;
+  }
+  
+  /* Bottom navigation */
+  .bottom-nav-item {
+    @apply flex flex-col items-center w-16 transition-all duration-300;
+  }
+  
+  .bottom-nav-icon {
+    @apply flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300;
+  }
+  
+  .bottom-nav-label {
+    @apply text-[10px] font-medium tracking-wide transition-all duration-300;
   }
 }
