@@ -22,6 +22,8 @@ const buttonVariants = cva(
         icon: "bg-[#2A2A2A] text-white hover:bg-[#383838] hover:shadow-cyan/10 h-11 w-11 p-0 rounded-full shadow-sm",
         gradient: "bg-gradient-to-r from-cyan to-cyan/80 text-white shadow-md hover:shadow-cyan/20 hover:shadow-lg hover:from-cyan hover:to-cyan/80 py-3 px-5",
         fab: "bg-gradient-to-r from-cyan to-cyan/90 text-white h-14 w-14 rounded-full shadow-lg hover:shadow-cyan/30 hover:shadow-xl hover:from-cyan hover:to-cyan/80 p-0",
+        cyan: "bg-cyan text-white hover:bg-cyan/90 shadow-md hover:shadow-cyan/20",
+        logout: "bg-cyan text-charcoalPrimary hover:bg-cyan/90 shadow-md hover:shadow-cyan/20",
       },
       size: {
         default: "h-12 px-5 py-3 [&_svg]:size-5",
