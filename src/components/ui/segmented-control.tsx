@@ -20,7 +20,7 @@ interface SegmentedControlProps {
 export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedControlProps>(
   ({ segments, value, onChange, fullWidth = true, size = "md", variant = "primary", className }, ref) => {
     const containerClasses = cn(
-      "flex rounded-2xl p-1.5 bg-charcoalSecondary/80 border border-gray-700/30 shadow-sm",
+      "flex rounded-[24px] p-1.5 bg-charcoalSecondary/80 border border-gray-700/30 shadow-sm",
       {
         "w-full": fullWidth,
         "inline-flex": !fullWidth,
@@ -35,29 +35,29 @@ export const SegmentedControl = React.forwardRef<HTMLDivElement, SegmentedContro
       const isActive = value === segmentValue;
       
       return cn(
-        "flex items-center justify-center transition-all duration-300 ease-in-out",
+        "flex items-center justify-center transition-all duration-300 ease-in-out rounded-[20px]",
         {
           // Size variants
           "text-xs py-1.5": size === "sm",
-          "text-sm py-2": size === "md",
-          "text-base py-2.5": size === "lg",
+          "text-label py-2": size === "md",
+          "text-button py-2.5": size === "lg",
           
           // Width
           "flex-1": fullWidth,
           "px-3": !fullWidth && size === "sm",
-          "px-4": !fullWidth && size === "md",
-          "px-5": !fullWidth && size === "lg",
+          "px-5": !fullWidth && size === "md",
+          "px-6": !fullWidth && size === "lg",
           
           // Active state - primary variant
-          "bg-cyan text-charcoalPrimary font-medium rounded-xl shadow-md": 
+          "bg-cyan text-charcoalPrimary font-medium shadow-md": 
             isActive && variant === "primary",
           
           // Active state - secondary variant
-          "bg-gray-700/80 text-white font-medium rounded-xl shadow-md": 
+          "bg-gray-700/80 text-white font-medium shadow-md": 
             isActive && variant === "secondary",
           
           // Inactive state
-          "text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-xl": !isActive,
+          "text-gray-400 hover:text-white hover:bg-gray-700/40": !isActive,
         }
       );
     };

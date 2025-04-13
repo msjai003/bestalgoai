@@ -13,12 +13,12 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
   onModeChange
 }) => {
   return (
-    <div className="bg-charcoalSecondary rounded-lg p-1.5 flex shadow-lg border border-gray-800/30">
+    <div className="bg-charcoalSecondary rounded-[24px] p-1.5 flex shadow-lg border border-gray-800/30">
       <Button
         variant="ghost"
         onClick={() => onModeChange("all")}
         className={cn(
-          "flex-1 rounded-md text-sm font-medium transition-all py-2.5",
+          "flex-1 rounded-[20px] text-label font-medium transition-all py-2.5",
           selectedMode === "all" 
             ? "bg-cyan text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"
@@ -30,7 +30,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         variant="ghost"
         onClick={() => onModeChange("live")}
         className={cn(
-          "flex-1 rounded-md text-sm font-medium transition-all py-2.5 mx-1",
+          "flex-1 rounded-[20px] text-label font-medium transition-all py-2.5 mx-1",
           selectedMode === "live" 
             ? "bg-emerald-500 text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"
@@ -42,7 +42,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         variant="ghost"
         onClick={() => onModeChange("paper")}
         className={cn(
-          "flex-1 rounded-md text-sm font-medium transition-all py-2.5",
+          "flex-1 rounded-[20px] text-label font-medium transition-all py-2.5",
           selectedMode === "paper" 
             ? "bg-cyan text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"

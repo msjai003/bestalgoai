@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -53,15 +52,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Applying the Charcoal & Cyan theme color codes
-        appBg: "#121212",      // Updated to Charcoal Primary Background
-        surfaceBg: "#1F1F1F",  // Updated to Charcoal Secondary Background
+        // BestAlgo.ai Theme colors
+        appBg: "#121212",      // Primary Background
+        surfaceBg: "#1F1F1F",  // Secondary Background
         accentPink: "#00BCD4", // Updated to Cyan
         accentPurple: "#00BCD4", // Also updated to Cyan for consistency
         textPrimary: "#FFFFFF", // Primary Text
         textSecondary: "#B0B0B0", // Secondary Text
-        success: "#4CAF50",    // Updated Success
-        danger: "#F44336",     // Updated Danger
+        success: "#4CAF50",    // Success
+        danger: "#F44336",     // Danger
         
         // Charcoal & Cyan theme
         charcoalPrimary: "#121212",   // Primary Background
@@ -76,6 +75,27 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        pill: "30px",
+        circle: "50%",
+      },
+      fontFamily: {
+        sans: ['Inter', 'DM Sans', 'Manrope', 'sans-serif'],
+      },
+      fontSize: {
+        'heading-lg': '20px',
+        'heading-md': '18px',
+        'button': '16px',
+        'label': '14px',
+        'small': '12px',
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+      },
+      lineHeight: {
+        comfortable: '1.4',
       },
       keyframes: {
         "accordion-down": {
