@@ -12,35 +12,35 @@ export const BottomNav = () => {
         <div className="flex justify-around h-full items-center px-4">
           <NavItem 
             to="/dashboard" 
-            icon={<Home size={20} />}
+            icon={<Home size={22} />}
             label="Home" 
             isActive={location.pathname === '/dashboard'}
           />
           
           <NavItem 
             to="/strategy-management" 
-            icon={<BarChart2 size={20} />}
+            icon={<BarChart2 size={22} />}
             label="Strategies" 
             isActive={location.pathname.includes('/strategy')}
           />
           
           <NavItem 
             to="/classes" 
-            icon={<GraduationCap size={20} />}
+            icon={<GraduationCap size={22} />}
             label="Learn" 
             isActive={location.pathname === '/classes' || location.pathname === '/education'}
           />
           
           <NavItem 
             to="/alerts" 
-            icon={<Bell size={20} />}
+            icon={<Bell size={22} />}
             label="Alerts" 
             isActive={location.pathname === '/alerts'}
           />
           
           <NavItem 
             to="/settings" 
-            icon={<User size={20} />}
+            icon={<User size={22} />}
             label="Account" 
             isActive={location.pathname === '/settings'}
           />
@@ -72,7 +72,7 @@ const NavItem = ({
       )}
     >
       <div className={cn(
-        "flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300",
+        "flex items-center justify-center h-10 w-10 rounded-full mb-1 transition-all duration-300",
         isActive 
           ? "bg-cyan/10" 
           : "bg-transparent hover:bg-gray-800/40"

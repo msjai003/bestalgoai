@@ -36,25 +36,53 @@
   }
 }
 
-/* Consistent 8px spacing */
-.spacing-8 {
+/* Consistent 8px spacing system */
+.p-8 {
   padding: 8px;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+.p-24 {
+  padding: 24px;
+}
+
+.p-32 {
+  padding: 32px;
+}
+
+.m-8 {
   margin: 8px;
 }
 
-.spacing-16 {
-  padding: 16px;
+.m-16 {
   margin: 16px;
 }
 
-.spacing-24 {
-  padding: 24px;
+.m-24 {
   margin: 24px;
 }
 
-.spacing-32 {
-  padding: 32px;
+.m-32 {
   margin: 32px;
+}
+
+.gap-8 {
+  gap: 8px;
+}
+
+.gap-16 {
+  gap: 16px;
+}
+
+.gap-24 {
+  gap: 24px;
+}
+
+.gap-32 {
+  gap: 32px;
 }
 
 /* Typography scale */
@@ -83,4 +111,50 @@
 .small-text {
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* Section spacing */
+.section-spacing {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+/* Card styles */
+.card-spacing {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Button alignment */
+.button-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Grid layouts */
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.grid-3x2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Vertical alignment */
+.align-center {
+  display: flex;
+  align-items: center;
+}
+
+/* Equal height cards */
+.equal-height {
+  height: 100%;
 }
