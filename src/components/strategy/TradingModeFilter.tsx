@@ -1,59 +1,54 @@
 
-import React from "react";
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type TradingModeOption = "all" | "live" | "paper";
-
 interface TradingModeFilterProps {
-  selectedMode: TradingModeOption;
-  onModeChange: (mode: TradingModeOption) => void;
+  selectedMode: "all" | "live" | "paper";
+  onModeChange: (mode: "all" | "live" | "paper") => void;
 }
 
-export const TradingModeFilter = ({
+export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
   selectedMode,
-  onModeChange,
-}: TradingModeFilterProps) => {
+  onModeChange
+}) => {
   return (
-    <div className="inline-flex items-center gap-1.5 p-1 bg-charcoalSecondary/30 rounded-lg border border-gray-700/50">
+    <div className="bg-charcoalSecondary rounded-lg p-1.5 flex shadow-lg border border-gray-800/30">
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
         onClick={() => onModeChange("all")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
-          selectedMode === "all"
-            ? "bg-charcoalSecondary text-white shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
+          "flex-1 rounded-md text-sm transition-all",
+          selectedMode === "all" 
+            ? "bg-cyan text-charcoalPrimary font-medium"
+            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
         All
       </Button>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
         onClick={() => onModeChange("live")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
-          selectedMode === "live"
-            ? "bg-charcoalSuccess/20 text-charcoalSuccess shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
+          "flex-1 rounded-md text-sm transition-all",
+          selectedMode === "live" 
+            ? "bg-emerald-500 text-charcoalPrimary font-medium"
+            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
-        Live Trading
+        Live
       </Button>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
         onClick={() => onModeChange("paper")}
         className={cn(
-          "h-8 px-4 py-0 text-sm font-medium rounded-md border-0",
-          selectedMode === "paper"
-            ? "bg-cyan/20 text-cyan shadow-sm"
-            : "bg-transparent text-gray-400 hover:text-white hover:bg-charcoalSecondary/50"
+          "flex-1 rounded-md text-sm transition-all",
+          selectedMode === "paper" 
+            ? "bg-cyan text-charcoalPrimary font-medium"
+            : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
-        Paper Trading
+        Paper
       </Button>
     </div>
   );

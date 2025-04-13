@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Power } from "lucide-react";
 
 interface TradingControlsProps {
   isActive: boolean;
@@ -12,38 +13,33 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
   onToggleTrading 
 }) => {
   return (
-    <section className="space-y-4">
-      <div className="bg-charcoalSecondary/30 rounded-xl p-4 border border-gray-700 shadow-lg">
-        <div className="space-y-3">
-          {!isActive ? (
-            <Button 
-              variant="logout"
-              className="w-full py-6 rounded-full font-medium shadow-lg hover:opacity-90 transition-opacity"
-              onClick={onToggleTrading}
-            >
-              Start Trading All
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between px-3 py-2 bg-cyan/20 rounded-lg border border-cyan/30">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-cyan animate-pulse"></div>
-                  <span className="text-cyan font-medium">Trading Active</span>
-                </div>
-                <span className="text-xs text-cyan bg-cyan/30 px-2 py-1 rounded-full">Live</span>
-              </div>
-              
-              <Button 
-                variant="destructive"
-                className="w-full py-6 rounded-lg font-medium"
-                onClick={onToggleTrading}
-              >
-                Square Off All Positions
-              </Button>
-            </div>
-          )}
+    <div className="fixed bottom-24 left-0 right-0 px-4 z-40">
+      <div className="glass-card rounded-2xl p-4 border border-gray-700/40 shadow-2xl backdrop-blur-xl mx-auto max-w-md">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-white font-medium mb-1">Trading Status</h3>
+            <p className="text-xs text-gray-400">Turn on to enable live trading across all active strategies</p>
+          </div>
+          <Button
+            onClick={onToggleTrading}
+            size="lg"
+            className={`h-12 w-24 ${isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 hover:bg-gray-600'} rounded-xl transition-all duration-300`}
+          >
+            <Power className={`mr-2 h-5 w-5 ${isActive ? 'text-white' : 'text-gray-300'}`} />
+            <span className={`font-medium ${isActive ? 'text-white' : 'text-gray-300'}`}>
+              {isActive ? 'ON' : 'OFF'}
+            </span>
+          </Button>
         </div>
+        {isActive && (
+          <div className="mt-2 bg-green-500/10 border border-green-500/20 rounded-lg p-2">
+            <p className="text-xs text-green-400 flex items-center">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
+              Live trading is active. Your strategies are executing trades.
+            </p>
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
 };

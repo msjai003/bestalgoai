@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { StrategySection } from "@/components/strategy/StrategySection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { ChartBar, Briefcase, CheckCircle, Plus } from "lucide-react";
 import { DeleteConfirmationDialog } from "@/components/strategy/DeleteConfirmationDialog";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 const StrategyManagement = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const StrategyManagement = () => {
     <div className="bg-charcoalPrimary min-h-screen">
       <Header />
       <main className="pt-16 pb-20 px-4">
-        <div className="flex items-center justify-between my-4">
+        <div className="flex items-center justify-between my-5">
           <h1 className="text-xl font-bold text-white">Strategy Management</h1>
           <Button 
             onClick={() => navigate('/strategy-selection')}
@@ -72,32 +72,21 @@ const StrategyManagement = () => {
           </Button>
         </div>
         
-        <Tabs defaultValue="live" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-charcoalSecondary border border-gray-800/40">
-            <TabsTrigger 
-              value="live" 
-              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
-            >
-              <ChartBar className="h-4 w-4" />
-              <span>Live ({liveStrategies.length})</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="paper" 
-              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
-            >
-              <Briefcase className="h-4 w-4" />
-              <span>Paper ({paperStrategies.length})</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="completed" 
-              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary"
-            >
-              <CheckCircle className="h-4 w-4" />
-              <span>Completed ({completedStrategies.length})</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="live">
+        <SegmentedControl
+          segments={[
+            { label: "Live", value: "live", icon: <ChartBar className="h-4 w-4" />, count: liveStrategies.length },
+            { label: "Paper", value: "paper", icon: <Briefcase className="h-4 w-4" />, count: paperStrategies.length },
+            { label: "Completed", value: "completed", icon: <CheckCircle className="h-4 w-4" />, count: completedStrategies.length }
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+          size="md"
+          variant="primary"
+          fullWidth
+        />
+        
+        <div className="mt-5">
+          {activeTab === "live" && (
             <StrategySection
               title="Live Trading Strategies"
               icon={<ChartBar className="h-5 w-5 text-cyan" />}
@@ -108,9 +97,9 @@ const StrategyManagement = () => {
               onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
-          </TabsContent>
+          )}
           
-          <TabsContent value="paper">
+          {activeTab === "paper" && (
             <StrategySection
               title="Paper Trading Strategies"
               icon={<Briefcase className="h-5 w-5 text-cyan" />}
@@ -121,9 +110,9 @@ const StrategyManagement = () => {
               onDeleteStrategy={handleDeleteStrategy}
               onToggleLiveMode={handleToggleLiveMode}
             />
-          </TabsContent>
+          )}
           
-          <TabsContent value="completed">
+          {activeTab === "completed" && (
             <StrategySection
               title="Completed Strategies"
               icon={<CheckCircle className="h-5 w-5 text-cyan" />}
@@ -135,8 +124,8 @@ const StrategyManagement = () => {
               onToggleLiveMode={handleToggleLiveMode}
               showEmptyStateButton={false}
             />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </main>
       
       {/* Delete Confirmation Dialog */}

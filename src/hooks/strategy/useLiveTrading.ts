@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,8 +36,11 @@ export const useLiveTrading = () => {
       
       try {
         const userStrategies = await loadUserStrategies(user.id);
+        // Convert customStrategies to proper Strategy type to fix TypeScript errors
+        const typedCustomStrategies = customStrategies as Strategy[];
+        
         setStrategies(prev => {
-          const combinedStrategies = [...userStrategies, ...customStrategies];
+          const combinedStrategies = [...userStrategies, ...typedCustomStrategies];
           
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
