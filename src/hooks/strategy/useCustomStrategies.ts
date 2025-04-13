@@ -68,7 +68,7 @@ export const useCustomStrategies = () => {
               avgLoss: "N/A",
               drawdown
             }
-          } as Strategy; // Explicitly cast the return value to Strategy
+          };
         });
 
         setCustomStrategies(formattedStrategies);

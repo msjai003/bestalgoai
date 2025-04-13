@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,29 +36,21 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         
-        // Type assertion to ensure all strategies meet the Strategy interface requirements
-        const typedCustomStrategies = customStrategies.map(strategy => {
-          return {
-            ...strategy,
-            tradeType: strategy.tradeType as TradeType
-          };
-        });
-        
-        const combinedStrategies: Strategy[] = [
+        // Type-safe combination of strategies
+        const combinedStrategies = [
           ...userStrategies,
-          ...typedCustomStrategies
+          ...customStrategies
         ];
         
-        setStrategies(prev => {
-          if (selectedMode !== "all") {
-            return combinedStrategies.filter(strategy => 
+        // Filter strategies based on selectedMode
+        const filteredStrategies = selectedMode !== "all" 
+          ? combinedStrategies.filter(strategy => 
               (selectedMode === "live" && strategy.isLive) || 
               (selectedMode === "paper" && !strategy.isLive)
-            );
-          }
-          
-          return combinedStrategies;
-        });
+            )
+          : combinedStrategies;
+        
+        setStrategies(filteredStrategies);
       } catch (error) {
         console.error("Error fetching strategies:", error);
       }
@@ -110,11 +101,6 @@ export const useLiveTrading = () => {
     
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
-  };
-  
-  const handleOpenQuantityDialog = (id: number) => {
-    setCurrentStrategyId(id);
-    setShowQuantityDialog(true);
   };
   
   const confirmModeChange = async () => {
@@ -186,6 +172,11 @@ export const useLiveTrading = () => {
     setTargetMode(null);
   };
   
+  const handleOpenQuantityDialog = (id: number) => {
+    setCurrentStrategyId(id);
+    setShowQuantityDialog(true);
+  };
+  
   const cancelModeChange = () => {
     setShowConfirmationDialog(false);
     setCurrentStrategyId(null);
@@ -215,7 +206,7 @@ export const useLiveTrading = () => {
           quantity,
           strategy?.selectedBroker || "",
           strategy?.brokerUsername || "",
-          strategy?.isLive ? "live trade" : "paper trade"
+          strategy?.isLive ? "live trade" : "paper"
         );
       }
       
@@ -276,7 +267,7 @@ export const useLiveTrading = () => {
           strategy?.quantity || 0,
           broker,
           username,
-          strategy?.isLive ? "live trade" : "paper trade"
+          strategy?.isLive ? "live trade" : "paper"
         );
       }
       
