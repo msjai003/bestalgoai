@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,19 +37,19 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         
-        // Type-safe combination of strategies
-        const combinedStrategies = [
+        // Ensure all strategies have the correct type for tradeType
+        const typedCombinedStrategies: Strategy[] = [
           ...userStrategies,
           ...customStrategies
         ];
         
         // Filter strategies based on selectedMode
         const filteredStrategies = selectedMode !== "all" 
-          ? combinedStrategies.filter(strategy => 
+          ? typedCombinedStrategies.filter(strategy => 
               (selectedMode === "live" && strategy.isLive) || 
               (selectedMode === "paper" && !strategy.isLive)
             )
-          : combinedStrategies;
+          : typedCombinedStrategies;
         
         setStrategies(filteredStrategies);
       } catch (error) {
@@ -101,6 +102,11 @@ export const useLiveTrading = () => {
     
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
+  };
+  
+  const handleOpenQuantityDialog = (id: number) => {
+    setCurrentStrategyId(id);
+    setShowQuantityDialog(true);
   };
   
   const confirmModeChange = async () => {
@@ -170,11 +176,6 @@ export const useLiveTrading = () => {
     setCurrentCustomId(null);
     setCurrentBroker(null);
     setTargetMode(null);
-  };
-  
-  const handleOpenQuantityDialog = (id: number) => {
-    setCurrentStrategyId(id);
-    setShowQuantityDialog(true);
   };
   
   const cancelModeChange = () => {
