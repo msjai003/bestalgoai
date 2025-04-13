@@ -36,9 +36,7 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         setStrategies(prev => {
-          const typedCustomStrategies = customStrategies as Strategy[];
-          
-          const combinedStrategies = [...userStrategies, ...typedCustomStrategies];
+          const combinedStrategies = [...userStrategies, ...customStrategies];
           
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
