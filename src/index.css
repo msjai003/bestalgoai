@@ -73,6 +73,49 @@
     display: grid;
     gap: 1.5rem; /* 24px */
   }
+  
+  /* Animation utilities */
+  .transition-smooth {
+    transition: all 0.3s ease;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .active-scale {
+    @apply transition-transform duration-200 active:scale-95;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .slide-in-bottom {
+    animation: slideInBottom 0.3s ease-in-out forwards;
+  }
+  
+  @keyframes slideInBottom {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 }
 
 @layer components {
@@ -145,5 +188,31 @@
   
   .bottom-nav-label {
     @apply text-[10px] font-medium tracking-wide transition-all duration-300;
+  }
+  
+  /* Standardized headers */
+  .section-header {
+    @apply flex items-center gap-2 mb-4;
+  }
+  
+  .section-title {
+    @apply text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300;
+  }
+  
+  .section-subtitle {
+    @apply text-gray-400 text-sm;
+  }
+  
+  /* Consistent layout containers */
+  .main-container {
+    @apply bg-charcoalPrimary min-h-screen flex flex-col;
+  }
+  
+  .page-container {
+    @apply pt-16 pb-20 px-4;
+  }
+  
+  .content-container {
+    @apply flex-1 overflow-auto scrollbar-none pb-2;
   }
 }

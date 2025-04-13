@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader, Plus } from "lucide-react";
+import { Loader, Plus, TrendingUp, Wallet, BarChart } from "lucide-react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,10 +64,31 @@ const Dashboard = () => {
     navigate('/strategy-selection');
   };
 
+  // Mock data for the dashboard metrics
+  const dashboardMetrics = [
+    { title: "Daily P&L", value: "+₹12,450", change: "+2.3%", icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, color: "text-emerald-400" },
+    { title: "Capital Used", value: "₹3,25,000", change: "65%", icon: <Wallet className="h-5 w-5 text-cyan" />, color: "text-white" },
+    { title: "Active Strategies", value: "3", change: "+1 today", icon: <BarChart className="h-5 w-5 text-cyan" />, color: "text-white" }
+  ];
+
   return (
-    <div className="bg-charcoalPrimary min-h-screen">
+    <div className="main-container">
       <Header />
-      <main className="pt-16 pb-20 px-4">
+      <main className="page-container">
+        {/* Dashboard Metrics */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {dashboardMetrics.map((metric, index) => (
+            <div key={index} className="metric-card fade-in" style={{animationDelay: `${index * 0.1}s`}}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-gray-400 text-xs">{metric.title}</span>
+                {metric.icon}
+              </div>
+              <p className={`${metric.color} text-lg font-semibold`}>{metric.value}</p>
+              <p className="text-xs text-gray-400">{metric.change}</p>
+            </div>
+          ))}
+        </div>
+        
         <PortfolioOverview 
           performanceData={mockPerformanceData} 
           currentValue={currentValue} 
@@ -76,7 +97,7 @@ const Dashboard = () => {
         <div className="fixed bottom-24 right-6 z-40">
           <Button
             onClick={handleStartNewStrategy}
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20"
+            className="h-14 w-14 rounded-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary shadow-lg shadow-cyan/20 hover-scale active-scale"
             aria-label="Start New Strategy"
           >
             <Plus className="h-6 w-6" />

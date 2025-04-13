@@ -20,7 +20,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         className={cn(
           "flex-1 rounded-md text-sm font-medium transition-all",
           selectedMode === "all" 
-            ? "bg-cyan text-charcoalPrimary"
+            ? "bg-cyan text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
@@ -32,7 +32,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         className={cn(
           "flex-1 rounded-md text-sm font-medium transition-all",
           selectedMode === "live" 
-            ? "bg-emerald-500 text-charcoalPrimary"
+            ? "bg-emerald-500 text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
@@ -44,7 +44,7 @@ export const TradingModeFilter: React.FC<TradingModeFilterProps> = ({
         className={cn(
           "flex-1 rounded-md text-sm font-medium transition-all",
           selectedMode === "paper" 
-            ? "bg-cyan text-charcoalPrimary"
+            ? "bg-cyan text-charcoalPrimary shadow-sm"
             : "text-gray-400 hover:text-white hover:bg-gray-700/50"
         )}
       >
