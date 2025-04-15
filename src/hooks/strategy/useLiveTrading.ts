@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +26,6 @@ export const useLiveTrading = () => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [currentBroker, setCurrentBroker] = useState<string | null>(null);
   
-  // Get custom strategies
   const { customStrategies } = useCustomStrategies();
   
   useEffect(() => {
@@ -37,10 +35,8 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         setStrategies(prev => {
-          // Combine predefined strategies with custom strategies
           const combinedStrategies = [...userStrategies, ...customStrategies];
           
-          // Filter by selected mode if needed
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
               (selectedMode === "live" && strategy.isLive) || 
@@ -74,18 +70,20 @@ export const useLiveTrading = () => {
   };
   
   const handleToggleLiveMode = (id: number, uniqueId?: string, rowId?: string, broker?: string) => {
-    // Find the specific strategy based on these identifiers
     const strategy = strategies.find(s => {
       if (s.id === id) {
-        // For predefined strategies, also check the broker if provided
         if (broker && s.selectedBroker) {
           return s.selectedBroker === broker;
         }
-        // If no broker is provided, or the strategy doesn't have a broker, match by id
         return true;
       }
-      // Also check uniqueId or rowId for custom strategies
-      return (uniqueId && s.uniqueId === uniqueId) || (rowId && s.rowId === rowId);
+      if (uniqueId && s.uniqueId === uniqueId) {
+        return true;
+      }
+      if (rowId && s.rowId === rowId) {
+        return true;
+      }
+      return false;
     });
     
     if (!strategy) {
@@ -102,8 +100,6 @@ export const useLiveTrading = () => {
       setCurrentCustomId(null);
     }
     
-    // Always toggle the current state for the specific broker
-    // If it's currently live, set target to paper, and vice versa
     setTargetMode(strategy.isLive ? "paper" : "live");
     setShowConfirmationDialog(true);
   };
@@ -116,54 +112,52 @@ export const useLiveTrading = () => {
   const confirmModeChange = async () => {
     if (!user || (currentStrategyId === null && currentCustomId === null) || targetMode === null) return;
     
+    if (targetMode === "live") {
+      setShowConfirmationDialog(false);
+      setShowQuantityDialog(true);
+      return;
+    }
+    
     try {
       if (currentCustomId) {
-        // Update custom strategy in custom_strategies table
         const { error } = await supabase
           .from('custom_strategies')
           .update({
-            trade_type: targetMode === "live" ? "live trade" : "paper trade"
+            trade_type: "paper trade"
           })
           .eq('id', currentCustomId)
           .eq('user_id', user.id);
           
         if (error) throw error;
       } else if (currentStrategyId !== null && currentBroker) {
-        // For predefined strategies, update the specific broker's record
         await updateStrategyTradeType(
           user.id,
           currentStrategyId,
-          targetMode === "live" ? "live trade" : "paper trade",
+          "paper trade",
           currentBroker
         );
       }
       
-      // Update local state - but only for the specific broker-strategy combination
       setStrategies(prev => 
         prev.map(strategy => {
-          // Match by strategy ID and broker name (if applicable)
           if (strategy.id === currentStrategyId) {
-            // For predefined strategies with brokers, make sure we only update the correct broker record
             if (strategy.selectedBroker && currentBroker) {
               if (strategy.selectedBroker === currentBroker) {
-                return { ...strategy, isLive: targetMode === "live" };
+                return { ...strategy, isLive: false };
               }
-              // Different broker for same strategy ID, don't update
               return strategy;
             }
-            // No broker specificity, update based on ID
-            return { ...strategy, isLive: targetMode === "live" };
+            return { ...strategy, isLive: false };
           } else if (strategy.rowId === currentCustomId) {
-            // Custom strategy match by rowId
-            return { ...strategy, isLive: targetMode === "live" };
+            return { ...strategy, isLive: false };
           }
           return strategy;
         })
       );
       
       toast({
-        title: targetMode === "live" ? "Live Trading Enabled" : "Paper Trading Enabled",
-        description: `Strategy is now in ${targetMode} trading mode${currentBroker ? ` with ${currentBroker} broker` : ''}`,
+        title: "Paper Trading Enabled",
+        description: `Strategy is now in paper trading mode${currentBroker ? ` with ${currentBroker} broker` : ''}`,
         duration: 3000,
       });
       
@@ -198,7 +192,6 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === currentStrategyId);
       
       if (strategy?.isCustom && strategy.rowId) {
-        // Update custom strategy quantity
         const { error } = await supabase
           .from('custom_strategies')
           .update({ quantity })
@@ -207,7 +200,6 @@ export const useLiveTrading = () => {
           
         if (error) throw error;
       } else {
-        // Update predefined strategy quantity
         await updateStrategyLiveConfig(
           user.id,
           currentStrategyId,
@@ -218,7 +210,6 @@ export const useLiveTrading = () => {
         );
       }
       
-      // Update local state
       setStrategies(prev => 
         prev.map(s => {
           if (s.id === currentStrategyId) {
@@ -259,7 +250,6 @@ export const useLiveTrading = () => {
       const strategy = strategies.find(s => s.id === currentStrategyId);
       
       if (strategy?.isCustom && strategy.rowId) {
-        // Update custom strategy broker info
         const { error } = await supabase
           .from('custom_strategies')
           .update({
@@ -271,7 +261,6 @@ export const useLiveTrading = () => {
           
         if (error) throw error;
       } else {
-        // Update predefined strategy broker info
         await updateStrategyLiveConfig(
           user.id,
           currentStrategyId,
@@ -282,7 +271,6 @@ export const useLiveTrading = () => {
         );
       }
       
-      // Update local state
       setStrategies(prev => 
         prev.map(s => {
           if (s.id === currentStrategyId) {
