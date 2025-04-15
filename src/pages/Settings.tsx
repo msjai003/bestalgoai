@@ -185,6 +185,18 @@ const Settings = () => {
                   </div>
                 </div>
                 
+                {/* Integration Settings Section */}
+                <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
+                  <h3 className="text-sm font-medium text-cyan/80 mb-3">Integration Settings</h3>
+                  <div className="space-y-3">
+                    <SettingsLink 
+                      icon={<i className="fa-solid fa-exchange-alt w-5 h-5 text-cyan flex items-center justify-center" />} 
+                      label="Broker Integration" 
+                      onClick={() => navigate("/broker-integration")}
+                    />
+                  </div>
+                </div>
+                
                 {/* Account Actions Section (Logout) */}
                 <div className="bg-charcoalSecondary/50 rounded-xl p-4 shadow-lg backdrop-blur-sm border border-gray-800/50">
                   <h3 className="text-sm font-medium text-cyan/80 mb-3">Account Actions</h3>
