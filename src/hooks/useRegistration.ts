@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -57,35 +58,53 @@ export const useRegistration = () => {
     try {
       console.log('Sending welcome messages to:', { email, fullName });
 
-      // Send welcome email
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-        body: JSON.stringify({
+      // Send welcome email with detailed logging
+      try {
+        console.log('Preparing to call send-welcome-email edge function with payload:', {
           email,
           name: fullName,
           welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
-        })
-      });
+        });
+        
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+          body: JSON.stringify({
+            email,
+            name: fullName,
+            welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
+          })
+        });
 
-      if (emailError) {
-        console.error('Error sending welcome email:', emailError);
-      } else {
-        console.log('Welcome email sent successfully');
+        if (emailError) {
+          console.error('Error sending welcome email:', emailError);
+          toast.error('Welcome email could not be sent. Please check your email address.');
+        } else {
+          console.log('Welcome email edge function response:', emailData);
+          toast.success('Welcome email sent to your inbox!');
+        }
+      } catch (emailException) {
+        console.error('Exception during welcome email sending:', emailException);
       }
 
       // Send welcome SMS if mobile number is provided
       if (mobileNumber) {
-        const { data: smsData, error: smsError } = await supabase.functions.invoke('send-welcome-sms', {
-          body: JSON.stringify({
-            userId,
-            fullName,
-            mobileNumber
-          })
-        });
+        try {
+          console.log('Preparing to send welcome SMS to:', mobileNumber);
+          
+          const { data: smsData, error: smsError } = await supabase.functions.invoke('send-welcome-sms', {
+            body: JSON.stringify({
+              userId,
+              fullName,
+              mobileNumber
+            })
+          });
 
-        if (smsError) {
-          console.error('Error sending welcome SMS:', smsError);
-        } else {
-          console.log('Welcome SMS sent successfully');
+          if (smsError) {
+            console.error('Error sending welcome SMS:', smsError);
+          } else {
+            console.log('Welcome SMS edge function response:', smsData);
+          }
+        } catch (smsException) {
+          console.error('Exception during welcome SMS sending:', smsException);
         }
       }
     } catch (error) {
@@ -141,12 +160,15 @@ export const useRegistration = () => {
       
       // Success path - Send welcome messages
       if (result.data?.user?.id) {
+        console.log("Registration successful, sending welcome messages to user:", result.data.user.id);
         await sendWelcomeMessages(
           result.data.user.id,
           state.formData.email,
           state.formData.fullName,
           state.formData.mobile
         );
+      } else {
+        console.warn("Registration successful but no user ID was returned");
       }
       
       console.log("Registration successful, displaying success messages");

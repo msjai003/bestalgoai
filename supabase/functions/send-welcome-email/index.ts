@@ -57,9 +57,22 @@ serve(async (req) => {
       );
     }
 
+    // Check email format validity
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.error(`Invalid email format: ${email}`);
+      return new Response(
+        JSON.stringify({ error: "Invalid email format" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
     // Send actual email using SMTP
     const message = welcomeMessage || "Thank you for signing up with InfoCap Company!";
-    console.log(`Preparing to send welcome message: "${message}"`);
+    console.log(`Preparing to send welcome message: "${message}" to ${email}`);
     
     try {
       const result = await sendSmtpEmail(email, name, message);
@@ -140,6 +153,7 @@ async function sendSmtpEmail(toEmail: string, recipientName: string, welcomeMess
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} InfoCap Company. All rights reserved.</p>
+              <p>This email was sent to ${toEmail}</p>
             </div>
           </div>
         </body>
