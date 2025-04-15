@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -61,7 +62,10 @@ const LiveTrading = () => {
           <StrategyList 
             strategies={strategies}
             onToggleLiveMode={handleToggleLiveMode}
-            onEditQuantity={handleOpenQuantityDialog}
+            onEditQuantity={(id) => {
+              setCurrentStrategyId(id);
+              setShowQuantityDialog(true);
+            }}
             onViewDetails={(id) => navigate(`/strategy-details/${id}`)}
           />
         ) : (
