@@ -1,4 +1,3 @@
-
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
@@ -42,4 +41,17 @@ export interface BrokerFunction {
   is_premium: boolean;
   broker_image?: string;
   configuration?: any;
+}
+
+export interface BrokerCredentials {
+  username: string;
+  password: string;
+  secretKey: string; // Now required
+  twoFactorSecret: string; // Now required
+  apiKey?: string; // Optional
+  accessToken?: string; // Optional
+  sessionId?: string; // Optional
+  brokerUsername?: string; // Optional
+  tradeType?: string; // Optional
+  pnl?: string; // Optional
 }

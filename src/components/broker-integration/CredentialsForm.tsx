@@ -1,4 +1,3 @@
-
 import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey, Eye, EyeOff, Package } from "lucide-react";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -192,6 +191,74 @@ export const CredentialsForm = ({
           </p>
         </div>
 
+        {/* Secret Key - Now required for all brokers */}
+        <div>
+          <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
+            <FileKey className="w-4 h-4" /> Secret Key <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <Input
+              id="secretKey"
+              type={fieldVisibility.secretKey ? "text" : "password"}
+              placeholder="Enter your secret key"
+              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+              value={credentials.secretKey}
+              onChange={(e) => updateCredential('secretKey', e.target.value)}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => toggleFieldVisibility('secretKey')}
+            >
+              {fieldVisibility.secretKey ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-gray-400 text-xs mt-1">
+            This is required for secure authentication with your broker.
+          </p>
+        </div>
+
+        {/* 2FA Secret - Now required for all brokers */}
+        <div>
+          <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
+            <Shield className="w-4 h-4" /> 2FA Secret <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <Input
+              id="twoFactorSecret"
+              type={fieldVisibility.twoFactorSecret ? "text" : "password"}
+              placeholder="Enter your 2FA secret"
+              className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
+              value={credentials.twoFactorSecret}
+              onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => toggleFieldVisibility('twoFactorSecret')}
+            >
+              {fieldVisibility.twoFactorSecret ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-gray-400 text-xs mt-1">
+            Required for enhanced security - enable 2FA in your broker account if not already activated.
+          </p>
+        </div>
+
         {/* Session ID - Show if required */}
         {(isFieldRequired('session_id') || credentials.sessionId) && (
           <div>
@@ -259,74 +326,6 @@ export const CredentialsForm = ({
             </div>
           </div>
         ))}
-
-        {/* Secret Key - Show if required */}
-        {((selectedBroker?.requiresSecretKey || isFieldRequired('secret_key')) && (
-          <div>
-            <Label htmlFor="secretKey" className="text-gray-300 flex items-center gap-2">
-              <FileKey className="w-4 h-4" /> Secret Key
-            </Label>
-            <div className="relative">
-              <Input
-                id="secretKey"
-                type={fieldVisibility.secretKey ? "text" : "password"}
-                placeholder="Enter your secret key"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-                value={credentials.secretKey}
-                onChange={(e) => updateCredential('secretKey', e.target.value)}
-                required={isFieldRequired('secret_key')}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1 h-8 w-8 p-0"
-                onClick={() => toggleFieldVisibility('secretKey')}
-              >
-                {fieldVisibility.secretKey ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle secret key visibility</span>
-              </Button>
-            </div>
-          </div>
-        ))}
-
-        {/* 2FA Secret - Show if required */}
-        {(isFieldRequired('two_factor') || credentials.twoFactorSecret) && (
-          <div>
-            <Label htmlFor="twoFactorSecret" className="text-gray-300 flex items-center gap-2">
-              <Shield className="w-4 h-4" /> 2FA Secret
-            </Label>
-            <div className="relative">
-              <Input
-                id="twoFactorSecret"
-                type={fieldVisibility.twoFactorSecret ? "text" : "password"}
-                placeholder="Enter your 2FA secret"
-                className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
-                value={credentials.twoFactorSecret}
-                onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
-                required={isFieldRequired('two_factor')}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1 h-8 w-8 p-0"
-                onClick={() => toggleFieldVisibility('twoFactorSecret')}
-              >
-                {fieldVisibility.twoFactorSecret ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle 2FA secret visibility</span>
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Security Notice */}
