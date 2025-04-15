@@ -32,7 +32,9 @@ const LiveTrading = () => {
     handleBrokerSubmit,
     handleCancelBroker,
     navigate,
-    setCurrentStrategyId
+    setCurrentStrategyId,
+    selectedStrategyId,
+    setBrokerDialogOpen
   } = useLiveTrading();
 
   return (
@@ -101,6 +103,7 @@ const LiveTrading = () => {
         onOpenChange={setShowBrokerDialog}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
+        strategyId={selectedStrategyId}
       />
     </div>
   );

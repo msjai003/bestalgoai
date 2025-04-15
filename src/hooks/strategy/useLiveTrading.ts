@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -238,19 +237,33 @@ export const useLiveTrading = () => {
     if (!user) return;
     
     try {
-      // Fetch broker details to get the broker_name
+      // Check if this broker is already being used for this strategy
+      const { data: strategySelections, error: checkError } = await supabase
+        .from('strategy_selections')
+        .select('selected_broker')
+        .match({
+          strategy_id: currentStrategyId,
+          user_id: user.id,
+        })
+        .single();
+      
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error("Error checking strategy selections:", checkError);
+        throw checkError;
+      }
+
+      // Get broker details from broker_credentials
       const { data: brokerData, error: brokerError } = await supabase
         .from('broker_credentials')
         .select('broker_name, username')
         .eq('id', brokerId)
-        .eq('user_id', user.id)
         .single();
-      
+        
       if (brokerError) {
         console.error("Error fetching broker details:", brokerError);
         throw brokerError;
       }
-      
+
       const brokerName = brokerData.broker_name;
       const username = brokerData.username;
       
@@ -262,8 +275,8 @@ export const useLiveTrading = () => {
               .update({
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
-                selected_broker: brokerName, // Use actual broker name instead of ID
-                broker_username: username    // Use actual username
+                selected_broker: brokerName,
+                broker_username: username
               })
               .eq('id', currentCustomId)
               .eq('user_id', user.id);
@@ -275,8 +288,8 @@ export const useLiveTrading = () => {
               .update({
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
-                selected_broker: brokerName, // Use actual broker name instead of ID
-                broker_username: username    // Use actual username
+                selected_broker: brokerName,
+                broker_username: username
               })
               .eq('strategy_id', currentStrategyId)
               .eq('user_id', user.id);
@@ -291,8 +304,8 @@ export const useLiveTrading = () => {
                   ...strategy,
                   isLive: true,
                   quantity: pendingQuantity,
-                  selectedBroker: brokerName, // Use actual broker name
-                  brokerUsername: username,   // Use actual username
+                  selectedBroker: brokerName,
+                  brokerUsername: username,
                   tradeType: 'live trade'
                 };
               }
@@ -302,7 +315,7 @@ export const useLiveTrading = () => {
           
           toast({
             title: "Live Trading Enabled",
-            description: `Strategy is now live with quantity ${pendingQuantity}`,
+            description: `Strategy is now live with ${brokerName} account ${username}`,
             duration: 3000,
           });
         } catch (error) {
@@ -322,64 +335,6 @@ export const useLiveTrading = () => {
         return;
       }
       
-      if (currentStrategyId !== null) {
-        try {
-          const strategy = strategies.find(s => s.id === currentStrategyId);
-          
-          if (strategy?.isCustom && strategy.rowId) {
-            const { error } = await supabase
-              .from('custom_strategies')
-              .update({
-                selected_broker: brokerName, // Use broker name
-                broker_username: username    // Use actual username
-              })
-              .eq('id', strategy.rowId)
-              .eq('user_id', user.id);
-              
-            if (error) throw error;
-          } else if (strategy) {
-            await updateStrategyLiveConfig(
-              user.id,
-              currentStrategyId,
-              strategy.quantity || 0,
-              brokerName, // Use broker name
-              username,   // Use actual username
-              strategy.isLive ? "live trade" : "paper trade"
-            );
-          }
-          
-          setStrategies(prev => 
-            prev.map(s => {
-              if (s.id === currentStrategyId) {
-                return { 
-                  ...s, 
-                  selectedBroker: brokerName, // Use broker name
-                  brokerUsername: username    // Use actual username
-                };
-              }
-              return s;
-            })
-          );
-          
-          toast({
-            title: "Broker Settings Updated",
-            description: `Strategy broker set to ${brokerName}`,
-            duration: 3000,
-          });
-          
-        } catch (error) {
-          console.error("Error updating broker settings:", error);
-          toast({
-            title: "Error",
-            description: "Failed to update broker settings",
-            variant: "destructive",
-          });
-        }
-      }
-      
-      setShowBrokerDialog(false);
-      setCurrentStrategyId(null);
-      setCurrentCustomId(null);
     } catch (error) {
       console.error("Error in broker submission process:", error);
       toast({

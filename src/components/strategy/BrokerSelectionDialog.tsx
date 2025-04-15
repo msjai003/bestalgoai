@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +24,7 @@ interface BrokerSelectionDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (brokerId: string, brokerName: string) => void;
   onCancel: () => void;
+  strategyId: string;
 }
 
 export const BrokerSelectionDialog = ({
@@ -32,6 +32,7 @@ export const BrokerSelectionDialog = ({
   onOpenChange,
   onConfirm,
   onCancel,
+  strategyId,
 }: BrokerSelectionDialogProps) => {
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>("");
   const [selectedBrokerName, setSelectedBrokerName] = useState<string>("");
@@ -45,23 +46,52 @@ export const BrokerSelectionDialog = ({
       
       setLoading(true);
       try {
-        const userBrokers = await fetchUserBrokers(user.id);
-        setBrokers(userBrokers);
+        // First, get the brokers already used for this strategy
+        const { data: usedBrokers, error: usedBrokersError } = await supabase
+          .from('strategy_selections')
+          .select('selected_broker')
+          .eq('strategy_id', strategyId)
+          .eq('trade_type', 'live trade');
+
+        if (usedBrokersError) throw usedBrokersError;
+
+        const usedBrokerNames = (usedBrokers || []).map(b => b.selected_broker);
+
+        // Then, get all available brokers from broker_credentials
+        const { data: availableBrokers, error: brokersError } = await supabase
+          .from('broker_credentials')
+          .select('id, broker_name')
+          .eq('user_id', user.id)
+          .eq('status', 'active');
+
+        if (brokersError) throw brokersError;
+
+        // Filter out already used brokers
+        const filteredBrokers = availableBrokers.filter(
+          broker => !usedBrokerNames.includes(broker.broker_name)
+        );
+
+        setBrokers(filteredBrokers);
         
         // Set default selection if brokers exist
-        if (userBrokers.length > 0) {
-          setSelectedBrokerId(userBrokers[0].id);
-          setSelectedBrokerName(userBrokers[0].broker_name);
+        if (filteredBrokers.length > 0) {
+          setSelectedBrokerId(filteredBrokers[0].id);
+          setSelectedBrokerName(filteredBrokers[0].broker_name);
         }
       } catch (error) {
         console.error("Error loading brokers:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load available brokers",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadBrokers();
-  }, [user, open]);
+  }, [user, open, strategyId]);
   
   const handleConfirm = () => {
     if (!selectedBrokerId) return;
