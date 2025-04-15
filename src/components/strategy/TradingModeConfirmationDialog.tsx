@@ -15,6 +15,7 @@ interface TradingModeConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetMode: "live" | "paper" | null;
+  brokerName?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -23,6 +24,7 @@ export const TradingModeConfirmationDialog = ({
   open,
   onOpenChange,
   targetMode,
+  brokerName,
   onConfirm,
   onCancel,
 }: TradingModeConfirmationDialogProps) => {
@@ -52,7 +54,8 @@ export const TradingModeConfirmationDialog = ({
             ) : (
               <>
                 Are you sure you want to switch to <span className="font-semibold text-cyan">paper trading</span> mode? 
-                No real funds will be used, but the strategy will continue to generate signals.
+                {brokerName && <> Your connection to <span className="font-semibold">{brokerName}</span> will be removed, and </>}
+                no real funds will be used, but the strategy will continue to generate signals.
               </>
             )}
           </DialogDescription>

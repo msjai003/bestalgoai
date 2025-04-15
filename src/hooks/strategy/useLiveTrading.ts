@@ -173,92 +173,17 @@ export const useLiveTrading = () => {
   const handleQuantitySubmit = async (quantity: number) => {
     if (!user || currentStrategyId === null) return;
     
-    // After quantity is set, show broker selection
-    setShowQuantityDialog(false);
-    setShowBrokerDialog(true);
-    setPendingQuantity(quantity);
-  };
-  
-  const handleBrokerSubmit = async (brokerId: string, username: string) => {
-    if (!user || currentStrategyId === null || pendingQuantity === 0) return;
-    
-    try {
-      if (currentCustomId) {
-        const { error } = await supabase
-          .from('custom_strategies')
-          .update({
-            trade_type: 'live trade',
-            quantity: pendingQuantity,
-            selected_broker: brokerId,
-            broker_username: username
-          })
-          .eq('id', currentCustomId)
-          .eq('user_id', user.id);
-          
-        if (error) throw error;
-      } else {
-        await updateStrategyLiveConfig(
-          user.id,
-          currentStrategyId,
-          pendingQuantity,
-          brokerId,
-          username,
-          'live trade'
-        );
-      }
-      
-      // Update local state
-      setStrategies(prev => 
-        prev.map(strategy => {
-          if ((strategy.id === currentStrategyId) || 
-              (strategy.rowId === currentCustomId)) {
-            return {
-              ...strategy,
-              isLive: true,
-              quantity: pendingQuantity,
-              selectedBroker: brokerId,
-              brokerUsername: username
-            };
-          }
-          return strategy;
-        })
-      );
-      
-      toast({
-        title: "Live Trading Enabled",
-        description: `Strategy is now live with quantity ${pendingQuantity} and broker ${brokerId}`,
-        duration: 3000,
-      });
-      
-    } catch (error) {
-      console.error("Error updating strategy configuration:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update strategy configuration",
-        variant: "destructive",
-      });
+    // Check if we're in the process of enabling live trading 
+    // (when targetMode is set to "live")
+    if (targetMode === "live") {
+      // After quantity is set, show broker selection for live trading setup
+      setShowQuantityDialog(false);
+      setShowBrokerDialog(true);
+      setPendingQuantity(quantity);
+      return;
     }
     
-    // Reset all dialogs and temporary states
-    setShowBrokerDialog(false);
-    setPendingQuantity(0);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentBroker(null);
-    setTargetMode(null);
-  };
-
-  const cancelModeChange = () => {
-    setShowConfirmationDialog(false);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentBroker(null);
-    setTargetMode(null);
-  };
-  
-  const handleQuantitySubmit = async (quantity: number) => {
-    if (!user || currentStrategyId === null) return;
-    
+    // Otherwise, this is a regular quantity update
     try {
       const strategy = strategies.find(s => s.id === currentStrategyId);
       
@@ -312,14 +237,80 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(null);
   };
   
-  const handleCancelQuantity = () => {
-    setShowQuantityDialog(false);
-    setCurrentStrategyId(null);
-  };
-  
   const handleBrokerSubmit = async (broker: string, username: string) => {
     if (!user || currentStrategyId === null) return;
     
+    // Check if we're in the process of enabling live trading
+    // (when pendingQuantity is set)
+    if (targetMode === "live" && pendingQuantity > 0) {
+      try {
+        if (currentCustomId) {
+          const { error } = await supabase
+            .from('custom_strategies')
+            .update({
+              trade_type: 'live trade',
+              quantity: pendingQuantity,
+              selected_broker: broker,
+              broker_username: username
+            })
+            .eq('id', currentCustomId)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        } else {
+          await updateStrategyLiveConfig(
+            user.id,
+            currentStrategyId,
+            pendingQuantity,
+            broker,
+            username,
+            'live trade'
+          );
+        }
+        
+        // Update local state
+        setStrategies(prev => 
+          prev.map(strategy => {
+            if ((strategy.id === currentStrategyId) || 
+                (strategy.rowId === currentCustomId)) {
+              return {
+                ...strategy,
+                isLive: true,
+                quantity: pendingQuantity,
+                selectedBroker: broker,
+                brokerUsername: username
+              };
+            }
+            return strategy;
+          })
+        );
+        
+        toast({
+          title: "Live Trading Enabled",
+          description: `Strategy is now live with quantity ${pendingQuantity} and broker ${broker}`,
+          duration: 3000,
+        });
+        
+      } catch (error) {
+        console.error("Error updating strategy configuration:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update strategy configuration",
+          variant: "destructive",
+        });
+      }
+      
+      // Reset all dialogs and temporary states
+      setShowBrokerDialog(false);
+      setPendingQuantity(0);
+      setCurrentStrategyId(null);
+      setCurrentCustomId(null);
+      setCurrentBroker(null);
+      setTargetMode(null);
+      return;
+    }
+    
+    // Otherwise, this is just a broker update
     try {
       const strategy = strategies.find(s => s.id === currentStrategyId);
       
@@ -376,9 +367,30 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(null);
   };
   
+  const cancelModeChange = () => {
+    setShowConfirmationDialog(false);
+    setCurrentStrategyId(null);
+    setCurrentCustomId(null);
+    setCurrentBroker(null);
+    setTargetMode(null);
+  };
+  
+  const handleCancelQuantity = () => {
+    setShowQuantityDialog(false);
+    setCurrentStrategyId(null);
+    setTargetMode(null); // Reset target mode when canceling
+  };
+  
   const handleCancelBroker = () => {
     setShowBrokerDialog(false);
     setCurrentStrategyId(null);
+    setPendingQuantity(0);
+    setTargetMode(null); // Reset target mode when canceling
+  };
+  
+  const handleOpenQuantityDialog = (id: number) => {
+    setCurrentStrategyId(id);
+    setShowQuantityDialog(true);
   };
 
   return {
