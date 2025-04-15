@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -32,7 +31,8 @@ const LiveTrading = () => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    navigate
+    navigate,
+    setCurrentStrategyId
   } = useLiveTrading();
 
   return (
