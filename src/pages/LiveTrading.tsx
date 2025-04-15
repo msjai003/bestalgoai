@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -11,7 +10,6 @@ import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
-import { supabase } from '@/integrations/supabase/client';
 
 const LiveTrading = () => {
   const {
@@ -25,13 +23,10 @@ const LiveTrading = () => {
     showBrokerDialog,
     setShowBrokerDialog,
     targetMode,
-    currentBroker,
     handleTradingToggle,
     handleModeChange,
     handleToggleLiveMode,
-    handleOpenQuantityDialog,
     confirmModeChange,
-    cancelModeChange,
     handleQuantitySubmit,
     handleCancelQuantity,
     handleBrokerSubmit,
@@ -86,9 +81,8 @@ const LiveTrading = () => {
         open={showConfirmationDialog}
         onOpenChange={setShowConfirmationDialog}
         targetMode={targetMode}
-        brokerName={currentBroker}
         onConfirm={confirmModeChange}
-        onCancel={cancelModeChange}
+        onCancel={() => setShowConfirmationDialog(false)}
       />
       
       <QuantityInputDialog
