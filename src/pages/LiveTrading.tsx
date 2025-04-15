@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -33,8 +34,8 @@ const LiveTrading = () => {
     handleCancelBroker,
     navigate,
     setCurrentStrategyId,
-    selectedStrategyId,
-    setBrokerDialogOpen
+    currentStrategyId,
+    selectedStrategyId
   } = useLiveTrading();
 
   return (
@@ -103,7 +104,7 @@ const LiveTrading = () => {
         onOpenChange={setShowBrokerDialog}
         onConfirm={handleBrokerSubmit}
         onCancel={handleCancelBroker}
-        strategyId={selectedStrategyId}
+        strategyId={selectedStrategyId || ""}
       />
     </div>
   );

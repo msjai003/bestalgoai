@@ -22,7 +22,8 @@ export const useLiveTrading = () => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [currentBroker, setCurrentBroker] = useState<string | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
-  
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string>("");
+
   const { customStrategies } = useCustomStrategies();
   
   useEffect(() => {
@@ -78,6 +79,7 @@ export const useLiveTrading = () => {
     }
     
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
+    setSelectedStrategyId(id.toString());
     
     if (strategy.isCustom && rowId) {
       setCurrentCustomId(rowId);
@@ -237,22 +239,6 @@ export const useLiveTrading = () => {
     if (!user) return;
     
     try {
-      // Check if this broker is already being used for this strategy
-      const { data: strategySelections, error: checkError } = await supabase
-        .from('strategy_selections')
-        .select('selected_broker')
-        .match({
-          strategy_id: currentStrategyId,
-          user_id: user.id,
-        })
-        .single();
-      
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error("Error checking strategy selections:", checkError);
-        throw checkError;
-      }
-
-      // Get broker details from broker_credentials
       const { data: brokerData, error: brokerError } = await supabase
         .from('broker_credentials')
         .select('broker_name, username')
@@ -376,6 +362,7 @@ export const useLiveTrading = () => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    navigate
+    navigate,
+    selectedStrategyId
   };
 };

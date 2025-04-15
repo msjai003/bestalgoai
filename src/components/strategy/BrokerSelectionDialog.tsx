@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,8 @@ import {
 import { Loader } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -39,6 +42,7 @@ export const BrokerSelectionDialog = ({
   const [brokers, setBrokers] = useState<{ id: string; broker_name: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadBrokers = async () => {
@@ -91,7 +95,7 @@ export const BrokerSelectionDialog = ({
     };
     
     loadBrokers();
-  }, [user, open, strategyId]);
+  }, [user, open, strategyId, toast]);
   
   const handleConfirm = () => {
     if (!selectedBrokerId) return;
