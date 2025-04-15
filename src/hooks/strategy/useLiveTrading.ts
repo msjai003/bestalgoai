@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -112,13 +113,14 @@ export const useLiveTrading = () => {
   const confirmModeChange = async () => {
     if (!user || (currentStrategyId === null && currentCustomId === null) || targetMode === null) return;
     
-    if (targetMode === "live") {
-      setShowConfirmationDialog(false);
-      setShowQuantityDialog(true);
-      return;
-    }
-    
     try {
+      if (targetMode === "live") {
+        setShowConfirmationDialog(false);
+        setShowQuantityDialog(true);
+        return;
+      }
+      
+      // Handle switch to paper trading
       if (currentCustomId) {
         const { error } = await supabase
           .from('custom_strategies')
@@ -188,6 +190,13 @@ export const useLiveTrading = () => {
   const handleQuantitySubmit = async (quantity: number) => {
     if (!user || currentStrategyId === null) return;
     
+    // After setting the quantity, we need to select a broker if switching to live mode
+    if (targetMode === "live") {
+      setShowQuantityDialog(false);
+      setShowBrokerDialog(true);
+      return;
+    }
+    
     try {
       const strategy = strategies.find(s => s.id === currentStrategyId);
       
@@ -241,6 +250,7 @@ export const useLiveTrading = () => {
   const handleCancelQuantity = () => {
     setShowQuantityDialog(false);
     setCurrentStrategyId(null);
+    setTargetMode(null);
   };
   
   const handleBrokerSubmit = async (broker: string, username: string) => {
@@ -248,13 +258,16 @@ export const useLiveTrading = () => {
     
     try {
       const strategy = strategies.find(s => s.id === currentStrategyId);
+      const quantity = strategy?.quantity || 75; // Default to 75 if no quantity
       
       if (strategy?.isCustom && strategy.rowId) {
         const { error } = await supabase
           .from('custom_strategies')
           .update({
             selected_broker: broker,
-            broker_username: username
+            broker_username: username,
+            trade_type: "live trade",
+            quantity: quantity
           })
           .eq('id', strategy.rowId)
           .eq('user_id', user.id);
@@ -264,25 +277,31 @@ export const useLiveTrading = () => {
         await updateStrategyLiveConfig(
           user.id,
           currentStrategyId,
-          strategy?.quantity || 0,
+          quantity,
           broker,
           username,
-          strategy?.isLive ? "live trade" : "paper trade"
+          "live trade"
         );
       }
       
+      // Update local state to reflect the change
       setStrategies(prev => 
         prev.map(s => {
           if (s.id === currentStrategyId) {
-            return { ...s, selectedBroker: broker, brokerUsername: username };
+            return { 
+              ...s, 
+              selectedBroker: broker, 
+              brokerUsername: username,
+              isLive: true
+            };
           }
           return s;
         })
       );
       
       toast({
-        title: "Broker Settings Updated",
-        description: `Strategy broker set to ${broker}`,
+        title: "Live Trading Enabled",
+        description: `Strategy is now in live trading mode with ${broker}`,
         duration: 3000,
       });
       
@@ -290,18 +309,20 @@ export const useLiveTrading = () => {
       console.error("Error updating broker settings:", error);
       toast({
         title: "Error",
-        description: "Failed to update broker settings",
+        description: "Failed to enable live trading",
         variant: "destructive",
       });
     }
     
     setShowBrokerDialog(false);
     setCurrentStrategyId(null);
+    setTargetMode(null);
   };
   
   const handleCancelBroker = () => {
     setShowBrokerDialog(false);
     setCurrentStrategyId(null);
+    setTargetMode(null);
   };
 
   return {
