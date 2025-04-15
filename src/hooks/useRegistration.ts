@@ -53,32 +53,43 @@ export const useRegistration = () => {
     }
   };
 
-  const sendWelcomeSMS = async (userId: string, fullName: string) => {
+  const sendWelcomeMessages = async (userId: string, email: string, fullName: string, mobileNumber: string) => {
     try {
-      console.log(`Preparing to send welcome SMS to user ${userId}`);
-      
-      // Call the edge function to send SMS
-      const { data, error } = await supabase.functions.invoke('send-welcome-sms', {
+      console.log('Sending welcome messages to:', { email, fullName });
+
+      // Send welcome email
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
         body: JSON.stringify({
-          userId,
-          fullName
+          email,
+          name: fullName,
+          welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
         })
       });
-      
-      if (error) {
-        console.error("Error calling send-welcome-sms function:", error);
-        return;
-      }
-      
-      console.log("SMS function response:", data);
-      
-      if (data.success) {
-        console.log("Welcome SMS sent successfully");
+
+      if (emailError) {
+        console.error('Error sending welcome email:', emailError);
       } else {
-        console.error("Failed to send welcome SMS:", data.error);
+        console.log('Welcome email sent successfully');
+      }
+
+      // Send welcome SMS if mobile number is provided
+      if (mobileNumber) {
+        const { data: smsData, error: smsError } = await supabase.functions.invoke('send-welcome-sms', {
+          body: JSON.stringify({
+            userId,
+            fullName,
+            mobileNumber
+          })
+        });
+
+        if (smsError) {
+          console.error('Error sending welcome SMS:', smsError);
+        } else {
+          console.log('Welcome SMS sent successfully');
+        }
       }
     } catch (error) {
-      console.error("Exception sending welcome SMS:", error);
+      console.error('Error in sendWelcomeMessages:', error);
     }
   };
 
@@ -128,17 +139,18 @@ export const useRegistration = () => {
         return;
       }
       
-      // Success path
-      console.log("Registration successful, displaying success messages");
-      toast.success("Account created successfully! Please check your email inbox.");
-      
-      // Send welcome SMS if we have a user ID
+      // Success path - Send welcome messages
       if (result.data?.user?.id) {
-        await sendWelcomeSMS(
+        await sendWelcomeMessages(
           result.data.user.id,
-          state.formData.fullName
+          state.formData.email,
+          state.formData.fullName,
+          state.formData.mobile
         );
       }
+      
+      console.log("Registration successful, displaying success messages");
+      toast.success("Account created successfully! Please check your email inbox.");
       
       // Redirect after a short delay to allow the user to see the success message
       setTimeout(() => {
