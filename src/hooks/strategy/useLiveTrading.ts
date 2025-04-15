@@ -222,6 +222,15 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(null);
   };
   
+  const handleCancelQuantity = () => {
+    setShowQuantityDialog(false);
+    setCurrentStrategyId(null);
+    
+    if (targetMode === "live") {
+      setTargetMode(null);
+    }
+  };
+  
   const handleBrokerSubmit = async (brokerName: string, accountName: string) => {
     if (!user) return;
     
