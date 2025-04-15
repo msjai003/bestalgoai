@@ -15,7 +15,6 @@ interface TradingModeConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   targetMode: "live" | "paper" | null;
-  brokerName?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -24,7 +23,6 @@ export const TradingModeConfirmationDialog = ({
   open,
   onOpenChange,
   targetMode,
-  brokerName,
   onConfirm,
   onCancel,
 }: TradingModeConfirmationDialogProps) => {
@@ -36,26 +34,25 @@ export const TradingModeConfirmationDialog = ({
             {targetMode === "live" ? (
               <>
                 <Zap className="h-5 w-5 text-yellow-500" />
-                Switch to Live Trading
+                Confirm Live Trading
               </>
             ) : (
               <>
                 <AlertTriangle className="h-5 w-5 text-blue-400" />
-                Switch to Paper Trading
+                Confirm Paper Trading
               </>
             )}
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             {targetMode === "live" ? (
               <>
-                Are you sure you want to switch to <span className="font-semibold text-green-400">live trading</span>? 
-                You'll need to set up quantity and broker details next.
+                Are you sure you want to enable <span className="font-semibold text-green-400">live trading</span> for this strategy? 
+                Real funds will be used for trades based on this strategy.
               </>
             ) : (
               <>
                 Are you sure you want to switch to <span className="font-semibold text-cyan">paper trading</span> mode? 
-                {brokerName && <> Your connection to <span className="font-semibold">{brokerName}</span> will be removed, and </>}
-                no real funds will be used, but the strategy will continue to generate signals.
+                No real funds will be used, but the strategy will continue to generate signals.
               </>
             )}
           </DialogDescription>
@@ -73,7 +70,7 @@ export const TradingModeConfirmationDialog = ({
             className="text-charcoalPrimary"
             onClick={onConfirm}
           >
-            {targetMode === "live" ? "Continue to Setup" : "Switch to Paper Trading"}
+            {targetMode === "live" ? "Yes, Enable Live Trading" : "Yes, Switch to Paper Trading"}
           </Button>
         </DialogFooter>
       </DialogContent>
