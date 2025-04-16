@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegistrationData, RegistrationState } from '@/types/registration';
 import { getBrowserInfo } from '@/utils/browserUtils';
-import { registerUser, testRegistrationConnection } from '@/services/registrationService';
-import { supabase } from '@/integrations/supabase/client';
+import { registerUser, testRegistrationConnection, sendWelcomeEmail } from '@/services/registrationService';
 
 // Initial registration data
 const initialFormData: RegistrationData = {
@@ -54,46 +53,31 @@ export const useRegistration = () => {
     }
   };
 
-  const sendWelcomeMessages = async (userId: string, email: string, fullName: string, mobileNumber: string) => {
+  const handleSendWelcomeMessages = async (email: string, fullName: string, mobileNumber?: string) => {
     try {
-      console.log('Preparing to send welcome messages to:', { email, fullName });
-
-      // Send welcome email with detailed logging
-      try {
-        console.log('Calling send-welcome-email edge function with payload:', {
-          email,
-          name: fullName,
-          welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
-        });
-        
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-          body: JSON.stringify({
-            email,
-            name: fullName,
-            welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
-          })
-        });
-
-        if (emailError) {
-          console.error('Error sending welcome email:', emailError);
-          toast.error('We could not send your welcome email, but your account was created successfully.');
-        } else {
-          console.log('Welcome email edge function response:', emailData);
-          toast.success('Welcome email has been sent! Please check your inbox.');
-        }
-      } catch (emailException) {
-        console.error('Exception during welcome email sending:', emailException);
-        toast.error('We encountered an issue sending your welcome email, but your account was created successfully.');
+      console.log('Sending welcome messages to:', { email, fullName });
+      
+      // Send welcome email
+      const emailResult = await sendWelcomeEmail(
+        email,
+        fullName,
+        `Welcome to our platform, ${fullName}! We're excited to have you on board.`
+      );
+      
+      if (emailResult.success) {
+        toast.success('Welcome email has been sent! Please check your inbox.');
+      } else {
+        console.error('Error sending welcome email:', emailResult.error);
+        toast.error('We could not send your welcome email, but your account was created successfully.');
       }
-
+      
       // Send welcome SMS if mobile number is provided
       if (mobileNumber) {
         try {
-          console.log('Preparing to send welcome SMS to:', mobileNumber);
+          console.log('Attempting to send welcome SMS to:', mobileNumber);
           
           const { data: smsData, error: smsError } = await supabase.functions.invoke('send-welcome-sms', {
             body: JSON.stringify({
-              userId,
               fullName,
               mobileNumber
             })
@@ -102,7 +86,7 @@ export const useRegistration = () => {
           if (smsError) {
             console.error('Error sending welcome SMS:', smsError);
           } else {
-            console.log('Welcome SMS edge function response:', smsData);
+            console.log('Welcome SMS response:', smsData);
             if (smsData?.success) {
               toast.success('Welcome SMS has been sent to your mobile number!');
             }
@@ -111,8 +95,11 @@ export const useRegistration = () => {
           console.error('Exception during welcome SMS sending:', smsException);
         }
       }
+      
+      return true;
     } catch (error) {
-      console.error('Error in sendWelcomeMessages:', error);
+      console.error('Error in handleSendWelcomeMessages:', error);
+      return false;
     }
   };
 
@@ -163,35 +150,31 @@ export const useRegistration = () => {
       }
       
       // Success path - Send welcome messages
-      if (result.data?.user?.id) {
-        console.log("Registration successful, sending welcome messages to user:", result.data.user.id);
-        
-        // Attempt to send welcome email and SMS with multiple retries if needed
-        let welcomeMessageSent = false;
-        
-        for (let attempt = 1; attempt <= 2 && !welcomeMessageSent; attempt++) {
-          try {
-            console.log(`Welcome message attempt ${attempt}`);
-            await sendWelcomeMessages(
-              result.data.user.id,
-              state.formData.email,
-              state.formData.fullName,
-              state.formData.mobile
-            );
-            welcomeMessageSent = true;
-          } catch (welcomeError) {
-            console.error(`Welcome message attempt ${attempt} failed:`, welcomeError);
-            if (attempt === 2) {
-              toast.error("We could not send your welcome messages, but your account was created successfully.");
-            }
+      console.log("Registration successful, sending welcome messages");
+      
+      // Attempt to send welcome messages with multiple retries if needed
+      let welcomeMessageSent = false;
+      const maxRetries = 2;
+      
+      for (let attempt = 1; attempt <= maxRetries && !welcomeMessageSent; attempt++) {
+        try {
+          console.log(`Welcome message attempt ${attempt}`);
+          welcomeMessageSent = await handleSendWelcomeMessages(
+            state.formData.email,
+            state.formData.fullName,
+            state.formData.mobile
+          );
+        } catch (welcomeError) {
+          console.error(`Welcome message attempt ${attempt} failed:`, welcomeError);
+          if (attempt === maxRetries) {
+            toast.error("We could not send your welcome messages, but your account was created successfully.");
           }
         }
-      } else {
-        console.warn("Registration successful but no user ID was returned");
       }
       
-      console.log("Registration successful, displaying success messages");
-      toast.success("Account created successfully! Please check your email inbox.");
+      // Registration success message
+      toast.success("Account created successfully!");
+      setState(prev => ({ ...prev, isLoading: false }));
       
       // Redirect after a short delay to allow the user to see the success message
       setTimeout(() => {

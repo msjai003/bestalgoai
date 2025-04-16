@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
@@ -71,6 +72,35 @@ export const registerUser = async (formData: RegistrationData) => {
     return { success: true, data };
   } catch (error) {
     console.error("Exception during registration:", error);
+    return { success: false, error };
+  }
+};
+
+export const sendWelcomeEmail = async (email: string, fullName: string, welcomeMessage?: string) => {
+  if (!email || !fullName) {
+    console.error("Cannot send welcome email: missing email or name");
+    return { success: false, error: "Missing email or name" };
+  }
+  
+  try {
+    console.log("Sending welcome email to:", email);
+    const { data, error } = await supabase.functions.invoke('send-welcome-email-resend', {
+      body: JSON.stringify({
+        email,
+        name: fullName,
+        welcomeMessage
+      })
+    });
+    
+    if (error) {
+      console.error("Error sending welcome email:", error);
+      return { success: false, error };
+    }
+    
+    console.log("Welcome email sent successfully:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Exception sending welcome email:", error);
     return { success: false, error };
   }
 };
