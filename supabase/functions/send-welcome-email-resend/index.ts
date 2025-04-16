@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -71,7 +70,7 @@ serve(async (req) => {
       );
     }
 
-    // Create HTML content
+    // Create HTML content with proper formatting
     const htmlContent = `
       <html>
         <head>
@@ -138,7 +137,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Unexpected error in edge function:", error);
     return new Response(
       JSON.stringify({ 

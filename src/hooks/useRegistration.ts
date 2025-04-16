@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegistrationData, RegistrationState } from '@/types/registration';
 import { getBrowserInfo } from '@/utils/browserUtils';
 import { registerUser, testRegistrationConnection, sendWelcomeEmail } from '@/services/registrationService';
+import { supabase } from '@/integrations/supabase/client';
 
-// Initial registration data
 const initialFormData: RegistrationData = {
   fullName: '',
   email: '',
