@@ -16,6 +16,8 @@ export const registerUser = async (formData: RegistrationData) => {
   }
 
   try {
+    console.log("Starting registration process for:", formData.email);
+    
     // Check if email already exists
     const { data: existingUsers, error: emailCheckError } = await supabase
       .from('user_profiles')
@@ -38,6 +40,7 @@ export const registerUser = async (formData: RegistrationData) => {
     }
 
     // Proceed with registration logic
+    console.log("Email check passed, proceeding with registration");
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,

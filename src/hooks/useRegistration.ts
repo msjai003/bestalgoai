@@ -56,11 +56,11 @@ export const useRegistration = () => {
 
   const sendWelcomeMessages = async (userId: string, email: string, fullName: string, mobileNumber: string) => {
     try {
-      console.log('Sending welcome messages to:', { email, fullName });
+      console.log('Preparing to send welcome messages to:', { email, fullName });
 
       // Send welcome email with detailed logging
       try {
-        console.log('Preparing to call send-welcome-email edge function with payload:', {
+        console.log('Calling send-welcome-email edge function with payload:', {
           email,
           name: fullName,
           welcomeMessage: `Welcome to our platform, ${fullName}! We're excited to have you on board.`
@@ -76,13 +76,14 @@ export const useRegistration = () => {
 
         if (emailError) {
           console.error('Error sending welcome email:', emailError);
-          toast.error('Welcome email could not be sent. Please check your email address.');
+          toast.error('We could not send your welcome email, but your account was created successfully.');
         } else {
           console.log('Welcome email edge function response:', emailData);
-          toast.success('Welcome email sent to your inbox!');
+          toast.success('Welcome email has been sent! Please check your inbox.');
         }
       } catch (emailException) {
         console.error('Exception during welcome email sending:', emailException);
+        toast.error('We encountered an issue sending your welcome email, but your account was created successfully.');
       }
 
       // Send welcome SMS if mobile number is provided
@@ -102,6 +103,9 @@ export const useRegistration = () => {
             console.error('Error sending welcome SMS:', smsError);
           } else {
             console.log('Welcome SMS edge function response:', smsData);
+            if (smsData?.success) {
+              toast.success('Welcome SMS has been sent to your mobile number!');
+            }
           }
         } catch (smsException) {
           console.error('Exception during welcome SMS sending:', smsException);
@@ -138,11 +142,11 @@ export const useRegistration = () => {
       if (!result.success) {
         // Check for email already exists error
         if (result.code === "EMAIL_ALREADY_EXISTS") {
-          toast.error("This email address you entered is already registered");
+          toast.error("This email address is already registered");
           setState(prev => ({ 
             ...prev, 
             isLoading: false,
-            connectionError: "This email address you entered is already registered"
+            connectionError: "This email address is already registered"
           }));
           return;
         }
@@ -161,12 +165,27 @@ export const useRegistration = () => {
       // Success path - Send welcome messages
       if (result.data?.user?.id) {
         console.log("Registration successful, sending welcome messages to user:", result.data.user.id);
-        await sendWelcomeMessages(
-          result.data.user.id,
-          state.formData.email,
-          state.formData.fullName,
-          state.formData.mobile
-        );
+        
+        // Attempt to send welcome email and SMS with multiple retries if needed
+        let welcomeMessageSent = false;
+        
+        for (let attempt = 1; attempt <= 2 && !welcomeMessageSent; attempt++) {
+          try {
+            console.log(`Welcome message attempt ${attempt}`);
+            await sendWelcomeMessages(
+              result.data.user.id,
+              state.formData.email,
+              state.formData.fullName,
+              state.formData.mobile
+            );
+            welcomeMessageSent = true;
+          } catch (welcomeError) {
+            console.error(`Welcome message attempt ${attempt} failed:`, welcomeError);
+            if (attempt === 2) {
+              toast.error("We could not send your welcome messages, but your account was created successfully.");
+            }
+          }
+        }
       } else {
         console.warn("Registration successful but no user ID was returned");
       }
