@@ -19,14 +19,13 @@ const DatabaseStatus: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'error'>('untested');
   const { toast } = useToast();
 
-  const expectedTables = ['users', 'feedback'];
+  const expectedTables = ['users', 'feedback', 'welcome_messages'];
 
   const checkConnection = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Test Supabase connection
       const { data, error } = await supabase
         .from('_supabase_schema_information')
         .select();
@@ -41,7 +40,6 @@ const DatabaseStatus: React.FC = () => {
         description: "Successfully connected to Supabase",
       });
       
-      // Now check tables
       await checkTables();
     } catch (err: any) {
       console.error("Database connection error:", err);
@@ -62,7 +60,6 @@ const DatabaseStatus: React.FC = () => {
     
     for (const tableName of expectedTables) {
       try {
-        // First check if the table exists
         const { data, error } = await supabase
           .from(tableName)
           .select();
@@ -123,8 +120,28 @@ const DatabaseStatus: React.FC = () => {
     }
   };
 
+  const fetchWelcomeMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('welcome_messages')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching welcome messages:', error);
+        return;
+      }
+
+      console.log('Welcome Messages:', data);
+    } catch (err) {
+      console.error('Exception fetching welcome messages:', err);
+    }
+  };
+
   useEffect(() => {
     checkConnection();
+    fetchWelcomeMessages();
   }, []);
 
   return (
