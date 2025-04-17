@@ -35,8 +35,11 @@ const Logout = () => {
           
           <div className="relative z-10">
             <div className="mb-6 flex justify-center">
-              <div className="rounded-full bg-green-100 p-4 shadow-lg">
-                <CheckCircle2 className="h-12 w-12 text-green-500" />
+              <div className="rounded-full bg-cyan/20 p-4 shadow-lg animate-pulse">
+                <CheckCircle2 
+                  className="h-12 w-12 text-cyan" 
+                  strokeWidth={1.5} 
+                />
               </div>
             </div>
             
