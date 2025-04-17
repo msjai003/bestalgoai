@@ -76,7 +76,7 @@ export const registerUser = async (formData: RegistrationData) => {
       const emailResult = await sendWelcomeEmail(
         formData.email, 
         formData.fullName,
-        "Welcome to our platform! We're excited to have you join us."
+        "Welcome to BestAlgo.ai! We're excited to have you join us."
       );
       
       if (emailResult.success) {
@@ -104,7 +104,7 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
   
   try {
     console.log("Sending welcome email to:", email);
-    const { data, error } = await supabase.functions.invoke('send-welcome-email-resend', {
+    const { data, error } = await supabase.functions.invoke('send-welcome-email-smtp', {
       body: JSON.stringify({
         email,
         name: fullName,
