@@ -8,6 +8,9 @@ import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import LogoutDialog from "./components/LogoutDialog";
 
 // Import all the pages that are used in the routes
 import Index from "@/pages/Index";
@@ -180,6 +183,18 @@ function AppRoutes() {
 }
 
 function App() {
+  const location = useLocation();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  
+  useEffect(() => {
+    // Check if we were redirected from the Logout page
+    if (location.state && location.state.showLogout) {
+      setShowLogoutDialog(true);
+      // Clean up the location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   useEffect(() => {
     // Import and run the function to ensure all broker images are in the database
     import('./utils/ensureBrokerImages').then(({ ensureAllBrokerImagesInDatabase }) => {
@@ -205,6 +220,10 @@ function App() {
           <AuthProvider>
             <AppRoutes />
             <InstallPrompt />
+            <LogoutDialog 
+              open={showLogoutDialog} 
+              onOpenChange={setShowLogoutDialog} 
+            />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
