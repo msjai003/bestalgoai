@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -13,18 +14,17 @@ const Dashboard = () => {
           .select('message')
           .eq('is_active', true)
           .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
 
         if (error) {
           console.error('Error fetching welcome message:', error);
           return;
         }
 
-        if (data) {
-          setWelcomeMessage(data.message);
+        if (data && data.length > 0) {
+          setWelcomeMessage(data[0].message);
           toast.info('Welcome Message', {
-            description: data.message,
+            description: data[0].message,
             duration: 5000
           });
         }
