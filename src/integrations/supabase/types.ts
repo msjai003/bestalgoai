@@ -1083,6 +1083,30 @@ export type Database = {
         }
         Relationships: []
       }
+      send_message: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_content: string
+          message_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_content: string
+          message_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_content?: string
+          message_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           created_at: string | null
@@ -1437,33 +1461,6 @@ export type Database = {
           sep?: number | null
           total?: number | null
           year?: number
-        }
-        Relationships: []
-      }
-      welcome_messages: {
-        Row: {
-          created_at: string
-          id: number
-          is_active: boolean
-          message: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: never
-          is_active?: boolean
-          message: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: never
-          is_active?: boolean
-          message?: string
-          title?: string
-          updated_at?: string
         }
         Relationships: []
       }

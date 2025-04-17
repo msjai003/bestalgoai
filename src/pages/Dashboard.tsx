@@ -1,52 +1,75 @@
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Loader } from "lucide-react";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
+import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
+import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
-  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
-
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  
   useEffect(() => {
-    const fetchWelcomeMessage = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('welcome_messages')
-          .select('message')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (error) {
-          console.error('Error fetching welcome message:', error);
-          return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the dashboard.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+    } else {
+      const checkPremium = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+            setHasPremium(true);
+          }
+        } catch (error) {
+          console.error('Error checking premium status:', error);
         }
+      };
+      checkPremium();
+    }
+  }, [user, navigate, toast]);
 
-        if (data && data.length > 0) {
-          setWelcomeMessage(data[0].message);
-          toast.info('Welcome Message', {
-            description: data[0].message,
-            duration: 5000
-          });
-        }
-      } catch (err) {
-        console.error('Exception fetching welcome message:', err);
-      }
-    };
-
-    fetchWelcomeMessage();
-  }, []);
+  if (user === null) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      
-      {welcomeMessage && (
-        <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-4">
-          <p className="text-blue-200 whitespace-pre-line">{welcomeMessage}</p>
-        </div>
-      )}
-
-      {/* Rest of the dashboard content */}
+    <div className="bg-charcoalPrimary min-h-screen">
+      <Header />
+      <main className="pt-16 pb-20 px-4">
+        <PortfolioOverview 
+          performanceData={mockPerformanceData} 
+          currentValue={currentValue} 
+        />
+        <QuickAccessSection />
+      </main>
+      <BottomNav />
     </div>
   );
 };
