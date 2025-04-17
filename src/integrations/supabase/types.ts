@@ -1440,6 +1440,27 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id: number
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wishlist_maintain: {
         Row: {
           created_at: string

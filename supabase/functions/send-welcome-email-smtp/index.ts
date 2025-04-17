@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +41,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, name, welcomeMessage } = requestBody as EmailRequest;
+    const { email, name } = requestBody as EmailRequest;
     console.log(`Email request received - To: ${email}, Name: ${name}`);
 
     if (!email || !name) {
@@ -69,6 +70,32 @@ serve(async (req) => {
       );
     }
 
+    // Initialize Supabase client to fetch welcome message
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY") as string;
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Fetch welcome message from the database
+    const { data: welcomeData, error: welcomeError } = await supabase
+      .from("welcome_messages")
+      .select("content")
+      .eq("id", 1)
+      .single();
+    
+    if (welcomeError) {
+      console.error("Error fetching welcome message:", welcomeError);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch welcome message", details: welcomeError }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+    
+    const welcomeMessage = welcomeData?.content || "Welcome to BestAlgo.ai!";
+    
     // Create HTML content with proper formatting
     const htmlContent = `
       <html>
@@ -77,7 +104,7 @@ serve(async (req) => {
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; }
+            .content { padding: 20px; white-space: pre-line; }
             .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
           </style>
         </head>
@@ -88,9 +115,7 @@ serve(async (req) => {
             </div>
             <div class="content">
               <p>Hello ${name},</p>
-              <p>${welcomeMessage || "Thank you for registering with BestAlgo.ai! We're excited to have you on board."}</p>
-              <p>If you have any questions, please don't hesitate to contact our support team.</p>
-              <p>Best regards,<br>The BestAlgo.ai Team</p>
+              <p>${welcomeMessage}</p>
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>

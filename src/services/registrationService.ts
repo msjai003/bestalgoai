@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
@@ -70,46 +69,61 @@ export const registerUser = async (formData: RegistrationData) => {
 
     console.log("Registration successful:", data);
     
-    // Send welcome email after successful registration with multiple retries
-    const maxRetries = 3;
-    let emailSent = false;
-    let lastError = null;
+    // Fetch the welcome message and send welcome email
+    try {
+      const { data: welcomeData, error: welcomeError } = await supabase
+        .from('welcome_messages')
+        .select('content')
+        .eq('id', 1)
+        .single();
+      
+      if (welcomeError) {
+        console.error("Error fetching welcome message:", welcomeError);
+      }
+      
+      // Send welcome email after successful registration with multiple retries
+      const maxRetries = 3;
+      let emailSent = false;
+      let lastError = null;
 
-    for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
-      try {
-        console.log(`Attempting to send welcome email (attempt ${attempt}/${maxRetries}) to:`, formData.email);
-        const emailResult = await sendWelcomeEmail(
-          formData.email, 
-          formData.fullName,
-          "Welcome to BestAlgo.ai! We're excited to have you join us."
-        );
-        
-        if (emailResult.success) {
-          console.log("Welcome email sent successfully on attempt", attempt);
-          emailSent = true;
-        } else {
-          console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailResult.error);
-          lastError = emailResult.error;
-          // Wait a bit before retrying
+      for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
+        try {
+          console.log(`Attempting to send welcome email (attempt ${attempt}/${maxRetries}) to:`, formData.email);
+          const emailResult = await sendWelcomeEmail(
+            formData.email, 
+            formData.fullName,
+            welcomeData?.content || undefined
+          );
+          
+          if (emailResult.success) {
+            console.log("Welcome email sent successfully on attempt", attempt);
+            emailSent = true;
+          } else {
+            console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailResult.error);
+            lastError = emailResult.error;
+            // Wait a bit before retrying
+            if (attempt < maxRetries) {
+              console.log(`Waiting before retry attempt ${attempt + 1}...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+          }
+        } catch (emailError) {
+          console.error(`Exception sending welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
+          lastError = emailError;
           if (attempt < maxRetries) {
-            console.log(`Waiting before retry attempt ${attempt + 1}...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
         }
-      } catch (emailError) {
-        console.error(`Exception sending welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
-        lastError = emailError;
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
       }
+      
+      if (!emailSent) {
+        console.error("Failed to send welcome email after all retry attempts:", lastError);
+      }
+    } catch (messageError) {
+      console.error("Error handling welcome message:", messageError);
     }
     
-    if (!emailSent) {
-      console.error("Failed to send welcome email after all retry attempts:", lastError);
-    }
-    
-    return { success: true, data, emailSent };
+    return { success: true, data };
   } catch (error) {
     console.error("Exception during registration:", error);
     return { success: false, error };
