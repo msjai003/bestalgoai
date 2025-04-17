@@ -1,15 +1,13 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
-import LogoutDialog from "./components/LogoutDialog";
 
 // Import all the pages that are used in the routes
 import Index from "@/pages/Index";
@@ -54,20 +52,134 @@ import BrokerManagement from "@/pages/BrokerManagement";
 
 const queryClient = new QueryClient();
 
-// This component will be rendered inside the BrowserRouter
-function AppContent() {
-  const location = useLocation();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  
-  useEffect(() => {
-    // Check if we were redirected from the Logout page
-    if (location.state && location.state.showLogout) {
-      setShowLogoutDialog(true);
-      // Clean up the location state
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Index />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/support" element={<Support />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/registration" element={<Registration />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/logout" element={<Logout />} />
+      <Route path="/colortest" element={<ColorTest />} />
+      <Route path="/education" element={<Education />} />
+      <Route path="/classes" element={<Classes />} />
+      
+      {/* Protected routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/onboarding" element={
+        <ProtectedRoute>
+          <Onboarding />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-builder" element={
+        <ProtectedRoute>
+          <StrategyBuilder />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-selection" element={
+        <ProtectedRoute>
+          <StrategySelection />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-details/:id" element={
+        <ProtectedRoute>
+          <StrategyDetails />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-management" element={
+        <ProtectedRoute>
+          <StrategyManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/backtest" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/backtest-report" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/zenflow-backtest" element={
+        <ProtectedRoute>
+          <ZenflowBacktest />
+        </ProtectedRoute>
+      } />
+      <Route path="/zenflow-backtest-report" element={
+        <ProtectedRoute>
+          <ZenflowBacktestReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/live-trading" element={
+        <ProtectedRoute>
+          <LiveTrading />
+        </ProtectedRoute>
+      } />
+      <Route path="/alerts" element={
+        <ProtectedRoute>
+          <Alerts />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
+      <Route path="/subscription" element={
+        <ProtectedRoute>
+          <Subscription />
+        </ProtectedRoute>
+      } />
+      <Route path="/community" element={
+        <ProtectedRoute>
+          <CommunityLearning />
+        </ProtectedRoute>
+      } />
+      <Route path="/risk-management" element={
+        <ProtectedRoute>
+          <RiskManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/broker-integration" element={
+        <ProtectedRoute>
+          <BrokerIntegration />
+        </ProtectedRoute>
+      } />
+      <Route path="/broker-credentials" element={
+        <ProtectedRoute>
+          <BrokerCredentials />
+        </ProtectedRoute>
+      } />
+      <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
+      <Route path="/config-admin" element={<StrategyConfigAdmin />} />
+      <Route path="/price-admin" element={<PriceAdminPage />} />
+      <Route path="/api-keys" element={<ApiKeys />} />
+      <Route path="/broker-management" element={<BrokerManagement />} />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
+function App() {
   useEffect(() => {
     // Import and run the function to ensure all broker images are in the database
     import('./utils/ensureBrokerImages').then(({ ensureAllBrokerImagesInDatabase }) => {
@@ -85,147 +197,14 @@ function AppContent() {
   }, []);
 
   return (
-    <>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/registration" element={<Registration />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/colortest" element={<ColorTest />} />
-        <Route path="/education" element={<Education />} />
-        <Route path="/classes" element={<Classes />} />
-        
-        {/* Protected routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/onboarding" element={
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        } />
-        <Route path="/strategy-builder" element={
-          <ProtectedRoute>
-            <StrategyBuilder />
-          </ProtectedRoute>
-        } />
-        <Route path="/strategy-selection" element={
-          <ProtectedRoute>
-            <StrategySelection />
-          </ProtectedRoute>
-        } />
-        <Route path="/strategy-details/:id" element={
-          <ProtectedRoute>
-            <StrategyDetails />
-          </ProtectedRoute>
-        } />
-        <Route path="/strategy-management" element={
-          <ProtectedRoute>
-            <StrategyManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/backtest" element={
-          <ProtectedRoute>
-            <BacktestReport />
-          </ProtectedRoute>
-        } />
-        <Route path="/backtest-report" element={
-          <ProtectedRoute>
-            <BacktestReport />
-          </ProtectedRoute>
-        } />
-        <Route path="/zenflow-backtest" element={
-          <ProtectedRoute>
-            <ZenflowBacktest />
-          </ProtectedRoute>
-        } />
-        <Route path="/zenflow-backtest-report" element={
-          <ProtectedRoute>
-            <ZenflowBacktestReport />
-          </ProtectedRoute>
-        } />
-        <Route path="/live-trading" element={
-          <ProtectedRoute>
-            <LiveTrading />
-          </ProtectedRoute>
-        } />
-        <Route path="/alerts" element={
-          <ProtectedRoute>
-            <Alerts />
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
-        <Route path="/notifications" element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        } />
-        <Route path="/subscription" element={
-          <ProtectedRoute>
-            <Subscription />
-          </ProtectedRoute>
-        } />
-        <Route path="/community" element={
-          <ProtectedRoute>
-            <CommunityLearning />
-          </ProtectedRoute>
-        } />
-        <Route path="/risk-management" element={
-          <ProtectedRoute>
-            <RiskManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/broker-integration" element={
-          <ProtectedRoute>
-            <BrokerIntegration />
-          </ProtectedRoute>
-        } />
-        <Route path="/broker-credentials" element={
-          <ProtectedRoute>
-            <BrokerCredentials />
-          </ProtectedRoute>
-        } />
-        <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
-        <Route path="/config-admin" element={<StrategyConfigAdmin />} />
-        <Route path="/price-admin" element={<PriceAdminPage />} />
-        <Route path="/api-keys" element={<ApiKeys />} />
-        <Route path="/broker-management" element={<BrokerManagement />} />
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <InstallPrompt />
-      <LogoutDialog 
-        open={showLogoutDialog} 
-        onOpenChange={setShowLogoutDialog} 
-      />
-    </>
-  );
-}
-
-function App() {
-  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AppContent />
+            <AppRoutes />
+            <InstallPrompt />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
