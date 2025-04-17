@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -26,7 +27,7 @@ import { ProgressTracker } from '@/components/education/ProgressTracker';
 import { LevelBadges } from '@/components/education/LevelBadges';
 import { Leaderboard } from '@/components/education/Leaderboard';
 import { QuizModal } from '@/components/education/QuizModal';
-import { useEducation, Level } from '@/hooks/useEducation';
+import { useEducation } from '@/hooks/useEducation';
 import { educationData } from '@/data/educationData';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,7 +55,7 @@ const Education = () => {
   const stats = getStats();
   
   const handleLevelChange = (value: string) => {
-    setCurrentLevel(value as Level);
+    setCurrentLevel(value as 'basics' | 'intermediate' | 'pro');
   };
   
   const currentModuleData = educationData[currentLevel]?.find(m => m.id === activeQuizModule);

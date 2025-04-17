@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Level } from '@/hooks/useEducation';
 import { QuizQuestion } from '@/data/educationData';

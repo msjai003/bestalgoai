@@ -1,93 +1,61 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { Home, BarChart2, GraduationCap, Settings, User } from 'lucide-react';
 
 export const BottomNav = () => {
-  const location = useLocation();
-  const { toast } = useToast();
-
   return (
-    <nav className="fixed bottom-0 w-full z-50 pb-safe">
-      <div className="h-16 bg-black/60 backdrop-blur-lg border-t border-gray-800/50">
-        <div className="flex justify-around h-full items-center px-4">
-          <NavItem 
-            to="/dashboard" 
-            icon="fa-house" 
-            label="Home" 
-            isActive={location.pathname === '/dashboard'}
-          />
-          
-          <NavItem 
-            to="/strategy-management" 
-            icon="fa-heart" 
-            label="Wishlist" 
-            isActive={location.pathname === '/strategy-management'}
-          />
-          
-          <NavItem 
-            to="/classes" 
-            icon="fa-graduation-cap" 
-            label="Classes" 
-            isActive={location.pathname === '/classes'}
-          />
-          
-          <NavItem 
-            to="/live-trading" 
-            icon="fa-chart-line" 
-            label="Trading" 
-            isActive={location.pathname === '/live-trading'}
-          />
-          
-          <NavItem 
-            to="/settings" 
-            icon="fa-gear" 
-            label="Settings" 
-            isActive={location.pathname === '/settings'}
-          />
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-const NavItem = ({ 
-  to, 
-  icon, 
-  label, 
-  isActive 
-}: { 
-  to: string; 
-  icon: string; 
-  label: string; 
-  isActive: boolean;
-}) => {
-  return (
-    <Link 
-      to={to} 
-      className={cn(
-        "flex flex-col items-center w-16 transition-all duration-300",
-        isActive ? "scale-100" : "opacity-80 hover:opacity-100"
-      )}
-    >
-      <div className={cn(
-        "flex items-center justify-center h-9 w-9 rounded-full mb-1 transition-all duration-300",
-        isActive 
-          ? "bg-transparent" 
-          : "bg-transparent hover:bg-cyan/5"
-      )}>
-        <i className={cn(
-          "fa-solid", 
-          icon, 
-          isActive ? "text-cyan" : "text-gray-300 hover:text-cyan transition-colors"
-        )}></i>
-      </div>
-      <span className={cn(
-        "text-[10px] font-medium tracking-wide transition-all duration-300",
-        isActive ? "text-cyan" : "text-gray-300"
-      )}>
-        {label}
-      </span>
-    </Link>
+    <div className="fixed bottom-0 left-0 right-0 h-16 bg-charcoalSecondary border-t border-gray-800 flex justify-around items-center px-4 z-50">
+      <NavLink 
+        to="/" 
+        className={({ isActive }) => 
+          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
+        }
+        end
+      >
+        <Home className="h-5 w-5" />
+        <span className="text-xs mt-1">Home</span>
+      </NavLink>
+      
+      <NavLink 
+        to="/trading" 
+        className={({ isActive }) => 
+          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
+        }
+      >
+        <BarChart2 className="h-5 w-5" />
+        <span className="text-xs mt-1">Trading</span>
+      </NavLink>
+      
+      <NavLink 
+        to="/education" 
+        className={({ isActive }) => 
+          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
+        }
+      >
+        <GraduationCap className="h-5 w-5" />
+        <span className="text-xs mt-1">Learn</span>
+      </NavLink>
+      
+      <NavLink 
+        to="/settings" 
+        className={({ isActive }) => 
+          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
+        }
+      >
+        <Settings className="h-5 w-5" />
+        <span className="text-xs mt-1">Settings</span>
+      </NavLink>
+      
+      <NavLink 
+        to="/profile" 
+        className={({ isActive }) => 
+          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
+        }
+      >
+        <User className="h-5 w-5" />
+        <span className="text-xs mt-1">Profile</span>
+      </NavLink>
+    </div>
   );
 };
