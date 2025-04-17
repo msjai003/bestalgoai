@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BarChart2, GraduationCap, Settings, User } from 'lucide-react';
+import { Home, GraduationCap, Settings } from 'lucide-react';
 
 export const BottomNav = () => {
   return (
@@ -15,16 +15,6 @@ export const BottomNav = () => {
       >
         <Home className="h-5 w-5" />
         <span className="text-xs mt-1">Home</span>
-      </NavLink>
-      
-      <NavLink 
-        to="/trading" 
-        className={({ isActive }) => 
-          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
-        }
-      >
-        <BarChart2 className="h-5 w-5" />
-        <span className="text-xs mt-1">Trading</span>
       </NavLink>
       
       <NavLink 
@@ -45,16 +35,6 @@ export const BottomNav = () => {
       >
         <Settings className="h-5 w-5" />
         <span className="text-xs mt-1">Settings</span>
-      </NavLink>
-      
-      <NavLink 
-        to="/profile" 
-        className={({ isActive }) => 
-          `flex flex-col items-center px-3 py-2 ${isActive ? 'text-cyan' : 'text-gray-400 hover:text-gray-200'}`
-        }
-      >
-        <User className="h-5 w-5" />
-        <span className="text-xs mt-1">Profile</span>
       </NavLink>
     </div>
   );

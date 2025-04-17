@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, Users, Crown, Award, ArrowRight, LogIn } from 'lucide-react';
+import { Trophy, Users, Crown, Award, ArrowRight, LogIn, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface LeaderboardProps {
