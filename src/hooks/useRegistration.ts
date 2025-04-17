@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -56,7 +57,7 @@ export const useRegistration = () => {
     try {
       console.log('Sending welcome messages to:', { email, fullName });
       
-      // Send welcome email
+      // Send welcome email with a personalized message
       const emailResult = await sendWelcomeEmail(
         email,
         fullName,

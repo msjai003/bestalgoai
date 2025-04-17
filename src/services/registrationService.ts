@@ -69,6 +69,26 @@ export const registerUser = async (formData: RegistrationData) => {
     }
 
     console.log("Registration successful:", data);
+    
+    // Send welcome email after successful registration
+    try {
+      console.log("Attempting to send welcome email to:", formData.email);
+      const emailResult = await sendWelcomeEmail(
+        formData.email, 
+        formData.fullName,
+        "Welcome to our platform! We're excited to have you join us."
+      );
+      
+      if (emailResult.success) {
+        console.log("Welcome email sent successfully");
+      } else {
+        console.error("Failed to send welcome email:", emailResult.error);
+      }
+    } catch (emailError) {
+      console.error("Exception sending welcome email:", emailError);
+      // Don't fail registration if email fails
+    }
+    
     return { success: true, data };
   } catch (error) {
     console.error("Exception during registration:", error);
