@@ -151,13 +151,13 @@ serve(async (req) => {
       </html>
     `;
     
-    console.log("Setting up SMTP client with Gmail...");
+    console.log("Setting up SMTP client with Gmail using port 465 and SSL...");
     try {
       const client = new SMTPClient({
         connection: {
           hostname: "smtp.gmail.com",
-          port: 465,
-          tls: true,
+          port: 465,  // Updated to use port 465
+          tls: true,  // Using TLS/SSL
           auth: {
             username: "learnings1.infocap@gmail.com",
             password: "jcpv fako lllb dfre"
