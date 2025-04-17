@@ -29,7 +29,7 @@ serve(async (req) => {
     let requestBody;
     try {
       requestBody = await req.json();
-      console.log("Request body parsed successfully:", JSON.stringify(requestBody));
+      console.log("Request body received:", JSON.stringify(requestBody));
     } catch (parseError) {
       console.error("Error parsing request body:", parseError);
       return new Response(
@@ -41,11 +41,11 @@ serve(async (req) => {
       );
     }
     
-    const { email, name } = requestBody as EmailRequest;
-    console.log(`Email request received - To: ${email}, Name: ${name}`);
+    const { email, name, welcomeMessage } = requestBody as EmailRequest;
+    console.log(`Email request details - To: ${email}, Name: ${name}, Custom Message: ${welcomeMessage ? 'Yes' : 'No'}`);
 
     if (!email || !name) {
-      console.error("Missing required fields in request");
+      console.error("Missing required fields in request:", requestBody);
       return new Response(
         JSON.stringify({
           error: "Missing required fields: email and name are required"
@@ -71,22 +71,17 @@ serve(async (req) => {
     }
 
     // Initialize Supabase client to fetch welcome message
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
-    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY") as string;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Fetch welcome message from the database
-    const { data: welcomeData, error: welcomeError } = await supabase
-      .from("welcome_messages")
-      .select("content")
-      .eq("id", 1)
-      .single();
-    
-    if (welcomeError) {
-      console.error("Error fetching welcome message:", welcomeError);
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase environment variables:", { 
+        hasUrl: !!supabaseUrl, 
+        hasKey: !!supabaseKey 
+      });
+      
       return new Response(
-        JSON.stringify({ error: "Failed to fetch welcome message", details: welcomeError }),
+        JSON.stringify({ error: "Server configuration error - missing environment variables" }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -94,7 +89,36 @@ serve(async (req) => {
       );
     }
     
-    const welcomeMessage = welcomeData?.content || "Welcome to BestAlgo.ai!";
+    console.log("Creating Supabase client with URL:", supabaseUrl);
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Fetch welcome message from the database if not provided
+    let messageContent = welcomeMessage;
+    
+    if (!messageContent) {
+      console.log("Fetching welcome message from database");
+      try {
+        const { data: welcomeData, error: welcomeError } = await supabase
+          .from("welcome_messages")
+          .select("content")
+          .eq("id", 1)
+          .single();
+        
+        if (welcomeError) {
+          console.error("Error fetching welcome message:", welcomeError);
+          // Continue with default message if there's an error
+        } else if (welcomeData) {
+          console.log("Welcome message retrieved successfully");
+          messageContent = welcomeData.content;
+        }
+      } catch (dbError) {
+        console.error("Exception while fetching welcome message:", dbError);
+        // Continue with default message
+      }
+    }
+    
+    const finalWelcomeMessage = messageContent || "Welcome to BestAlgo.ai! We're excited to have you join our trading platform.";
+    console.log("Using welcome message:", finalWelcomeMessage.substring(0, 50) + "...");
     
     // Create HTML content with proper formatting
     const htmlContent = `
@@ -115,7 +139,8 @@ serve(async (req) => {
             </div>
             <div class="content">
               <p>Hello ${name},</p>
-              <p>${welcomeMessage}</p>
+              <p>${finalWelcomeMessage}</p>
+              <p>If you have any questions, our support team is here to help!</p>
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>
@@ -126,7 +151,7 @@ serve(async (req) => {
       </html>
     `;
     
-    console.log("Setting up SMTP client...");
+    console.log("Setting up SMTP client with Gmail...");
     try {
       const client = new SMTPClient({
         connection: {
@@ -140,22 +165,29 @@ serve(async (req) => {
         }
       });
       
-      console.log("SMTP client initialized, attempting to send email...");
-      await client.send({
+      console.log("SMTP client initialized, preparing to send email to:", email);
+      
+      const emailToSend = {
         from: "BestAlgo.ai <learnings1.infocap@gmail.com>",
         to: email,
         subject: "Welcome to BestAlgo.ai!",
         html: htmlContent,
-      });
+      };
+      
+      console.log("Sending email with subject:", emailToSend.subject);
+      const sendResult = await client.send(emailToSend);
+      console.log("SMTP send result:", sendResult);
       
       await client.close();
+      console.log("SMTP client closed successfully");
       
       console.log("Email sent successfully via SMTP to:", email);
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: "Email sent successfully",
-          recipient: email
+          recipient: email,
+          timestamp: new Date().toISOString()
         }),
         {
           status: 200,
@@ -163,12 +195,19 @@ serve(async (req) => {
         }
       );
     } catch (smtpError: any) {
-      console.error("SMTP error details:", smtpError);
+      console.error("SMTP error occurred:", smtpError);
+      console.error("SMTP error details:", {
+        message: smtpError.message,
+        stack: smtpError.stack,
+        code: smtpError.code || "UNKNOWN"
+      });
+      
       return new Response(
         JSON.stringify({ 
           error: "SMTP error", 
           details: smtpError.message || "Unknown SMTP error",
-          stack: smtpError.stack
+          code: smtpError.code || "UNKNOWN",
+          timestamp: new Date().toISOString()
         }),
         {
           status: 500,
@@ -178,11 +217,17 @@ serve(async (req) => {
     }
   } catch (error: any) {
     console.error("Unexpected error in edge function:", error);
+    console.error("Error details:", {
+      name: error.name || "Unknown",
+      message: error.message || "No message",
+      stack: error.stack || "No stack trace"
+    });
+    
     return new Response(
       JSON.stringify({ 
         error: "Failed to send email", 
         details: error.message || "Unknown error",
-        stack: error.stack 
+        timestamp: new Date().toISOString()
       }),
       {
         status: 500,
