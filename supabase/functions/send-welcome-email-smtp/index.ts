@@ -102,45 +102,62 @@ serve(async (req) => {
     `;
     
     console.log("Setting up SMTP client...");
-    const client = new SMTPClient({
-      connection: {
-        hostname: "smtp.gmail.com",
-        port: 465,
-        tls: true,
-        auth: {
-          username: "learnings1.infocap@gmail.com",
-          password: "jcpv fako lllb dfre"
+    try {
+      const client = new SMTPClient({
+        connection: {
+          hostname: "smtp.gmail.com",
+          port: 465,
+          tls: true,
+          auth: {
+            username: "learnings1.infocap@gmail.com",
+            password: "jcpv fako lllb dfre"
+          }
         }
-      }
-    });
-    
-    console.log("Sending email via SMTP...");
-    await client.send({
-      from: "BestAlgo.ai <learnings1.infocap@gmail.com>",
-      to: email,
-      subject: "Welcome to BestAlgo.ai!",
-      html: htmlContent,
-    });
-    
-    await client.close();
-    
-    console.log("Email sent successfully via SMTP");
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Email sent successfully"
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
+      });
+      
+      console.log("SMTP client initialized, attempting to send email...");
+      await client.send({
+        from: "BestAlgo.ai <learnings1.infocap@gmail.com>",
+        to: email,
+        subject: "Welcome to BestAlgo.ai!",
+        html: htmlContent,
+      });
+      
+      await client.close();
+      
+      console.log("Email sent successfully via SMTP to:", email);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Email sent successfully",
+          recipient: email
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    } catch (smtpError: any) {
+      console.error("SMTP error details:", smtpError);
+      return new Response(
+        JSON.stringify({ 
+          error: "SMTP error", 
+          details: smtpError.message || "Unknown SMTP error",
+          stack: smtpError.stack
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
   } catch (error: any) {
     console.error("Unexpected error in edge function:", error);
     return new Response(
       JSON.stringify({ 
         error: "Failed to send email", 
-        details: error.message 
+        details: error.message || "Unknown error",
+        stack: error.stack 
       }),
       {
         status: 500,

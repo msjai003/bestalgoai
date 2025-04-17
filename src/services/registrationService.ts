@@ -70,26 +70,46 @@ export const registerUser = async (formData: RegistrationData) => {
 
     console.log("Registration successful:", data);
     
-    // Send welcome email after successful registration
-    try {
-      console.log("Attempting to send welcome email to:", formData.email);
-      const emailResult = await sendWelcomeEmail(
-        formData.email, 
-        formData.fullName,
-        "Welcome to BestAlgo.ai! We're excited to have you join us."
-      );
-      
-      if (emailResult.success) {
-        console.log("Welcome email sent successfully");
-      } else {
-        console.error("Failed to send welcome email:", emailResult.error);
+    // Send welcome email after successful registration with multiple retries
+    const maxRetries = 3;
+    let emailSent = false;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
+      try {
+        console.log(`Attempting to send welcome email (attempt ${attempt}/${maxRetries}) to:`, formData.email);
+        const emailResult = await sendWelcomeEmail(
+          formData.email, 
+          formData.fullName,
+          "Welcome to BestAlgo.ai! We're excited to have you join us."
+        );
+        
+        if (emailResult.success) {
+          console.log("Welcome email sent successfully on attempt", attempt);
+          emailSent = true;
+        } else {
+          console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailResult.error);
+          lastError = emailResult.error;
+          // Wait a bit before retrying
+          if (attempt < maxRetries) {
+            console.log(`Waiting before retry attempt ${attempt + 1}...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      } catch (emailError) {
+        console.error(`Exception sending welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
+        lastError = emailError;
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
       }
-    } catch (emailError) {
-      console.error("Exception sending welcome email:", emailError);
-      // Don't fail registration if email fails
     }
     
-    return { success: true, data };
+    if (!emailSent) {
+      console.error("Failed to send welcome email after all retry attempts:", lastError);
+    }
+    
+    return { success: true, data, emailSent };
   } catch (error) {
     console.error("Exception during registration:", error);
     return { success: false, error };
@@ -104,6 +124,8 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
   
   try {
     console.log("Sending welcome email to:", email);
+    console.log("With name:", fullName);
+    
     const { data, error } = await supabase.functions.invoke('send-welcome-email-smtp', {
       body: JSON.stringify({
         email,
@@ -117,7 +139,7 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
       return { success: false, error };
     }
     
-    console.log("Welcome email sent successfully:", data);
+    console.log("Welcome email response:", data);
     return { success: true, data };
   } catch (error) {
     console.error("Exception sending welcome email:", error);

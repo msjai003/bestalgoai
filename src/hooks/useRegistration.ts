@@ -58,17 +58,39 @@ export const useRegistration = () => {
       console.log('Sending welcome messages to:', { email, fullName });
       
       // Send welcome email with a personalized message
-      const emailResult = await sendWelcomeEmail(
-        email,
-        fullName,
-        `Welcome to our platform, ${fullName}! We're excited to have you on board.`
-      );
+      let emailResult;
+      const maxEmailRetries = 3;
       
-      if (emailResult.success) {
-        toast.success('Welcome email has been sent! Please check your inbox.');
-      } else {
-        console.error('Error sending welcome email:', emailResult.error);
-        toast.error('We could not send your welcome email, but your account was created successfully.');
+      for (let attempt = 1; attempt <= maxEmailRetries; attempt++) {
+        try {
+          console.log(`Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
+          emailResult = await sendWelcomeEmail(
+            email,
+            fullName,
+            `Welcome to BestAlgo.ai, ${fullName}! We're excited to have you on board.`
+          );
+          
+          if (emailResult.success) {
+            console.log('Welcome email sent successfully!');
+            toast.success('Welcome email has been sent! Please check your inbox.');
+            break;
+          } else {
+            console.error(`Error sending welcome email attempt ${attempt}:`, emailResult.error);
+            if (attempt === maxEmailRetries) {
+              toast.error('We could not send your welcome email, but your account was created successfully.');
+            } else {
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+          }
+        } catch (emailError) {
+          console.error(`Exception during welcome email attempt ${attempt}:`, emailError);
+          if (attempt === maxEmailRetries) {
+            toast.error('We could not send your welcome email, but your account was created successfully.');
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
       }
       
       // Send welcome SMS if mobile number is provided
@@ -96,7 +118,7 @@ export const useRegistration = () => {
         }
       }
       
-      return true;
+      return emailResult?.success || false;
     } catch (error) {
       console.error('Error in handleSendWelcomeMessages:', error);
       return false;
