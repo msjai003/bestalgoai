@@ -11,7 +11,7 @@ const BASE_URL = 'http://103.61.225.81:8000';
 interface Question {
   id: string;
   question: string;
-  options: string[];
+  options: string[] | string;
   level: string;
 }
 
@@ -31,9 +31,20 @@ const SmartQuiz = () => {
   const [finalLevel, setFinalLevel] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/quiz/start`).then((res) => {
-      setQuestions(res.data);
-    });
+    axios.get(`${BASE_URL}/api/quiz/start`)
+      .then((res) => {
+        // Process questions to handle stringified JSON options
+        const processedQuestions = res.data.map((q: Question) => ({
+          ...q,
+          options: typeof q.options === 'string'
+            ? Object.values(JSON.parse(q.options))
+            : q.options
+        }));
+        setQuestions(processedQuestions);
+      })
+      .catch((err) => {
+        console.error("❌ Failed to load quiz:", err);
+      });
   }, []);
 
   const handleSelect = async (option: string) => {
@@ -47,8 +58,8 @@ const SmartQuiz = () => {
       level: q.level,
     });
     setResult(res.data);
-    setAnswers([
-      ...answers,
+    setAnswers((prev) => [
+      ...prev,
       {
         question: q.question,
         selected: option,
@@ -82,7 +93,7 @@ const SmartQuiz = () => {
 
   if (finalLevel) {
     return (
-      <Card className="glass-card p-8 text-center mt-10 max-w-xl mx-auto">
+      <Card className="glass-card p-8 text-center mt-10 max-w-xl mx-auto rounded-3xl">
         <div className="mb-6">
           <Award className="h-16 w-16 text-cyan mx-auto mb-4 animate-bounce" />
           <h2 className="text-3xl font-bold gradient-text mb-2">
@@ -93,13 +104,13 @@ const SmartQuiz = () => {
           </p>
         </div>
         <div className="space-y-4">
-          <Button 
+          <Button
             onClick={() => window.location.href = '/education'}
             className="w-full py-6 text-lg rounded-full shadow-lg transition-all duration-300 hover:shadow-cyan/20 hover:scale-[1.02] bg-cyan text-[#121212]"
           >
             Start Learning Modules
           </Button>
-          <Button 
+          <Button
             onClick={() => window.location.reload()}
             variant="outline"
             className="w-full py-6 text-lg rounded-full border-cyan/30 hover:bg-cyan/10 hover:border-cyan"
@@ -196,4 +207,3 @@ const SmartQuiz = () => {
 };
 
 export default SmartQuiz;
-
