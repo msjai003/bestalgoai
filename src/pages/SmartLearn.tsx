@@ -1,8 +1,17 @@
 
 import React from 'react';
-import SmartQuiz from '@/components/classes/SmartQuiz';
+import { useNavigate } from 'react-router-dom';
+import ProQuiz from '@/components/classes/ProQuiz';
+import { Button } from '@/components/ui/button';
+import { GraduationCap, RefreshCw } from 'lucide-react';
 
 const SmartLearn = () => {
+  const navigate = useNavigate();
+  
+  const handleStartLearning = () => {
+    navigate('/education');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen bg-charcoalPrimary">
       <div className="max-w-4xl mx-auto">
@@ -13,7 +22,7 @@ const SmartLearn = () => {
           </p>
         </div>
         
-        <SmartQuiz />
+        <ProQuiz />
       </div>
     </div>
   );
