@@ -20,12 +20,27 @@ export const useQuiz = () => {
   const loadQuestions = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/quiz/start`);
-      const processedQuestions = res.data.map((q: Question) => ({
-        ...q,
-        options: typeof q.options === 'string'
-          ? Object.values(JSON.parse(q.options))
-          : q.options
-      }));
+      const processedQuestions = res.data.map((q: Question) => {
+        let parsedOptions;
+        
+        if (typeof q.options === 'string') {
+          try {
+            const parsed = JSON.parse(q.options);
+            parsedOptions = Array.isArray(parsed) ? parsed : Object.values(parsed);
+          } catch (err) {
+            console.error("Failed to parse options JSON:", err);
+            parsedOptions = [];
+          }
+        } else {
+          parsedOptions = q.options;
+        }
+        
+        return {
+          ...q,
+          options: parsedOptions
+        };
+      });
+      
       setQuestions(processedQuestions);
     } catch (err) {
       console.error("❌ Failed to load quiz:", err);
