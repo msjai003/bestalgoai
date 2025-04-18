@@ -148,7 +148,7 @@ const SmartQuiz = () => {
       <h2 className="text-xl font-semibold mb-6">{currentQuestion.question}</h2>
       
       <div className="space-y-3 mb-6">
-        {currentQuestion.options.map((opt, idx) => (
+        {Array.isArray(currentQuestion.options) && currentQuestion.options.map((opt, idx) => (
           <Button
             key={idx}
             variant="outline"
