@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Award, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 
-const BASE_URL = 'https://api.bestalgo.ai';
+const BASE_URL = 'http://103.61.225.81:8000';
 
 interface Question {
   id: string;
