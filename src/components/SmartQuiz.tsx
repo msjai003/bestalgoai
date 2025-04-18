@@ -95,14 +95,14 @@ const SmartQuiz = () => {
         <div className="space-y-4">
           <Button 
             onClick={() => window.location.href = '/education'}
-            className="w-full py-6 text-lg rounded-xl shadow-lg transition-all duration-300 hover:shadow-cyan/20 hover:scale-[1.02] bg-cyan text-[#121212]"
+            className="w-full py-6 text-lg rounded-full shadow-lg transition-all duration-300 hover:shadow-cyan/20 hover:scale-[1.02] bg-cyan text-[#121212]"
           >
             Start Learning Modules
           </Button>
           <Button 
             onClick={() => window.location.reload()}
             variant="outline"
-            className="w-full py-6 text-lg"
+            className="w-full py-6 text-lg rounded-full border-cyan/30 hover:bg-cyan/10 hover:border-cyan"
           >
             Retake Quiz
           </Button>
@@ -113,7 +113,7 @@ const SmartQuiz = () => {
 
   if (questions.length === 0) {
     return (
-      <Card className="glass-card p-8 text-center">
+      <Card className="glass-card p-8 text-center mt-10 max-w-xl mx-auto rounded-3xl">
         <p className="text-gray-400">Loading your assessment...</p>
       </Card>
     );
@@ -123,7 +123,7 @@ const SmartQuiz = () => {
   const progress = ((current + 1) / questions.length) * 100;
 
   return (
-    <Card className="glass-card p-8 max-w-2xl mx-auto">
+    <Card className="glass-card p-8 max-w-2xl mx-auto rounded-3xl">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-400">
@@ -131,7 +131,7 @@ const SmartQuiz = () => {
           </span>
           <span className="text-sm text-cyan">{Math.round(progress)}%</span>
         </div>
-        <Progress value={progress} className="h-2 w-full bg-[#121212]" />
+        <Progress value={progress} className="h-2 w-full bg-[#121212] rounded-full" />
       </div>
 
       <h2 className="text-xl font-semibold mb-6">{currentQuestion.question}</h2>
@@ -141,7 +141,7 @@ const SmartQuiz = () => {
           <Button
             key={idx}
             variant="outline"
-            className={`w-full justify-start rounded-xl text-left p-4 transition-all duration-300 
+            className={`w-full justify-start rounded-full text-left p-4 transition-all duration-300 
               ${selected === opt && result?.is_correct 
                 ? 'border-cyan bg-cyan/10 text-cyan' 
                 : selected === opt && !result?.is_correct 
@@ -162,7 +162,7 @@ const SmartQuiz = () => {
       </div>
 
       {result && (
-        <div className="mt-6 p-4 rounded-xl bg-[#121212]/50 space-y-4">
+        <div className="mt-6 p-4 rounded-full bg-[#121212]/50 space-y-4">
           <p>
             <span className="font-semibold text-cyan">Explanation:</span>{' '}
             <span className="text-gray-300">{result.explanation}</span>
@@ -178,7 +178,7 @@ const SmartQuiz = () => {
         <div className="mt-6 text-right">
           <Button 
             onClick={handleNext}
-            className="bg-cyan text-[#121212] hover:bg-cyan/90"
+            className="bg-cyan text-[#121212] hover:bg-cyan/90 rounded-full px-6"
           >
             {current < questions.length - 1 ? (
               <>
@@ -196,3 +196,4 @@ const SmartQuiz = () => {
 };
 
 export default SmartQuiz;
+
