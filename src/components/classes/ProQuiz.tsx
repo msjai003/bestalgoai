@@ -12,6 +12,8 @@ export interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: string;
+  explanation?: string;
+  example?: string;
 }
 
 const ProQuiz = () => {
