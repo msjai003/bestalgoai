@@ -114,11 +114,17 @@ const BasicQuestionsSection = () => {
       <h2 className="text-xl font-bold mb-4">Basic Trading</h2>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6 bg-charcoalSecondary border border-gray-800/40">
-          <TabsTrigger value="flashcards" className="data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6 bg-charcoalSecondary border border-gray-800/40 p-1 rounded-full">
+          <TabsTrigger 
+            value="flashcards" 
+            className="data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary rounded-full transition-all duration-300"
+          >
             Flashcards
           </TabsTrigger>
-          <TabsTrigger value="quiz" className="data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
+          <TabsTrigger 
+            value="quiz" 
+            className="data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary rounded-full transition-all duration-300"
+          >
             Quiz
           </TabsTrigger>
         </TabsList>
@@ -262,3 +268,4 @@ const BasicQuestionsSection = () => {
 };
 
 export default BasicQuestionsSection;
+
