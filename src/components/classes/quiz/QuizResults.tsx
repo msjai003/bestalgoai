@@ -3,8 +3,9 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Award, Star, TrendingUp } from 'lucide-react';
+import { RefreshCw, GraduationCap, Award, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizResultsProps {
   correctAnswers: number;
@@ -17,6 +18,7 @@ const QuizResults: React.FC<QuizResultsProps> = ({
   totalQuestions,
   onRestartQuiz
 }) => {
+  const navigate = useNavigate();
   const percentage = Math.round((correctAnswers / totalQuestions) * 100);
   const isPassed = correctAnswers / totalQuestions >= 0.7;
   
@@ -27,9 +29,13 @@ const QuizResults: React.FC<QuizResultsProps> = ({
   };
 
   const levelInfo = getLevel(percentage);
+  
+  const handleStartLearning = () => {
+    navigate('/education');
+  };
 
   return (
-    <Card className="bg-[#1E1E1E] rounded-xl p-8 border border-gray-800/40 shadow-xl">
+    <Card className="glass-card p-8">
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-6">Quiz Complete! 🎉</h2>
         
@@ -53,34 +59,27 @@ const QuizResults: React.FC<QuizResultsProps> = ({
           />
         </div>
         
-        {isPassed ? (
-          <div className="bg-green-900/20 border border-green-700 rounded-lg p-6 mb-8">
-            <div className="flex justify-center mb-3">
-              <Award className="h-8 w-8 text-yellow-400" />
-            </div>
-            <p className="text-green-300 font-medium">
-              Congratulations! You've mastered this level.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-orange-900/20 border border-orange-700 rounded-lg p-6 mb-8">
-            <p className="text-orange-300">
-              Keep learning! You need 70% to advance to the next level.
-            </p>
-          </div>
-        )}
-        
-        <Button 
-          onClick={onRestartQuiz}
-          className="bg-cyan text-[#121212] hover:bg-cyan/90 w-full py-6 text-lg rounded-xl shadow-lg transition-all duration-300 hover:shadow-cyan/20 hover:scale-[1.02]"
-        >
-          <RefreshCw className="mr-2 h-5 w-5" />
-          Try Again
-        </Button>
+        <div className="space-y-4">
+          <Button 
+            onClick={handleStartLearning}
+            className="w-full py-6 text-lg rounded-xl shadow-lg transition-all duration-300 hover:shadow-cyan/20 hover:scale-[1.02] bg-cyan text-[#121212]"
+          >
+            <GraduationCap className="mr-2 h-5 w-5" />
+            Start Learning Modules
+          </Button>
+          
+          <Button 
+            onClick={onRestartQuiz}
+            variant="outline"
+            className="w-full py-6 text-lg"
+          >
+            <RefreshCw className="mr-2 h-5 w-5" />
+            Retake Quiz
+          </Button>
+        </div>
       </div>
     </Card>
   );
 };
 
 export default QuizResults;
-

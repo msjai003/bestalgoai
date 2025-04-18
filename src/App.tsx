@@ -25,6 +25,7 @@ import Logout from "@/pages/Logout";
 import ColorTest from "@/pages/ColorTest";
 import Education from "@/pages/Education";
 import Classes from "@/pages/Classes";
+import SmartLearn from "@/pages/SmartLearn";
 import Dashboard from "@/pages/Dashboard";
 import Onboarding from "@/pages/Onboarding";
 import StrategyBuilder from "@/pages/StrategyBuilder";
@@ -71,6 +72,7 @@ function AppRoutes() {
       <Route path="/colortest" element={<ColorTest />} />
       <Route path="/education" element={<Education />} />
       <Route path="/classes" element={<Classes />} />
+      <Route path="/smart-learn" element={<SmartLearn />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={
