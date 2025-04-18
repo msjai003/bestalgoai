@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Award, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 
+const BASE_URL = 'https://api.bestalgo.ai';
+
 interface Question {
   id: string;
   question: string;
@@ -29,7 +31,7 @@ const SmartQuiz = () => {
   const [finalLevel, setFinalLevel] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/quiz/start').then((res) => {
+    axios.get(`${BASE_URL}/api/quiz/start`).then((res) => {
       setQuestions(res.data);
     });
   }, []);
@@ -37,7 +39,7 @@ const SmartQuiz = () => {
   const handleSelect = async (option: string) => {
     setSelected(option);
     const q = questions[current];
-    const res = await axios.post('http://localhost:8000/api/quiz/analyze', {
+    const res = await axios.post(`${BASE_URL}/api/quiz/analyze`, {
       user_id: 'demo_user',
       question: q.question,
       options: q.options,
@@ -63,13 +65,13 @@ const SmartQuiz = () => {
     } else {
       const level_signals = answers.map((a) => a.level_signal);
       axios
-        .post('http://localhost:8000/api/quiz/final_level', {
+        .post(`${BASE_URL}/api/quiz/final_level`, {
           user_id: 'demo_user',
           level_signals,
         })
         .then((res) => {
           setFinalLevel(res.data.final_level);
-          axios.post('http://localhost:8000/api/quiz/save_result', {
+          axios.post(`${BASE_URL}/api/quiz/save_result`, {
             user_id: 'demo_user',
             final_level: res.data.final_level,
             results: answers,
