@@ -232,6 +232,7 @@ export type Database = {
           created_at: string
           display_order: number
           id: number
+          options: string[] | null
           question: string
           updated_at: string
         }
@@ -241,6 +242,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string[] | null
           question: string
           updated_at?: string
         }
@@ -250,6 +252,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string[] | null
           question?: string
           updated_at?: string
         }
@@ -468,6 +471,33 @@ export type Database = {
         }
         Relationships: []
       }
+      education_progress: {
+        Row: {
+          completed_modules: string[] | null
+          current_module: string | null
+          id: string
+          last_updated: string | null
+          progress_percent: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_modules?: string[] | null
+          current_module?: string | null
+          id?: string
+          last_updated?: string | null
+          progress_percent?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_modules?: string[] | null
+          current_module?: string | null
+          id?: string
+          last_updated?: string | null
+          progress_percent?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       evercrest_metrics: {
         Row: {
           avg_loss_on_losing_trades: number | null
@@ -661,6 +691,7 @@ export type Database = {
           created_at: string
           display_order: number
           id: number
+          options: string[] | null
           question: string
           updated_at: string
         }
@@ -670,6 +701,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string[] | null
           question: string
           updated_at?: string
         }
@@ -679,6 +711,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string[] | null
           question?: string
           updated_at?: string
         }
@@ -1021,6 +1054,7 @@ export type Database = {
           created_at: string
           display_order: number
           id: number
+          options: string | null
           question: string
           updated_at: string
         }
@@ -1030,6 +1064,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string | null
           question: string
           updated_at?: string
         }
@@ -1039,6 +1074,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: number
+          options?: string | null
           question?: string
           updated_at?: string
         }
@@ -1080,6 +1116,30 @@ export type Database = {
           option_d?: string
           question?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          completed_at: string | null
+          id: string
+          level: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          level?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          level?: string | null
+          score?: number | null
+          user_id?: string
         }
         Relationships: []
       }
