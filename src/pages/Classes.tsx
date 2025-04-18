@@ -43,16 +43,25 @@ const Classes = () => {
         </div>
         
         <Tabs defaultValue="basic" onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40">
-            <TabsTrigger value="basic" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-charcoalSecondary border border-gray-800/40 p-1 rounded-full">
+            <TabsTrigger 
+              value="basic" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full transition-all duration-300"
+            >
               <BookOpen className="h-4 w-4" />
               <span>Basic</span>
             </TabsTrigger>
-            <TabsTrigger value="intermediate" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
+            <TabsTrigger 
+              value="intermediate" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full transition-all duration-300"
+            >
               <Brain className="h-4 w-4" />
               <span>Intermediate</span>
             </TabsTrigger>
-            <TabsTrigger value="pro" className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full">
+            <TabsTrigger 
+              value="pro" 
+              className="flex gap-2 items-center data-[state=active]:bg-cyan data-[state=active]:text-charcoalPrimary data-[state=active]:rounded-full transition-all duration-300"
+            >
               <Infinity className="h-4 w-4" />
               <span>Pro</span>
             </TabsTrigger>
