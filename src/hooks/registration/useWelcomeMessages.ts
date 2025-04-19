@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useWelcomeMessages = () => {
   const sendWelcomeMessages = async (email: string, fullName: string, mobileNumber?: string) => {
     try {
-      console.log('Sending welcome messages to:', { email, fullName });
+      console.log('Sending welcome messages to:', { email, fullName, mobileNumber });
       
       // Send welcome email with a personalized message
       let emailResult;
@@ -14,6 +14,8 @@ export const useWelcomeMessages = () => {
       for (let attempt = 1; attempt <= maxEmailRetries; attempt++) {
         try {
           console.log(`Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
+          
+          // Using the Resend API via Edge Function
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
             body: JSON.stringify({
               email,
@@ -27,8 +29,10 @@ export const useWelcomeMessages = () => {
             if (attempt === maxEmailRetries) {
               toast.error('We could not send your welcome email, but your account was created successfully.');
             }
+            // Wait a bit longer between retries
+            await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           } else {
-            console.log('Welcome email sent successfully!');
+            console.log('Welcome email sent successfully:', emailData);
             toast.success('Welcome email has been sent! Please check your inbox.');
             emailResult = { success: true, data: emailData };
             break;
@@ -38,7 +42,8 @@ export const useWelcomeMessages = () => {
           if (attempt === maxEmailRetries) {
             toast.error('We could not send your welcome email, but your account was created successfully.');
           }
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
         }
       }
       
@@ -69,7 +74,7 @@ export const useWelcomeMessages = () => {
       
       return emailResult?.success || false;
     } catch (error) {
-      console.error('Error in handleSendWelcomeMessages:', error);
+      console.error('Error in sendWelcomeMessages:', error);
       return false;
     }
   };
