@@ -82,11 +82,13 @@ export const registerUser = async (formData: RegistrationData) => {
           name: formData.fullName,
         });
         
-        // Call our new welcome email function
+        // First try with the resend edge function
+        console.log("Trying to send email using resend integration...");
         const { error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
           body: JSON.stringify({
             email: formData.email,
             name: formData.fullName,
+            welcomeMessage: `Welcome to BestAlgo.ai, ${formData.fullName}! We're excited to have you join our trading community.`
           })
         });
         
@@ -95,10 +97,31 @@ export const registerUser = async (formData: RegistrationData) => {
           emailSent = true;
         } else {
           console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
-          lastError = emailError;
-          if (attempt < maxRetries) {
-            console.log(`Waiting before retry attempt ${attempt + 1}...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          
+          // If resend fails, try with the SMTP function as fallback
+          if (attempt === maxRetries - 1) {
+            console.log("Trying fallback SMTP email sender...");
+            const { error: smtpError } = await supabase.functions.invoke('send-welcome-email-smtp', {
+              body: JSON.stringify({
+                email: formData.email,
+                name: formData.fullName,
+                welcomeMessage: `Welcome to BestAlgo.ai, ${formData.fullName}! We're excited to have you join our trading community.`
+              })
+            });
+            
+            if (!smtpError) {
+              console.log("Welcome email sent successfully via SMTP fallback");
+              emailSent = true;
+            } else {
+              console.error("SMTP fallback also failed:", smtpError);
+              lastError = smtpError;
+            }
+          } else {
+            lastError = emailError;
+            if (attempt < maxRetries) {
+              console.log(`Waiting before retry attempt ${attempt + 1}...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
           }
         }
       } catch (emailError) {
@@ -133,18 +156,32 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
     const requestBody = {
       email,
       name: fullName,
-      welcomeMessage
+      welcomeMessage: welcomeMessage || `Welcome to BestAlgo.ai, ${fullName}! We're excited to have you join our trading community.`
     };
     
-    console.log("Calling send-welcome-email-smtp with payload:", JSON.stringify(requestBody));
+    console.log("Calling send-welcome-email-resend with payload:", JSON.stringify(requestBody));
     
-    const { data, error } = await supabase.functions.invoke('send-welcome-email-smtp', {
+    // Try using Resend first
+    const { data, error } = await supabase.functions.invoke('send-welcome-email-resend', {
       body: JSON.stringify(requestBody)
     });
     
     if (error) {
-      console.error("Error invoking send-welcome-email-smtp:", error);
-      return { success: false, error };
+      console.error("Error invoking send-welcome-email-resend:", error);
+      
+      // Fall back to SMTP if Resend fails
+      console.log("Trying fallback SMTP email sender...");
+      const { data: smtpData, error: smtpError } = await supabase.functions.invoke('send-welcome-email-smtp', {
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (smtpError) {
+        console.error("SMTP fallback also failed:", smtpError);
+        return { success: false, error: smtpError };
+      }
+      
+      console.log("Email sent via SMTP fallback:", smtpData);
+      return { success: true, data: smtpData };
     }
     
     console.log("Welcome email function response:", data);
@@ -162,16 +199,19 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
   }
 };
 
+// Keep existing check auth status function
 export const checkAuthStatus = async () => {
   console.log("Auth status check functionality has been removed");
   return null;
 };
 
+// Keep existing login user function
 export const loginUser = async (email: string, password: string) => {
   console.log("Login functionality has been removed");
   throw new Error("Login functionality has been removed");
 };
 
+// Keep existing save user data function
 export const saveUserData = async (userId: string, data: any) => {
   console.log("Save user data functionality has been removed");
   throw new Error("Save user data functionality has been removed");

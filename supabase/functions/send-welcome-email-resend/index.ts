@@ -71,7 +71,7 @@ serve(async (req) => {
       );
     }
 
-    // Create HTML content with proper formatting
+    // Create HTML content with proper formatting and visible content
     const htmlContent = `
       <html>
         <head>
@@ -79,23 +79,26 @@ serve(async (req) => {
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; }
-            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+            .content { padding: 20px; background-color: #f9f9f9; }
+            .button { display: inline-block; background-color: #4F46E5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; padding: 20px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to InfoCap!</h1>
+              <h1>Welcome to BestAlgo.ai!</h1>
             </div>
             <div class="content">
               <p>Hello ${name},</p>
-              <p>${welcomeMessage || "Thank you for registering with InfoCap! We're excited to have you on board."}</p>
+              <p>${welcomeMessage || "Thank you for registering with BestAlgo.ai! We're excited to have you on board."}</p>
+              <p>You can now access all our trading algorithms and analysis tools to enhance your trading experience.</p>
+              <a href="https://bestalgo.ai/dashboard" class="button">Go to Your Dashboard</a>
               <p>If you have any questions, please don't hesitate to contact our support team.</p>
-              <p>Best regards,<br>The InfoCap Team</p>
+              <p>Best regards,<br>The BestAlgo.ai Team</p>
             </div>
             <div class="footer">
-              <p>© ${new Date().getFullYear()} InfoCap Company. All rights reserved.</p>
+              <p>© ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>
               <p>This email was sent to ${email}</p>
             </div>
           </div>
@@ -103,16 +106,18 @@ serve(async (req) => {
       </html>
     `;
     
-    console.log("Sending email via Resend...");
+    console.log("Preparing to send email via Resend...");
+    
+    // Add email sending with detailed debugging
     const { data, error } = await resend.emails.send({
-      from: "InfoCap <onboarding@resend.dev>",
+      from: "BestAlgo.ai <onboarding@resend.dev>",
       to: [email],
-      subject: "Welcome to InfoCap!",
+      subject: "Welcome to BestAlgo.ai!",
       html: htmlContent,
     });
     
     if (error) {
-      console.error("Resend error:", error);
+      console.error("Resend API error:", error);
       return new Response(
         JSON.stringify({ 
           error: "Failed to send email", 
