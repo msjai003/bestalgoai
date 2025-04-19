@@ -2,7 +2,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Initialize Resend and log API key status
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+console.log(`[STARTUP] RESEND_API_KEY exists: ${Boolean(resendApiKey)}`);
+const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,32 +19,64 @@ interface EmailRequest {
   welcomeMessage?: string;
 }
 
+// Create a helper function for logging
+function logInfo(message: string, data?: any) {
+  if (data) {
+    console.log(`[INFO] ${message}`, JSON.stringify(data));
+  } else {
+    console.log(`[INFO] ${message}`);
+  }
+}
+
+function logError(message: string, error: any) {
+  console.error(`[ERROR] ${message}`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
+}
+
 serve(async (req) => {
+  const requestId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  logInfo(`[${requestId}] Request received at ${timestamp}`);
+
   // Handle CORS preflight request
   if (req.method === "OPTIONS") {
-    console.log("Handling CORS preflight request");
+    logInfo(`[${requestId}] Handling CORS preflight request`);
     return new Response(null, {
       headers: corsHeaders,
     });
   }
 
   try {
-    console.log("Processing welcome email request");
+    logInfo(`[${requestId}] Processing welcome email request`);
     
     // Parse the request body
-    const requestData = await req.json().catch(error => {
-      console.error("Error parsing request body:", error);
-      throw new Error("Invalid request body");
-    });
+    let requestData;
+    try {
+      requestData = await req.json();
+      logInfo(`[${requestId}] Request body parsed:`, requestData);
+    } catch (error) {
+      logError(`[${requestId}] Error parsing request body:`, error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid request body",
+          requestId
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
     
     const { email, name, welcomeMessage } = requestData as EmailRequest;
     
     if (!email || !name) {
-      console.error("Missing required fields:", { email, name });
+      logError(`[${requestId}] Missing required fields:`, { email, name });
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Missing required fields: email and name are required"
+          error: "Missing required fields: email and name are required",
+          requestId
         }),
         {
           status: 400,
@@ -50,11 +85,29 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Sending welcome email to: ${email}, Name: ${name}`);
-    console.log(`RESEND API KEY exists: ${Boolean(Deno.env.get("RESEND_API_KEY"))}`);
+    logInfo(`[${requestId}] Sending welcome email to: ${email}, Name: ${name}`);
+    logInfo(`[${requestId}] RESEND API KEY exists: ${Boolean(resendApiKey)}`);
 
     try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        logError(`[${requestId}] Invalid email format:`, { email });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Invalid email format",
+            requestId
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
+
       // Send the email
+      logInfo(`[${requestId}] Calling Resend API...`);
       const { data, error } = await resend.emails.send({
         from: "BestAlgo <onboarding@resend.dev>",
         to: [email],
@@ -78,11 +131,13 @@ serve(async (req) => {
       });
 
       if (error) {
-        console.error("Resend API Error Details:", error);
+        logError(`[${requestId}] Resend API Error:`, error);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: `Resend API Error: ${error.message || 'Unknown error'}` 
+            error: `Resend API Error: ${error.message || 'Unknown error'}`,
+            details: error,
+            requestId
           }),
           {
             status: 500,
@@ -91,12 +146,13 @@ serve(async (req) => {
         );
       }
 
-      console.log("Email sent successfully:", data);
+      logInfo(`[${requestId}] Email sent successfully:`, data);
       return new Response(
         JSON.stringify({
           success: true,
           message: "Welcome email sent successfully",
-          data
+          data,
+          requestId
         }),
         {
           status: 200,
@@ -104,11 +160,12 @@ serve(async (req) => {
         }
       );
     } catch (sendError) {
-      console.error("Comprehensive email sending error:", sendError);
+      logError(`[${requestId}] Email sending error:`, sendError);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: sendError.message || "Comprehensive error in email sending process" 
+          error: sendError.message || "Error in email sending process",
+          requestId 
         }),
         {
           status: 500,
@@ -117,11 +174,12 @@ serve(async (req) => {
       );
     }
   } catch (error: any) {
-    console.error("Unexpected error in welcome email function:", error);
+    logError(`[${requestId}] Unexpected error:`, error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "An unexpected error occurred during email sending"
+        error: error.message || "An unexpected error occurred during email sending",
+        requestId
       }),
       {
         status: 500,
