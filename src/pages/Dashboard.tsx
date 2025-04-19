@@ -1,199 +1,103 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/hooks/use-toast"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreVertical, ExternalLink, BookOpen, ChartBar, School, Briefcase, Settings as SettingsIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import EmailTester from '@/components/email/EmailTester';
-import { BottomNav } from '@/components/BottomNav';
-
-interface Profile {
-  id: string;
-  full_name: string;
-  email: string;
-  mobile_number: string;
-  trading_experience: string;
-  profile_picture: string | null;
-}
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Loader } from "lucide-react";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
+import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
+import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast()
-  const [profile, setProfile] = React.useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const [hasWelcomed, setHasWelcomed] = useState<boolean>(false);
+  const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  
   useEffect(() => {
     if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the dashboard.",
+        variant: "destructive",
+      });
       navigate('/auth');
-      return;
-    }
-
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch profile data.",
-            variant: "destructive",
-          })
-        } else {
-          setProfile(data);
-        }
-      } catch (error) {
-        console.error('Unexpected error fetching profile:', error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred while fetching profile.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [user, navigate, toast]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
-  };
-
-  const navigationCards = [
-    { title: 'Smart Learn', icon: BookOpen, path: '/smart-learn', color: 'bg-gradient-to-r from-cyan to-blue-500' },
-    { title: 'Strategy Management', icon: ChartBar, path: '/strategy-management', color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-    { title: 'Classes', icon: School, path: '/classes', color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
-    { title: 'Live Trading', icon: Briefcase, path: '/live-trading', color: 'bg-gradient-to-r from-orange-500 to-red-500' }
-  ];
-
-  return (
-    <div className="min-h-screen bg-charcoalPrimary text-white">
-      <header className="bg-charcoalSecondary py-4 px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center">
-          <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
-          <span className="text-white text-xl ml-2">BestAlgo.ai</span>
-        </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.profile_picture || ""} alt={profile?.full_name || "User"} />
-                <AvatarFallback>{profile?.full_name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
-              </Avatar>
-              <MoreVertical className="absolute top-2 right-2 text-gray-400" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 mr-2">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link to="/profile" className="flex items-center justify-between w-full">
-                <span>Profile</span>
-                <ExternalLink className="h-4 w-4 text-gray-400" />
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="bg-charcoalSecondary">
-              <CardHeader>
-                <CardTitle>
-                  {isLoading ? (
-                    <Skeleton className="h-6 w-40" />
-                  ) : (
-                    <>
-                      Welcome, {profile?.full_name}!
-                    </>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <>
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </>
-                ) : (
-                  <>
-                    <p>Email: {profile?.email}</p>
-                    <p>Mobile: {profile?.mobile_number}</p>
-                    <p>Trading Experience: {profile?.trading_experience}</p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {navigationCards.map((item) => (
-                <Card 
-                  key={item.title}
-                  className={`hover:shadow-lg transition-all cursor-pointer ${item.color} border-none`}
-                  onClick={() => navigate(item.path)}
-                >
-                  <CardContent className="p-6 flex flex-col items-center text-center">
-                    <item.icon className="h-10 w-10 mb-3 text-white" />
-                    <h3 className="font-bold text-white">{item.title}</h3>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <EmailTester />
+    } else {
+      const checkPremium = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
             
-            <Card className="bg-charcoalSecondary">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="secondary" onClick={() => navigate('/smart-learn')}>
-                  Go to Smart Learn
-                </Button>
-                <Button variant="secondary" onClick={() => navigate('/profile')}>
-                  Edit Profile
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+            setHasPremium(true);
+          }
+        } catch (error) {
+          console.error('Error checking premium status:', error);
+        }
+      };
+      
+      // Get welcome message for newly registered users
+      const checkRegistrationTime = async () => {
+        if (hasWelcomed) return;
+        
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData && sessionData.session) {
+            const creationTime = new Date(sessionData.session.user.created_at);
+            const now = new Date();
+            const minutesSinceCreation = (now.getTime() - creationTime.getTime()) / (1000 * 60);
+            
+            // If user account was created in the last 5 minutes, show a welcome toast
+            if (minutesSinceCreation < 5) {
+              toast({
+                title: "Welcome to BestAlgo.ai!",
+                description: "Your account has been created successfully. Check your email for a welcome message.",
+                duration: 6000,
+              });
+              setHasWelcomed(true);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking user registration time:', error);
+        }
+      };
+      
+      checkPremium();
+      checkRegistrationTime();
+    }
+  }, [user, navigate, toast, hasWelcomed]);
+
+  if (user === null) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
         </div>
       </div>
-      
-      <footer className="bg-charcoalSecondary py-4 text-center mb-16">
-        <p className="text-gray-400">
-          © {new Date().getFullYear()} BestAlgo.ai. All rights reserved.
-        </p>
-      </footer>
+    );
+  }
 
+  return (
+    <div className="bg-charcoalPrimary min-h-screen">
+      <Header />
+      <main className="pt-16 pb-20 px-4">
+        <PortfolioOverview 
+          performanceData={mockPerformanceData} 
+          currentValue={currentValue} 
+        />
+        <QuickAccessSection />
+      </main>
       <BottomNav />
     </div>
   );
