@@ -15,7 +15,7 @@ export const useWelcomeMessages = () => {
         try {
           console.log(`📧 DEBUG: Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
           
-          // Using the Resend API via Edge Function
+          // Using the Resend API via Edge Function with clear request structure
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
             body: JSON.stringify({
               email,
