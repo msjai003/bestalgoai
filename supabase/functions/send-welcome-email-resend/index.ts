@@ -17,38 +17,30 @@ interface EmailRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight request
   if (req.method === "OPTIONS") {
     console.log("Handling CORS preflight request");
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders,
+    });
   }
 
   try {
-    console.log("Edge function triggered: Attempting to send welcome email via Resend");
+    console.log("Processing welcome email request");
     
-    // Parse request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-      console.log("Request body parsed successfully:", JSON.stringify(requestBody));
-    } catch (parseError) {
-      console.error("Error parsing request body:", parseError);
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
+    // Parse the request body
+    const requestData = await req.json().catch(error => {
+      console.error("Error parsing request body:", error);
+      throw new Error("Invalid request body");
+    });
     
-    const { email, name, welcomeMessage } = requestBody as EmailRequest;
-    console.log(`Email request received - To: ${email}, Name: ${name}`);
-
+    const { email, name, welcomeMessage } = requestData as EmailRequest;
+    
     if (!email || !name) {
-      console.error("Missing required fields in request");
+      console.error("Missing required fields:", { email, name });
       return new Response(
         JSON.stringify({
+          success: false,
           error: "Missing required fields: email and name are required"
         }),
         {
@@ -58,79 +50,108 @@ serve(async (req) => {
       );
     }
 
-    // Check email format validity
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      console.error(`Invalid email format: ${email}`);
-      return new Response(
-        JSON.stringify({ error: "Invalid email format" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    // Create HTML content with proper formatting
+    console.log(`Sending welcome email to: ${email}, Name: ${name}`);
+    
+    // Email HTML template
     const htmlContent = `
+      <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Welcome to BestAlgo.ai</title>
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; }
-            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(to right, #3490dc, #6574cd);
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 5px 5px 0 0;
+            }
+            .content {
+              background: #f8fafc;
+              padding: 20px;
+              border-left: 1px solid #e2e8f0;
+              border-right: 1px solid #e2e8f0;
+            }
+            .footer {
+              background: #f1f5f9;
+              padding: 15px;
+              text-align: center;
+              font-size: 12px;
+              color: #64748b;
+              border-radius: 0 0 5px 5px;
+              border: 1px solid #e2e8f0;
+            }
+            .button {
+              background: #3490dc;
+              color: white;
+              padding: 10px 20px;
+              text-decoration: none;
+              border-radius: 5px;
+              display: inline-block;
+              margin: 15px 0;
+            }
           </style>
         </head>
         <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to InfoCap!</h1>
-            </div>
-            <div class="content">
-              <p>Hello ${name},</p>
-              <p>${welcomeMessage || "Thank you for registering with InfoCap! We're excited to have you on board."}</p>
-              <p>If you have any questions, please don't hesitate to contact our support team.</p>
-              <p>Best regards,<br>The InfoCap Team</p>
-            </div>
-            <div class="footer">
-              <p>© ${new Date().getFullYear()} InfoCap Company. All rights reserved.</p>
-              <p>This email was sent to ${email}</p>
-            </div>
+          <div class="header">
+            <h1>Welcome to BestAlgo.ai!</h1>
+          </div>
+          <div class="content">
+            <p>Hello ${name},</p>
+            <p>${welcomeMessage || "Thank you for registering with BestAlgo.ai! We're excited to have you on board and help you on your trading journey."}</p>
+            <p>With BestAlgo.ai, you'll gain access to:</p>
+            <ul>
+              <li>Advanced trading algorithms</li>
+              <li>Real-time market analysis</li>
+              <li>Personalized trading strategies</li>
+              <li>Educational resources to improve your trading skills</li>
+            </ul>
+            <p>To get started, log in to your account and explore our platform. If you have any questions or need assistance, our support team is always ready to help.</p>
+            <p>Happy trading!</p>
+            <p>Best regards,<br>The BestAlgo.ai Team</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>
+            <p>This email was sent to ${email}</p>
           </div>
         </body>
       </html>
     `;
-    
-    console.log("Sending email via Resend...");
+
+    // Send the email
     const { data, error } = await resend.emails.send({
-      from: "InfoCap <onboarding@resend.dev>",
+      from: "BestAlgo <onboarding@resend.dev>",
       to: [email],
-      subject: "Welcome to InfoCap!",
+      subject: "Welcome to BestAlgo.ai!",
       html: htmlContent,
     });
-    
+
     if (error) {
-      console.error("Resend error:", error);
+      console.error("Error sending email:", error);
       return new Response(
-        JSON.stringify({ 
-          error: "Failed to send email", 
-          details: error.message,
-          code: error.statusCode
-        }),
+        JSON.stringify({ success: false, error: error.message }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
-    
+
     console.log("Email sent successfully:", data);
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Email sent successfully",
+      JSON.stringify({
+        success: true,
+        message: "Welcome email sent successfully",
         data
       }),
       {
@@ -139,11 +160,11 @@ serve(async (req) => {
       }
     );
   } catch (error: any) {
-    console.error("Unexpected error in edge function:", error);
+    console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ 
-        error: "Internal server error", 
-        details: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message || "An unexpected error occurred"
       }),
       {
         status: 500,

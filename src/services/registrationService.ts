@@ -29,7 +29,6 @@ export const registerUser = async (formData: RegistrationData) => {
       console.error("Error checking for existing email:", emailCheckError);
     }
     
-    // If user already exists, return specific error
     if (existingUsers) {
       console.log("Email already registered:", formData.email);
       return { 
@@ -54,67 +53,58 @@ export const registerUser = async (formData: RegistrationData) => {
     });
 
     if (error) {
-      // Check if the error is about email already in use
-      if (error.message.includes("User already registered")) {
-        return { 
-          success: false, 
-          error: new Error("This email address you entered is already registered"),
-          code: "EMAIL_ALREADY_EXISTS"
-        };
-      }
-      
       console.error("Registration error:", error);
       return { success: false, error };
     }
 
     console.log("Registration successful:", data);
     
-    // Send welcome email after successful registration with multiple retries
+    // Send welcome email after successful registration
     const maxRetries = 3;
     let emailSent = false;
-    let lastError = null;
-
+    let lastEmailError = null;
+    
     for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
       try {
         console.log(`Attempting to send welcome email (attempt ${attempt}/${maxRetries})`);
-        console.log("Email details:", {
-          to: formData.email,
-          name: formData.fullName,
-        });
         
-        // Call our new welcome email function
-        const { error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
           body: JSON.stringify({
             email: formData.email,
             name: formData.fullName,
+            welcomeMessage: `Welcome to BestAlgo.ai, ${formData.fullName}! We're excited to have you join our trading community.`
           })
         });
         
-        if (!emailError) {
-          console.log("Welcome email sent successfully on attempt", attempt);
-          emailSent = true;
-        } else {
+        if (emailError) {
           console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
-          lastError = emailError;
+          lastEmailError = emailError;
+          
           if (attempt < maxRetries) {
-            console.log(`Waiting before retry attempt ${attempt + 1}...`);
+            // Wait before retrying with exponential backoff
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
+        } else {
+          console.log("Welcome email sent successfully:", emailData);
+          emailSent = true;
         }
       } catch (emailError) {
         console.error(`Exception sending welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
-        lastError = emailError;
+        lastEmailError = emailError;
+        
         if (attempt < maxRetries) {
+          // Wait before retrying
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
       }
     }
-    
-    if (!emailSent) {
-      console.error("Failed to send welcome email after all retry attempts:", lastError);
-    }
-    
-    return { success: true, data, emailSent };
+
+    return { 
+      success: true, 
+      data, 
+      emailSent,
+      emailError: !emailSent ? lastEmailError : null 
+    };
   } catch (error) {
     console.error("Exception during registration:", error);
     return { success: false, error };
@@ -128,33 +118,22 @@ export const sendWelcomeEmail = async (email: string, fullName: string, welcomeM
   }
   
   try {
-    console.log("Preparing welcome email request to:", email);
+    console.log("Sending welcome email to:", email);
     
-    const requestBody = {
-      email,
-      name: fullName,
-      welcomeMessage
-    };
-    
-    console.log("Calling send-welcome-email-smtp with payload:", JSON.stringify(requestBody));
-    
-    const { data, error } = await supabase.functions.invoke('send-welcome-email-smtp', {
-      body: JSON.stringify(requestBody)
+    const { data, error } = await supabase.functions.invoke('send-welcome-email-resend', {
+      body: JSON.stringify({
+        email,
+        name: fullName,
+        welcomeMessage
+      })
     });
     
     if (error) {
-      console.error("Error invoking send-welcome-email-smtp:", error);
+      console.error("Error sending welcome email:", error);
       return { success: false, error };
     }
     
-    console.log("Welcome email function response:", data);
-    
-    // Check if the data contains an error property (function might have returned error inside data)
-    if (data && data.error) {
-      console.error("Email function returned error:", data.error);
-      return { success: false, error: data.error };
-    }
-    
+    console.log("Welcome email sent successfully:", data);
     return { success: true, data };
   } catch (error) {
     console.error("Exception sending welcome email:", error);
