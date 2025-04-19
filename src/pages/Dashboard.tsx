@@ -16,7 +16,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
-  const [hasWelcomed, setHasWelcomed] = useState<boolean>(false);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
@@ -46,42 +45,9 @@ const Dashboard = () => {
         }
       };
       
-      // Get welcome message for newly registered users
-      const checkRegistrationTime = async () => {
-        if (hasWelcomed) return;
-        
-        try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData && sessionData.session) {
-            const creationTime = new Date(sessionData.session.user.created_at);
-            const now = new Date();
-            const minutesSinceCreation = (now.getTime() - creationTime.getTime()) / (1000 * 60);
-            
-            // Show welcome toast only if: 
-            // 1. Account was created in the last 5 minutes
-            // 2. Welcome message hasn't been shown before (checked via localStorage)
-            const hasShownWelcome = localStorage.getItem('welcomeShown');
-            
-            if (minutesSinceCreation < 5 && !hasShownWelcome) {
-              toast({
-                title: "Welcome to BestAlgo.ai!",
-                description: "Your account has been created successfully. Check your email for a welcome message.",
-                duration: 6000,
-              });
-              // Mark welcome message as shown
-              localStorage.setItem('welcomeShown', 'true');
-              setHasWelcomed(true);
-            }
-          }
-        } catch (error) {
-          console.error('Error checking user registration time:', error);
-        }
-      };
-      
       checkPremium();
-      checkRegistrationTime();
     }
-  }, [user, navigate, toast, hasWelcomed]);
+  }, [user, navigate, toast]);
 
   if (user === null) {
     return (
