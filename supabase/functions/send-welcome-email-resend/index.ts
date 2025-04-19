@@ -25,6 +25,7 @@ serve(async (req) => {
 
   try {
     console.log("Edge function triggered: Attempting to send welcome email via Resend");
+    console.log("RESEND_API_KEY availability:", Deno.env.get("RESEND_API_KEY") ? "Present" : "Missing");
     
     // Parse request body
     let requestBody;
@@ -100,6 +101,7 @@ serve(async (req) => {
             <div class="footer">
               <p>© ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>
               <p>This email was sent to ${email}</p>
+              <p>This is a test email from Resend. Please verify your domain in Resend dashboard if you are using a custom domain.</p>
             </div>
           </div>
         </body>
@@ -108,21 +110,48 @@ serve(async (req) => {
     
     console.log("Preparing to send email via Resend...");
     
-    // Add email sending with detailed debugging
-    const { data, error } = await resend.emails.send({
-      from: "BestAlgo.ai <onboarding@resend.dev>",
-      to: [email],
-      subject: "Welcome to BestAlgo.ai!",
-      html: htmlContent,
-    });
-    
-    if (error) {
-      console.error("Resend API error:", error);
+    try {
+      // Add email sending with detailed debugging
+      const { data, error } = await resend.emails.send({
+        from: "BestAlgo.ai <onboarding@resend.dev>",
+        to: [email],
+        subject: "Welcome to BestAlgo.ai!",
+        html: htmlContent,
+      });
+      
+      if (error) {
+        console.error("Resend API error:", error);
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to send email", 
+            details: error.message,
+            code: error.statusCode
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
+      
+      console.log("Email sent successfully:", data);
       return new Response(
         JSON.stringify({ 
-          error: "Failed to send email", 
-          details: error.message,
-          code: error.statusCode
+          success: true, 
+          message: "Email sent successfully",
+          data
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    } catch (sendError) {
+      console.error("Exception during email sending:", sendError);
+      return new Response(
+        JSON.stringify({ 
+          error: "Exception during email sending", 
+          details: sendError.message || "Unknown error"
         }),
         {
           status: 500,
@@ -130,19 +159,6 @@ serve(async (req) => {
         }
       );
     }
-    
-    console.log("Email sent successfully:", data);
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Email sent successfully",
-        data
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
   } catch (error: any) {
     console.error("Unexpected error in edge function:", error);
     return new Response(
