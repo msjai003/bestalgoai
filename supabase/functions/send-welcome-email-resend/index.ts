@@ -78,9 +78,12 @@ serve(async (req) => {
       });
 
       if (error) {
-        console.error("Error sending email:", error);
+        console.error("Resend API Error Details:", error);
         return new Response(
-          JSON.stringify({ success: false, error: error.message }),
+          JSON.stringify({ 
+            success: false, 
+            error: `Resend API Error: ${error.message || 'Unknown error'}` 
+          }),
           {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -101,11 +104,11 @@ serve(async (req) => {
         }
       );
     } catch (sendError) {
-      console.error("Error from Resend API:", sendError);
+      console.error("Comprehensive email sending error:", sendError);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: sendError.message || "Error sending email through Resend API" 
+          error: sendError.message || "Comprehensive error in email sending process" 
         }),
         {
           status: 500,
@@ -114,11 +117,11 @@ serve(async (req) => {
       );
     }
   } catch (error: any) {
-    console.error("Unexpected error:", error);
+    console.error("Unexpected error in welcome email function:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "An unexpected error occurred"
+        error: error.message || "An unexpected error occurred during email sending"
       }),
       {
         status: 500,
