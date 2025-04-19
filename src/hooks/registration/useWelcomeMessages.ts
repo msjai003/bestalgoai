@@ -1,5 +1,4 @@
 
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useWelcomeMessages = () => {
@@ -34,20 +33,20 @@ export const useWelcomeMessages = () => {
           if (emailError) {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             if (attempt === maxEmailRetries) {
-              toast.error('We could not send your welcome email, but your account was created successfully.');
+              // Toast removed
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           } else {
             console.log('✅ EMAIL SUCCESS:', emailData);
-            toast.success('Welcome email has been sent! Please check your inbox.');
+            // Toast removed
             emailResult = { success: true, data: emailData };
             break;
           }
         } catch (emailError) {
           console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
           if (attempt === maxEmailRetries) {
-            toast.error('We could not send your welcome email, but your account was created successfully.');
+            // Toast removed
           }
           // Exponential backoff
           await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
@@ -78,7 +77,7 @@ export const useWelcomeMessages = () => {
           } else {
             console.log('✅ SMS SUCCESS:', smsData);
             if (smsData?.success) {
-              toast.success('Welcome SMS has been sent to your mobile number!');
+              // Toast removed
             }
           }
         } catch (smsException) {
