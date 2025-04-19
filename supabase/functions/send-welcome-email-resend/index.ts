@@ -51,6 +51,7 @@ serve(async (req) => {
     }
 
     console.log(`Sending welcome email to: ${email}, Name: ${name}`);
+    console.log(`RESEND API KEY exists: ${Boolean(Deno.env.get("RESEND_API_KEY"))}`);
     
     // Email HTML template
     const htmlContent = `
@@ -128,37 +129,51 @@ serve(async (req) => {
       </html>
     `;
 
-    // Send the email
-    const { data, error } = await resend.emails.send({
-      from: "BestAlgo <onboarding@resend.dev>",
-      to: [email],
-      subject: "Welcome to BestAlgo.ai!",
-      html: htmlContent,
-    });
+    try {
+      // Send the email
+      const { data, error } = await resend.emails.send({
+        from: "BestAlgo <onboarding@resend.dev>",
+        to: [email],
+        subject: "Welcome to BestAlgo.ai!",
+        html: htmlContent,
+      });
 
-    if (error) {
-      console.error("Error sending email:", error);
+      if (error) {
+        console.error("Error sending email:", error);
+        return new Response(
+          JSON.stringify({ success: false, error: error.message }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      console.log("Email sent successfully:", data);
       return new Response(
-        JSON.stringify({ success: false, error: error.message }),
+        JSON.stringify({
+          success: true,
+          message: "Welcome email sent successfully",
+          data
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    } catch (sendError) {
+      console.error("Error from Resend API:", sendError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: sendError.message || "Error sending email through Resend API" 
+        }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
-
-    console.log("Email sent successfully:", data);
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Welcome email sent successfully",
-        data
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
   } catch (error: any) {
     console.error("Unexpected error:", error);
     return new Response(

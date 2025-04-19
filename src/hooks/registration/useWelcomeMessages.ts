@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useWelcomeMessages = () => {
   const sendWelcomeMessages = async (email: string, fullName: string, mobileNumber?: string) => {
     try {
-      console.log('Sending welcome messages to:', { email, fullName, mobileNumber });
+      console.log('🔍 DEBUG: Starting welcome message process for:', { email, fullName, mobileNumber });
       
       // Send welcome email with a personalized message
       let emailResult;
@@ -13,7 +13,7 @@ export const useWelcomeMessages = () => {
       
       for (let attempt = 1; attempt <= maxEmailRetries; attempt++) {
         try {
-          console.log(`Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
+          console.log(`📧 DEBUG: Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
           
           // Using the Resend API via Edge Function
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
@@ -24,21 +24,28 @@ export const useWelcomeMessages = () => {
             })
           });
 
+          // Log the complete response for debugging
+          console.log(`📧 DEBUG: Email API response:`, {
+            data: emailData,
+            error: emailError,
+            timestamp: new Date().toISOString()
+          });
+
           if (emailError) {
-            console.error(`Error sending welcome email attempt ${attempt}:`, emailError);
+            console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             if (attempt === maxEmailRetries) {
               toast.error('We could not send your welcome email, but your account was created successfully.');
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           } else {
-            console.log('Welcome email sent successfully:', emailData);
+            console.log('✅ EMAIL SUCCESS:', emailData);
             toast.success('Welcome email has been sent! Please check your inbox.');
             emailResult = { success: true, data: emailData };
             break;
           }
         } catch (emailError) {
-          console.error(`Exception during welcome email attempt ${attempt}:`, emailError);
+          console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
           if (attempt === maxEmailRetries) {
             toast.error('We could not send your welcome email, but your account was created successfully.');
           }
@@ -50,7 +57,7 @@ export const useWelcomeMessages = () => {
       // Send welcome SMS if mobile number is provided
       if (mobileNumber) {
         try {
-          console.log('Attempting to send welcome SMS to:', mobileNumber);
+          console.log('📱 DEBUG: Attempting to send welcome SMS to:', mobileNumber);
           
           const { data: smsData, error: smsError } = await supabase.functions.invoke('send-welcome-sms', {
             body: JSON.stringify({
@@ -59,22 +66,29 @@ export const useWelcomeMessages = () => {
             })
           });
 
+          // Log SMS response for debugging
+          console.log(`📱 DEBUG: SMS API response:`, {
+            data: smsData, 
+            error: smsError,
+            timestamp: new Date().toISOString()
+          });
+
           if (smsError) {
-            console.error('Error sending welcome SMS:', smsError);
+            console.error('❌ SMS ERROR:', smsError);
           } else {
-            console.log('Welcome SMS response:', smsData);
+            console.log('✅ SMS SUCCESS:', smsData);
             if (smsData?.success) {
               toast.success('Welcome SMS has been sent to your mobile number!');
             }
           }
         } catch (smsException) {
-          console.error('Exception during welcome SMS sending:', smsException);
+          console.error('❌ SMS EXCEPTION:', smsException);
         }
       }
       
       return emailResult?.success || false;
     } catch (error) {
-      console.error('Error in sendWelcomeMessages:', error);
+      console.error('❌ MAIN ERROR in sendWelcomeMessages:', error);
       return false;
     }
   };
