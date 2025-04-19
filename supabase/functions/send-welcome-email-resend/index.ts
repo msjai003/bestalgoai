@@ -52,90 +52,29 @@ serve(async (req) => {
 
     console.log(`Sending welcome email to: ${email}, Name: ${name}`);
     console.log(`RESEND API KEY exists: ${Boolean(Deno.env.get("RESEND_API_KEY"))}`);
-    
-    // Email HTML template
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome to BestAlgo.ai</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .header {
-              background: linear-gradient(to right, #3490dc, #6574cd);
-              color: white;
-              padding: 20px;
-              text-align: center;
-              border-radius: 5px 5px 0 0;
-            }
-            .content {
-              background: #f8fafc;
-              padding: 20px;
-              border-left: 1px solid #e2e8f0;
-              border-right: 1px solid #e2e8f0;
-            }
-            .footer {
-              background: #f1f5f9;
-              padding: 15px;
-              text-align: center;
-              font-size: 12px;
-              color: #64748b;
-              border-radius: 0 0 5px 5px;
-              border: 1px solid #e2e8f0;
-            }
-            .button {
-              background: #3490dc;
-              color: white;
-              padding: 10px 20px;
-              text-decoration: none;
-              border-radius: 5px;
-              display: inline-block;
-              margin: 15px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Welcome to BestAlgo.ai!</h1>
-          </div>
-          <div class="content">
-            <p>Hello ${name},</p>
-            <p>${welcomeMessage || "Thank you for registering with BestAlgo.ai! We're excited to have you on board and help you on your trading journey."}</p>
-            <p>With BestAlgo.ai, you'll gain access to:</p>
-            <ul>
-              <li>Advanced trading algorithms</li>
-              <li>Real-time market analysis</li>
-              <li>Personalized trading strategies</li>
-              <li>Educational resources to improve your trading skills</li>
-            </ul>
-            <p>To get started, log in to your account and explore our platform. If you have any questions or need assistance, our support team is always ready to help.</p>
-            <p>Happy trading!</p>
-            <p>Best regards,<br>The BestAlgo.ai Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} BestAlgo.ai. All rights reserved.</p>
-            <p>This email was sent to ${email}</p>
-          </div>
-        </body>
-      </html>
-    `;
 
     try {
       // Send the email
       const { data, error } = await resend.emails.send({
         from: "BestAlgo <onboarding@resend.dev>",
         to: [email],
-        subject: "Welcome to BestAlgo.ai!",
-        html: htmlContent,
+        subject: "Welcome to BestAlgo!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #4F46E5;">Welcome to BestAlgo!</h1>
+            <p>Hello ${name},</p>
+            <p>${welcomeMessage || "Thank you for registering with BestAlgo! We're excited to have you on board."}</p>
+            <p>With BestAlgo, you'll gain access to:</p>
+            <ul>
+              <li>Advanced trading algorithms</li>
+              <li>Real-time market analysis</li>
+              <li>Personalized trading strategies</li>
+              <li>Educational resources</li>
+            </ul>
+            <p>Get started by logging into your account and exploring our platform.</p>
+            <p>Best regards,<br>The BestAlgo Team</p>
+          </div>
+        `
       });
 
       if (error) {
