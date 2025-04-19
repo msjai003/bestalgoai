@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,10 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVertical, ExternalLink } from 'lucide-react';
+import { MoreVertical, ExternalLink, BookOpen, ChartBar, School, Briefcase, Settings as SettingsIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import EmailTester from '@/components/email/EmailTester';
+import { BottomNav } from '@/components/BottomNav';
 
 interface Profile {
   id: string;
@@ -79,6 +81,13 @@ const Dashboard = () => {
     await signOut();
     navigate('/auth');
   };
+
+  const navigationCards = [
+    { title: 'Smart Learn', icon: BookOpen, path: '/smart-learn', color: 'bg-gradient-to-r from-cyan to-blue-500' },
+    { title: 'Strategy Management', icon: ChartBar, path: '/strategy-management', color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
+    { title: 'Classes', icon: School, path: '/classes', color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+    { title: 'Live Trading', icon: Briefcase, path: '/live-trading', color: 'bg-gradient-to-r from-orange-500 to-red-500' }
+  ];
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-white">
@@ -142,6 +151,21 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              {navigationCards.map((item) => (
+                <Card 
+                  key={item.title}
+                  className={`hover:shadow-lg transition-all cursor-pointer ${item.color} border-none`}
+                  onClick={() => navigate(item.path)}
+                >
+                  <CardContent className="p-6 flex flex-col items-center text-center">
+                    <item.icon className="h-10 w-10 mb-3 text-white" />
+                    <h3 className="font-bold text-white">{item.title}</h3>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
           
           <div className="space-y-6">
@@ -164,11 +188,13 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <footer className="bg-charcoalSecondary py-4 text-center">
+      <footer className="bg-charcoalSecondary py-4 text-center mb-16">
         <p className="text-gray-400">
           © {new Date().getFullYear()} BestAlgo.ai. All rights reserved.
         </p>
       </footer>
+
+      <BottomNav />
     </div>
   );
 };
