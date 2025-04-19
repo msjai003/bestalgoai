@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { RegistrationData } from '@/types/registration';
 import { testSupabaseConnection } from '@/lib/supabase/test-connection';
@@ -70,17 +69,6 @@ export const registerUser = async (formData: RegistrationData) => {
 
     console.log("Registration successful:", data);
     
-    // Fetch the welcome message and send welcome email
-    const { data: welcomeData, error: welcomeError } = await supabase
-      .from('welcome_messages')
-      .select('content')
-      .eq('id', 1)
-      .single();
-    
-    if (welcomeError) {
-      console.error("Error fetching welcome message:", welcomeError);
-    }
-    
     // Send welcome email after successful registration with multiple retries
     const maxRetries = 3;
     let emailSent = false;
@@ -92,22 +80,22 @@ export const registerUser = async (formData: RegistrationData) => {
         console.log("Email details:", {
           to: formData.email,
           name: formData.fullName,
-          hasWelcomeMessage: !!welcomeData?.content
         });
         
-        const emailResult = await sendWelcomeEmail(
-          formData.email, 
-          formData.fullName,
-          welcomeData?.content || undefined
-        );
+        // Call our new welcome email function
+        const { error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
+          body: JSON.stringify({
+            email: formData.email,
+            name: formData.fullName,
+          })
+        });
         
-        if (emailResult.success) {
+        if (!emailError) {
           console.log("Welcome email sent successfully on attempt", attempt);
           emailSent = true;
         } else {
-          console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailResult.error);
-          lastError = emailResult.error;
-          // Wait a bit before retrying
+          console.error(`Failed to send welcome email (attempt ${attempt}/${maxRetries}):`, emailError);
+          lastError = emailError;
           if (attempt < maxRetries) {
             console.log(`Waiting before retry attempt ${attempt + 1}...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
