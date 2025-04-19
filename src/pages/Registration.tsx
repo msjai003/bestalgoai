@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import RegistrationHeader from '@/components/registration/RegistrationHeader';
 import ProgressIndicator from '@/components/registration/ProgressIndicator';
 import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
+import { useRegistration } from '@/hooks/registration';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
