@@ -57,13 +57,19 @@ const Dashboard = () => {
             const now = new Date();
             const minutesSinceCreation = (now.getTime() - creationTime.getTime()) / (1000 * 60);
             
-            // If user account was created in the last 5 minutes, show a welcome toast
-            if (minutesSinceCreation < 5) {
+            // Show welcome toast only if: 
+            // 1. Account was created in the last 5 minutes
+            // 2. Welcome message hasn't been shown before (checked via localStorage)
+            const hasShownWelcome = localStorage.getItem('welcomeShown');
+            
+            if (minutesSinceCreation < 5 && !hasShownWelcome) {
               toast({
                 title: "Welcome to BestAlgo.ai!",
                 description: "Your account has been created successfully. Check your email for a welcome message.",
                 duration: 6000,
               });
+              // Mark welcome message as shown
+              localStorage.setItem('welcomeShown', 'true');
               setHasWelcomed(true);
             }
           }
