@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
@@ -114,7 +113,6 @@ async function testSmtpConnection(config: any) {
   }
 }
 
-// Main handler with improved error handling and connection management
 serve(async (req: Request) => {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();

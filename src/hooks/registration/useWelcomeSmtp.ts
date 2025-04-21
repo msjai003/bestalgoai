@@ -16,23 +16,31 @@ export const useWelcomeSmtp = () => {
         try {
           console.log(`📧 DEBUG: Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
           
-          // Using the new SMTP function for email sending with a timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          // Using a promise with timeout for better handling
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Email request timed out after 30 seconds")), 30000);
+          });
           
-          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-smtp', {
+          // Create the actual email sending promise
+          const emailPromise = supabase.functions.invoke('send-welcome-smtp', {
             body: JSON.stringify({
               email,
               name: fullName,
               welcomeMessage: welcomeMessage || `Welcome to BestAlgo.ai, ${fullName}! We're excited to have you on board.`
-            }),
-            signal: controller.signal
+            })
           }).catch(e => {
             console.error(`❌ EMAIL API ERROR (attempt ${attempt}):`, e);
             return { data: null, error: e };
           });
           
-          clearTimeout(timeoutId);
+          // Race between timeout and actual operation
+          const { data: emailData, error: emailError } = await Promise.race([
+            emailPromise,
+            timeoutPromise.then(() => {
+              console.error(`❌ EMAIL TIMEOUT (attempt ${attempt})`);
+              return { data: null, error: new Error("Email request timed out after 30 seconds") };
+            })
+          ]) as any;
 
           // Log the complete response for debugging
           console.log(`📧 DEBUG: Email API response:`, {
@@ -109,22 +117,31 @@ export const useWelcomeSmtp = () => {
     try {
       console.log('🔍 DEBUG: Testing SMTP connection...');
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      // Using a promise with timeout for better handling
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("SMTP test timed out after 15 seconds")), 15000);
+      });
       
-      const { data, error } = await supabase.functions.invoke('send-welcome-smtp', {
+      // Create the actual SMTP test promise
+      const smtpTestPromise = supabase.functions.invoke('send-welcome-smtp', {
         body: JSON.stringify({
           email: 'test@example.com',
           name: 'SMTP Test',
           testOnly: true
-        }),
-        signal: controller.signal
+        })
       }).catch(e => {
         console.error('❌ SMTP TEST API ERROR:', e);
         return { data: null, error: e };
       });
       
-      clearTimeout(timeoutId);
+      // Race between timeout and actual operation
+      const { data, error } = await Promise.race([
+        smtpTestPromise,
+        timeoutPromise.then(() => {
+          console.error('❌ SMTP TEST TIMEOUT');
+          return { data: null, error: new Error("SMTP test timed out after 15 seconds") };
+        })
+      ]) as any;
       
       console.log('📧 DEBUG: SMTP test response:', { data, error });
       
