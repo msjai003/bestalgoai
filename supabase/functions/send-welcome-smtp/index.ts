@@ -120,6 +120,15 @@ serve(async (req: Request) => {
   try {
     logInfo(`[${requestId}] Processing welcome email request`);
     
+    // Print the request body for debugging
+    try {
+      const clonedReq = req.clone();
+      const bodyText = await clonedReq.text();
+      logInfo(`[${requestId}] Request body raw: ${bodyText}`);
+    } catch (bodyReadError) {
+      logError(`[${requestId}] Failed to read request body`, bodyReadError);
+    }
+    
     // Validate SMTP configuration
     let smtpConfig;
     try {
@@ -264,7 +273,7 @@ serve(async (req: Request) => {
       // Send the email
       logInfo(`[${requestId}] Sending email from ${smtpConfig.fromEmail} to ${email}`);
       
-      await client.send({
+      const sendResult = await client.send({
         from: `BestAlgo <${smtpConfig.fromEmail}>`,
         to: email,
         subject: "Welcome to BestAlgo!",
@@ -299,6 +308,7 @@ The BestAlgo Team
         `
       });
       
+      logInfo(`[${requestId}] Email send result:`, sendResult);
       logInfo(`[${requestId}] Email sent successfully`);
       
       // Close the connection
