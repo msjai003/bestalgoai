@@ -33,10 +33,19 @@ export const useWelcomeMessages = () => {
 
           if (emailError) {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
+            
+            // Check if this is a domain verification issue
+            const errorMsg = typeof emailError === 'object' && emailError.error ? emailError.error : String(emailError);
+            
             if (attempt === maxEmailRetries) {
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
-              // Show toast only to the user who's currently registering
-              toast.error("Could not send welcome email. Please check your email address.");
+              
+              // Show detailed error message based on error type
+              if (errorMsg.includes("domain") || errorMsg.includes("verified") || errorMsg.includes("You can only send")) {
+                toast.error("Email not sent: Your Resend account needs domain verification. Please check admin settings.");
+              } else {
+                toast.error("Could not send welcome email. Please check your email address.");
+              }
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));

@@ -109,6 +109,10 @@ serve(async (req) => {
         );
       }
 
+      // Get domain of email for verification checks
+      const emailDomain = email.split('@')[1];
+      logInfo(`[${requestId}] Email domain: ${emailDomain}`);
+
       // Send the email with more detailed logging
       logInfo(`[${requestId}] Calling Resend API with parameters:`, { 
         from: "BestAlgo <onboarding@resend.dev>",
@@ -116,6 +120,8 @@ serve(async (req) => {
         subject: "Welcome to BestAlgo!"
       });
       
+      // Important: Check if the from email is from an authorized domain in your Resend account
+      // If using onboarding@resend.dev, you're limited to sending to verified emails only
       const { data, error } = await resend.emails.send({
         from: "BestAlgo <onboarding@resend.dev>",
         to: [email],
@@ -134,12 +140,34 @@ serve(async (req) => {
             </ul>
             <p>Get started by logging into your account and exploring our platform.</p>
             <p>Best regards,<br>The BestAlgo Team</p>
+            <p style="font-size: 12px; color: #666;">This email was sent to ${email}.</p>
           </div>
         `
       });
 
       if (error) {
         logError(`[${requestId}] Resend API Error:`, error);
+        
+        // Check for specific error codes
+        if (error.statusCode === 403 && error.message && error.message.includes("You can only send")) {
+          // This is likely a domain verification issue in Resend
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: "Email sending restricted: Please verify your domain in Resend or use a verified sender email",
+              details: {
+                message: error.message,
+                recommendation: "To fix this issue, verify your domain in Resend dashboard or upgrade your account"
+              },
+              requestId
+            }),
+            {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
+        }
+        
         return new Response(
           JSON.stringify({ 
             success: false, 
