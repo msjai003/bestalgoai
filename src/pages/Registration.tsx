@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,6 @@ const Registration = () => {
       ...prev,
       [field]: value
     }));
-    // Clear error when user makes changes
     if (errorMessage) {
       setErrorMessage(null);
     }
@@ -111,7 +109,6 @@ const Registration = () => {
     setIsLoading(true);
 
     try {
-      // CHECK: does this email already exist in user_profiles?
       const { data: existingProfiles, error: profileCheckError } = await supabase
         .from('user_profiles')
         .select('email')
@@ -126,7 +123,6 @@ const Registration = () => {
         return;
       }
 
-      // REGISTER THE USER
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -152,9 +148,7 @@ const Registration = () => {
         return;
       }
 
-      // Make double sure user_profiles insert (trigger) has worked
       if (data?.user?.id) {
-        // Check user_profiles row again (optional, for extra reliability)
         const { data: profileAfter, error: profileErr } = await supabase
           .from('user_profiles')
           .select('id')
@@ -166,7 +160,6 @@ const Registration = () => {
         }
       }
 
-      // SEND WELCOME EMAIL *AFTER* successful sign up
       let welcomeResult = false;
       try {
         welcomeResult = await sendWelcomeMessages(
@@ -180,16 +173,13 @@ const Registration = () => {
           console.warn("Failed to send welcome email.");
         }
       } catch (emailError: any) {
-        // Don't block user creation on email failure!
         console.error("Error sending welcome email:", emailError);
         toast.warning(
           "Account created, but we could not send your welcome email. Please check your email address or contact support if needed."
         );
       }
 
-      // Success toast
       toast.success('Account created successfully! Please check your email inbox.');
-      // Redirect after a short delay
       setTimeout(() => {
         navigate('/auth');
       }, 2000);
@@ -229,7 +219,6 @@ const Registration = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6 premium-card p-6 border border-cyan/30">
-        {/* Step 1: Basic Information */}
         <RegistrationStepOne 
           formData={formData} 
           handleChange={handleChange} 
@@ -334,4 +323,3 @@ const Registration = () => {
 };
 
 export default Registration;
-
