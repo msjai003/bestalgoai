@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
@@ -81,6 +82,23 @@ async function testSmtpConnection(config: any) {
   
   try {
     logInfo("Testing SMTP connection...");
+    logInfo(`Attempting to connect to SMTP server at ${config.hostname}:${config.port}`);
+    
+    // First check if we can resolve the hostname
+    try {
+      const dnsCheck = await Deno.resolveDns(config.hostname, "A");
+      logInfo(`DNS resolution for ${config.hostname} successful:`, dnsCheck);
+    } catch (dnsError) {
+      logError(`DNS resolution failed for ${config.hostname}`, dnsError);
+      return { 
+        success: false, 
+        error: `Cannot resolve SMTP hostname (${config.hostname}). Please check if the hostname is correct.`,
+        details: {
+          type: "dns_resolution_failure",
+          suggestion: "Verify SMTP_HOST is spelled correctly and is a valid domain"
+        }
+      };
+    }
     
     client = new SmtpClient();
     
@@ -97,9 +115,35 @@ async function testSmtpConnection(config: any) {
     return { success: true };
   } catch (error) {
     logError("SMTP connection test failed", error);
+    
+    // Provide more specific error diagnostics
+    let errorMessage = error.message || "Unknown error during SMTP connection test";
+    let errorDetails = {};
+    
+    if (errorMessage.includes("lookup") || errorMessage.includes("resolve")) {
+      errorMessage = `Cannot resolve SMTP hostname (${config.hostname}). Please verify the hostname is correct.`;
+      errorDetails = { 
+        type: "dns_resolution_failure", 
+        suggestion: "Check SMTP_HOST value and ensure internet connectivity" 
+      };
+    } else if (errorMessage.includes("connect") || errorMessage.includes("timeout")) {
+      errorMessage = `Cannot connect to SMTP server at ${config.hostname}:${config.port}. Server may be down or blocked.`;
+      errorDetails = { 
+        type: "connection_failure", 
+        suggestion: "Verify SMTP_HOST, SMTP_PORT and network connectivity" 
+      };
+    } else if (errorMessage.includes("authentication") || errorMessage.includes("auth")) {
+      errorMessage = "SMTP authentication failed. Please check your credentials.";
+      errorDetails = { 
+        type: "authentication_failure", 
+        suggestion: "Verify SMTP_USERNAME and SMTP_PASSWORD" 
+      };
+    }
+    
     return { 
       success: false, 
-      error: error.message || "Unknown error during SMTP connection test" 
+      error: errorMessage,
+      details: errorDetails
     };
   } finally {
     if (client) {
@@ -216,6 +260,7 @@ serve(async (req: Request) => {
           message: testResult.success 
             ? "SMTP connection test completed successfully. No email sent in test mode."
             : `SMTP connection test failed: ${testResult.error}`,
+          details: testResult.details || {},
           requestId
         }),
         {
@@ -268,6 +313,7 @@ serve(async (req: Request) => {
         JSON.stringify({
           success: false,
           error: `SMTP connection failed: ${connectionTest.error}`,
+          details: connectionTest.details || {},
           requestId,
         }),
         {
