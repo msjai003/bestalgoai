@@ -173,8 +173,19 @@ serve(async (req: Request) => {
     logInfo(`[${requestId}] Preparing SMTP client for ${email}`);
 
     try {
-      // Create SMTP client
-      const client = new SMTPClient(smtpConfig);
+      // Create SMTP client with specific configuration
+      // Fix: Make sure we're providing all required config in the right format
+      const client = new SMTPClient({
+        connection: {
+          hostname: smtpConfig.hostname,
+          port: smtpConfig.port,
+          tls: smtpConfig.secure,
+          auth: {
+            username: smtpConfig.username,
+            password: smtpConfig.password,
+          },
+        },
+      });
       
       // Connect to SMTP server
       logInfo(`[${requestId}] Attempting to connect to SMTP server at ${smtpConfig.hostname}:${smtpConfig.port}`);
