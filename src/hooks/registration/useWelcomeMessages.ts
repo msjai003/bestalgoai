@@ -35,16 +35,20 @@ export const useWelcomeMessages = () => {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             
             // Check if this is a configuration issue
-            const errorMsg = typeof emailError === 'object' && emailError.error ? emailError.error : String(emailError);
+            const errorMsg = typeof emailError === 'object' && emailError.message 
+              ? emailError.message 
+              : typeof emailError === 'object' && emailError.error 
+                ? emailError.error 
+                : String(emailError);
             
             if (attempt === maxEmailRetries) {
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
               
               // Show detailed error message based on error type
-              if (errorMsg.includes("configuration")) {
+              if (errorMsg.includes("configuration") || errorMsg.includes("SMTP")) {
                 toast.error("Email not sent: SMTP configuration error. Please check admin settings.");
               } else {
-                toast.error("Could not send welcome email. Please check your email address.");
+                toast.error("Could not send welcome email. Please try again later.");
               }
             }
             // Wait a bit longer between retries

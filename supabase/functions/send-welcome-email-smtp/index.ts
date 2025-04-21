@@ -2,20 +2,44 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-// Initialize SMTP client with environment variables
-const smtpConfig = {
-  hostname: Deno.env.get("SMTP_HOST") || "",
-  port: parseInt(Deno.env.get("SMTP_PORT") || "587"),
-  username: Deno.env.get("SMTP_USERNAME") || "",
-  password: Deno.env.get("SMTP_PASSWORD") || "",
-  secure: Deno.env.get("SMTP_SECURE")?.toLowerCase() === "true",
-};
-
 // CORS headers to allow cross-origin requests
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+};
+
+// Sanitize and validate SMTP configuration
+const getSmtpConfig = () => {
+  const host = Deno.env.get("SMTP_HOST");
+  const portStr = Deno.env.get("SMTP_PORT");
+  const username = Deno.env.get("SMTP_USERNAME");
+  const password = Deno.env.get("SMTP_PASSWORD");
+  const secureStr = Deno.env.get("SMTP_SECURE");
+
+  // Validate required fields
+  if (!host) throw new Error("SMTP_HOST is not configured");
+  if (!portStr) throw new Error("SMTP_PORT is not configured");
+  if (!username) throw new Error("SMTP_USERNAME is not configured");
+  if (!password) throw new Error("SMTP_PASSWORD is not configured");
+
+  // Parse port as integer with fallback to 587
+  const port = parseInt(portStr, 10);
+  if (isNaN(port)) throw new Error("SMTP_PORT must be a valid number");
+
+  // Parse secure as boolean with fallback to false
+  let secure = false;
+  if (secureStr) {
+    secure = secureStr.toLowerCase() === "true";
+  }
+
+  return {
+    hostname: host,
+    port,
+    username,
+    password,
+    secure,
+  };
 };
 
 interface EmailRequest {
@@ -36,7 +60,7 @@ function logError(message: string, error: any) {
   console.error(`[ERROR] ${message}`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   const requestId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   logInfo(`[${requestId}] Request received at ${timestamp}`);
@@ -53,12 +77,22 @@ serve(async (req) => {
     logInfo(`[${requestId}] Processing welcome email request`);
     
     // Validate SMTP configuration
-    if (!smtpConfig.hostname || !smtpConfig.username || !smtpConfig.password) {
-      logError(`[${requestId}] Missing SMTP configuration`, smtpConfig);
+    let smtpConfig;
+    try {
+      smtpConfig = getSmtpConfig();
+      logInfo(`[${requestId}] SMTP configuration validated`, {
+        host: smtpConfig.hostname,
+        port: smtpConfig.port,
+        username: smtpConfig.username,
+        secure: smtpConfig.secure,
+        // Do not log password
+      });
+    } catch (configError: any) {
+      logError(`[${requestId}] SMTP configuration error`, configError);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "SMTP configuration is incomplete",
+          error: `SMTP configuration error: ${configError.message}`,
           requestId,
         }),
         {
@@ -72,9 +106,13 @@ serve(async (req) => {
     let requestData;
     try {
       requestData = await req.json();
-      logInfo(`[${requestId}] Request body parsed:`, requestData);
+      logInfo(`[${requestId}] Request body parsed`, {
+        email: requestData.email,
+        name: requestData.name,
+        hasWelcomeMessage: !!requestData.welcomeMessage,
+      });
     } catch (error) {
-      logError(`[${requestId}] Error parsing request body:`, error);
+      logError(`[${requestId}] Error parsing request body`, error);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -91,7 +129,7 @@ serve(async (req) => {
     const { email, name, welcomeMessage } = requestData as EmailRequest;
     
     if (!email || !name) {
-      logError(`[${requestId}] Missing required fields:`, { email, name });
+      logError(`[${requestId}] Missing required fields`, { email, name });
       return new Response(
         JSON.stringify({
           success: false,
@@ -108,7 +146,7 @@ serve(async (req) => {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      logError(`[${requestId}] Invalid email format:`, { email });
+      logError(`[${requestId}] Invalid email format`, { email });
       return new Response(
         JSON.stringify({
           success: false,
@@ -129,12 +167,17 @@ serve(async (req) => {
       const client = new SMTPClient(smtpConfig);
       
       // Connect to SMTP server
+      logInfo(`[${requestId}] Attempting to connect to SMTP server at ${smtpConfig.hostname}:${smtpConfig.port}`);
       await client.connect();
       logInfo(`[${requestId}] SMTP client connected successfully`);
       
       // Send the email
       const fromEmail = Deno.env.get("SMTP_FROM_EMAIL") || smtpConfig.username;
+      if (!fromEmail) {
+        throw new Error("No sender email available. Please configure SMTP_FROM_EMAIL");
+      }
       
+      logInfo(`[${requestId}] Sending email from ${fromEmail} to ${email}`);
       const send = await client.send({
         from: `"BestAlgo" <${fromEmail}>`,
         to: email,
@@ -158,7 +201,7 @@ serve(async (req) => {
         `,
       });
       
-      logInfo(`[${requestId}] Email sent successfully:`, send);
+      logInfo(`[${requestId}] Email sent successfully`, send);
       
       // Close the connection
       await client.close();
@@ -167,7 +210,7 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           message: "Welcome email sent successfully",
-          data: send,
+          data: { messageId: send.messageId },
           requestId
         }),
         {
@@ -175,13 +218,20 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
-    } catch (sendError) {
-      logError(`[${requestId}] SMTP Error:`, sendError);
+    } catch (sendError: any) {
+      logError(`[${requestId}] SMTP Error`, sendError);
+      
+      let errorMessage = sendError.message || "Error in email sending process";
+      if (errorMessage.includes("timeout")) {
+        errorMessage = "SMTP server connection timeout. Please check your server host and port.";
+      } else if (errorMessage.includes("authentication")) {
+        errorMessage = "SMTP authentication failed. Please check your username and password.";
+      }
       
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: sendError.message || "Error in email sending process",
+          error: errorMessage,
           requestId 
         }),
         {
@@ -191,7 +241,7 @@ serve(async (req) => {
       );
     }
   } catch (error: any) {
-    logError(`[${requestId}] Unexpected error:`, error);
+    logError(`[${requestId}] Unexpected error`, error);
     return new Response(
       JSON.stringify({
         success: false,
