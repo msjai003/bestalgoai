@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,6 @@ import { supabase } from '@/integrations/supabase/client';
 import RegistrationHeader from '@/components/registration/RegistrationHeader';
 import ProgressIndicator from '@/components/registration/ProgressIndicator';
 import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
-import { useRegistration } from '@/hooks/registration';
 import { useWelcomeMessages } from '@/hooks/registration/useWelcomeMessages';
 
 const Registration = () => {
@@ -111,7 +111,7 @@ const Registration = () => {
     setIsLoading(true);
 
     try {
-      // First check if email already exists in user_profiles
+      // CHECK: does this email already exist in user_profiles?
       const { data: existingProfiles, error: profileCheckError } = await supabase
         .from('user_profiles')
         .select('email')
@@ -126,7 +126,7 @@ const Registration = () => {
         return;
       }
 
-      // Proceed with registration
+      // REGISTER THE USER
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -141,7 +141,6 @@ const Registration = () => {
 
       if (error) {
         console.error('Registration error:', error);
-        
         if (error.message.includes("already registered") || 
             error.message.includes("already exists") ||
             error.message.includes("already in use")) {
@@ -152,37 +151,48 @@ const Registration = () => {
         setIsLoading(false);
         return;
       }
-      
-      if (data?.user) {
-        // Send welcome messages
-        console.log("Registration successful, sending welcome messages");
-        
-        try {
-          // Explicitly call the welcome message function
-          const welcomeResult = await sendWelcomeMessages(
-            formData.email,
-            formData.fullName,
-            formData.mobile
-          );
-          
-          if (welcomeResult) {
-            console.log("Welcome messages sent successfully");
-          } else {
-            console.warn("Welcome messages may not have been sent successfully");
-          }
-        } catch (welcomeError) {
-          console.error("Error sending welcome messages:", welcomeError);
+
+      // Make double sure user_profiles insert (trigger) has worked
+      if (data?.user?.id) {
+        // Check user_profiles row again (optional, for extra reliability)
+        const { data: profileAfter, error: profileErr } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileErr || !profileAfter) {
+          toast.warning("Signup succeeded, but your profile may not be fully set up. Contact support if you have issues logging in.");
         }
-        
-        toast.success('Account created successfully! Please check your email inbox.');
-        
-        // Redirect after a short delay
-        setTimeout(() => {
-          navigate('/auth');
-        }, 2000);
-      } else {
-        toast.info('Please check your email to confirm your account');
       }
+
+      // SEND WELCOME EMAIL *AFTER* successful sign up
+      let welcomeResult = false;
+      try {
+        welcomeResult = await sendWelcomeMessages(
+          formData.email,
+          formData.fullName,
+          formData.mobile
+        );
+        if (welcomeResult) {
+          console.log("Welcome email sent successfully.");
+        } else {
+          console.warn("Failed to send welcome email.");
+        }
+      } catch (emailError: any) {
+        // Don't block user creation on email failure!
+        console.error("Error sending welcome email:", emailError);
+        toast.warning(
+          "Account created, but we could not send your welcome email. Please check your email address or contact support if needed."
+        );
+      }
+
+      // Success toast
+      toast.success('Account created successfully! Please check your email inbox.');
+      // Redirect after a short delay
+      setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
     } catch (error: any) {
       console.error('Error during registration:', error);
       setErrorMessage(error.message || 'An unexpected error occurred');
@@ -324,3 +334,4 @@ const Registration = () => {
 };
 
 export default Registration;
+
