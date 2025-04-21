@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { useWelcomeSmtp } from '@/hooks/registration/useWelcomeSmtp';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -35,6 +37,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
+  const { sendWelcomeEmail } = useWelcomeSmtp();
 
   const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
@@ -97,9 +100,15 @@ const Signup = () => {
         return;
       }
       
-      // If signup was successful and we have a user ID, send the welcome SMS
+      // If signup was successful and we have a user ID, send welcome messages
       if (data?.user?.id) {
+        // Send welcome SMS
         await sendWelcomeSMS(data.user.id, name);
+        
+        // Send welcome email using the new SMTP function
+        await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
+        
+        console.log("Welcome messages sent successfully");
       }
       
       navigate('/dashboard');
