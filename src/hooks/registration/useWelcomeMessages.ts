@@ -47,6 +47,8 @@ export const useWelcomeMessages = () => {
               // Show detailed error message based on error type
               if (errorMsg.includes("configuration") || errorMsg.includes("SMTP")) {
                 toast.error("Email not sent: SMTP configuration error. Please check admin settings.");
+              } else if (errorMsg.includes("connect") || errorMsg.includes("network")) {
+                toast.error("Email not sent: Connection to SMTP server failed. Check network settings.");
               } else {
                 toast.error("Could not send welcome email. Please try again later.");
               }
@@ -123,7 +125,7 @@ export const useWelcomeMessages = () => {
     }
   };
 
-  // Add a utility function to test SMTP configuration directly
+  // Add a utility function to test SMTP connection directly
   const testSmtpConnection = async () => {
     try {
       console.log('🔍 DEBUG: Testing SMTP connection...');
