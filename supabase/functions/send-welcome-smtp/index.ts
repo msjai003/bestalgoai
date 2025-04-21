@@ -78,10 +78,12 @@ function logError(message: string, error: any) {
 
 // Test SMTP connection without sending an email
 async function testSmtpConnection(config: any) {
+  let client: SmtpClient | null = null;
+  
   try {
     logInfo("Testing SMTP connection...");
     
-    const client = new SmtpClient();
+    client = new SmtpClient();
     
     await client.connect({
       hostname: config.hostname,
@@ -93,7 +95,6 @@ async function testSmtpConnection(config: any) {
     });
     
     logInfo("SMTP connection test successful!");
-    await client.close();
     return { success: true };
   } catch (error) {
     logError("SMTP connection test failed", error);
@@ -101,13 +102,26 @@ async function testSmtpConnection(config: any) {
       success: false, 
       error: error.message || "Unknown error during SMTP connection test" 
     };
+  } finally {
+    if (client) {
+      try {
+        await client.close();
+        logInfo("SMTP test connection closed properly");
+      } catch (closeError) {
+        logError("Error closing SMTP test connection", closeError);
+      }
+    }
   }
 }
 
+// Main handler with improved error handling and connection management
 serve(async (req: Request) => {
   const requestId = crypto.randomUUID();
+  const startTime = Date.now();
   const timestamp = new Date().toISOString();
   logInfo(`[${requestId}] Request received at ${timestamp}`);
+
+  let smtpClient: SmtpClient | null = null;
 
   // Handle CORS preflight request
   if (req.method === "OPTIONS") {
@@ -121,12 +135,50 @@ serve(async (req: Request) => {
     logInfo(`[${requestId}] Processing welcome email request`);
     
     // Print the request body for debugging
+    let requestData;
+    let bodyText = "";
+    
     try {
       const clonedReq = req.clone();
-      const bodyText = await clonedReq.text();
+      bodyText = await clonedReq.text();
       logInfo(`[${requestId}] Request body raw: ${bodyText}`);
+      
+      if (bodyText) {
+        requestData = JSON.parse(bodyText);
+        logInfo(`[${requestId}] Request body parsed`, {
+          email: requestData?.email || "not provided",
+          name: requestData?.name || "not provided",
+          hasWelcomeMessage: !!requestData?.welcomeMessage,
+          testOnly: !!requestData?.testOnly,
+        });
+      } else {
+        logError(`[${requestId}] Empty request body`, {});
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Empty request body", 
+            requestId
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
     } catch (bodyReadError) {
-      logError(`[${requestId}] Failed to read request body`, bodyReadError);
+      logError(`[${requestId}] Failed to parse request body`, bodyReadError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid request body format. Expected JSON.", 
+          receivedText: bodyText.substring(0, 100) + (bodyText.length > 100 ? "..." : ""),
+          requestId
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
     
     // Validate SMTP configuration
@@ -155,46 +207,21 @@ serve(async (req: Request) => {
       );
     }
     
-    // Parse the request body
-    let requestData;
-    try {
-      requestData = await req.json();
-      logInfo(`[${requestId}] Request body parsed`, {
-        email: requestData.email,
-        name: requestData.name,
-        hasWelcomeMessage: !!requestData.welcomeMessage,
-        testOnly: !!requestData.testOnly,
-      });
+    // If testOnly flag is set, only test the connection
+    if (requestData.testOnly) {
+      logInfo(`[${requestId}] Test only mode, testing SMTP connection`);
+      const testResult = await testSmtpConnection(smtpConfig);
       
-      // If testOnly flag is set, only test the connection
-      if (requestData.testOnly) {
-        logInfo(`[${requestId}] Test only mode, testing SMTP connection`);
-        const testResult = await testSmtpConnection(smtpConfig);
-        
-        return new Response(
-          JSON.stringify({
-            success: testResult.success,
-            message: testResult.success 
-              ? "SMTP connection test completed successfully. No email sent in test mode."
-              : `SMTP connection test failed: ${testResult.error}`,
-            requestId
-          }),
-          {
-            status: testResult.success ? 200 : 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          }
-        );
-      }
-    } catch (error) {
-      logError(`[${requestId}] Error parsing request body`, error);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Invalid request body",
+        JSON.stringify({
+          success: testResult.success,
+          message: testResult.success 
+            ? "SMTP connection test completed successfully. No email sent in test mode."
+            : `SMTP connection test failed: ${testResult.error}`,
           requestId
         }),
         {
-          status: 400,
+          status: testResult.success ? 200 : 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
@@ -256,11 +283,11 @@ serve(async (req: Request) => {
 
     try {
       // Create new SMTP client for sending the actual email
-      const client = new SmtpClient();
+      smtpClient = new SmtpClient();
       
       logInfo(`[${requestId}] Connecting to SMTP server at ${smtpConfig.hostname}:${smtpConfig.port}`);
       
-      await client.connect({
+      await smtpClient.connect({
         hostname: smtpConfig.hostname,
         port: smtpConfig.port,
         username: smtpConfig.username,
@@ -273,7 +300,7 @@ serve(async (req: Request) => {
       // Send the email
       logInfo(`[${requestId}] Sending email from ${smtpConfig.fromEmail} to ${email}`);
       
-      const sendResult = await client.send({
+      const sendResult = await smtpClient.send({
         from: `BestAlgo <${smtpConfig.fromEmail}>`,
         to: email,
         subject: "Welcome to BestAlgo!",
@@ -312,7 +339,11 @@ The BestAlgo Team
       logInfo(`[${requestId}] Email sent successfully`);
       
       // Close the connection
-      await client.close();
+      await smtpClient.close();
+      smtpClient = null;
+      
+      const endTime = Date.now();
+      logInfo(`[${requestId}] Request completed in ${endTime - startTime}ms`);
       
       return new Response(
         JSON.stringify({
@@ -378,5 +409,18 @@ The BestAlgo Team
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
+  } finally {
+    // Ensure SMTP connection is closed if it's still open
+    if (smtpClient !== null) {
+      try {
+        await smtpClient.close();
+        logInfo(`[${requestId}] SMTP connection closed in finally block`);
+      } catch (closeError) {
+        logError(`[${requestId}] Error closing SMTP connection in finally block`, closeError);
+      }
+    }
+    
+    const endTime = Date.now();
+    logInfo(`[${requestId}] Request handling completed in ${endTime - startTime}ms`);
   }
 });
