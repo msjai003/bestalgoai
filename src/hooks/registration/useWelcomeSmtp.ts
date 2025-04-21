@@ -1,111 +1,21 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSendWelcomeSmtp } from '@/hooks/auth/useSendWelcomeSmtp';
 
 export const useWelcomeSmtp = () => {
+  // Use our new auth hook for sending emails
+  const { sendWelcomeEmailSmtp } = useSendWelcomeSmtp();
+
   const sendWelcomeEmail = async (email: string, fullName: string, welcomeMessage?: string) => {
     try {
       console.log('🔍 DEBUG: Starting welcome email process for:', { email, fullName });
       
-      // Send welcome email with a personalized message
-      let emailResult;
-      const maxEmailRetries = 3;
-      let lastError = null;
-      
-      for (let attempt = 1; attempt <= maxEmailRetries; attempt++) {
-        try {
-          console.log(`📧 DEBUG: Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
-          
-          // Using a promise with timeout for better handling
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Email request timed out after 30 seconds")), 30000);
-          });
-          
-          // Create the actual email sending promise
-          const emailPromise = supabase.functions.invoke('send-welcome-smtp', {
-            body: JSON.stringify({
-              email,
-              name: fullName,
-              welcomeMessage: welcomeMessage || `Welcome to BestAlgo.ai, ${fullName}! We're excited to have you on board.`
-            })
-          }).catch(e => {
-            console.error(`❌ EMAIL API ERROR (attempt ${attempt}):`, e);
-            return { data: null, error: e };
-          });
-          
-          // Race between timeout and actual operation
-          const { data: emailData, error: emailError } = await Promise.race([
-            emailPromise,
-            timeoutPromise.then(() => {
-              console.error(`❌ EMAIL TIMEOUT (attempt ${attempt})`);
-              return { data: null, error: new Error("Email request timed out after 30 seconds") };
-            })
-          ]) as any;
-
-          // Log the complete response for debugging
-          console.log(`📧 DEBUG: Email API response:`, {
-            data: emailData,
-            error: emailError,
-            timestamp: new Date().toISOString()
-          });
-
-          if (emailError) {
-            console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
-            lastError = emailError;
-            
-            // If this is the last attempt, show an error toast
-            if (attempt === maxEmailRetries) {
-              console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
-              
-              // Show detailed error message based on error type
-              if (typeof emailError === 'string') {
-                toast.error(`Email not sent: ${emailError}`);
-              } else if (typeof emailError === 'object') {
-                const errorMsg = emailError.message || emailError.error || "Unknown error";
-                toast.error(`Email not sent: ${errorMsg}`);
-              } else {
-                toast.error("Could not send welcome email. Please try again later.");
-              }
-            }
-            // Wait a bit longer between retries
-            await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
-          } else if (!emailData || !emailData.success) {
-            // Handle case where the function returned but marked as unsuccessful
-            console.error(`❌ EMAIL UNSUCCESSFUL (attempt ${attempt}):`, emailData);
-            const errorMessage = emailData?.error || "Unknown error sending email";
-            lastError = errorMessage;
-            
-            if (attempt === maxEmailRetries) {
-              console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts: ${errorMessage}`);
-              toast.error(`Email error: ${errorMessage}`);
-            }
-            // Wait before retry
-            await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
-          } else {
-            console.log('✅ EMAIL SUCCESS:', emailData);
-            // Show success toast
-            toast.success('Welcome email sent! Please check your inbox.');
-            emailResult = { success: true, data: emailData };
-            break;
-          }
-        } catch (emailError) {
-          console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
-          lastError = emailError;
-          
-          if (attempt === maxEmailRetries) {
-            console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
-            toast.error("Could not send welcome email due to a server error.");
-          }
-          // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
-        }
-      }
-      
-      if (!emailResult?.success) {
-        return { success: false, error: lastError };
-      }
-      
-      return emailResult.success || false;
+      return await sendWelcomeEmailSmtp({
+        email,
+        fullName,
+        welcomeMessage
+      });
     } catch (error) {
       console.error('❌ MAIN ERROR in sendWelcomeEmail:', error);
       return false;

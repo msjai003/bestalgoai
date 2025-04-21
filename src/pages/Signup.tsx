@@ -23,7 +23,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useWelcomeSmtp } from '@/hooks/registration/useWelcomeSmtp';
+import { useSendWelcomeSmtp } from '@/hooks/auth/useSendWelcomeSmtp';
 import { toast } from 'sonner';
 
 const Signup = () => {
@@ -37,7 +37,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const { sendWelcomeEmail, testSmtpConnection } = useWelcomeSmtp();
+  const { sendWelcomeEmailSmtp } = useSendWelcomeSmtp();
 
   const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
@@ -94,15 +94,7 @@ const Signup = () => {
       
       console.log('📋 Starting signup process with:', { email, name, tradingExperience });
       
-      // Before signing up, test SMTP connection to detect configuration issues early
-      console.log('🔌 Testing SMTP connection before signup...');
-      const smtpTest = await testSmtpConnection();
-      if (!smtpTest) {
-        console.warn('⚠️ SMTP connection test failed, but proceeding with signup anyway');
-        // Just log warning but continue with signup
-      } else {
-        console.log('✅ SMTP connection test passed');
-      }
+      // Test SMTP connection removed as we'll use the new hook instead
       
       const { error, data } = await signUp(email, password, confirmPassword, userData);
       
@@ -123,16 +115,18 @@ const Signup = () => {
           console.log('📱 Attempting to send welcome SMS...');
           await sendWelcomeSMS(data.user.id, name);
           
-          // Send welcome email using the SMTP function
+          // Send welcome email using the new SMTP hook
           console.log('📧 Attempting to send welcome email...');
-          const emailSent = await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
+          const emailSent = await sendWelcomeEmailSmtp({
+            email,
+            fullName: name,
+            welcomeMessage: `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`
+          });
           
           if (emailSent) {
             console.log('✅ Welcome email sent successfully');
-            toast.success('Welcome email sent! Please check your inbox.');
           } else {
             console.error('❌ Failed to send welcome email');
-            toast.error('Could not send welcome email, but your account was created successfully.');
           }
           
           console.log('🎉 Welcome messages process completed');
