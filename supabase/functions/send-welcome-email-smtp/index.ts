@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-// Updated from outdated denomailer to a more reliable SMTP client
+// Using SMTPClient directly from smtp@v0.7.0 which has better stability
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 // CORS headers to allow cross-origin requests
@@ -16,18 +16,19 @@ const getSmtpConfig = () => {
   const portStr = Deno.env.get("SMTP_PORT");
   const username = Deno.env.get("SMTP_USERNAME") || Deno.env.get("SMTP_USER");
   const password = Deno.env.get("SMTP_PASSWORD") || Deno.env.get("SMTP_PASS");
+  const fromEmail = Deno.env.get("SMTP_FROM_EMAIL") || Deno.env.get("SMTP_FROM");
   const secureStr = Deno.env.get("SMTP_SECURE");
 
   // Debug all environment variables without exposing sensitive data
-  console.log("Environment variables check:", {
-    SMTP_HOST_EXISTS: !!host,
-    SMTP_PORT_EXISTS: !!portStr,
-    SMTP_USERNAME_EXISTS: !!username,
-    SMTP_PASSWORD_EXISTS: !!password,
-    SMTP_FROM_EMAIL_EXISTS: !!Deno.env.get("SMTP_FROM_EMAIL") || !!Deno.env.get("SMTP_FROM"),
-    SMTP_SECURE_EXISTS: !!secureStr,
-    SMTP_HOST_VALUE: host, // Include actual values for debugging
-    SMTP_PORT_VALUE: portStr
+  console.log("SMTP Configuration Check:", {
+    HOST_EXISTS: !!host,
+    PORT_EXISTS: !!portStr,
+    USERNAME_EXISTS: !!username,
+    PASSWORD_EXISTS: !!password,
+    FROM_EMAIL_EXISTS: !!fromEmail,
+    SECURE_EXISTS: !!secureStr,
+    HOST_VALUE: host,
+    PORT_VALUE: portStr
   });
 
   // Validate required fields
@@ -35,6 +36,7 @@ const getSmtpConfig = () => {
   if (!portStr) throw new Error("SMTP_PORT is not configured");
   if (!username) throw new Error("SMTP_USERNAME is not configured");
   if (!password) throw new Error("SMTP_PASSWORD is not configured");
+  if (!fromEmail) throw new Error("SMTP_FROM_EMAIL is not configured");
 
   // Parse port as integer with fallback to 587
   const port = parseInt(portStr, 10);
@@ -51,6 +53,7 @@ const getSmtpConfig = () => {
     port,
     username,
     password,
+    fromEmail,
     secure,
   };
 };
@@ -126,8 +129,8 @@ serve(async (req: Request) => {
         host: smtpConfig.hostname,
         port: smtpConfig.port,
         username: smtpConfig.username,
+        fromEmail: smtpConfig.fromEmail,
         secure: smtpConfig.secure,
-        // Do not log password
       });
     } catch (configError: any) {
       logError(`[${requestId}] SMTP configuration error`, configError);
@@ -135,23 +138,6 @@ serve(async (req: Request) => {
         JSON.stringify({
           success: false,
           error: `SMTP configuration error: ${configError.message}`,
-          requestId,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-    
-    // First test the SMTP connection
-    const connectionTest = await testSmtpConnection(smtpConfig);
-    if (!connectionTest.success) {
-      logError(`[${requestId}] SMTP connection test failed`, connectionTest);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `SMTP connection failed: ${connectionTest.error}`,
           requestId,
         }),
         {
@@ -172,17 +158,21 @@ serve(async (req: Request) => {
         testOnly: !!requestData.testOnly,
       });
       
-      // If testOnly flag is set, we don't need to send an actual email
+      // If testOnly flag is set, only test the connection
       if (requestData.testOnly) {
-        logInfo(`[${requestId}] Test only mode, not sending actual email`);
+        logInfo(`[${requestId}] Test only mode, testing SMTP connection`);
+        const testResult = await testSmtpConnection(smtpConfig);
+        
         return new Response(
           JSON.stringify({
-            success: true,
-            message: "SMTP connection test completed successfully. No email sent in test mode.",
+            success: testResult.success,
+            message: testResult.success 
+              ? "SMTP connection test completed successfully. No email sent in test mode."
+              : `SMTP connection test failed: ${testResult.error}`,
             requestId
           }),
           {
-            status: 200,
+            status: testResult.success ? 200 : 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" }
           }
         );
@@ -236,71 +226,77 @@ serve(async (req: Request) => {
       );
     }
 
-    logInfo(`[${requestId}] Preparing SMTP client for ${email}`);
+    // First test the SMTP connection
+    logInfo(`[${requestId}] Testing SMTP connection before sending email`);
+    const connectionTest = await testSmtpConnection(smtpConfig);
+    if (!connectionTest.success) {
+      logError(`[${requestId}] SMTP connection test failed`, connectionTest);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `SMTP connection failed: ${connectionTest.error}`,
+          requestId,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    logInfo(`[${requestId}] SMTP connection test passed, proceeding to send email`);
 
     try {
-      // Create SMTP client with specific configuration
+      // Create new SMTP client for sending the actual email
       const client = new SmtpClient();
       
-      // Connect to SMTP server with improved error handling
-      logInfo(`[${requestId}] Attempting to connect to SMTP server at ${smtpConfig.hostname}:${smtpConfig.port}`);
+      logInfo(`[${requestId}] Connecting to SMTP server at ${smtpConfig.hostname}:${smtpConfig.port}`);
       
       await client.connect({
         hostname: smtpConfig.hostname,
         port: smtpConfig.port,
         username: smtpConfig.username,
         password: smtpConfig.password,
-        // Set tls option based on port and secure setting
         tls: smtpConfig.secure || smtpConfig.port === 465,
       });
       
-      logInfo(`[${requestId}] SMTP client connected successfully`);
+      logInfo(`[${requestId}] Successfully connected to SMTP server`);
       
       // Send the email
-      const fromEmail = Deno.env.get("SMTP_FROM_EMAIL") || Deno.env.get("SMTP_FROM") || smtpConfig.username;
-      if (!fromEmail) {
-        throw new Error("No sender email available. Please configure SMTP_FROM_EMAIL");
-      }
-      
-      logInfo(`[${requestId}] Sending email from ${fromEmail} to ${email}`);
+      logInfo(`[${requestId}] Sending email from ${smtpConfig.fromEmail} to ${email}`);
       
       await client.send({
-        from: `BestAlgo <${fromEmail}>`,
+        from: `BestAlgo <${smtpConfig.fromEmail}>`,
         to: email,
         subject: "Welcome to BestAlgo!",
         content: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #4F46E5;">Welcome to BestAlgo!</h1>
-            <p>Hello ${name},</p>
-            <p>${welcomeMessage || "Thank you for registering with BestAlgo! We're excited to have you on board."}</p>
-            <p>With BestAlgo, you'll gain access to:</p>
-            <ul>
-              <li>Advanced trading algorithms</li>
-              <li>Real-time market analysis</li>
-              <li>Personalized trading strategies</li>
-              <li>Educational resources</li>
-            </ul>
-            <p>Get started by logging into your account and exploring our platform.</p>
-            <p>Best regards,<br>The BestAlgo Team</p>
-            <p style="font-size: 12px; color: #666;">This email was sent to ${email}.</p>
-          </div>
+Hello ${name},
+${welcomeMessage || "Thank you for registering with BestAlgo! We're excited to have you on board."}
+With BestAlgo, you'll gain access to:
+- Advanced trading algorithms
+- Real-time market analysis
+- Personalized trading strategies
+- Educational resources
+Get started by logging into your account and exploring our platform.
+Best regards,
+The BestAlgo Team
         `,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #4F46E5;">Welcome to BestAlgo!</h1>
-            <p>Hello ${name},</p>
-            <p>${welcomeMessage || "Thank you for registering with BestAlgo! We're excited to have you on board."}</p>
-            <p>With BestAlgo, you'll gain access to:</p>
-            <ul>
-              <li>Advanced trading algorithms</li>
-              <li>Real-time market analysis</li>
-              <li>Personalized trading strategies</li>
-              <li>Educational resources</li>
-            </ul>
-            <p>Get started by logging into your account and exploring our platform.</p>
-            <p>Best regards,<br>The BestAlgo Team</p>
-            <p style="font-size: 12px; color: #666;">This email was sent to ${email}.</p>
-          </div>
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #4F46E5;">Welcome to BestAlgo!</h1>
+  <p>Hello ${name},</p>
+  <p>${welcomeMessage || "Thank you for registering with BestAlgo! We're excited to have you on board."}</p>
+  <p>With BestAlgo, you'll gain access to:</p>
+  <ul>
+    <li>Advanced trading algorithms</li>
+    <li>Real-time market analysis</li>
+    <li>Personalized trading strategies</li>
+    <li>Educational resources</li>
+  </ul>
+  <p>Get started by logging into your account and exploring our platform.</p>
+  <p>Best regards,<br>The BestAlgo Team</p>
+  <p style="font-size: 12px; color: #666;">This email was sent to ${email}.</p>
+</div>
         `
       });
       
