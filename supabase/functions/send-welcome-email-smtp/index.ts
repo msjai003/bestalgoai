@@ -17,6 +17,16 @@ const getSmtpConfig = () => {
   const password = Deno.env.get("SMTP_PASSWORD");
   const secureStr = Deno.env.get("SMTP_SECURE");
 
+  // Debug all environment variables without exposing sensitive data
+  console.log("Environment variables check:", {
+    SMTP_HOST_EXISTS: !!host,
+    SMTP_PORT_EXISTS: !!portStr,
+    SMTP_USERNAME_EXISTS: !!username,
+    SMTP_PASSWORD_EXISTS: !!password,
+    SMTP_FROM_EMAIL_EXISTS: !!Deno.env.get("SMTP_FROM_EMAIL"),
+    SMTP_SECURE_EXISTS: !!secureStr
+  });
+
   // Validate required fields
   if (!host) throw new Error("SMTP_HOST is not configured");
   if (!portStr) throw new Error("SMTP_PORT is not configured");
