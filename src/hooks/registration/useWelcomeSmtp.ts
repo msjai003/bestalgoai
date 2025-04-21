@@ -103,23 +103,19 @@ export const useWelcomeSmtp = () => {
       
       if (error) {
         console.error('❌ SMTP TEST ERROR:', error);
-        toast.error(`SMTP test failed: ${error.message || "Unknown error"}`);
         return false;
       }
       
       if (!data || !data.success) {
         const errorMessage = data?.error || "Unknown configuration issue";
         console.error('❌ SMTP TEST FAILED:', errorMessage);
-        toast.error(`SMTP configuration issue: ${errorMessage}`);
         return false;
       }
       
       console.log('✅ SMTP TEST SUCCESS:', data);
-      toast.success('SMTP configuration is working correctly!');
       return true;
     } catch (error) {
       console.error('❌ SMTP TEST EXCEPTION:', error);
-      toast.error(`SMTP test error: ${error.message || "Unknown error"}`);
       return false;
     }
   };

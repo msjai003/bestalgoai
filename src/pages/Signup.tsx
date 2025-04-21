@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useWelcomeSmtp } from '@/hooks/registration/useWelcomeSmtp';
+import { toast } from 'sonner';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -37,7 +37,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const { sendWelcomeEmail } = useWelcomeSmtp();
+  const { sendWelcomeEmail, testSmtpConnection } = useWelcomeSmtp();
 
   const sendWelcomeSMS = async (userId: string, fullName: string) => {
     try {
@@ -92,23 +92,54 @@ const Signup = () => {
         tradingExperience: tradingExperience
       };
       
+      console.log('📋 Starting signup process with:', { email, name, tradingExperience });
+      
+      // Before signing up, test SMTP connection to detect configuration issues early
+      console.log('🔌 Testing SMTP connection before signup...');
+      const smtpTest = await testSmtpConnection();
+      if (!smtpTest) {
+        console.warn('⚠️ SMTP connection test failed, but proceeding with signup anyway');
+        // Just log warning but continue with signup
+      } else {
+        console.log('✅ SMTP connection test passed');
+      }
+      
       const { error, data } = await signUp(email, password, confirmPassword, userData);
       
       if (error) {
+        console.error('❌ Signup error:', error);
         setErrorMessage(error.message || 'Error creating account');
         setIsLoading(false);
         return;
       }
       
+      console.log('✅ Signup successful:', data);
+      toast.success('Account created successfully!');
+      
       // If signup was successful and we have a user ID, send welcome messages
       if (data?.user?.id) {
-        // Send welcome SMS
-        await sendWelcomeSMS(data.user.id, name);
-        
-        // Send welcome email using the new SMTP function
-        await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
-        
-        console.log("Welcome messages sent successfully");
+        try {
+          // Send welcome SMS
+          console.log('📱 Attempting to send welcome SMS...');
+          await sendWelcomeSMS(data.user.id, name);
+          
+          // Send welcome email using the SMTP function
+          console.log('📧 Attempting to send welcome email...');
+          const emailSent = await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
+          
+          if (emailSent) {
+            console.log('✅ Welcome email sent successfully');
+            toast.success('Welcome email sent! Please check your inbox.');
+          } else {
+            console.error('❌ Failed to send welcome email');
+            toast.error('Could not send welcome email, but your account was created successfully.');
+          }
+          
+          console.log('🎉 Welcome messages process completed');
+        } catch (msgError: any) {
+          console.error('❌ Error sending welcome messages:', msgError);
+          toast.error('Could not send welcome messages, but your account was created');
+        }
       }
       
       navigate('/dashboard');
