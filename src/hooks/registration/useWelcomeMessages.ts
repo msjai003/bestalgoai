@@ -15,8 +15,8 @@ export const useWelcomeMessages = () => {
         try {
           console.log(`📧 DEBUG: Sending welcome email (attempt ${attempt}/${maxEmailRetries})...`);
           
-          // Using the Resend API via Edge Function with clear request structure
-          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-resend', {
+          // Using the SMTP function for email sending
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-welcome-email-smtp', {
             body: JSON.stringify({
               email,
               name: fullName,
@@ -34,15 +34,15 @@ export const useWelcomeMessages = () => {
           if (emailError) {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             
-            // Check if this is a domain verification issue
+            // Check if this is a configuration issue
             const errorMsg = typeof emailError === 'object' && emailError.error ? emailError.error : String(emailError);
             
             if (attempt === maxEmailRetries) {
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
               
               // Show detailed error message based on error type
-              if (errorMsg.includes("domain") || errorMsg.includes("verified") || errorMsg.includes("You can only send")) {
-                toast.error("Email not sent: Your Resend account needs domain verification. Please check admin settings.");
+              if (errorMsg.includes("configuration")) {
+                toast.error("Email not sent: SMTP configuration error. Please check admin settings.");
               } else {
                 toast.error("Could not send welcome email. Please check your email address.");
               }
