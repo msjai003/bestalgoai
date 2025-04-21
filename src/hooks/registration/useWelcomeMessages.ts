@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useWelcomeMessages = () => {
   const sendWelcomeMessages = async (email: string, fullName: string, mobileNumber?: string) => {
@@ -33,22 +34,25 @@ export const useWelcomeMessages = () => {
           if (emailError) {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             if (attempt === maxEmailRetries) {
-              // Toast removed
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
+              // Show toast only to the user who's currently registering
+              toast.error("Could not send welcome email. Please check your email address.");
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           } else {
             console.log('✅ EMAIL SUCCESS:', emailData);
-            // Toast removed
+            // Show success toast only to the user who's currently registering
+            toast.success('Welcome to BestAlgo! Check your email for more information.');
             emailResult = { success: true, data: emailData };
             break;
           }
         } catch (emailError) {
           console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
           if (attempt === maxEmailRetries) {
-            // Toast removed
             console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
+            // Show toast only to the user who's currently registering
+            toast.error("Could not send welcome email due to a server error.");
           }
           // Exponential backoff
           await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
@@ -79,7 +83,8 @@ export const useWelcomeMessages = () => {
           } else {
             console.log('✅ SMS SUCCESS:', smsData);
             if (smsData?.success) {
-              // Toast removed
+              // Show SMS success toast only to the currently registering user
+              toast.success('Welcome SMS sent to your mobile number.');
             }
           }
         } catch (smsException) {

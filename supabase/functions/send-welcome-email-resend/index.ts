@@ -2,8 +2,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
-// Initialize Resend and log API key status
+// Initialize Resend with better error handling
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
+if (!resendApiKey) {
+  console.error("[CRITICAL] RESEND_API_KEY is not set in environment variables");
+}
 console.log(`[STARTUP] RESEND_API_KEY exists: ${Boolean(resendApiKey)}`);
 const resend = new Resend(resendApiKey);
 
@@ -106,8 +109,13 @@ serve(async (req) => {
         );
       }
 
-      // Send the email
-      logInfo(`[${requestId}] Calling Resend API...`);
+      // Send the email with more detailed logging
+      logInfo(`[${requestId}] Calling Resend API with parameters:`, { 
+        from: "BestAlgo <onboarding@resend.dev>",
+        to: email,
+        subject: "Welcome to BestAlgo!"
+      });
+      
       const { data, error } = await resend.emails.send({
         from: "BestAlgo <onboarding@resend.dev>",
         to: [email],
