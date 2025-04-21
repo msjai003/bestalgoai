@@ -1137,6 +1137,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_logs: {
+        Row: {
+          correct_answer: string | null
+          created_at: string | null
+          example: string | null
+          explanation: string | null
+          id: string
+          is_correct: boolean | null
+          level: string | null
+          question: string
+          selected_answer: string | null
+          user_id: string | null
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string | null
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          level?: string | null
+          question: string
+          selected_answer?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string | null
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          level?: string | null
+          question?: string
+          selected_answer?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       quiz_results: {
         Row: {
           completed_at: string | null
@@ -1158,6 +1197,51 @@ export type Database = {
           level?: string | null
           score?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_sessions: {
+        Row: {
+          app_version: string | null
+          correct_count: number | null
+          created_at: string | null
+          device_type: string | null
+          duration_seconds: number | null
+          final_level: string | null
+          id: string
+          quiz_mode: string | null
+          results: Json | null
+          score: number | null
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          final_level?: string | null
+          id?: string
+          quiz_mode?: string | null
+          results?: Json | null
+          score?: number | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          final_level?: string | null
+          id?: string
+          quiz_mode?: string | null
+          results?: Json | null
+          score?: number | null
+          source?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

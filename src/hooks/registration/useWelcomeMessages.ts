@@ -34,6 +34,7 @@ export const useWelcomeMessages = () => {
             console.error(`❌ EMAIL ERROR (attempt ${attempt}):`, emailError);
             if (attempt === maxEmailRetries) {
               // Toast removed
+              console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
@@ -47,6 +48,7 @@ export const useWelcomeMessages = () => {
           console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
           if (attempt === maxEmailRetries) {
             // Toast removed
+            console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
           }
           // Exponential backoff
           await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
