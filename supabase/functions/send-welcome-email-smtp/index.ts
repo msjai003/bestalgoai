@@ -24,7 +24,9 @@ const getSmtpConfig = () => {
     SMTP_USERNAME_EXISTS: !!username,
     SMTP_PASSWORD_EXISTS: !!password,
     SMTP_FROM_EMAIL_EXISTS: !!Deno.env.get("SMTP_FROM_EMAIL"),
-    SMTP_SECURE_EXISTS: !!secureStr
+    SMTP_SECURE_EXISTS: !!secureStr,
+    SMTP_HOST_VALUE: host, // Include actual values for debugging
+    SMTP_PORT_VALUE: portStr
   });
 
   // Validate required fields
@@ -70,6 +72,35 @@ function logError(message: string, error: any) {
   console.error(`[ERROR] ${message}`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
 }
 
+// Test SMTP connection without sending an email
+async function testSmtpConnection(config: any) {
+  try {
+    logInfo("Testing SMTP connection...");
+    const client = new SMTPClient({
+      connection: {
+        hostname: config.hostname,
+        port: config.port,
+        tls: config.secure,
+        auth: {
+          username: config.username,
+          password: config.password,
+        },
+      },
+    });
+    
+    await client.connect();
+    logInfo("SMTP connection test successful!");
+    await client.close();
+    return { success: true };
+  } catch (error) {
+    logError("SMTP connection test failed", error);
+    return { 
+      success: false, 
+      error: error.message || "Unknown error during SMTP connection test" 
+    };
+  }
+}
+
 serve(async (req: Request) => {
   const requestId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
@@ -90,7 +121,7 @@ serve(async (req: Request) => {
     let smtpConfig;
     try {
       smtpConfig = getSmtpConfig();
-      logInfo(`[${requestId}] SMTP configuration validated`, {
+      logInfo(`[${requestId}] SMTP configuration loaded`, {
         host: smtpConfig.hostname,
         port: smtpConfig.port,
         username: smtpConfig.username,
@@ -103,6 +134,23 @@ serve(async (req: Request) => {
         JSON.stringify({
           success: false,
           error: `SMTP configuration error: ${configError.message}`,
+          requestId,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+    
+    // First test the SMTP connection
+    const connectionTest = await testSmtpConnection(smtpConfig);
+    if (!connectionTest.success) {
+      logError(`[${requestId}] SMTP connection test failed`, connectionTest);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `SMTP connection failed: ${connectionTest.error}`,
           requestId,
         }),
         {
@@ -174,7 +222,6 @@ serve(async (req: Request) => {
 
     try {
       // Create SMTP client with specific configuration
-      // Fix: Make sure we're providing all required config in the right format
       const client = new SMTPClient({
         connection: {
           hostname: smtpConfig.hostname,
@@ -184,6 +231,9 @@ serve(async (req: Request) => {
             username: smtpConfig.username,
             password: smtpConfig.password,
           },
+          // Add these options to improve connection reliability
+          timeout: 30000, // 30 second timeout
+          debug: true,    // Enable debug mode for more logs
         },
       });
       
@@ -243,16 +293,34 @@ serve(async (req: Request) => {
       logError(`[${requestId}] SMTP Error`, sendError);
       
       let errorMessage = sendError.message || "Error in email sending process";
+      let errorDetails = {};
+      
+      // Enhanced error diagnosis for common SMTP issues
       if (errorMessage.includes("timeout")) {
         errorMessage = "SMTP server connection timeout. Please check your server host and port.";
+        errorDetails = { type: "timeout", suggestion: "Verify SMTP_HOST and SMTP_PORT values" };
       } else if (errorMessage.includes("authentication")) {
         errorMessage = "SMTP authentication failed. Please check your username and password.";
+        errorDetails = { type: "auth_failure", suggestion: "Verify SMTP_USERNAME and SMTP_PASSWORD" };
+      } else if (errorMessage.toLowerCase().includes("connect")) {
+        errorMessage = "Failed to connect to SMTP server. Please check server details and network.";
+        errorDetails = { 
+          type: "connection_failure", 
+          suggestion: "Verify SMTP_HOST, SMTP_PORT, and network connectivity" 
+        };
+      } else if (errorMessage.toLowerCase().includes("secure")) {
+        errorMessage = "SSL/TLS error when connecting to SMTP server.";
+        errorDetails = { 
+          type: "ssl_error", 
+          suggestion: "Check SMTP_SECURE setting and ensure it matches server requirements" 
+        };
       }
       
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: errorMessage,
+          details: errorDetails,
           requestId 
         }),
         {
