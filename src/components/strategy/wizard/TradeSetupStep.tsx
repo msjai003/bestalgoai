@@ -1,4 +1,3 @@
-
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState, useEffect } from "react";
 import { useStrategyConfigOptions } from "@/hooks/strategy/useStrategyConfigOptions";
 import { RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TradeSetupStepProps {
   leg: StrategyLeg;
@@ -26,8 +28,9 @@ export const TradeSetupStep = ({
   isDuplicateName = false
 }: TradeSetupStepProps) => {
   const [nameError, setNameError] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const { user } = useAuth();
   
-  // Fetch config options from the database
   const { 
     options, 
     isLoading,
@@ -43,23 +46,61 @@ export const TradeSetupStep = ({
   const strategyTypeOptions = getOptionsByCategory('strategyType');
 
   useEffect(() => {
-    if (isFirstLeg && strategyName.trim() === "") {
-      setNameError("Strategy name is required");
-    } else if (isDuplicateName) {
-      setNameError("A strategy with this name already exists");
-    } else {
-      setNameError("");
-    }
-  }, [strategyName, isFirstLeg, isDuplicateName]);
+    const checkDuplicateAndSuggest = async () => {
+      if (!strategyName.trim() || !user) {
+        setNameError("");
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const { data: existingStrategies, error } = await supabase
+          .from('custom_strategies')
+          .select('name')
+          .ilike('name', `%${strategyName}%`);
+
+        if (error) throw error;
+
+        const exactMatch = existingStrategies?.find(
+          strategy => strategy.name.toLowerCase() === strategyName.toLowerCase()
+        );
+
+        if (exactMatch) {
+          setNameError("This strategy name is already taken");
+          
+          const baseNames = ["MyStrategy", "CustomStrategy", "Strategy"];
+          const newSuggestions = baseNames.map(baseName => {
+            const random = Math.floor(Math.random() * 1000);
+            return `${baseName}_${random}`;
+          });
+          
+          setSuggestions(newSuggestions);
+        } else {
+          setNameError("");
+          setSuggestions([]);
+        }
+      } catch (error) {
+        console.error("Error checking strategy names:", error);
+        setNameError("");
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      checkDuplicateAndSuggest();
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [strategyName, user]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStrategyName(e.target.value);
     if (e.target.value.trim() === "") {
       setNameError("Strategy name is required");
-    } else {
-      // Only check for duplicate if not empty - the useEffect will handle the duplicate check
-      setNameError("");
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setStrategyName(suggestion);
   };
 
   return (
@@ -78,7 +119,27 @@ export const TradeSetupStep = ({
           required
         />
         {nameError && (
-          <p className="text-xs text-red-500 mt-1">{nameError}</p>
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-red-500">{nameError}</p>
+            {suggestions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-400">Suggested names:</p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="text-xs bg-gray-800 hover:bg-gray-700 border-gray-600"
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
         {!isFirstLeg && (
           <p className="text-xs text-gray-400 mt-1">
