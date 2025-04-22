@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,28 +42,59 @@ const AuthCallback = () => {
           return;
         }
         
-        // Handle the OAuth callback first if we have code and state parameters
+        // Handle the OAuth callback - priority path for Google auth
         if (code && state) {
           console.log('Processing OAuth callback with code and state');
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           
-          if (error) {
-            console.error('Error exchanging code for session:', error);
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            
+            if (error) {
+              console.error('Error exchanging code for session:', error);
+              setError('Authentication Error');
+              setErrorDetails(error.message || 'Failed to process authentication. Please try again.');
+              setIsProcessing(false);
+              return;
+            }
+            
+            if (data.session) {
+              console.log('Successfully exchanged code for session');
+              
+              const user = data.session.user;
+              
+              // If we have a Google provider, save the user details
+              if (user?.app_metadata?.provider === 'google') {
+                console.log('Google user authenticated, saving details...');
+                
+                // Extract Google user data from user.user_metadata
+                const googleData = {
+                  email: user.email || '',
+                  google_id: user.user_metadata.sub,
+                  picture_url: user.user_metadata.picture,
+                  given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
+                  family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
+                  locale: user.user_metadata.locale,
+                  verified_email: user.user_metadata.email_verified
+                };
+                
+                // Save Google user data
+                await saveGoogleUserDetails(user.id, googleData);
+              }
+              
+              toast.success('Login successful!');
+              navigate('/dashboard', { replace: true });
+              return;
+            }
+          } catch (oauthError) {
+            console.error('Error in OAuth flow:', oauthError);
             setError('Authentication Error');
-            setErrorDetails(error.message || 'Failed to process authentication. Please try again.');
+            setErrorDetails('Failed to process authentication. Please try again.');
             setIsProcessing(false);
-            return;
-          }
-          
-          if (data.session) {
-            console.log('Successfully exchanged code for session');
-            toast.success('Google login successful!');
-            navigate('/dashboard', { replace: true });
             return;
           }
         }
         
-        // Get session from Supabase - this will use any tokens in the URL automatically
+        // Fallback - Get session from Supabase
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         console.log('Session check result:', {
@@ -82,71 +112,8 @@ const AuthCallback = () => {
         
         // If we have a valid session
         if (sessionData?.session) {
-          console.log('Valid session found, checking user details');
-          const user = sessionData.session.user;
-          
-          // If we have a Google provider, save the user details
-          if (user?.app_metadata?.provider === 'google') {
-            console.log('Google user authenticated, saving details...');
-            
-            // Extract Google user data from user.user_metadata
-            const googleData = {
-              email: user.email || '',
-              google_id: user.user_metadata.sub,
-              picture_url: user.user_metadata.picture,
-              given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
-              family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
-              locale: user.user_metadata.locale,
-              verified_email: user.user_metadata.email_verified
-            };
-            
-            console.log('Saving Google user details with data:', googleData);
-            
-            // Save Google user data to our google_user_details table
-            const saveSuccess = await saveGoogleUserDetails(user.id, googleData);
-            
-            if (saveSuccess) {
-              console.log('Google user details saved successfully');
-            } else {
-              console.error('Failed to save Google user details');
-            }
-            
-            // Check if we need to complete registration (if user profile doesn't exist)
-            try {
-              const { data: profileData } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', user.id)
-                .maybeSingle();
-                
-              if (!profileData) {
-                console.log('User profile not found, creating basic profile...');
-                
-                // Create a basic profile for the Google user
-                const { error: profileError } = await supabase
-                  .from('user_profiles')
-                  .insert({
-                    id: user.id,
-                    full_name: googleData.given_name + ' ' + (googleData.family_name || ''),
-                    email: googleData.email,
-                    trading_experience: 'beginner',
-                    profile_picture: googleData.picture_url
-                  });
-                  
-                if (profileError) {
-                  console.error('Error creating profile for Google user:', profileError);
-                } else {
-                  console.log('Basic profile created for Google user');
-                }
-              }
-            } catch (profileErr) {
-              console.error('Error checking/creating user profile:', profileErr);
-            }
-          }
-          
-          // For all successful logins, redirect to dashboard
+          console.log('Valid session found, redirecting to dashboard');
           toast.success('Login successful!');
-          console.log('Authentication successful, redirecting to dashboard');
           navigate('/dashboard', { replace: true });
           return;
         } else {

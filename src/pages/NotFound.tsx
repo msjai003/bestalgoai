@@ -9,16 +9,26 @@ const NotFound = () => {
 
   useEffect(() => {
     // Check if this is an auth callback path that wasn't handled correctly
+    const path = location.pathname;
+    const search = location.search;
     const isAuthCallback = 
-      location.pathname.includes('/callback') || 
-      location.pathname.includes('/auth/v1') ||
-      location.pathname.includes('/auth/callback') ||
-      location.pathname.includes('/api/auth/callback') ||
-      location.search.includes('code=') ||
-      location.search.includes('state=');
+      path.includes('/callback') || 
+      path.includes('/auth/v1') ||
+      path.includes('/auth/callback') ||
+      path.includes('/api/auth/callback') ||
+      search.includes('code=') ||
+      search.includes('state=');
     
     if (isAuthCallback) {
-      console.log('Detected auth callback path in 404 page:', location.pathname);
+      console.log('Detected auth callback path in 404 page:', location.pathname, location.search);
+      
+      // Special handling for Google's specific callback pattern
+      if (path.includes('/auth/v1/callback') || path === '/auth/v1/callback') {
+        console.log('Detected Google auth v1 callback, redirecting with full query string');
+        navigate('/auth/callback' + location.search, { replace: true });
+        return;
+      }
+      
       // Redirect to our standard auth callback handler with the full query string
       navigate('/auth/callback' + location.search, { replace: true });
       return;
