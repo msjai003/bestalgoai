@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -65,11 +64,14 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes - handle all possible callback paths */}
+      {/* Auth callback routes - comprehensive path handling */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/callback" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/v1/callback" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/callback/*" element={<AuthCallback />} />
+      <Route path="/api/auth/callback/*" element={<Navigate to="/auth/callback" replace />} />
+      
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
@@ -87,6 +89,7 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       } />
+      
       <Route path="/onboarding" element={
         <ProtectedRoute>
           <Onboarding />

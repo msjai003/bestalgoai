@@ -16,20 +16,7 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('Auth callback processing, URL:', window.location.href);
-        
-        // First check if we're on the v1/callback path which is used by some auth providers
-        const pathSegments = window.location.pathname.split('/');
-        const isV1Callback = pathSegments.includes('v1') && pathSegments.includes('callback');
-        
-        if (isV1Callback) {
-          console.log('Detected v1/callback path, redirecting to auth/callback');
-          // Get the full query string
-          const queryString = window.location.search;
-          // Redirect to the standard callback path while preserving query params
-          window.location.href = `/auth/callback${queryString}`;
-          return;
-        }
+        console.log('Auth callback processing started, URL:', window.location.href);
         
         // Check for recovery token in URL (for password reset links)
         const searchParams = new URLSearchParams(window.location.search);
@@ -124,13 +111,6 @@ const AuthCallback = () => {
             } catch (profileErr) {
               console.error('Error checking/creating user profile:', profileErr);
             }
-          }
-          
-          // Check if this is a password reset flow
-          if (type === 'recovery') {
-            console.log('Auth callback: Redirecting to forgot-password for recovery');
-            navigate('/forgot-password?type=recovery');
-            return;
           }
           
           // For normal login, redirect to dashboard
