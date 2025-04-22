@@ -18,6 +18,7 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('Auth callback processing started');
+        console.log('URL:', window.location.href);
         
         // Get the current session - wait for it to be fully established
         console.log('Getting session data...');
@@ -72,17 +73,14 @@ const AuthCallback = () => {
           return;
         } else {
           console.log('No valid session found in callback handler');
-          // Re-check the URL for auth tokens and try to exchange them
+          
+          // If there are auth tokens in the URL, try processing them
           const url = window.location.href;
           if (url.includes('code=') || url.includes('access_token=')) {
             console.log('Auth tokens found in URL, attempting to process');
             
-            // Use the proper method to get the URL hash or query parameters
-            // This uses the browser's URL API to parse the hash or search query
-            const hash = window.location.hash.substring(1);
-            const query = window.location.search.substring(1);
-            
-            // Process the OAuth callback with Supabase
+            // We'll call getSession again which should process the tokens
+            // This seems redundant but sometimes the first call happens before tokens are processed
             const { data, error } = await supabase.auth.getSession();
             
             if (error) {
@@ -95,15 +93,25 @@ const AuthCallback = () => {
             
             if (data?.session) {
               console.log('Session established after processing callback');
+              toast({
+                title: "Login Successful",
+                description: "Welcome back!",
+                variant: "default",
+              });
               navigate('/dashboard', { replace: true });
               return;
             }
           }
+          
+          // If we've gotten this far, no valid session was found or established
+          console.log('No valid session found or could be established, redirecting to auth page');
+          toast({
+            title: "Authentication Failed",
+            description: "Please try signing in again",
+            variant: "destructive",
+          });
+          navigate('/auth', { replace: true });
         }
-        
-        // No valid session found
-        console.log('No valid session found, redirecting to auth page');
-        navigate('/auth', { replace: true });
         
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);

@@ -21,14 +21,15 @@ const NotFound = () => {
       path === '/auth/v1/' ||
       path.startsWith('/v1/callback') ||
       path === '/callback' ||
+      path.includes('/auth/v1/') ||
       (search.includes('code=') && search.includes('state='));
     
     if (isGoogleAuthCallback) {
       console.log('Detected Google auth callback in 404 page:', path, search);
       setRedirecting(true);
       
-      // Always redirect to AuthCallback component with the full query string
-      const redirectPath = '/auth/callback' + location.search;
+      // Always redirect to the main AuthCallback component
+      const redirectPath = '/auth/callback' + location.search + location.hash;
       console.log('Redirecting to:', redirectPath);
       
       // Short timeout to ensure the message shows before redirecting
@@ -43,7 +44,7 @@ const NotFound = () => {
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-  }, [location.pathname, location.search, navigate]);
+  }, [location.pathname, location.search, location.hash, navigate]);
 
   if (redirecting) {
     return (
