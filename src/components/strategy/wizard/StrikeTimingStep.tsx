@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Clock } from "lucide-react";  // Explicitly import Clock icon
+import { Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StrikeTimingStepProps {
@@ -52,10 +52,10 @@ export const StrikeTimingStep = ({
             value={leg.strikeLevel}
             onValueChange={(value) => updateLeg({ strikeLevel: value as any })}
           >
-            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white rounded-xl">
               <SelectValue placeholder="Select strike level" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px]">
+            <SelectContent className="bg-gray-800 border-gray-700 max-h-[300px] rounded-xl">
               {[
                 "ITM10", "ITM9", "ITM8", "ITM7", "ITM6", "ITM5", "ITM4", "ITM3", "ITM2", "ITM1", 
                 "ATM", 
@@ -68,8 +68,8 @@ export const StrikeTimingStep = ({
                     ${level === "ATM" 
                       ? "bg-cyan/10 text-white font-bold border-y border-cyan/30 my-1 py-2" 
                       : level.startsWith("ITM") 
-                        ? "text-green-400 hover:bg-gray-700 hover:text-black font-medium" 
-                        : "text-red-400 hover:bg-gray-700 hover:text-black font-medium"}
+                        ? "text-green-400 hover:bg-gray-700 hover:text-white font-medium" 
+                        : "text-red-400 hover:bg-gray-700 hover:text-white font-medium"}
                   `}
                 >
                   {level}
