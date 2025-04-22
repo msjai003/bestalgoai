@@ -91,7 +91,8 @@ const AuthCallback = () => {
                   setIsProcessing(false);
                 } else if (data.session) {
                   console.log('Successfully exchanged code for session, redirecting to dashboard');
-                  setTimeout(() => navigate('/dashboard'), 500);
+                  // Use a delay to ensure the session is properly set before redirecting
+                  setTimeout(() => navigate('/dashboard'), 1500);
                 }
               } catch (err) {
                 console.error('Exception exchanging code for session:', err);

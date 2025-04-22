@@ -16,40 +16,60 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the dashboard.",
-        variant: "destructive",
-      });
-      navigate('/auth');
-    } else {
-      const checkPremium = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('plan_details')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('selected_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-            
-          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
-            setHasPremium(true);
-          }
-        } catch (error) {
-          console.error('Error checking premium status:', error);
+    const checkAuth = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          console.log('No active session found on dashboard, redirecting to auth');
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access the dashboard.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        } else {
+          setIsVerifyingAuth(false);
         }
-      };
-      
-      checkPremium();
+      } catch (error) {
+        console.error('Error checking auth session:', error);
+        setIsVerifyingAuth(false);
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
+  
+  useEffect(() => {
+    if (!user) {
+      return;
     }
-  }, [user, navigate, toast]);
+    
+    const checkPremium = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremium();
+  }, [user]);
 
-  if (user === null) {
+  if (isVerifyingAuth || user === null) {
     return (
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">
