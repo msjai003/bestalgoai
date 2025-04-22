@@ -25,12 +25,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signOut,
     resetPassword,
-    updatePassword
-  } = useAuthActions({
-    setUser,
-    setIsLoading,
-    handleGoogleUser: handleGoogleSignIn
-  });
+    updatePassword,
+    authError,
+    clearAuthError
+  } = useAuthActions();
 
   const fetchGoogleUserDetails = useCallback(async () => {
     if (!user) return;
@@ -43,27 +41,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signIn: async (email, password) => {
       const result = await signIn(email, password);
       if (result.error) {
-        toast.error("Login failed. Please check your credentials.");
+        toast({
+          title: "Login failed",
+          description: "Please check your credentials.",
+          variant: "destructive",
+        });
       } else if (result.data?.user) {
-        toast.success("Login successful!");
+        toast({
+          title: "Login successful!",
+          description: "Welcome back!",
+        });
       }
       return result;
     },
     signInWithGoogle: async () => {
       const result = await signInWithGoogle();
       if (result.error) {
-        toast.error("Google login failed. Please try again.");
-      } else if (result.data?.user) {
-        toast.success("Welcome! You're now logged in with Google.");
+        toast({
+          title: "Google login failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
       }
       return result;
     },
     signUp: async (email, password, confirmPassword, userData) => {
       const result = await signUp(email, password, confirmPassword, userData);
       if (result.error) {
-        toast.error("Sign up failed. Please check your information.");
+        toast({
+          title: "Sign up failed",
+          description: "Please check your information.",
+          variant: "destructive",
+        });
       } else if (result.data?.user) {
-        toast.success("Account created successfully!");
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to BestAlgo.ai!",
+        });
       }
       return result;
     },
@@ -76,9 +90,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updatePassword: async (newPassword) => {
       const result = await updatePassword(newPassword);
       if (result.error) {
-        toast.error("Failed to update password.");
+        toast({
+          title: "Failed to update password",
+          description: result.error.message,
+          variant: "destructive",
+        });
       } else {
-        toast.success("Password updated successfully!");
+        toast({
+          title: "Password updated successfully!",
+          description: "Your password has been changed.",
+        });
       }
       return result;
     },
