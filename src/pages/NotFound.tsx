@@ -11,6 +11,13 @@ const NotFound = () => {
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
+    
+    // Check if this is an auth callback that is failing
+    if (location.pathname.includes('callback')) {
+      console.error("Auth callback 404 detected! Full URL:", window.location.href);
+      console.error("Search params:", window.location.search);
+      console.error("Hash:", window.location.hash);
+    }
   }, [location.pathname]);
 
   return (
@@ -52,6 +59,17 @@ const NotFound = () => {
             Go Back
           </button>
         </div>
+        
+        {location.pathname.includes('callback') && (
+          <div className="mt-6">
+            <Link 
+              to="/auth" 
+              className="text-cyan hover:underline"
+            >
+              Return to Login Page
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

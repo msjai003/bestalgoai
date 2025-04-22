@@ -17,12 +17,76 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
-        // Log detailed information about the current URL to help debug
-        console.log('Auth callback processing on path:', location.pathname);
-        console.log('Full URL:', window.location.href);
-        console.log('Search params:', location.search);
-        console.log('Hash params:', location.hash);
+        // Get the full URL to process
+        const fullUrl = window.location.href;
+        const currentPath = location.pathname;
         
+        console.log('Processing auth callback on:', currentPath);
+        console.log('Full callback URL:', fullUrl);
+        
+        // If we're on the v1 callback route from Google, extract state from hash or search
+        if (currentPath.includes('/auth/v1/callback')) {
+          console.log('Detected v1 callback route, processing special case');
+          
+          // Get auth code or tokens from URL
+          const searchParams = new URLSearchParams(window.location.search);
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          
+          const code = searchParams.get('code');
+          const error = searchParams.get('error') || hashParams.get('error');
+          const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+          
+          console.log('Auth v1 callback params:', { 
+            code: !!code, 
+            error: !!error,
+            fullSearch: window.location.search,
+            fullHash: window.location.hash
+          });
+          
+          // Handle error if present
+          if (error) {
+            console.error('Auth callback received error:', error, errorDescription);
+            handleAuthError(
+              error,
+              errorDescription,
+              setError,
+              setErrorDetails,
+              setIsProcessing,
+              navigate
+            );
+            return;
+          }
+          
+          // Process code if available
+          if (code) {
+            console.log('Found auth code in v1 callback, exchanging for session');
+            try {
+              const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+              
+              if (error) {
+                console.error('Error exchanging code for session:', error);
+                setError('Authentication Error');
+                setErrorDetails(error.message || 'Failed to complete authentication.');
+                setIsProcessing(false);
+              } else if (data.session) {
+                console.log('Successfully exchanged code for session in v1 callback');
+                // Use a longer delay for Google auth to ensure session is properly set
+                setTimeout(() => {
+                  console.log('Redirecting to dashboard after v1 callback success');
+                  navigate('/dashboard');
+                }, 3000);
+              }
+            } catch (err) {
+              console.error('Exception exchanging code for session in v1 callback:', err);
+              setError('Authentication Failed');
+              setErrorDetails('An unexpected error occurred. Please try again.');
+              setIsProcessing(false);
+            }
+            return;
+          }
+        }
+        
+        // Standard callback processing for other routes
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -95,7 +159,7 @@ const AuthCallback = () => {
                 } else if (data.session) {
                   console.log('Successfully exchanged code for session, redirecting to dashboard');
                   // Use a delay to ensure the session is properly set before redirecting
-                  setTimeout(() => navigate('/dashboard'), 1000);
+                  setTimeout(() => navigate('/dashboard'), 2000);
                 }
               } catch (err) {
                 console.error('Exception exchanging code for session:', err);

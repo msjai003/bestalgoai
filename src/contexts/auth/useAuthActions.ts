@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { mockSignInWithGoogle } from '@/lib/mockAuth';
 import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
 
@@ -20,10 +20,18 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.log('Attempting Google sign-in with Supabase');
       
+      // Get the current origin for the redirect URL
+      const origin = window.location.origin;
+      
+      // Use both callback paths for maximum compatibility
+      const redirectTo = `${origin}/auth/callback`;
+      
+      console.log('Using redirect URL:', redirectTo);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -38,6 +46,8 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
+        // Log how we're redirecting and then do it
+        console.log('Redirecting browser to Google auth URL...');
         window.location.href = data.url;
         return { error: null };
       }
