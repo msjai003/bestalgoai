@@ -65,23 +65,17 @@ const Auth = () => {
     setIsGoogleLoading(true);
     
     try {
-      toast.info("Initiating Google login...");
       console.log("Starting Google login process");
-      
       const { error } = await signInWithGoogle();
       
       if (error) {
         console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
         toast.error(error.message || 'Error signing in with Google');
-      } else {
-        toast.success('Google login initiated');
-        // Note: The redirect is handled by Supabase - we may not reach this point
-        console.log('Google login successful, awaiting redirect');
       }
     } catch (error: any) {
-      console.error('Google login error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      console.error('Google login exception:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred');
       toast.error(error.message || 'An unexpected error occurred');
     } finally {
       setIsGoogleLoading(false);

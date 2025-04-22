@@ -16,9 +16,11 @@ export const useAuthState = () => {
         
         if (error) {
           console.error('Error checking auth session:', error);
+          return;
         }
         
         if (data.session?.user) {
+          console.log('Active session found for user:', data.session.user.id);
           const authUser: AuthUser = {
             id: data.session.user.id,
             email: data.session.user.email || '',
@@ -29,7 +31,11 @@ export const useAuthState = () => {
           };
           setUser(authUser);
           
-          fetchUserGoogleDetails(data.session.user.id);
+          // If this is a Google user, fetch their details
+          if (data.session.user.app_metadata?.provider === 'google') {
+            console.log('Google user detected, fetching details');
+            fetchUserGoogleDetails(data.session.user.id);
+          }
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -41,7 +47,7 @@ export const useAuthState = () => {
     checkSession();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
@@ -55,11 +61,12 @@ export const useAuthState = () => {
           };
           setUser(authUser);
           
-          fetchUserGoogleDetails(session.user.id);
-          
+          // Handle Google sign-in event separately to avoid race conditions
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
-            console.log('Google sign-in detected, saving user details');
-            handleGoogleSignIn(session.user);
+            console.log('Google sign-in detected, handling user details');
+            setTimeout(() => {
+              handleGoogleSignIn(session.user);
+            }, 0);
           }
         } else {
           setUser(null);

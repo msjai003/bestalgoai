@@ -29,12 +29,21 @@ export const handleAuthSession = async (
       setIsProcessing(false);
       return;
     }
-    
-    console.log('Session set successfully, redirecting to dashboard');
-    // Using a longer delay to ensure session is fully set
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 1500);
+
+    if (sessionData?.session?.user) {
+      console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
+      
+      // Using a longer delay for Google auth to ensure session is properly set
+      setTimeout(() => {
+        console.log('Redirecting to dashboard after successful auth');
+        navigate('/dashboard');
+      }, 2000);
+    } else {
+      console.error('No user in session data after setting session');
+      setError('Authentication Error');
+      setErrorDetails('Failed to get user session');
+      setIsProcessing(false);
+    }
     
   } catch (err) {
     console.error('Exception in handleAuthSession:', err);
