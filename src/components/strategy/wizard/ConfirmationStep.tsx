@@ -147,20 +147,20 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
           <h5 className="text-white font-medium">Editing Leg {index + 1}</h5>
           <div className="flex space-x-2">
             <Button 
-              variant="ghost" 
+              variant="secondary" 
               size="sm"
               onClick={handleSaveChanges}
-              className="h-8 px-3 text-green-400 hover:text-green-300 hover:bg-gray-700 rounded-xl"
+              className="h-8 text-green-400 hover:text-green-300 hover:bg-gray-700/80 rounded-xl"
             >
-              <Check className="h-4 w-4 mr-1" /> Save
+              <Check className="h-4 w-4 mr-2" /> Save
             </Button>
             <Button 
               variant="ghost" 
               size="sm"
               onClick={toggleEdit}
-              className="h-8 px-3 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-xl"
+              className="h-8 text-red-400 hover:text-red-300 hover:bg-gray-700/80 rounded-xl"
             >
-              <X className="h-4 w-4 mr-1" /> Cancel
+              <X className="h-4 w-4 mr-2" /> Cancel
             </Button>
           </div>
         </div>
@@ -303,12 +303,12 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
         </div>
         
         <Button 
-          variant="outline" 
+          variant="secondary" 
           size="sm" 
           onClick={toggleEdit}
-          className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-xl"
+          className="w-full mt-3 text-gray-200 hover:text-white hover:bg-gray-700/80 rounded-xl"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back
         </Button>
       </div>
     );
@@ -325,10 +325,10 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
       <div className="flex justify-between items-center mb-3">
         <h5 className="text-white font-medium">Leg {index + 1}</h5>
         <Button 
-          variant="ghost" 
+          variant="secondary" 
           size="sm"
           onClick={toggleEdit}
-          className="h-8 px-3 text-cyan hover:text-white hover:bg-gray-700/60 rounded-xl flex items-center gap-1"
+          className="h-8 px-3 bg-gray-800 border border-cyan/40 text-cyan hover:text-white hover:border-cyan hover:bg-gray-700/60 rounded-xl flex items-center gap-2"
         >
           <PenSquare className="h-4 w-4" /> Edit
         </Button>
@@ -430,10 +430,10 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
       </div>
       
       <Button 
-        variant="ghost" 
+        variant="secondary" 
         size="sm" 
         onClick={onSave}
-        className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-xl flex items-center justify-center gap-1"
+        className="w-full mt-3 bg-gray-800 border border-cyan/30 text-cyan hover:text-white hover:border-cyan hover:bg-gray-700/60 rounded-xl flex items-center justify-center gap-2"
       >
         <Save className="h-4 w-4" /> Save Leg
       </Button>
