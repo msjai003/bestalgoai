@@ -32,7 +32,8 @@ const AuthCallback = () => {
         
         console.log('Auth callback processing hash params:', { 
           accessToken: !!accessToken, 
-          refreshToken: !!refreshToken
+          refreshToken: !!refreshToken,
+          fullHash: window.location.hash
         });
         
         if (accessToken && refreshToken) {
@@ -47,14 +48,27 @@ const AuthCallback = () => {
         } else {
           const error = searchParams.get('error');
           const errorDescription = searchParams.get('error_description');
-          handleAuthError(
-            error,
-            errorDescription,
-            setError,
-            setErrorDetails,
-            setIsProcessing,
-            navigate
-          );
+          
+          if (error || errorDescription) {
+            console.error('Auth callback received error:', error, errorDescription);
+            handleAuthError(
+              error,
+              errorDescription,
+              setError,
+              setErrorDetails,
+              setIsProcessing,
+              navigate
+            );
+          } else {
+            // If we don't have tokens or errors, this might be an invalid callback
+            // Redirect to dashboard if user is already authenticated
+            console.log('No tokens or errors in callback params, checking if user is already authenticated');
+            
+            // Let's wait a moment before redirecting to ensure auth state is ready
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 500);
+          }
         }
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);

@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
   console.log('Processing password recovery with token');
@@ -16,6 +15,8 @@ export const handleAuthSession = async (
   setIsProcessing: (isProcessing: boolean) => void
 ): Promise<void> => {
   try {
+    console.log('Attempting to set session from callback tokens');
+    
     const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken
@@ -29,8 +30,11 @@ export const handleAuthSession = async (
       return;
     }
     
-    console.log('Auth callback: Session set successfully');
-    navigate('/dashboard');
+    console.log('Auth callback: Session set successfully, redirecting to dashboard');
+    // Adding a small delay before navigation to ensure session is fully set
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 100);
     
   } catch (err) {
     console.error('Exception setting session in callback:', err);
@@ -54,6 +58,9 @@ export const handleAuthError = (
     setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
     setIsProcessing(false);
   } else {
+    // If no error is specified but handleAuthError was called,
+    // redirect to authentication page
+    console.log('No specific error provided, redirecting to auth page');
     navigate('/auth');
   }
 };
