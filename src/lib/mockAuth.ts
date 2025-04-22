@@ -1,4 +1,3 @@
-
 // Mock authentication service to replace Supabase
 import { toast } from 'sonner';
 
@@ -114,8 +113,8 @@ export const directSignUp = async (email: string, password: string, userData: an
   return { data: { user }, error: null };
 };
 
-// Mock Google sign in function
-export const signInWithGoogle = async () => {
+// Mock Google sign in function - rename to match the import in useAuthActions.ts
+export const mockSignInWithGoogle = async () => {
   console.log('Mock Google sign in attempt');
   
   // Simulate network delay
@@ -151,6 +150,9 @@ export const signInWithGoogle = async () => {
   
   return { data: { user }, error: null };
 };
+
+// For backward compatibility
+export const signInWithGoogle = mockSignInWithGoogle;
 
 // Mock sign out function
 export const signOut = async () => {

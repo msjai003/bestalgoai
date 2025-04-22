@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { mockSignInWithGoogle } from '@/lib/mockAuth';
 import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
 
