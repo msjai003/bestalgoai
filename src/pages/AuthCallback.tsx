@@ -24,7 +24,7 @@ const AuthCallback = () => {
         console.log('Processing auth callback on:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Process Google v1 callback route (handles both old and new Google auth flows)
+        // Process Google auth callback route (handles both /auth/callback and /auth/v1/callback routes)
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
           
