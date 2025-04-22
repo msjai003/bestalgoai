@@ -105,30 +105,13 @@ const AuthCallback = () => {
               
               if (saveSuccess) {
                 console.log('Google user details saved successfully');
+                // Always redirect to dashboard for Google sign-in, even if no profile exists
+                toast.success('Welcome! Redirecting to dashboard...');
+                setTimeout(() => navigate('/dashboard'), 500);
+                return;
               } else {
                 console.error('Failed to save Google user details');
-              }
-              
-              // Check if we need to complete registration (if user profile doesn't exist)
-              try {
-                const { data: profileData } = await supabase
-                  .from('user_profiles')
-                  .select('*')
-                  .eq('id', user.id)
-                  .maybeSingle();
-                  
-                if (!profileData) {
-                  console.log('User profile not found, redirecting to Google registration...');
-                  navigate('/google-registration');
-                  return;
-                } else {
-                  console.log('User profile found, redirecting to dashboard');
-                  navigate('/dashboard');
-                  return;
-                }
-              } catch (profileErr) {
-                console.error('Error checking user profile:', profileErr);
-                // Continue to dashboard even if profile check fails
+                // Still redirect to dashboard even if saving details fails
                 navigate('/dashboard');
                 return;
               }
@@ -160,9 +143,18 @@ const AuthCallback = () => {
             setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
             setIsProcessing(false);
           } else {
-            console.log('No tokens and no error - redirecting to auth page');
-            // Give a slight delay before redirect to show loading state
-            setTimeout(() => navigate('/auth'), 1500);
+            console.log('No tokens and no error - attempting to check current session');
+            
+            // Check if we already have a session
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+              console.log('Active session found, redirecting to dashboard');
+              navigate('/dashboard');
+              return;
+            }
+            
+            console.log('No active session, redirecting to auth page');
+            setTimeout(() => navigate('/auth'), 1000);
           }
         }
       } catch (err) {
