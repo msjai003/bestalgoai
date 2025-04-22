@@ -22,8 +22,10 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.log("Starting Google login process");
       
-      // Get the current origin and make sure we use the correct callback URL
+      // Get the current origin and make sure we use the correct callback URL format
+      // This is critical for Google authentication to work properly
       const currentOrigin = window.location.origin;
+      // Use /auth/callback as the redirect URL - this is what's configured in App.tsx routes
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
       console.log('Using callback URL:', callbackUrl);

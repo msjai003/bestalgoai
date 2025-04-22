@@ -19,7 +19,8 @@ const AuthCallback = () => {
       try {
         console.log('Auth callback processing started');
         
-        // Get the current session
+        // Get the current session - wait for it to be fully established
+        console.log('Getting session data...');
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -69,6 +70,28 @@ const AuthCallback = () => {
           });
           navigate('/dashboard', { replace: true });
           return;
+        } else {
+          console.log('No valid session found in callback handler');
+          // Re-check the URL for auth tokens and try to exchange them
+          const url = window.location.href;
+          if (url.includes('code=') || url.includes('access_token=')) {
+            console.log('Auth tokens found in URL, attempting to exchange');
+            const { data, error } = await supabase.auth.exchangeSessionForToken();
+            
+            if (error) {
+              console.error('Error exchanging tokens:', error);
+              setError('Authentication Failed');
+              setErrorDetails(error.message);
+              setIsProcessing(false);
+              return;
+            }
+            
+            if (data?.session) {
+              console.log('Session established after token exchange');
+              navigate('/dashboard', { replace: true });
+              return;
+            }
+          }
         }
         
         // No valid session found

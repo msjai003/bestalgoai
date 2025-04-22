@@ -1,3 +1,4 @@
+
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Home, Loader2 } from "lucide-react";
@@ -8,11 +9,11 @@ const NotFound = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Improved detection of all possible auth callback patterns
+    // Enhanced detection of all possible auth callback patterns
     const path = location.pathname;
     const search = location.search;
     
-    // More comprehensive detection of Google auth callbacks
+    // Comprehensive detection of Google auth callbacks with more patterns
     const isGoogleAuthCallback = 
       path.includes('/auth/v1/callback') || 
       path.includes('/auth/callback') ||
@@ -30,7 +31,7 @@ const NotFound = () => {
       const redirectPath = '/auth/callback' + location.search;
       console.log('Redirecting to:', redirectPath);
       
-      // Use a short timeout to ensure the message shows before redirecting
+      // Short timeout to ensure the message shows before redirecting
       setTimeout(() => {
         navigate(redirectPath, { replace: true });
       }, 100);
