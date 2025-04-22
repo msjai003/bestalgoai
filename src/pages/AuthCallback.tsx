@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -15,6 +17,9 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
+        console.log('Auth callback processing on path:', location.pathname);
+        console.log('Full URL:', window.location.href);
+        
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -26,6 +31,15 @@ const AuthCallback = () => {
           return;
         }
         
+        // Check if there's a session first (user might already be logged in)
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          console.log('User already has an active session, redirecting to dashboard');
+          navigate('/dashboard');
+          return;
+        }
+        
+        // Check for hash params (used in implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -46,6 +60,7 @@ const AuthCallback = () => {
             setIsProcessing
           );
         } else {
+          // Check for error in URL params
           const error = searchParams.get('error');
           const errorDescription = searchParams.get('error_description');
           
@@ -60,14 +75,35 @@ const AuthCallback = () => {
               navigate
             );
           } else {
-            // If we don't have tokens or errors, this might be an invalid callback
-            // Redirect to dashboard if user is already authenticated
-            console.log('No tokens or errors in callback params, checking if user is already authenticated');
+            // If we're on the callback page without tokens or errors, try to extract
+            // the code from the URL and exchange it for a session
+            const code = searchParams.get('code');
             
-            // Let's wait a moment before redirecting to ensure auth state is ready
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 500);
+            if (code) {
+              console.log('Found authorization code, attempting to exchange for session');
+              try {
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                
+                if (error) {
+                  console.error('Error exchanging code for session:', error);
+                  setError('Authentication Error');
+                  setErrorDetails(error.message || 'Failed to complete authentication.');
+                  setIsProcessing(false);
+                } else if (data.session) {
+                  console.log('Successfully exchanged code for session, redirecting to dashboard');
+                  setTimeout(() => navigate('/dashboard'), 500);
+                }
+              } catch (err) {
+                console.error('Exception exchanging code for session:', err);
+                setError('Authentication Failed');
+                setErrorDetails('An unexpected error occurred. Please try again.');
+                setIsProcessing(false);
+              }
+            } else {
+              // No tokens, no code, no errors - redirect to the auth page
+              console.log('No authentication data found in URL, redirecting to auth page');
+              setTimeout(() => navigate('/auth'), 500);
+            }
           }
         }
       } catch (err) {
@@ -79,7 +115,7 @@ const AuthCallback = () => {
     };
 
     processCallback();
-  }, [navigate, retryCount]);
+  }, [navigate, retryCount, location.pathname]);
 
   const handleRetry = () => {
     setError(null);

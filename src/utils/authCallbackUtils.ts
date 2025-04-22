@@ -31,10 +31,10 @@ export const handleAuthSession = async (
     }
     
     console.log('Auth callback: Session set successfully, redirecting to dashboard');
-    // Adding a small delay before navigation to ensure session is fully set
+    // Adding a longer delay before navigation to ensure session is fully set
     setTimeout(() => {
       navigate('/dashboard');
-    }, 100);
+    }, 1000);
     
   } catch (err) {
     console.error('Exception setting session in callback:', err);

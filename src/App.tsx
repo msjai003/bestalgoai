@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -63,7 +64,11 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
+      
+      {/* Handle both callback paths - the one configured in your app and the Supabase default */}
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback" element={<AuthCallback />} />
+      
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
