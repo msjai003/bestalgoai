@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { Clock } from "lucide-react";  // Explicitly import Clock icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StrikeTimingStepProps {
@@ -97,23 +98,29 @@ export const StrikeTimingStep = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="entryTime" className="text-gray-300 block mb-2">Entry Time</Label>
-          <Input
-            id="entryTime"
-            type="time"
-            value={leg.entryTime}
-            onChange={(e) => updateLeg({ entryTime: e.target.value })}
-            className="bg-gray-700 border-gray-600 text-white"
-          />
+          <div className="relative">
+            <Input
+              id="entryTime"
+              type="time"
+              value={leg.entryTime}
+              onChange={(e) => updateLeg({ entryTime: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white pr-10"
+            />
+            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" size={20} />
+          </div>
         </div>
         <div>
           <Label htmlFor="exitTime" className="text-gray-300 block mb-2">Exit Time</Label>
-          <Input
-            id="exitTime"
-            type="time"
-            value={leg.exitTime}
-            onChange={(e) => updateLeg({ exitTime: e.target.value })}
-            className="bg-gray-700 border-gray-600 text-white"
-          />
+          <div className="relative">
+            <Input
+              id="exitTime"
+              type="time"
+              value={leg.exitTime}
+              onChange={(e) => updateLeg({ exitTime: e.target.value })}
+              className="bg-gray-700 border-gray-600 text-white pr-10"
+            />
+            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" size={20} />
+          </div>
         </div>
       </div>
     </div>
