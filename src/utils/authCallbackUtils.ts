@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
@@ -15,7 +14,7 @@ export const handleAuthSession = async (
   setIsProcessing: (isProcessing: boolean) => void
 ): Promise<void> => {
   try {
-    console.log('Attempting to set session from callback tokens');
+    console.log('Setting session with tokens from callback');
     
     const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
@@ -23,23 +22,23 @@ export const handleAuthSession = async (
     });
     
     if (sessionError) {
-      console.error('Error setting session from callback:', sessionError);
+      console.error('Error setting session:', sessionError);
       setError('Authentication Error');
-      setErrorDetails(sessionError.message || 'Failed to authenticate session. Please try again.');
+      setErrorDetails(sessionError.message);
       setIsProcessing(false);
       return;
     }
     
-    console.log('Auth callback: Session set successfully, redirecting to dashboard');
-    // Adding a longer delay before navigation to ensure session is fully set
+    console.log('Session set successfully, redirecting to dashboard');
+    // Using a longer delay to ensure session is fully set
     setTimeout(() => {
       navigate('/dashboard');
-    }, 1000);
+    }, 1500);
     
   } catch (err) {
-    console.error('Exception setting session in callback:', err);
+    console.error('Exception in handleAuthSession:', err);
     setError('Authentication Failed');
-    setErrorDetails('An unexpected error occurred while processing your login. Please try again.');
+    setErrorDetails('An unexpected error occurred. Please try again.');
     setIsProcessing(false);
   }
 };
@@ -53,14 +52,13 @@ export const handleAuthError = (
   navigate: (path: string) => void
 ) => {
   if (error) {
-    console.error('Auth callback error:', error, errorDescription);
+    console.error('Auth error:', error, errorDescription);
     setError('Authentication Error');
     setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
     setIsProcessing(false);
+    navigate('/auth'); // Redirect to auth page on error
   } else {
-    // If no error is specified but handleAuthError was called,
-    // redirect to authentication page
-    console.log('No specific error provided, redirecting to auth page');
-    navigate('/auth');
+    console.log('No error specified, redirecting to dashboard');
+    navigate('/dashboard');
   }
 };
