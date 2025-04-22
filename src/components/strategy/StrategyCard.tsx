@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye, Copy } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -125,12 +124,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-400 hover:text-cyan transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md"
+                      variant="outline"
+                      className="text-gray-400 hover:text-cyan transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full px-3 h-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md"
                       onClick={handleCopyStrategy}
                     >
-                      <Copy size={20} />
+                      Copy
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
