@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,10 +21,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.log("Starting Google login process");
       
-      // Get the current origin and make sure we use the correct callback URL format
-      // This is critical for Google authentication to work properly
       const currentOrigin = window.location.origin;
-      // Make sure we use /auth/callback as the redirect URL - this is what's configured in App.tsx routes
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
       console.log('Using callback URL:', callbackUrl);
@@ -49,12 +45,10 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
-        // We redirect the user to the OAuth provider
         window.location.href = data.url;
         return { error: null };
       }
       
-      // This should not normally be reached as the above redirect happens first
       return { error: null };
     } catch (error: any) {
       console.error('Exception during Google sign in:', error);

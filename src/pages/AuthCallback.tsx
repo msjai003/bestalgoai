@@ -17,6 +17,7 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // Get the session data
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {

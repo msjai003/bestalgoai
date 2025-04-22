@@ -64,7 +64,7 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Only one auth callback route */}
+      {/* Update auth callback route */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Google registration page */}
