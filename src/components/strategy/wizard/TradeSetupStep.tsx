@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, RefreshCw } from 'lucide-react';
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { useStrategyConfigOptions } from "@/hooks/strategy/useStrategyConfigOptions";
