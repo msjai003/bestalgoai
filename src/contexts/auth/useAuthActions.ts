@@ -1,8 +1,8 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { AuthUser } from './types';
-import { toast } from '@/hooks/use-toast';
 
 interface AuthResult {
   success: boolean;
@@ -99,21 +99,16 @@ export function useAuthActions() {
 
   const signInWithGoogle = async (): Promise<{ error: Error | null, data?: { user: AuthUser | null } }> => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       });
       
       if (error) {
         console.error('Error signing in with Google:', error);
         setAuthError(error.message);
-        toast({
-          title: "Google Login Failed",
-          description: error.message,
-          variant: "destructive"
-        });
         return { error: error as Error };
       }
       
@@ -121,11 +116,6 @@ export function useAuthActions() {
     } catch (error) {
       console.error('Exception during Google sign in:', error);
       setAuthError('An unexpected error occurred during Google sign in.');
-      toast({
-        title: "Google Login Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
       return { error: error as Error };
     }
   };
