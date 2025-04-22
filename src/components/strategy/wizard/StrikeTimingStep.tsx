@@ -98,7 +98,7 @@ export const StrikeTimingStep = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="entryTime" className="text-gray-300 block mb-2">Entry Time</Label>
-          <div className="relative">
+          <div className="relative flex items-center">
             <Input
               id="entryTime"
               type="time"
@@ -106,12 +106,12 @@ export const StrikeTimingStep = ({
               onChange={(e) => updateLeg({ entryTime: e.target.value })}
               className="bg-gray-700 border-gray-600 text-white pr-10"
             />
-            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" size={20} />
+            <Clock className="absolute right-3 text-white" size={20} />
           </div>
         </div>
         <div>
           <Label htmlFor="exitTime" className="text-gray-300 block mb-2">Exit Time</Label>
-          <div className="relative">
+          <div className="relative flex items-center">
             <Input
               id="exitTime"
               type="time"
@@ -119,7 +119,7 @@ export const StrikeTimingStep = ({
               onChange={(e) => updateLeg({ exitTime: e.target.value })}
               className="bg-gray-700 border-gray-600 text-white pr-10"
             />
-            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" size={20} />
+            <Clock className="absolute right-3 text-white" size={20} />
           </div>
         </div>
       </div>
