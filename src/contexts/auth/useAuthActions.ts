@@ -23,7 +23,6 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       console.log("Starting Google login process");
       
       // Get the current origin and make sure we use the correct callback URL
-      // This is critical for Google authentication to work properly
       const currentOrigin = window.location.origin;
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
@@ -48,10 +47,12 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
+        // We redirect the user to the OAuth provider
         window.location.href = data.url;
         return { error: null };
       }
       
+      // This should not normally be reached as the above redirect happens first
       return { error: null };
     } catch (error: any) {
       console.error('Exception during Google sign in:', error);

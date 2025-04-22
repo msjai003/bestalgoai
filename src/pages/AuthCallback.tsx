@@ -19,11 +19,21 @@ const AuthCallback = () => {
       try {
         console.log('Auth callback processing started');
         
-        const { data: sessionData } = await supabase.auth.getSession();
+        // Get the current session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          setError('Authentication Failed');
+          setErrorDetails(sessionError.message || 'Failed to get session data');
+          setIsProcessing(false);
+          return;
+        }
         
         if (sessionData?.session?.user) {
-          console.log('Valid session found, checking for user profile');
+          console.log('Valid session found, user ID:', sessionData.session.user.id);
           
+          // Check if user has a profile
           const { data: profileData, error: profileError } = await supabase
             .from('user_profiles')
             .select('id')
@@ -34,17 +44,29 @@ const AuthCallback = () => {
             console.error('Error checking for user profile:', profileError);
           }
           
+          // If this is a Google user
+          const isGoogleUser = sessionData.session.user.app_metadata?.provider === 'google';
+          console.log('Is Google user:', isGoogleUser);
+          
           // If no profile exists and this is a Google user, redirect to complete profile
-          if (!profileData && sessionData.session.user.app_metadata?.provider === 'google') {
+          if (!profileData && isGoogleUser) {
             console.log('New Google user, redirecting to registration completion');
-            toast.success("Please complete your profile to continue");
+            toast({
+              title: "Welcome!",
+              description: "Please complete your profile to continue",
+              variant: "default",
+            });
             navigate('/google-registration', { replace: true });
             return;
           }
           
           // User has profile or is not a Google user, redirect to dashboard
-          console.log('User authenticated, redirecting to dashboard');
-          toast.success("Successfully signed in!");
+          console.log('User authenticated successfully, redirecting to dashboard');
+          toast({
+            title: "Login Successful",
+            description: "Welcome back!",
+            variant: "default",
+          });
           navigate('/dashboard', { replace: true });
           return;
         }
@@ -61,6 +83,7 @@ const AuthCallback = () => {
       }
     };
 
+    // Execute the callback handler
     handleCallback();
   }, [navigate, retryCount, toast]);
 
