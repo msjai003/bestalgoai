@@ -85,7 +85,7 @@ export const ConfirmationStep = ({
           onClick={onAddLeg}
           className="w-full h-14 mt-4 bg-gray-700/50 border-dashed border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
         >
-          <Plus className="mr-2 h-4 w-4" /> Add Another Leg
+          <Plus className="mr-2 h-5 w-5" /> Add Another Leg
         </Button>
       </div>
 
@@ -431,11 +431,11 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
       
       <Button 
         variant="secondary" 
-        size="sm" 
+        size="xl" 
         onClick={onSave}
         className="w-full mt-3 bg-gray-800 border border-cyan/30 text-cyan hover:text-white hover:border-cyan hover:bg-gray-700/60 rounded-xl flex items-center justify-center gap-2"
       >
-        <Save className="h-4 w-4" /> Save Leg
+        <Save className="h-5 w-5" /> Save Leg
       </Button>
     </div>
   );
