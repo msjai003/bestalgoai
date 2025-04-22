@@ -1,10 +1,9 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/auth/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -66,13 +65,12 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes - comprehensive path handling */}
+      {/* Comprehensive auth callback handling - direct all possible Google callback URLs to AuthCallback */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
-      <Route path="/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
+      <Route path="/callback" element={<AuthCallback />} />  
       <Route path="/v1/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/*" element={<AuthCallback />} />
-      <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/api/auth/callback/*" element={<AuthCallback />} />
       
       {/* Google registration page */}

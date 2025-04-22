@@ -42,7 +42,7 @@ const AuthCallback = () => {
           return;
         }
         
-        // Handle the OAuth callback - priority path for Google auth
+        // Special handling for Google auth
         if (code && state) {
           console.log('Processing OAuth callback with code and state');
           
@@ -57,14 +57,14 @@ const AuthCallback = () => {
               return;
             }
             
-            if (data.session) {
+            if (data?.session) {
               console.log('Successfully exchanged code for session');
               
               const user = data.session.user;
               
               // If we have a Google provider, save the user details
               if (user?.app_metadata?.provider === 'google') {
-                console.log('Google user authenticated, saving details...');
+                console.log('Google user authenticated, saving details...', user);
                 
                 // Extract Google user data from user.user_metadata
                 const googleData = {
@@ -77,15 +77,22 @@ const AuthCallback = () => {
                   verified_email: user.user_metadata.email_verified
                 };
                 
+                console.log('Extracted Google data:', googleData);
+                
                 // Save Google user data
-                await saveGoogleUserDetails(user.id, googleData);
+                const saveResult = await saveGoogleUserDetails(user.id, googleData);
+                console.log('Save Google user details result:', saveResult);
                 
                 // Check if user profile exists, if not redirect to complete profile
-                const { data: profileData } = await supabase
+                const { data: profileData, error: profileError } = await supabase
                   .from('user_profiles')
                   .select('id')
                   .eq('id', user.id)
                   .maybeSingle();
+                  
+                if (profileError) {
+                  console.error('Error checking for user profile:', profileError);
+                }
                   
                 if (!profileData) {
                   console.log('New Google user, redirecting to registration completion');
@@ -95,6 +102,7 @@ const AuthCallback = () => {
                 }
                 
                 // For Google users with profile, redirect directly to dashboard
+                console.log('Google user with existing profile, redirecting to dashboard');
                 toast.success("Welcome! You've successfully signed in with Google.");
                 navigate('/dashboard', { replace: true });
                 return;
@@ -124,6 +132,7 @@ const AuthCallback = () => {
         }
         
         // No valid session found - redirect to auth page
+        console.log('No valid session found, redirecting to auth page');
         navigate('/auth', { replace: true });
         
       } catch (err) {

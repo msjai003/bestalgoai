@@ -1,4 +1,3 @@
-
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Home, Loader2 } from "lucide-react";
@@ -9,40 +8,32 @@ const NotFound = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Check if this is an auth callback path that wasn't handled correctly
+    // Improved detection of all possible auth callback patterns
     const path = location.pathname;
     const search = location.search;
     
-    // More comprehensive detection of auth callbacks
-    const isAuthCallback = 
-      path.includes('/callback') || 
-      path.includes('/auth/v1') ||
+    // More comprehensive detection of Google auth callbacks
+    const isGoogleAuthCallback = 
+      path.includes('/auth/v1/callback') || 
       path.includes('/auth/callback') ||
-      path.includes('/api/auth/callback') ||
-      search.includes('code=') ||
-      search.includes('state=');
+      path === '/auth/v1' || 
+      path === '/auth/v1/' ||
+      path.startsWith('/v1/callback') ||
+      path === '/callback' ||
+      (search.includes('code=') && search.includes('state='));
     
-    if (isAuthCallback) {
-      console.log('Detected auth callback path in 404 page:', location.pathname, location.search);
+    if (isGoogleAuthCallback) {
+      console.log('Detected Google auth callback in 404 page:', path, search);
       setRedirecting(true);
       
-      // Handle multiple auth callback patterns
-      let redirectPath = '/auth/callback';
-      
-      // Special explicit handling for Google's specific callback pattern
-      if (path === '/auth/v1/callback' || path.includes('/auth/v1/callback')) {
-        console.log('Detected Google auth v1 callback pattern, redirecting to auth/callback');
-        redirectPath = '/auth/callback';
-      }
-      
-      // Always include the full query string to preserve auth tokens
-      const fullRedirectPath = redirectPath + location.search;
-      console.log('Redirecting to:', fullRedirectPath);
+      // Always redirect to AuthCallback component with the full query string
+      const redirectPath = '/auth/callback' + location.search;
+      console.log('Redirecting to:', redirectPath);
       
       // Use a short timeout to ensure the message shows before redirecting
       setTimeout(() => {
-        navigate(fullRedirectPath, { replace: true });
-      }, 500);
+        navigate(redirectPath, { replace: true });
+      }, 100);
       return;
     }
 

@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { mockSignInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
 import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { AuthUser } from './types';
 import { sendWelcomeSMS } from './utils';
@@ -21,6 +22,8 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.log("Starting Google login process");
       
+      // Get the current origin and make sure we use the correct callback URL
+      // This is critical for Google authentication to work properly
       const currentOrigin = window.location.origin;
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
