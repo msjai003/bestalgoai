@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPremium = strategy.id > 1;
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
-  const handleCopyStrategy = async () => {
+  const handleCopyStrategy = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
     if (!isAuthenticated) {
       navigate('/auth');
       return;
