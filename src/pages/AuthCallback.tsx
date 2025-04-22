@@ -80,7 +80,21 @@ const AuthCallback = () => {
                 // Save Google user data
                 await saveGoogleUserDetails(user.id, googleData);
                 
-                // For Google users, redirect directly to dashboard with success message
+                // Check if user profile exists, if not redirect to complete profile
+                const { data: profileData } = await supabase
+                  .from('user_profiles')
+                  .select('id')
+                  .eq('id', user.id)
+                  .maybeSingle();
+                  
+                if (!profileData) {
+                  console.log('New Google user, redirecting to registration completion');
+                  toast.success("Please complete your profile to continue");
+                  navigate('/google-registration', { replace: true });
+                  return;
+                }
+                
+                // For Google users with profile, redirect directly to dashboard
                 toast.success("Welcome! You've successfully signed in with Google.");
                 navigate('/dashboard', { replace: true });
                 return;

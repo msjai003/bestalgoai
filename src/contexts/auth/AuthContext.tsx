@@ -56,8 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.error("Google login failed. Please try again.");
         return result;
       } 
-      // Don't try to access result.data if there's an error
-      // This part will only run if there's no error
+      // Use full type checking to avoid TypeScript errors
       else if ('data' in result && result.data && typeof result.data === 'object' && 'user' in result.data && result.data.user) {
         toast.success("Welcome! You're now logged in with Google.");
       }
