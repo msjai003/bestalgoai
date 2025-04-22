@@ -393,6 +393,7 @@ export type Database = {
       custom_strategies: {
         Row: {
           broker_username: string | null
+          copied_from: number | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -411,6 +412,7 @@ export type Database = {
         }
         Insert: {
           broker_username?: string | null
+          copied_from?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -429,6 +431,7 @@ export type Database = {
         }
         Update: {
           broker_username?: string | null
+          copied_from?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
