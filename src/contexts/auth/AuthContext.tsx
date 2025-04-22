@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } 
       // Don't try to access result.data if there's an error
       // This part will only run if there's no error
-      else if ('data' in result && result.data?.user) {
+      else if ('data' in result && result.data && 'user' in result.data && result.data.user) {
         toast.success("Welcome! You're now logged in with Google.");
       }
       return result;
