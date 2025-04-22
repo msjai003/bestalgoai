@@ -1,15 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -18,12 +16,8 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('AuthCallback: Processing auth callback at path:', location.pathname);
-        console.log('AuthCallback: URL parameters:', location.search);
-        console.log('AuthCallback: Hash fragment:', location.hash);
-        
         // First check for recovery token in URL (for password reset links)
-        const searchParams = new URLSearchParams(location.search);
+        const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
         
@@ -38,28 +32,16 @@ const AuthCallback = () => {
         }
         
         // Handle hash fragment tokens (normal auth flow)
-        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         const hashType = hashParams.get('type');
-        const errorParam = hashParams.get('error');
-        const errorDescription = hashParams.get('error_description');
         
         console.log('Auth callback processing hash params:', { 
           accessToken: !!accessToken, 
           refreshToken: !!refreshToken, 
-          type: hashType,
-          error: errorParam,
-          errorDescription
+          type: hashType 
         });
-        
-        if (errorParam) {
-          console.error('Error in auth callback hash:', errorParam, errorDescription);
-          setError('Authentication Error');
-          setErrorDetails(errorDescription || 'Error during authentication');
-          setIsProcessing(false);
-          return;
-        }
         
         // If we have tokens in the URL hash, we came from a successful auth flow
         if (accessToken && refreshToken) {
@@ -79,7 +61,6 @@ const AuthCallback = () => {
             }
             
             console.log('Auth callback: Session set successfully');
-            toast.success('Successfully authenticated');
             
             // If we have a Google provider, save the user details
             if (sessionData.session?.user?.app_metadata?.provider === 'google') {
@@ -90,12 +71,12 @@ const AuthCallback = () => {
               // Extract Google user data from user.user_metadata
               const googleData = {
                 email: user.email || '',
-                google_id: user.user_metadata?.sub,
-                picture_url: user.user_metadata?.picture,
-                given_name: user.user_metadata?.given_name || user.user_metadata?.name?.split(' ')[0],
-                family_name: user.user_metadata?.family_name || user.user_metadata?.name?.split(' ').slice(1).join(' '),
-                locale: user.user_metadata?.locale,
-                verified_email: user.user_metadata?.email_verified
+                google_id: user.user_metadata.sub,
+                picture_url: user.user_metadata.picture,
+                given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
+                family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
+                locale: user.user_metadata.locale,
+                verified_email: user.user_metadata.email_verified
               };
               
               console.log('Saving Google user details with data:', googleData);
@@ -105,15 +86,42 @@ const AuthCallback = () => {
               
               if (saveSuccess) {
                 console.log('Google user details saved successfully');
-                // Always redirect to dashboard for Google sign-in
-                toast.success('Welcome! Redirecting to dashboard...');
-                setTimeout(() => navigate('/dashboard'), 500);
-                return;
               } else {
                 console.error('Failed to save Google user details');
-                // Still redirect to dashboard even if saving details fails
-                navigate('/dashboard');
-                return;
+              }
+              
+              // Check if we need to complete registration (if user profile doesn't exist)
+              try {
+                const { data: profileData } = await supabase
+                  .from('user_profiles')
+                  .select('*')
+                  .eq('id', user.id)
+                  .maybeSingle();
+                  
+                if (!profileData) {
+                  console.log('User profile not found, creating basic profile...');
+                  
+                  // Create a basic profile for the Google user
+                  const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert({
+                      id: user.id,
+                      full_name: googleData.given_name + ' ' + (googleData.family_name || ''),
+                      email: googleData.email,
+                      trading_experience: 'beginner',
+                      profile_picture: googleData.picture_url
+                    });
+                    
+                  if (profileError) {
+                    console.error('Error creating profile for Google user:', profileError);
+                  } else {
+                    console.log('Basic profile created for Google user');
+                  }
+                }
+              } catch (profileErr) {
+                console.error('Error checking/creating user profile:', profileErr);
+                // Continue to dashboard even if profile creation fails
+                // We'll handle missing profile data elsewhere
               }
             }
             
@@ -124,7 +132,7 @@ const AuthCallback = () => {
               return;
             }
             
-            // For normal login, redirect to dashboard
+            // For normal login, redirect to dashboard or home
             navigate('/dashboard');
           } catch (err) {
             console.error('Exception setting session in callback:', err);
@@ -134,28 +142,17 @@ const AuthCallback = () => {
           }
         } else {
           // No tokens found but we're on the callback page
-          // This might be because we're on /auth/v1/callback without hash
-          // Try to get session directly
-          const { data: sessionData } = await supabase.auth.getSession();
+          const error = searchParams.get('error');
+          const errorDescription = searchParams.get('error_description');
           
-          if (sessionData.session) {
-            console.log('Active session found on callback page without tokens, redirecting to dashboard');
-            navigate('/dashboard');
-            return;
+          if (error) {
+            console.error('Auth callback error:', error, errorDescription);
+            setError('Authentication Error');
+            setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
+            setIsProcessing(false);
           } else {
-            // Check if there's an error in the search parameters
-            const error = searchParams.get('error');
-            const errorDescription = searchParams.get('error_description');
-            
-            if (error) {
-              console.error('Auth callback error:', error, errorDescription);
-              setError('Authentication Error');
-              setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
-              setIsProcessing(false);
-            } else {
-              console.log('No tokens or session found - redirecting to auth page');
-              setTimeout(() => navigate('/auth'), 1000);
-            }
+            // No tokens and no error - just redirect to auth page
+            navigate('/auth');
           }
         }
       } catch (err) {
@@ -167,7 +164,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, location, retryCount]);
+  }, [navigate, retryCount]);
 
   const handleRetry = () => {
     setError(null);
@@ -209,11 +206,6 @@ const AuthCallback = () => {
           <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
             <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
           </div>
-          {location.pathname.includes('/v1/callback') && (
-            <div className="mt-6 text-sm text-gray-400">
-              <p>Handling v1 callback path...</p>
-            </div>
-          )}
         </div>
       )}
     </div>

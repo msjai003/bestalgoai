@@ -45,34 +45,31 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.warn('No redirect URL received from Supabase Google auth');
       
-      // Only use mock in development as a fallback
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Falling back to mock Google auth in development');
-        const mockResult = await mockSignInWithGoogle();
-        
-        if (mockResult.error) {
-          toast.error(mockResult.error.message);
-          return { error: mockResult.error };
-        }
-        
-        if (mockResult.data?.user) {
-          const user: AuthUser = {
-            id: mockResult.data.user.id,
-            email: mockResult.data.user.email,
-          };
-          
-          setUser(user);
-          toast.success('Google login successful! (mock)');
-          
-          if (handleGoogleUser) {
-            await handleGoogleUser(mockResult.data.user);
-          }
-          
-          return { error: null, data: { user } };
-        }
+      console.log('Falling back to mock Google auth');
+      const mockResult = await mockSignInWithGoogle();
+      
+      if (mockResult.error) {
+        toast.error(mockResult.error.message);
+        return { error: mockResult.error };
       }
       
-      return { error: new Error('Failed to get redirect URL or use mock authentication') };
+      if (mockResult.data?.user) {
+        const user: AuthUser = {
+          id: mockResult.data.user.id,
+          email: mockResult.data.user.email,
+        };
+        
+        setUser(user);
+        toast.success('Google login successful! (mock)');
+        
+        if (handleGoogleUser) {
+          await handleGoogleUser(mockResult.data.user);
+        }
+        
+        return { error: null, data: { user } };
+      }
+      
+      return { error: null };
       
     } catch (error: any) {
       console.error('Exception during Google sign in:', error);

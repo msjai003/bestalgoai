@@ -1,57 +1,17 @@
 
-import { useLocation, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Home, Loader } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useLocation, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   useEffect(() => {
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-    
-    // Check if this might be an auth callback that wasn't caught by our routes
-    if (location.pathname.includes('/auth/') && location.pathname.includes('/callback')) {
-      handlePossibleAuthCallback();
-    }
   }, [location.pathname]);
-
-  const handlePossibleAuthCallback = async () => {
-    setIsCheckingAuth(true);
-    try {
-      console.log("Detected possible auth callback on 404 page:", location.pathname);
-      
-      // Check if we have an active session
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (sessionData.session) {
-        console.log("Found active session on 404 page, redirecting to dashboard");
-        toast.success("Authentication successful! Redirecting to dashboard...");
-        setTimeout(() => navigate('/dashboard'), 1000);
-      } else {
-        console.log("No active session found on 404 page");
-        setIsCheckingAuth(false);
-      }
-    } catch (error) {
-      console.error("Error checking auth in 404 page:", error);
-      setIsCheckingAuth(false);
-    }
-  };
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-charcoalPrimary text-white">
-        <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
-        <p className="text-gray-300">Checking authentication status...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">

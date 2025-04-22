@@ -2,53 +2,40 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-/**
- * Usage:
- *   const { sendWelcomeEmailSmtp } = useSendWelcomeSmtp();
- *   await sendWelcomeEmailSmtp({ email, fullName, welcomeMessage });
- */
-
-export interface WelcomeSmtpOptions {
+interface WelcomeSmtpOptions {
   email: string;
   fullName: string;
   welcomeMessage?: string;
 }
 
-/**
- * React hook for sending a welcome email using the SMTP edge function
- * Returns a function: sendWelcomeEmailSmtp({ email, fullName, welcomeMessage })
- */
 export const useSendWelcomeSmtp = () => {
+  /**
+   * Sends a welcome email using the SMTP edge function.
+   * Returns true if sent successfully, otherwise false.
+   */
   const sendWelcomeEmailSmtp = async ({
     email,
     fullName,
     welcomeMessage,
-  }: WelcomeSmtpOptions): Promise<boolean> => {
-    if (!email || !fullName) {
-      toast.error('Email and full name are required to send a welcome message.');
-      return false;
-    }
-
+  }: WelcomeSmtpOptions) => {
     try {
-      // Call the Supabase edge function
       const { data, error } = await supabase.functions.invoke('send-welcome-smtp', {
         body: JSON.stringify({
           email,
           name: fullName,
-          welcomeMessage,
-        }),
+          welcomeMessage: welcomeMessage || `Welcome to BestAlgo.ai, ${fullName}! We're excited to have you on board.`
+        })
       });
-      
+
       if (error) {
-        const msg =
+        toast.error(
           typeof error === 'object'
             ? error.message || error.error || "Welcome email failed"
-            : String(error);
-        toast.error(msg);
+            : String(error)
+        );
         return false;
       }
 
-      // The edge function returns an object with { success: true/false }
       if (!data?.success) {
         const msg =
           data?.error ||
@@ -69,4 +56,3 @@ export const useSendWelcomeSmtp = () => {
 
   return { sendWelcomeEmailSmtp };
 };
-
