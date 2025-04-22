@@ -1,3 +1,4 @@
+
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -66,8 +67,8 @@ export const StrikeTimingStep = ({
                     ${level === "ATM" 
                       ? "bg-cyan/10 text-white font-bold border-y border-cyan/30 my-1 py-2" 
                       : level.startsWith("ITM") 
-                        ? "text-green-400 hover:bg-gray-700 hover:text-white font-medium" 
-                        : "text-red-400 hover:bg-gray-700 hover:text-white font-medium"}
+                        ? "text-green-400 hover:bg-gray-700 hover:text-black font-medium" 
+                        : "text-red-400 hover:bg-gray-700 hover:text-black font-medium"}
                   `}
                 >
                   {level}
