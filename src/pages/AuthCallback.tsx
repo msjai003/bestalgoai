@@ -21,12 +21,12 @@ const AuthCallback = () => {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
         
-        console.log('Processing auth callback on:', currentPath);
+        console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Process Google auth callback route (handles both /auth/callback and /auth/v1/callback routes)
+        // Process Google auth callback route (handle both callback formats)
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
-          console.log('Detected auth callback route, processing...');
+          console.log('Detected Google auth callback route, processing...');
           
           // Get auth code or tokens from URL
           const searchParams = new URLSearchParams(window.location.search);
@@ -35,13 +35,14 @@ const AuthCallback = () => {
           const code = searchParams.get('code');
           const error = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+          const state = searchParams.get('state');
           
           console.log('Auth callback params:', { 
             code: !!code, 
             error: !!error,
             fullSearch: window.location.search,
             fullHash: window.location.hash,
-            state: searchParams.get('state')
+            state: state
           });
           
           // Handle error if present

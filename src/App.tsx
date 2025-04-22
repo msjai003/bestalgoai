@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -67,14 +66,13 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes - handle all variations */}
+      {/* Auth callback routes with explicit paths for all variations */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
+      <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       
-      {/* Handle all possible deep paths for the callback */}
-      <Route path="/auth/callback/*" element={<AuthCallback />} />
-      
+      {/* Registration routes */}
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
