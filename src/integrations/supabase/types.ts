@@ -1424,30 +1424,42 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          approved: boolean | null
+          can_create_strategies: boolean | null
           created_at: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst: boolean | null
+          license_number: string | null
           mobile_number: string | null
           profile_picture: string | null
           trading_experience: string | null
           updated_at: string | null
         }
         Insert: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
         }
         Update: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email?: string
           full_name?: string
           id?: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null

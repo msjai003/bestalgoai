@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,6 +51,7 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
+import GoogleRegistration from "@/pages/GoogleRegistration";
 
 const queryClient = new QueryClient();
 
@@ -64,8 +66,10 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/google-registration" element={<GoogleRegistration />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/logout" element={<Logout />} />
