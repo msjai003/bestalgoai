@@ -51,6 +51,7 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
+import GoogleRegistration from "@/pages/GoogleRegistration";
 
 const queryClient = new QueryClient();
 
@@ -64,9 +65,9 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
@@ -83,6 +84,9 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       } />
+      
+      <Route path="/google-registration" element={<GoogleRegistration />} />
+      
       <Route path="/onboarding" element={
         <ProtectedRoute>
           <Onboarding />

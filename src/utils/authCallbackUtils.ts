@@ -57,7 +57,11 @@ export const handleAuthError = (
     setError('Authentication Error');
     setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
     setIsProcessing(false);
-    navigate('/auth'); // Redirect to auth page on error
+    
+    // Give user a way back instead of staying on error page
+    setTimeout(() => {
+      navigate('/auth');
+    }, 5000);
   } else {
     console.log('No error specified, redirecting to dashboard');
     navigate('/dashboard');

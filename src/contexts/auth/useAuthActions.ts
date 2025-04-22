@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -54,19 +53,23 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       }
       
       if (mockResult.data?.user) {
-        const user: AuthUser = {
+        const authUser: AuthUser = {
           id: mockResult.data.user.id,
           email: mockResult.data.user.email,
+          app_metadata: {},
+          user_metadata: {},
+          aud: "authenticated",
+          created_at: new Date().toISOString()
         };
         
-        setUser(user);
+        setUser(authUser);
         toast.success('Google login successful! (mock)');
         
         if (handleGoogleUser) {
           await handleGoogleUser(mockResult.data.user);
         }
         
-        return { error: null, data: { user } };
+        return { error: null, data: { user: authUser } };
       }
       
       return { error: null };
@@ -138,9 +141,13 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       }
       
       if (data?.user) {
-        const user: AuthUser = {
+        const authUser: AuthUser = {
           id: data.user.id,
           email: data.user.email || '',
+          app_metadata: data.user.app_metadata || {},
+          user_metadata: data.user.user_metadata || {},
+          aud: data.user.aud || "authenticated",
+          created_at: data.user.created_at || new Date().toISOString()
         };
         
         try {
@@ -170,9 +177,9 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
           console.error('Exception during profile creation:', profileInsertError);
         }
         
-        setUser(user);
+        setUser(authUser);
         toast.success('Account created successfully!');
-        return { error: null, data: { user } };
+        return { error: null, data: { user: authUser } };
       } else {
         toast.info('Please check your email to confirm your account');
         return { error: null, data: { user: null } };
@@ -203,13 +210,17 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       }
       
       if (data.user) {
-        const user: AuthUser = {
+        const authUser: AuthUser = {
           id: data.user.id,
           email: data.user.email || '',
+          app_metadata: data.user.app_metadata || {},
+          user_metadata: data.user.user_metadata || {},
+          aud: data.user.aud || "authenticated",
+          created_at: data.user.created_at || new Date().toISOString()
         };
-        setUser(user);
+        setUser(authUser);
         toast.success('Login successful!');
-        return { error: null, data: { user } };
+        return { error: null, data: { user: authUser } };
       }
       
       return { error: null };
@@ -233,7 +244,6 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         
         if (error) {
           console.error('Error during sign out:', error);
-          // Removed toast notification for error during sign out
         }
       } else {
         console.log('No active session found, clearing local user state');

@@ -19,10 +19,15 @@ export const useAuthState = () => {
         }
         
         if (data.session?.user) {
-          setUser({
+          const authUser: AuthUser = {
             id: data.session.user.id,
             email: data.session.user.email || '',
-          });
+            app_metadata: data.session.user.app_metadata || {},
+            user_metadata: data.session.user.user_metadata || {},
+            aud: data.session.user.aud || "authenticated",
+            created_at: data.session.user.created_at || new Date().toISOString()
+          };
+          setUser(authUser);
           
           fetchUserGoogleDetails(data.session.user.id);
         }
@@ -40,10 +45,15 @@ export const useAuthState = () => {
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
-          setUser({
+          const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email || '',
-          });
+            app_metadata: session.user.app_metadata || {},
+            user_metadata: session.user.user_metadata || {},
+            aud: session.user.aud || "authenticated",
+            created_at: session.user.created_at || new Date().toISOString()
+          };
+          setUser(authUser);
           
           fetchUserGoogleDetails(session.user.id);
           
@@ -126,4 +136,3 @@ export const useAuthState = () => {
     handleGoogleSignIn
   };
 };
-
