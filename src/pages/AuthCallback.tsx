@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,12 +80,13 @@ const AuthCallback = () => {
                 // Save Google user data
                 await saveGoogleUserDetails(user.id, googleData);
                 
-                // For Google users, redirect directly to dashboard
-                console.log('Google user authenticated, redirecting to dashboard');
+                // For Google users, redirect directly to dashboard with success message
+                toast.success("Welcome! You've successfully signed in with Google.");
                 navigate('/dashboard', { replace: true });
                 return;
               }
               
+              // For non-Google users
               toast.success('Login successful!');
               navigate('/dashboard', { replace: true });
               return;

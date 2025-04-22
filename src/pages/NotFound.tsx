@@ -12,6 +12,8 @@ const NotFound = () => {
     // Check if this is an auth callback path that wasn't handled correctly
     const path = location.pathname;
     const search = location.search;
+    
+    // More comprehensive detection of auth callbacks
     const isAuthCallback = 
       path.includes('/callback') || 
       path.includes('/auth/v1') ||
@@ -27,23 +29,24 @@ const NotFound = () => {
       // Handle multiple auth callback patterns
       let redirectPath = '/auth/callback';
       
-      // Special handling for Google's specific callback pattern
-      if (path.includes('/auth/v1/callback') || path === '/auth/v1/callback') {
-        console.log('Detected Google auth v1 callback, redirecting with full query string');
+      // Special explicit handling for Google's specific callback pattern
+      if (path === '/auth/v1/callback' || path.includes('/auth/v1/callback')) {
+        console.log('Detected Google auth v1 callback pattern, redirecting to auth/callback');
         redirectPath = '/auth/callback';
       }
       
       // Always include the full query string to preserve auth tokens
       const fullRedirectPath = redirectPath + location.search;
-      console.log('Redirecting to', fullRedirectPath);
+      console.log('Redirecting to:', fullRedirectPath);
       
       // Use a short timeout to ensure the message shows before redirecting
       setTimeout(() => {
         navigate(fullRedirectPath, { replace: true });
-      }, 1000);
+      }, 500);
       return;
     }
 
+    // Log the 404 error in development mode
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
