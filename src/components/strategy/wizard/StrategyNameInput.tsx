@@ -106,7 +106,7 @@ export const StrategyNameInput = ({
                     variant="outline"
                     size="sm"
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="text-xs bg-gray-800 hover:bg-gray-700 border-gray-600"
+                    className="text-xs bg-gray-800 hover:bg-gray-700 border-gray-600 text-white"
                   >
                     {suggestion}
                   </Button>
