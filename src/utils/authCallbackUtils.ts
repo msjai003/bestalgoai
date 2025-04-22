@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
@@ -34,7 +33,7 @@ export const handleAuthSession = async (
     // Using a longer delay to ensure session is fully set
     setTimeout(() => {
       navigate('/dashboard');
-    }, 2000);
+    }, 1500);
     
   } catch (err) {
     console.error('Exception in handleAuthSession:', err);
@@ -57,6 +56,7 @@ export const handleAuthError = (
     setError('Authentication Error');
     setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
     setIsProcessing(false);
+    navigate('/auth'); // Redirect to auth page on error
   } else {
     console.log('No error specified, redirecting to dashboard');
     navigate('/dashboard');
