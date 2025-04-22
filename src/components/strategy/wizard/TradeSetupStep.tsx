@@ -1,9 +1,11 @@
+
 import { StrategyLeg } from "@/types/strategy-wizard";
 import { Button } from "@/components/ui/button";
 import { useStrategyConfigOptions } from "@/hooks/strategy/useStrategyConfigOptions";
 import { StrategyNameInput } from "./StrategyNameInput";
 import { StrategyTypeSelector } from "./StrategyTypeSelector";
 import { InstrumentSelector } from "./InstrumentSelector";
+import { RefreshCw } from "lucide-react"; // Add this import
 
 interface TradeSetupStepProps {
   leg: StrategyLeg;
