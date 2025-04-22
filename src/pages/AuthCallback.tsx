@@ -18,6 +18,7 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('Auth callback processing started');
+        console.log('Current URL:', window.location.href);
         
         // Get the current session
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
