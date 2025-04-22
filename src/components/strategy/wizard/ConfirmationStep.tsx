@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, PenSquare, ChevronRight, Save, Check, X, ArrowLeft, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -151,7 +150,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
               variant="ghost" 
               size="sm"
               onClick={handleSaveChanges}
-              className="h-8 px-2 text-green-400 hover:text-green-300 hover:bg-gray-700"
+              className="h-8 px-3 text-green-400 hover:text-green-300 hover:bg-gray-700 rounded-xl"
             >
               <Check className="h-4 w-4 mr-1" /> Save
             </Button>
@@ -159,7 +158,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
               variant="ghost" 
               size="sm"
               onClick={toggleEdit}
-              className="h-8 px-2 text-red-400 hover:text-red-300 hover:bg-gray-700"
+              className="h-8 px-3 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded-xl"
             >
               <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
@@ -307,7 +306,7 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
           variant="outline" 
           size="sm" 
           onClick={toggleEdit}
-          className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
+          className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-xl"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
@@ -329,9 +328,9 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
           variant="ghost" 
           size="sm"
           onClick={toggleEdit}
-          className="h-8 px-2 text-gray-400 hover:text-white hover:bg-gray-700"
+          className="h-8 px-3 text-cyan hover:text-white hover:bg-gray-700/60 rounded-xl flex items-center gap-1"
         >
-          <PenSquare className="h-4 w-4 mr-1" /> Edit
+          <PenSquare className="h-4 w-4" /> Edit
         </Button>
       </div>
       
@@ -434,9 +433,9 @@ const StrategyLegCard = ({ leg, index, isActive, onSelect, updateLeg, onSave }: 
         variant="ghost" 
         size="sm" 
         onClick={onSave}
-        className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700"
+        className="w-full mt-3 text-gray-400 hover:text-white hover:bg-gray-700 rounded-xl flex items-center justify-center gap-1"
       >
-        <Save className="h-4 w-4 mr-1" /> Save Leg
+        <Save className="h-4 w-4" /> Save Leg
       </Button>
     </div>
   );
