@@ -25,12 +25,7 @@ export const BottomNav = () => {
             isActive={location.pathname === '/strategy-management'}
           />
           
-          <NavItem 
-            to="/classes" 
-            icon="fa-graduation-cap" 
-            label="Classes" 
-            isActive={location.pathname === '/classes'}
-          />
+          {/* Removed Classes navigation */}
           
           <NavItem 
             to="/live-trading" 
