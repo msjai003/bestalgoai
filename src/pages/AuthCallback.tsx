@@ -29,7 +29,7 @@ const AuthCallback = () => {
         if (token && type === 'recovery') {
           console.log('Processing password recovery with token');
           // Redirect to forgot-password page with the token
-          navigate(`/forgot-password?token=${token}&type=${type}`);
+          navigate(`/forgot-password?token=${token}&type=${type}`, { replace: true });
           return;
         }
         
@@ -115,7 +115,7 @@ const AuthCallback = () => {
           
           // For normal login, redirect to dashboard
           console.log('Authentication successful, redirecting to dashboard');
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
           return;
         } else {
           // No valid session found
@@ -130,7 +130,7 @@ const AuthCallback = () => {
           } else {
             // No session and no error - just redirect to auth page
             console.log('No session or error found, redirecting to auth page');
-            navigate('/auth');
+            navigate('/auth', { replace: true });
           }
         }
       } catch (err) {

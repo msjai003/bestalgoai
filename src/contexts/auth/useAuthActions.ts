@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
-import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
+import { mockSignInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { AuthUser } from './types';
 
 interface AuthActionsProps {
@@ -40,6 +40,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (error) {
         console.error('Error during Google sign in:', error);
+        toast.error(error.message);
         return { error };
       }
       

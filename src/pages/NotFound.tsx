@@ -12,12 +12,13 @@ const NotFound = () => {
     const isAuthCallback = 
       location.pathname.includes('/callback') || 
       location.pathname.includes('/auth/v1') ||
-      location.pathname.includes('/auth/callback');
+      location.pathname.includes('/auth/callback') ||
+      location.pathname.includes('/api/auth/callback');
     
     if (isAuthCallback) {
       console.log('Detected auth callback path in 404 page:', location.pathname);
-      // Redirect to our standard auth callback handler
-      navigate('/auth/callback' + location.search);
+      // Redirect to our standard auth callback handler with the full query string
+      navigate('/auth/callback' + location.search, { replace: true });
       return;
     }
 
@@ -25,7 +26,7 @@ const NotFound = () => {
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-  }, [location.pathname, navigate]);
+  }, [location.pathname, location.search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
