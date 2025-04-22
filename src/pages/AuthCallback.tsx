@@ -17,8 +17,11 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
+        // Log detailed information about the current URL to help debug
         console.log('Auth callback processing on path:', location.pathname);
         console.log('Full URL:', window.location.href);
+        console.log('Search params:', location.search);
+        console.log('Hash params:', location.hash);
         
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
