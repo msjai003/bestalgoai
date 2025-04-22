@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +37,6 @@ const AuthCallback = () => {
         // If this is a recovery flow with token in the URL
         if (token && type === 'recovery') {
           console.log('Processing password recovery with token');
-          // Redirect to forgot-password page with the token
           navigate(`/forgot-password?token=${token}&type=${type}`, { replace: true });
           return;
         }
@@ -81,28 +79,14 @@ const AuthCallback = () => {
                 // Save Google user data
                 await saveGoogleUserDetails(user.id, googleData);
                 
-                // Check if the user has completed their profile
-                const { data: userProfile } = await supabase
-                  .from('user_profiles')
-                  .select('*')
-                  .eq('id', user.id)
-                  .maybeSingle();
-                
-                // If no profile exists, redirect to google registration page
-                if (!userProfile) {
-                  console.log('No user profile found, redirecting to Google registration');
-                  navigate('/google-registration', { replace: true });
-                  return;
-                }
+                // For Google users, redirect directly to dashboard
+                console.log('Google user authenticated, redirecting to dashboard');
+                navigate('/dashboard', { replace: true });
+                return;
               }
               
               toast.success('Login successful!');
-              
-              // Immediately redirect to dashboard with a shorter timeout
-              console.log('Redirecting to dashboard after successful authentication');
-              setTimeout(() => {
-                navigate('/dashboard', { replace: true });
-              }, 200);
+              navigate('/dashboard', { replace: true });
               return;
             }
           } catch (oauthError) {
@@ -114,44 +98,18 @@ const AuthCallback = () => {
           }
         }
         
-        // Fallback - Get session from Supabase
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        // Fallback - Check for existing session
+        const { data: sessionData } = await supabase.auth.getSession();
         
-        console.log('Session check result:', {
-          hasSession: !!sessionData?.session,
-          error: sessionError ? true : false
-        });
-        
-        if (sessionError) {
-          console.error('Error getting session in callback:', sessionError);
-          setError('Authentication Error');
-          setErrorDetails(sessionError.message || 'Failed to authenticate session. Please try again.');
-          setIsProcessing(false);
-          return;
-        }
-        
-        // If we have a valid session
         if (sessionData?.session) {
           console.log('Valid session found, redirecting to dashboard');
-          toast.success('Login successful!');
           navigate('/dashboard', { replace: true });
           return;
-        } else {
-          // No valid session found
-          const error = searchParams.get('error');
-          const errorDescription = searchParams.get('error_description');
-          
-          if (error) {
-            console.error('Auth callback error:', error, errorDescription);
-            setError('Authentication Error');
-            setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
-            setIsProcessing(false);
-          } else {
-            // No session and no error - just redirect to auth page
-            console.log('No session or error found, redirecting to auth page');
-            navigate('/auth', { replace: true });
-          }
         }
+        
+        // No valid session found - redirect to auth page
+        navigate('/auth', { replace: true });
+        
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');

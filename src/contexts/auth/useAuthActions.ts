@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,10 +19,9 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
     try {
       setIsLoading(true);
       
-      console.log('Attempting Google sign-in with Supabase');
+      console.log("Starting Google login process");
       
       const currentOrigin = window.location.origin;
-      // Use /auth/callback directly instead of nested paths
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
       console.log('Using callback URL:', callbackUrl);
@@ -51,34 +49,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         return { error: null };
       }
       
-      if (process.env.NODE_ENV === 'development' || !data.url) {
-        console.log('Falling back to mock Google auth');
-        const mockResult = await mockSignInWithGoogle();
-        
-        if (mockResult.error) {
-          toast.error(mockResult.error.message);
-          return { error: mockResult.error };
-        }
-        
-        if (mockResult.data?.user) {
-          const user: AuthUser = {
-            id: mockResult.data.user.id,
-            email: mockResult.data.user.email,
-          };
-          
-          setUser(user);
-          toast.success('Google login successful! (mock)');
-          
-          if (handleGoogleUser) {
-            await handleGoogleUser(mockResult.data.user);
-          }
-          
-          return { error: null, data: { user } };
-        }
-      }
-      
       return { error: null };
-      
     } catch (error: any) {
       console.error('Exception during Google sign in:', error);
       toast.error('Error during Google sign in: ' + (error.message || 'Unknown error'));
