@@ -80,13 +80,29 @@ const AuthCallback = () => {
                 
                 // Save Google user data
                 await saveGoogleUserDetails(user.id, googleData);
+                
+                // Check if the user has completed their profile
+                const { data: userProfile } = await supabase
+                  .from('user_profiles')
+                  .select('*')
+                  .eq('id', user.id)
+                  .maybeSingle();
+                
+                // If no profile exists, redirect to google registration page
+                if (!userProfile) {
+                  console.log('No user profile found, redirecting to Google registration');
+                  navigate('/google-registration', { replace: true });
+                  return;
+                }
               }
               
               toast.success('Login successful!');
               
-              // Immediately redirect to dashboard
+              // Immediately redirect to dashboard with a shorter timeout
               console.log('Redirecting to dashboard after successful authentication');
-              navigate('/dashboard', { replace: true });
+              setTimeout(() => {
+                navigate('/dashboard', { replace: true });
+              }, 200);
               return;
             }
           } catch (oauthError) {

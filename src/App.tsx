@@ -50,6 +50,7 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
+import GoogleRegistration from "@/pages/GoogleRegistration";
 
 const queryClient = new QueryClient();
 
@@ -64,14 +65,17 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes - comprehensive path handling */}
+      {/* Auth callback routes - even more comprehensive path handling */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/callback" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/v1/callback" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/auth/v1/*" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/v1/callback" element={<AuthCallback />} />
+      <Route path="/callback" element={<AuthCallback />} />
+      <Route path="/v1/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/*" element={<AuthCallback />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
-      <Route path="/api/auth/callback/*" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/api/auth/callback/*" element={<AuthCallback />} />
+      
+      {/* Google registration page */}
+      <Route path="/google-registration" element={<GoogleRegistration />} />
       
       {/* Other routes */}
       <Route path="/registration" element={<Registration />} />
