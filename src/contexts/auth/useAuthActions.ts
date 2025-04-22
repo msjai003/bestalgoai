@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { mockSignInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
 import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { AuthUser } from './types';
+import { sendWelcomeSMS } from './utils';
 
 interface AuthActionsProps {
   setUser: (user: AuthUser | null) => void;
