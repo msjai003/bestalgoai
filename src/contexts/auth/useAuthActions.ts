@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AuthUser } from './types';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthActionsProps {
   setUser: (user: AuthUser | null) => void;
@@ -11,6 +11,7 @@ interface AuthActionsProps {
 
 export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const signUp = async (
     email: string, 
@@ -110,6 +111,28 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        console.error('Error signing in with Google:', error);
+        toast.error(error.message || 'Error signing in with Google');
+      }
+    } catch (error: any) {
+      console.error('Exception during Google sign in:', error);
+      toast.error('Failed to sign in with Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       setIsLoading(true);
@@ -191,6 +214,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     signUp,
     signOut,
     resetPassword,
-    updatePassword
+    updatePassword,
+    signInWithGoogle
   };
 };

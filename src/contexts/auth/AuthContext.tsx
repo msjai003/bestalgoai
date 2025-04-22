@@ -10,6 +10,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const {
     user,
+    googleUserDetails,
     setUser,
     isLoading,
     setIsLoading,
@@ -20,7 +21,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signOut,
     resetPassword,
-    updatePassword
+    updatePassword,
+    signInWithGoogle
   } = useAuthActions({
     setUser,
     setIsLoading,
@@ -28,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const contextValue: AuthContextType = {
     user,
+    googleUserDetails,
     signIn: async (email, password) => {
       const result = await signIn(email, password);
       if (result.error) {
@@ -45,6 +48,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.success("Account created successfully!");
       }
       return result;
+    },
+    signInWithGoogle: async () => {
+      await signInWithGoogle();
     },
     signOut: async () => {
       await signOut();
