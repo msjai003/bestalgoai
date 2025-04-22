@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,10 +17,6 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('Auth callback processing started');
-        console.log('Current URL:', window.location.href);
-        
-        // Get the current session
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -32,98 +28,58 @@ const AuthCallback = () => {
         }
         
         if (sessionData?.session?.user) {
-          console.log('Valid session found, user ID:', sessionData.session.user.id);
+          console.log('Valid session found, checking user type');
           
-          // Check if user has a profile
-          const { data: profileData, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('id')
-            .eq('id', sessionData.session.user.id)
-            .maybeSingle();
-            
-          if (profileError) {
-            console.error('Error checking for user profile:', profileError);
-          }
-          
-          // If this is a Google user
+          // If Google user and no profile exists, redirect to complete profile
           const isGoogleUser = sessionData.session.user.app_metadata?.provider === 'google';
-          console.log('Is Google user:', isGoogleUser);
           
-          // If no profile exists and this is a Google user, redirect to complete profile
-          if (!profileData && isGoogleUser) {
-            console.log('New Google user, redirecting to registration completion');
-            toast({
-              title: "Welcome!",
-              description: "Please complete your profile to continue",
-              variant: "default",
-            });
-            navigate('/google-registration', { replace: true });
-            return;
+          if (isGoogleUser) {
+            // Check if user has a profile
+            const { data: profileData, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('id')
+              .eq('id', sessionData.session.user.id)
+              .maybeSingle();
+              
+            if (profileError) {
+              console.error('Error checking for user profile:', profileError);
+            }
+            
+            // If no profile exists for Google user, redirect to registration
+            if (!profileData) {
+              console.log('New Google user, redirecting to registration');
+              toast({
+                title: "Welcome!",
+                description: "Please complete your profile to continue",
+              });
+              navigate('/google-registration', { replace: true });
+              return;
+            }
           }
           
           // User has profile or is not a Google user, redirect to dashboard
-          console.log('User authenticated successfully, redirecting to dashboard');
+          console.log('Redirecting to dashboard');
           toast({
             title: "Login Successful",
             description: "Welcome back!",
-            variant: "default",
           });
           navigate('/dashboard', { replace: true });
           return;
         }
         
-        // If no valid session found, try to process any auth tokens in the URL
-        if (window.location.href.includes('access_token=') || window.location.href.includes('code=')) {
-          console.log('Auth tokens found in URL, waiting for session establishment');
-          
-          // Short timeout to allow Supabase to process the tokens
-          setTimeout(async () => {
-            const { data, error } = await supabase.auth.getSession();
-            
-            if (error) {
-              console.error('Error processing auth callback:', error);
-              setError('Authentication Failed');
-              setErrorDetails(error.message);
-              setIsProcessing(false);
-              return;
-            }
-            
-            if (data?.session) {
-              console.log('Session established after processing callback');
-              toast({
-                title: "Login Successful",
-                description: "Welcome back!",
-                variant: "default",
-              });
-              navigate('/dashboard', { replace: true });
-              return;
-            }
-            
-            // If still no session, redirect to auth
-            navigate('/auth', { replace: true });
-          }, 500);
-          
-          return;
-        }
-        
-        // If we've gotten this far, redirect to auth page
-        console.log('No valid session or tokens found, redirecting to auth page');
-        toast({
-          title: "Authentication Failed",
-          description: "Please try signing in again",
-          variant: "destructive",
-        });
-        navigate('/auth', { replace: true });
+        // No valid session found
+        setError('Authentication Failed');
+        setErrorDetails('No valid session found');
+        setIsProcessing(false);
         
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');
-        setErrorDetails('An unexpected error occurred. Please try again.');
+        setErrorDetails('An unexpected error occurred');
         setIsProcessing(false);
       }
     };
 
-    // Execute the callback handler
     handleCallback();
   }, [navigate, retryCount, toast]);
 
@@ -152,11 +108,12 @@ const AuthCallback = () => {
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
-            <Link to="/auth">
-              <Button className="w-full">
-                Return to Login
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="w-full"
+            >
+              Return to Login
+            </Button>
           </div>
         </div>
       </div>
@@ -167,11 +124,8 @@ const AuthCallback = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white p-6">
       <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
         <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
-        <h1 className="text-xl font-semibold">Authenticating...</h1>
-        <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
-        <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
-          <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
-        </div>
+        <h1 className="text-xl font-semibold">Processing Authentication...</h1>
+        <p className="text-gray-400 mt-2">Please wait while we complete your sign in</p>
       </div>
     </div>
   );
