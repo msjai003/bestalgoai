@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signIn(email, password);
       if (result.error) {
         toast.error("Login failed. Please check your credentials.");
-        return result;
       } else if (result.data?.user) {
         toast.success("Login successful!");
       }
@@ -54,10 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signInWithGoogle();
       if (result.error) {
         toast.error("Google login failed. Please try again.");
-        return result;
-      } 
-      // Use full type checking to avoid TypeScript errors
-      else if ('data' in result && result.data && typeof result.data === 'object' && 'user' in result.data && result.data.user) {
+      } else if (result.data?.user) {
         toast.success("Welcome! You're now logged in with Google.");
       }
       return result;
@@ -66,7 +62,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signUp(email, password, confirmPassword, userData);
       if (result.error) {
         toast.error("Sign up failed. Please check your information.");
-        return result;
       } else if (result.data?.user) {
         toast.success("Account created successfully!");
       }

@@ -1,10 +1,10 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
-import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
+import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
-import { sendWelcomeSMS } from './utils';
 
 interface AuthActionsProps {
   setUser: (user: AuthUser | null) => void;
@@ -19,17 +19,12 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
     try {
       setIsLoading(true);
       
-      console.log("Starting Google login process");
-      
-      const currentOrigin = window.location.origin;
-      const callbackUrl = `${currentOrigin}/auth/callback`;
-      
-      console.log('Using callback URL:', callbackUrl);
+      console.log('Attempting Google sign-in with Supabase');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl,
+          redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -39,7 +34,6 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (error) {
         console.error('Error during Google sign in:', error);
-        toast.error(error.message);
         return { error };
       }
       
@@ -49,7 +43,34 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         return { error: null };
       }
       
+      console.warn('No redirect URL received from Supabase Google auth');
+      
+      console.log('Falling back to mock Google auth');
+      const mockResult = await mockSignInWithGoogle();
+      
+      if (mockResult.error) {
+        toast.error(mockResult.error.message);
+        return { error: mockResult.error };
+      }
+      
+      if (mockResult.data?.user) {
+        const user: AuthUser = {
+          id: mockResult.data.user.id,
+          email: mockResult.data.user.email,
+        };
+        
+        setUser(user);
+        toast.success('Google login successful! (mock)');
+        
+        if (handleGoogleUser) {
+          await handleGoogleUser(mockResult.data.user);
+        }
+        
+        return { error: null, data: { user } };
+      }
+      
       return { error: null };
+      
     } catch (error: any) {
       console.error('Exception during Google sign in:', error);
       toast.error('Error during Google sign in: ' + (error.message || 'Unknown error'));
@@ -212,6 +233,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         
         if (error) {
           console.error('Error during sign out:', error);
+          // Removed toast notification for error during sign out
         }
       } else {
         console.log('No active session found, clearing local user state');

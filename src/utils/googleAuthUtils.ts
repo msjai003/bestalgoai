@@ -76,8 +76,6 @@ export const saveGoogleUserDetails = async (
   }
   
   try {
-    console.log('Saving Google user details for user:', userId, googleData);
-    
     // Process potentially malformed data from Google metadata
     const processField = (field: any): string | null => {
       if (!field) return null;

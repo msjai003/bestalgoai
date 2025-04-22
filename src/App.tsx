@@ -2,8 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/auth/AuthContext";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -48,8 +48,8 @@ import CustomStrategyAdmin from "@/pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "@/pages/StrategyConfigAdmin";
 import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
+import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
-import GoogleRegistration from "@/pages/GoogleRegistration";
 
 const queryClient = new QueryClient();
 
@@ -63,14 +63,7 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
-      
-      {/* Update auth callback route */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      
-      {/* Google registration page */}
-      <Route path="/google-registration" element={<GoogleRegistration />} />
-      
-      {/* Other routes */}
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -87,7 +80,6 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       } />
-      
       <Route path="/onboarding" element={
         <ProtectedRoute>
           <Onboarding />
@@ -184,8 +176,7 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      {/* Catch all route - redirects to home instead of 404 */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
