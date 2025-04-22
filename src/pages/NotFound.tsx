@@ -1,4 +1,3 @@
-
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Home, Loader2 } from "lucide-react";
@@ -9,11 +8,10 @@ const NotFound = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    // Enhanced detection of all possible auth callback patterns
     const path = location.pathname;
     const search = location.search;
     
-    // Comprehensive detection of Google auth callbacks with more patterns
+    // Enhanced detection of all possible Google auth callback patterns
     const isGoogleAuthCallback = 
       path.includes('/auth/v1/callback') || 
       path.includes('/auth/callback') ||
@@ -21,11 +19,10 @@ const NotFound = () => {
       path === '/auth/v1/' ||
       path.startsWith('/v1/callback') ||
       path === '/callback' ||
-      path.includes('/auth/v1/') ||
       (search.includes('code=') && search.includes('state='));
     
     if (isGoogleAuthCallback) {
-      console.log('Detected Google auth callback in 404 page:', path, search);
+      console.log('Detected auth callback, redirecting to auth callback handler');
       setRedirecting(true);
       
       // Always redirect to the main AuthCallback component
@@ -39,7 +36,6 @@ const NotFound = () => {
       return;
     }
 
-    // Log the 404 error in development mode
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
