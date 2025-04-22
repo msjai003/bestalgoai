@@ -24,9 +24,9 @@ const AuthCallback = () => {
         console.log('Processing auth callback on:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // If we're on the v1 callback route from Google, extract state from hash or search
-        if (currentPath.includes('/auth/v1/callback')) {
-          console.log('Detected v1 callback route, processing special case');
+        // Process Google v1 callback route (handles both old and new Google auth flows)
+        if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
+          console.log('Detected auth callback route, processing...');
           
           // Get auth code or tokens from URL
           const searchParams = new URLSearchParams(window.location.search);
@@ -36,7 +36,7 @@ const AuthCallback = () => {
           const error = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
           
-          console.log('Auth v1 callback params:', { 
+          console.log('Auth callback params:', { 
             code: !!code, 
             error: !!error,
             fullSearch: window.location.search,
@@ -57,9 +57,9 @@ const AuthCallback = () => {
             return;
           }
           
-          // Process code if available
+          // Process code if available (used in most OAuth flows including Google)
           if (code) {
-            console.log('Found auth code in v1 callback, exchanging for session');
+            console.log('Found auth code in callback, exchanging for session');
             try {
               const { data, error } = await supabase.auth.exchangeCodeForSession(code);
               
@@ -69,15 +69,26 @@ const AuthCallback = () => {
                 setErrorDetails(error.message || 'Failed to complete authentication.');
                 setIsProcessing(false);
               } else if (data.session) {
-                console.log('Successfully exchanged code for session in v1 callback');
-                // Use a longer delay for Google auth to ensure session is properly set
+                console.log('Successfully exchanged code for session');
+                
+                // For Google auth we need a longer delay to ensure profile details are properly loaded
+                const isGoogleAuth = data.session.user?.app_metadata?.provider === 'google';
+                const delay = isGoogleAuth ? 3000 : 2000;
+                
+                const redirectPath = isGoogleAuth && !data.session.user?.user_metadata?.full_name 
+                  ? '/google-registration' 
+                  : '/dashboard';
+                
+                console.log(`Will redirect to ${redirectPath} after ${delay}ms delay`);
+                
                 setTimeout(() => {
-                  console.log('Redirecting to dashboard after v1 callback success');
-                  navigate('/dashboard');
-                }, 3000);
+                  navigate(redirectPath);
+                }, delay);
+                
+                return;
               }
             } catch (err) {
-              console.error('Exception exchanging code for session in v1 callback:', err);
+              console.error('Exception exchanging code for session:', err);
               setError('Authentication Failed');
               setErrorDetails('An unexpected error occurred. Please try again.');
               setIsProcessing(false);
@@ -127,52 +138,9 @@ const AuthCallback = () => {
             setIsProcessing
           );
         } else {
-          // Check for error in URL params
-          const error = searchParams.get('error');
-          const errorDescription = searchParams.get('error_description');
-          
-          if (error || errorDescription) {
-            console.error('Auth callback received error:', error, errorDescription);
-            handleAuthError(
-              error,
-              errorDescription,
-              setError,
-              setErrorDetails,
-              setIsProcessing,
-              navigate
-            );
-          } else {
-            // If we're on the callback page without tokens or errors, try to extract
-            // the code from the URL and exchange it for a session
-            const code = searchParams.get('code');
-            
-            if (code) {
-              console.log('Found authorization code, attempting to exchange for session');
-              try {
-                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-                
-                if (error) {
-                  console.error('Error exchanging code for session:', error);
-                  setError('Authentication Error');
-                  setErrorDetails(error.message || 'Failed to complete authentication.');
-                  setIsProcessing(false);
-                } else if (data.session) {
-                  console.log('Successfully exchanged code for session, redirecting to dashboard');
-                  // Use a delay to ensure the session is properly set before redirecting
-                  setTimeout(() => navigate('/dashboard'), 2000);
-                }
-              } catch (err) {
-                console.error('Exception exchanging code for session:', err);
-                setError('Authentication Failed');
-                setErrorDetails('An unexpected error occurred. Please try again.');
-                setIsProcessing(false);
-              }
-            } else {
-              // No tokens, no code, no errors - redirect to the auth page
-              console.log('No authentication data found in URL, redirecting to auth page');
-              setTimeout(() => navigate('/auth'), 500);
-            }
-          }
+          // No tokens, no code, no errors - redirect to the auth page
+          console.log('No authentication data found in URL, redirecting to auth page');
+          setTimeout(() => navigate('/auth'), 1000);
         }
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);

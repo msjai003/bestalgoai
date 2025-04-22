@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { mockSignInWithGoogle } from '@/lib/mockAuth';
 import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
 
@@ -24,7 +24,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       // Get the current origin for the redirect URL
       const origin = window.location.origin;
       
-      // Use both callback paths for maximum compatibility
+      // Use the correct callback path for Google auth
       const redirectTo = `${origin}/auth/callback`;
       
       console.log('Using redirect URL:', redirectTo);
@@ -45,9 +45,10 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         return { error };
       }
       
+      // If we have a URL to redirect to, do the redirect
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
-        // Log how we're redirecting and then do it
+        // Log the redirect and perform the redirection
         console.log('Redirecting browser to Google auth URL...');
         window.location.href = data.url;
         return { error: null };
@@ -55,32 +56,38 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.warn('No redirect URL received from Supabase Google auth');
       
-      console.log('Falling back to mock Google auth');
-      const mockResult = await mockSignInWithGoogle();
-      
-      if (mockResult.error) {
-        toast.error(mockResult.error.message);
-        return { error: mockResult.error };
-      }
-      
-      if (mockResult.data?.user) {
-        const authUser: AuthUser = {
-          id: mockResult.data.user.id,
-          email: mockResult.data.user.email,
-          app_metadata: {},
-          user_metadata: {},
-          aud: "authenticated",
-          created_at: new Date().toISOString()
-        };
+      // Only use mock auth in development as a fallback
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Falling back to mock Google auth in development');
+        const mockResult = await mockSignInWithGoogle();
         
-        setUser(authUser);
-        toast.success('Google login successful! (mock)');
-        
-        if (handleGoogleUser) {
-          await handleGoogleUser(mockResult.data.user);
+        if (mockResult.error) {
+          toast.error(mockResult.error.message);
+          return { error: mockResult.error };
         }
         
-        return { error: null, data: { user: authUser } };
+        if (mockResult.data?.user) {
+          const authUser: AuthUser = {
+            id: mockResult.data.user.id,
+            email: mockResult.data.user.email,
+            app_metadata: {},
+            user_metadata: {},
+            aud: "authenticated",
+            created_at: new Date().toISOString()
+          };
+          
+          setUser(authUser);
+          toast.success('Google login successful! (mock)');
+          
+          if (handleGoogleUser) {
+            await handleGoogleUser(mockResult.data.user);
+          }
+          
+          return { error: null, data: { user: authUser } };
+        }
+      } else {
+        console.error('Google authentication failed - no redirect URL provided');
+        return { error: new Error('Google authentication failed') };
       }
       
       return { error: null };
