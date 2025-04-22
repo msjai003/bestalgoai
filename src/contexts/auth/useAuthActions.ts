@@ -1,8 +1,6 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-// UPDATE: Import from new mock location
 import { mockSignInWithGoogle } from '@/lib/auth-mock';
 import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
@@ -25,7 +23,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       // Get the current origin for the redirect URL
       const origin = window.location.origin;
       
-      // Use the correct callback path for Google auth
+      // Use the correct callback path for Google auth - use /auth/callback without the v1
       const redirectTo = `${origin}/auth/callback`;
       
       console.log('Using redirect URL:', redirectTo);
@@ -54,8 +52,6 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         window.location.href = data.url;
         return { error: null };
       }
-      
-      console.warn('No redirect URL received from Supabase Google auth');
       
       // Only use mock auth in development as a fallback
       if (process.env.NODE_ENV === 'development') {

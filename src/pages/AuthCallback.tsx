@@ -40,7 +40,8 @@ const AuthCallback = () => {
             code: !!code, 
             error: !!error,
             fullSearch: window.location.search,
-            fullHash: window.location.hash
+            fullHash: window.location.hash,
+            state: searchParams.get('state')
           });
           
           // Handle error if present
