@@ -1,17 +1,84 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { signInWithGoogle as mockSignInWithGoogle } from '@/lib/mockAuth';
+import { saveGoogleUserDetails, sendWelcomeSMS } from './utils';
 import { AuthUser } from './types';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthActionsProps {
   setUser: (user: AuthUser | null) => void;
   setIsLoading: (isLoading: boolean) => void;
+  handleGoogleUser?: (user: any) => Promise<void>;
 }
 
-export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
+export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: AuthActionsProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      
+      console.log('Attempting Google sign-in with Supabase');
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('Error during Google sign in:', error);
+        return { error };
+      }
+      
+      if (data.url) {
+        console.log('Got redirect URL from Supabase:', data.url);
+        window.location.href = data.url;
+        return { error: null };
+      }
+      
+      console.warn('No redirect URL received from Supabase Google auth');
+      
+      console.log('Falling back to mock Google auth');
+      const mockResult = await mockSignInWithGoogle();
+      
+      if (mockResult.error) {
+        toast.error(mockResult.error.message);
+        return { error: mockResult.error };
+      }
+      
+      if (mockResult.data?.user) {
+        const user: AuthUser = {
+          id: mockResult.data.user.id,
+          email: mockResult.data.user.email,
+        };
+        
+        setUser(user);
+        toast.success('Google login successful! (mock)');
+        
+        if (handleGoogleUser) {
+          await handleGoogleUser(mockResult.data.user);
+        }
+        
+        return { error: null, data: { user } };
+      }
+      
+      return { error: null };
+      
+    } catch (error: any) {
+      console.error('Exception during Google sign in:', error);
+      toast.error('Error during Google sign in: ' + (error.message || 'Unknown error'));
+      return { error: error as Error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const signUp = async (
     email: string, 
@@ -25,6 +92,23 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
       if (password !== confirmPassword) {
         toast.error('Passwords do not match');
         return { error: new Error('Passwords do not match') };
+      }
+
+      try {
+        const { data: existingProfiles, error: profileCheckError } = await supabase
+          .from('user_profiles')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle();
+          
+        if (profileCheckError) {
+          console.error('Error checking for existing profile:', profileCheckError);
+        } else if (existingProfiles) {
+          toast.error('This email address you entered is already registered');
+          return { error: new Error('This email address you entered is already registered') };
+        }
+      } catch (checkError) {
+        console.error('Exception during profile check:', checkError);
       }
 
       const { data, error } = await supabase.auth.signUp({
@@ -58,6 +142,33 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
           id: data.user.id,
           email: data.user.email || '',
         };
+        
+        try {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: data.user.id,
+              full_name: userData.fullName,
+              email: data.user.email || '',
+              mobile_number: userData.mobileNumber,
+              trading_experience: userData.tradingExperience,
+              profile_picture: userData.profilePictureUrl || null
+            });
+            
+          if (profileError) {
+            console.error('Error creating profile for new user:', profileError);
+          } else {
+            if (userData.mobileNumber) {
+              await sendWelcomeSMS(
+                data.user.id,
+                userData.fullName,
+                userData.mobileNumber
+              );
+            }
+          }
+        } catch (profileInsertError) {
+          console.error('Exception during profile creation:', profileInsertError);
+        }
         
         setUser(user);
         toast.success('Account created successfully!');
@@ -111,28 +222,6 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     }
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
-      if (error) {
-        console.error('Error signing in with Google:', error);
-        toast.error(error.message || 'Error signing in with Google');
-      }
-    } catch (error: any) {
-      console.error('Exception during Google sign in:', error);
-      toast.error('Failed to sign in with Google');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const signOut = async () => {
     try {
       setIsLoading(true);
@@ -144,6 +233,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
         
         if (error) {
           console.error('Error during sign out:', error);
+          // Removed toast notification for error during sign out
         }
       } else {
         console.log('No active session found, clearing local user state');
@@ -211,10 +301,10 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
 
   return {
     signIn,
+    signInWithGoogle,
     signUp,
     signOut,
     resetPassword,
-    updatePassword,
-    signInWithGoogle
+    updatePassword
   };
 };

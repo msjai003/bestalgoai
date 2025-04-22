@@ -10,23 +10,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const {
     user,
-    googleUserDetails,
     setUser,
+    googleUserDetails,
+    setGoogleUserDetails,
     isLoading,
     setIsLoading,
+    fetchUserGoogleDetails,
+    handleGoogleSignIn
   } = useAuthState();
 
   const {
     signIn,
+    signInWithGoogle,
     signUp,
     signOut,
     resetPassword,
-    updatePassword,
-    signInWithGoogle
+    updatePassword
   } = useAuthActions({
     setUser,
     setIsLoading,
+    handleGoogleUser: handleGoogleSignIn
   });
+
+  const fetchGoogleUserDetails = useCallback(async () => {
+    if (!user) return;
+    await fetchUserGoogleDetails(user.id);
+  }, [user, fetchUserGoogleDetails]);
 
   const contextValue: AuthContextType = {
     user,
@@ -40,6 +49,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return result;
     },
+    signInWithGoogle: async () => {
+      const result = await signInWithGoogle();
+      if (result.error) {
+        toast.error("Google login failed. Please try again.");
+      } else if (result.data?.user) {
+        toast.success("Welcome! You're now logged in with Google.");
+      }
+      return result;
+    },
     signUp: async (email, password, confirmPassword, userData) => {
       const result = await signUp(email, password, confirmPassword, userData);
       if (result.error) {
@@ -49,11 +67,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return result;
     },
-    signInWithGoogle: async () => {
-      await signInWithGoogle();
-    },
     signOut: async () => {
+      // Remove the toast notification after logout
       await signOut();
+      // No toast message here
     },
     resetPassword,
     updatePassword: async (newPassword) => {
@@ -66,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     isLoading,
+    fetchGoogleUserDetails
   };
 
   return (
