@@ -75,11 +75,18 @@ const AuthCallback = () => {
           // Re-check the URL for auth tokens and try to exchange them
           const url = window.location.href;
           if (url.includes('code=') || url.includes('access_token=')) {
-            console.log('Auth tokens found in URL, attempting to exchange');
-            const { data, error } = await supabase.auth.exchangeSessionForToken();
+            console.log('Auth tokens found in URL, attempting to process');
+            
+            // Use the proper method to get the URL hash or query parameters
+            // This uses the browser's URL API to parse the hash or search query
+            const hash = window.location.hash.substring(1);
+            const query = window.location.search.substring(1);
+            
+            // Process the OAuth callback with Supabase
+            const { data, error } = await supabase.auth.getSession();
             
             if (error) {
-              console.error('Error exchanging tokens:', error);
+              console.error('Error processing auth callback:', error);
               setError('Authentication Failed');
               setErrorDetails(error.message);
               setIsProcessing(false);
@@ -87,7 +94,7 @@ const AuthCallback = () => {
             }
             
             if (data?.session) {
-              console.log('Session established after token exchange');
+              console.log('Session established after processing callback');
               navigate('/dashboard', { replace: true });
               return;
             }
