@@ -21,11 +21,25 @@ export const StrategyNameInput = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const { user } = useAuth();
 
+  const validateStrategyName = (name: string) => {
+    const pattern = /^[A-Za-z]{3}[0-9]{3}$/;
+    if (!pattern.test(name)) {
+      return "Strategy name must be 3 letters followed by 3 numbers (e.g., ABC123)";
+    }
+    return "";
+  };
+
   useEffect(() => {
     const checkDuplicateAndSuggest = async () => {
       if (!strategyName.trim() || !user) {
         setNameError("");
         setSuggestions([]);
+        return;
+      }
+
+      const validationError = validateStrategyName(strategyName);
+      if (validationError) {
+        setNameError(validationError);
         return;
       }
 
@@ -44,10 +58,11 @@ export const StrategyNameInput = ({
         if (exactMatch) {
           setNameError("This strategy name is already taken");
           
-          const baseNames = ["MyStrategy", "CustomStrategy", "Strategy"];
-          const newSuggestions = baseNames.map(baseName => {
-            const random = Math.floor(Math.random() * 1000);
-            return `${baseName}_${random}`;
+          // Generate suggestions with 3 letters and 3 random numbers
+          const letters = strategyName.substring(0, 3).toUpperCase();
+          const newSuggestions = Array(3).fill(null).map(() => {
+            const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `${letters}${randomNum}`;
           });
           
           setSuggestions(newSuggestions);
@@ -69,9 +84,14 @@ export const StrategyNameInput = ({
   }, [strategyName, user]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStrategyName(e.target.value);
-    if (e.target.value.trim() === "") {
+    const value = e.target.value.toUpperCase();
+    setStrategyName(value);
+    
+    if (value.trim() === "") {
       setNameError("Strategy name is required");
+    } else {
+      const validationError = validateStrategyName(value);
+      setNameError(validationError);
     }
   };
 
@@ -88,10 +108,11 @@ export const StrategyNameInput = ({
         id="strategyName"
         value={strategyName}
         onChange={handleNameChange}
-        placeholder="Enter strategy name"
+        placeholder="Enter strategy name (e.g., ABC123)"
         className={`bg-gray-700 border-gray-600 text-white ${nameError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
         disabled={!isFirstLeg}
         required
+        maxLength={6}
       />
       {nameError && (
         <div className="mt-2 space-y-2">
