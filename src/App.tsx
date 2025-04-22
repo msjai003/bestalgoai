@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,13 +65,13 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Enhanced comprehensive auth callback handling for ALL possible Google callback patterns */}
+      {/* Auth callback routes - all redirect to AuthCallback component */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       <Route path="/auth/v1" element={<AuthCallback />} />
       <Route path="/auth/v1/*" element={<AuthCallback />} />
-      <Route path="/callback" element={<AuthCallback />} />  
+      <Route path="/callback" element={<AuthCallback />} />
       <Route path="/v1/callback" element={<AuthCallback />} />
       <Route path="/v1/callback/*" element={<AuthCallback />} />
       <Route path="/api/auth/callback/*" element={<AuthCallback />} />
@@ -194,7 +193,8 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      <Route path="*" element={<NotFound />} />
+      {/* Catch all route - redirects to home instead of 404 */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
