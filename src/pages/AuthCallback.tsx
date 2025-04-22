@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -82,6 +83,9 @@ const AuthCallback = () => {
               }
               
               toast.success('Login successful!');
+              
+              // Immediately redirect to dashboard
+              console.log('Redirecting to dashboard after successful authentication');
               navigate('/dashboard', { replace: true });
               return;
             }

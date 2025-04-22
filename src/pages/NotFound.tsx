@@ -1,11 +1,12 @@
 
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { ArrowLeft, Home } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Home, Loader2 } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     // Check if this is an auth callback path that wasn't handled correctly
@@ -21,16 +22,25 @@ const NotFound = () => {
     
     if (isAuthCallback) {
       console.log('Detected auth callback path in 404 page:', location.pathname, location.search);
+      setRedirecting(true);
+      
+      // Handle multiple auth callback patterns
+      let redirectPath = '/auth/callback';
       
       // Special handling for Google's specific callback pattern
       if (path.includes('/auth/v1/callback') || path === '/auth/v1/callback') {
         console.log('Detected Google auth v1 callback, redirecting with full query string');
-        navigate('/auth/callback' + location.search, { replace: true });
-        return;
+        redirectPath = '/auth/callback';
       }
       
-      // Redirect to our standard auth callback handler with the full query string
-      navigate('/auth/callback' + location.search, { replace: true });
+      // Always include the full query string to preserve auth tokens
+      const fullRedirectPath = redirectPath + location.search;
+      console.log('Redirecting to', fullRedirectPath);
+      
+      // Use a short timeout to ensure the message shows before redirecting
+      setTimeout(() => {
+        navigate(fullRedirectPath, { replace: true });
+      }, 1000);
       return;
     }
 
@@ -39,6 +49,18 @@ const NotFound = () => {
       location.pathname
     );
   }, [location.pathname, location.search, navigate]);
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
+        <div className="text-center p-8 max-w-md mx-auto bg-charcoalSecondary rounded-xl border border-gray-700/50 shadow-xl">
+          <Loader2 className="h-10 w-10 animate-spin text-cyan mb-4 mx-auto" />
+          <h2 className="text-xl font-bold mb-3 text-white">Redirecting...</h2>
+          <p className="text-gray-300 mb-4">Processing your authentication. Please wait.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">

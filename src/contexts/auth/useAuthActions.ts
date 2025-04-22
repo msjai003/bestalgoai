@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +23,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       console.log('Attempting Google sign-in with Supabase');
       
       const currentOrigin = window.location.origin;
+      // Use /auth/callback directly instead of nested paths
       const callbackUrl = `${currentOrigin}/auth/callback`;
       
       console.log('Using callback URL:', callbackUrl);
