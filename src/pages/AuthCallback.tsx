@@ -1,15 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
-import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -19,119 +17,39 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('Auth callback processing started, URL:', window.location.href);
+        console.log('Auth callback processing started');
         
-        // Check for recovery token in URL (for password reset links)
-        const searchParams = new URLSearchParams(window.location.search);
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        const code = searchParams.get('code');
-        const state = searchParams.get('state');
-        
-        console.log('Auth callback processing, search params:', { 
-          token: !!token, 
-          type, 
-          code: !!code, 
-          state: !!state 
-        });
-        
-        // If this is a recovery flow with token in the URL
-        if (token && type === 'recovery') {
-          console.log('Processing password recovery with token');
-          navigate(`/forgot-password?token=${token}&type=${type}`, { replace: true });
-          return;
-        }
-        
-        // Special handling for Google auth
-        if (code && state) {
-          console.log('Processing OAuth callback with code and state');
-          
-          try {
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-            
-            if (error) {
-              console.error('Error exchanging code for session:', error);
-              setError('Authentication Error');
-              setErrorDetails(error.message || 'Failed to process authentication. Please try again.');
-              setIsProcessing(false);
-              return;
-            }
-            
-            if (data?.session) {
-              console.log('Successfully exchanged code for session');
-              
-              const user = data.session.user;
-              
-              // If we have a Google provider, save the user details
-              if (user?.app_metadata?.provider === 'google') {
-                console.log('Google user authenticated, saving details...', user);
-                
-                // Extract Google user data from user.user_metadata
-                const googleData = {
-                  email: user.email || '',
-                  google_id: user.user_metadata.sub,
-                  picture_url: user.user_metadata.picture,
-                  given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
-                  family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
-                  locale: user.user_metadata.locale,
-                  verified_email: user.user_metadata.email_verified
-                };
-                
-                console.log('Extracted Google data:', googleData);
-                
-                // Save Google user data
-                const saveResult = await saveGoogleUserDetails(user.id, googleData);
-                console.log('Save Google user details result:', saveResult);
-                
-                // Check if user profile exists, if not redirect to complete profile
-                const { data: profileData, error: profileError } = await supabase
-                  .from('user_profiles')
-                  .select('id')
-                  .eq('id', user.id)
-                  .maybeSingle();
-                  
-                if (profileError) {
-                  console.error('Error checking for user profile:', profileError);
-                }
-                  
-                if (!profileData) {
-                  console.log('New Google user, redirecting to registration completion');
-                  toast.success("Please complete your profile to continue");
-                  navigate('/google-registration', { replace: true });
-                  return;
-                }
-                
-                // For Google users with profile, redirect directly to dashboard
-                console.log('Google user with existing profile, redirecting to dashboard');
-                toast.success("Welcome! You've successfully signed in with Google.");
-                navigate('/dashboard', { replace: true });
-                return;
-              }
-              
-              // For non-Google users
-              toast.success('Login successful!');
-              navigate('/dashboard', { replace: true });
-              return;
-            }
-          } catch (oauthError) {
-            console.error('Error in OAuth flow:', oauthError);
-            setError('Authentication Error');
-            setErrorDetails('Failed to process authentication. Please try again.');
-            setIsProcessing(false);
-            return;
-          }
-        }
-        
-        // Fallback - Check for existing session
         const { data: sessionData } = await supabase.auth.getSession();
         
-        if (sessionData?.session) {
-          console.log('Valid session found, redirecting to dashboard');
+        if (sessionData?.session?.user) {
+          console.log('Valid session found, checking for user profile');
+          
+          const { data: profileData, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('id', sessionData.session.user.id)
+            .maybeSingle();
+            
+          if (profileError) {
+            console.error('Error checking for user profile:', profileError);
+          }
+          
+          // If no profile exists and this is a Google user, redirect to complete profile
+          if (!profileData && sessionData.session.user.app_metadata?.provider === 'google') {
+            console.log('New Google user, redirecting to registration completion');
+            toast.success("Please complete your profile to continue");
+            navigate('/google-registration', { replace: true });
+            return;
+          }
+          
+          // User has profile or is not a Google user, redirect to dashboard
+          console.log('User authenticated, redirecting to dashboard');
+          toast.success("Successfully signed in!");
           navigate('/dashboard', { replace: true });
           return;
         }
         
-        // No valid session found - redirect to auth page
+        // No valid session found
         console.log('No valid session found, redirecting to auth page');
         navigate('/auth', { replace: true });
         
@@ -153,9 +71,9 @@ const AuthCallback = () => {
     setRetryCount(prev => prev + 1);
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white p-6">
-      {error ? (
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white p-6">
         <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
           <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="h-8 w-8 text-red-500" />
@@ -178,16 +96,20 @@ const AuthCallback = () => {
             </Link>
           </div>
         </div>
-      ) : (
-        <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
-          <h1 className="text-xl font-semibold">Authenticating...</h1>
-          <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
-          <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
-            <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
-          </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white p-6">
+      <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
+        <h1 className="text-xl font-semibold">Authenticating...</h1>
+        <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
+        <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
+          <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
