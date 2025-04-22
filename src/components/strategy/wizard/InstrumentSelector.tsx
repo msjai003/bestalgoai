@@ -36,15 +36,19 @@ export const InstrumentSelector = ({
         >
           <SelectTrigger
             id="instrument"
-            className={`w-full bg-gray-700 border-gray-600 text-white ${
+            className={`w-full bg-gray-700 border-gray-600 text-white rounded-xl ${
               !isFirstLeg ? "opacity-75" : ""
             }`}
           >
             <SelectValue placeholder="Select Instrument" />
           </SelectTrigger>
-          <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white">
+          <SelectContent className="z-50 bg-gray-800 border-gray-700 text-white rounded-xl">
             {instrumentOptions.map((opt) => (
-              <SelectItem key={opt.id} value={opt.value}>
+              <SelectItem 
+                key={opt.id} 
+                value={opt.value}
+                className="rounded-lg"
+              >
                 {opt.display_name}
               </SelectItem>
             ))}
