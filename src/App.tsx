@@ -66,13 +66,14 @@ function AppRoutes() {
       
       {/* Auth callback routes - comprehensive path handling */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/callback" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/v1/callback" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/v1/*" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/api/auth/callback/*" element={<Navigate to="/auth/callback" replace />} />
       
-      
+      {/* Other routes */}
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

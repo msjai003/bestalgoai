@@ -13,7 +13,9 @@ const NotFound = () => {
       location.pathname.includes('/callback') || 
       location.pathname.includes('/auth/v1') ||
       location.pathname.includes('/auth/callback') ||
-      location.pathname.includes('/api/auth/callback');
+      location.pathname.includes('/api/auth/callback') ||
+      location.search.includes('code=') ||
+      location.search.includes('state=');
     
     if (isAuthCallback) {
       console.log('Detected auth callback path in 404 page:', location.pathname);

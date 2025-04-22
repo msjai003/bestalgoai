@@ -1,17 +1,20 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -22,8 +25,15 @@ const AuthCallback = () => {
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
         
-        console.log('Auth callback processing, search params:', { token: !!token, type });
+        console.log('Auth callback processing, search params:', { 
+          token: !!token, 
+          type, 
+          code: !!code, 
+          state: !!state 
+        });
         
         // If this is a recovery flow with token in the URL
         if (token && type === 'recovery') {
@@ -31,6 +41,27 @@ const AuthCallback = () => {
           // Redirect to forgot-password page with the token
           navigate(`/forgot-password?token=${token}&type=${type}`, { replace: true });
           return;
+        }
+        
+        // Handle the OAuth callback first if we have code and state parameters
+        if (code && state) {
+          console.log('Processing OAuth callback with code and state');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (error) {
+            console.error('Error exchanging code for session:', error);
+            setError('Authentication Error');
+            setErrorDetails(error.message || 'Failed to process authentication. Please try again.');
+            setIsProcessing(false);
+            return;
+          }
+          
+          if (data.session) {
+            console.log('Successfully exchanged code for session');
+            toast.success('Google login successful!');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
         }
         
         // Get session from Supabase - this will use any tokens in the URL automatically
@@ -113,7 +144,8 @@ const AuthCallback = () => {
             }
           }
           
-          // For normal login, redirect to dashboard
+          // For all successful logins, redirect to dashboard
+          toast.success('Login successful!');
           console.log('Authentication successful, redirecting to dashboard');
           navigate('/dashboard', { replace: true });
           return;
@@ -142,7 +174,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, retryCount]);
+  }, [navigate, retryCount, toast]);
 
   const handleRetry = () => {
     setError(null);
