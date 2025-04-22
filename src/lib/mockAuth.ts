@@ -1,3 +1,4 @@
+
 // Reorganized mock authentication logic, most helpers moved to src/lib/auth-mock/
 
 import { toast } from 'sonner';
