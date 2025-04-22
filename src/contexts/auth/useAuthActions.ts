@@ -21,10 +21,16 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.log('Attempting Google sign-in with Supabase');
       
+      // Use a more reliable URL for redirectTo
+      const currentOrigin = window.location.origin;
+      const callbackUrl = `${currentOrigin}/auth/callback`;
+      
+      console.log('Using callback URL:', callbackUrl);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -45,28 +51,31 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       console.warn('No redirect URL received from Supabase Google auth');
       
-      console.log('Falling back to mock Google auth');
-      const mockResult = await mockSignInWithGoogle();
-      
-      if (mockResult.error) {
-        toast.error(mockResult.error.message);
-        return { error: mockResult.error };
-      }
-      
-      if (mockResult.data?.user) {
-        const user: AuthUser = {
-          id: mockResult.data.user.id,
-          email: mockResult.data.user.email,
-        };
+      // Fallback to mock auth only in development or if Supabase auth fails
+      if (process.env.NODE_ENV === 'development' || !data.url) {
+        console.log('Falling back to mock Google auth');
+        const mockResult = await mockSignInWithGoogle();
         
-        setUser(user);
-        toast.success('Google login successful! (mock)');
-        
-        if (handleGoogleUser) {
-          await handleGoogleUser(mockResult.data.user);
+        if (mockResult.error) {
+          toast.error(mockResult.error.message);
+          return { error: mockResult.error };
         }
         
-        return { error: null, data: { user } };
+        if (mockResult.data?.user) {
+          const user: AuthUser = {
+            id: mockResult.data.user.id,
+            email: mockResult.data.user.email,
+          };
+          
+          setUser(user);
+          toast.success('Google login successful! (mock)');
+          
+          if (handleGoogleUser) {
+            await handleGoogleUser(mockResult.data.user);
+          }
+          
+          return { error: null, data: { user } };
+        }
       }
       
       return { error: null };

@@ -1311,6 +1311,47 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_legs: {
+        Row: {
+          created_at: string | null
+          direction: string
+          id: string
+          is_exit_leg: boolean | null
+          quantity: number
+          strategy_id: string
+          symbol: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          direction: string
+          id?: string
+          is_exit_leg?: boolean | null
+          quantity: number
+          strategy_id: string
+          symbol: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          direction?: string
+          id?: string
+          is_exit_leg?: boolean | null
+          quantity?: number
+          strategy_id?: string
+          symbol?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_legs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strategy_selections: {
         Row: {
           broker_username: string | null
@@ -1424,30 +1465,42 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          approved: boolean | null
+          can_create_strategies: boolean | null
           created_at: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst: boolean | null
+          license_number: string | null
           mobile_number: string | null
           profile_picture: string | null
           trading_experience: string | null
           updated_at: string | null
         }
         Insert: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
         }
         Update: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email?: string
           full_name?: string
           id?: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null

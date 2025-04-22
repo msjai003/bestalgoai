@@ -1,17 +1,31 @@
 
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if this is an auth callback path that wasn't handled correctly
+    const isAuthCallback = 
+      location.pathname.includes('/callback') || 
+      location.pathname.includes('/auth/v1') ||
+      location.pathname.includes('/auth/callback');
+    
+    if (isAuthCallback) {
+      console.log('Detected auth callback path in 404 page:', location.pathname);
+      // Redirect to our standard auth callback handler
+      navigate('/auth/callback' + location.search);
+      return;
+    }
+
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
