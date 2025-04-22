@@ -106,7 +106,7 @@ export const StrikeTimingStep = ({
               onChange={(e) => updateLeg({ entryTime: e.target.value })}
               className="bg-gray-700 border-gray-600 text-white pr-10"
             />
-            <Clock className="absolute right-3 text-white" size={20} />
+            <Clock className="absolute right-2 text-white" size={18} />
           </div>
         </div>
         <div>
@@ -119,7 +119,7 @@ export const StrikeTimingStep = ({
               onChange={(e) => updateLeg({ exitTime: e.target.value })}
               className="bg-gray-700 border-gray-600 text-white pr-10"
             />
-            <Clock className="absolute right-3 text-white" size={20} />
+            <Clock className="absolute right-2 text-white" size={18} />
           </div>
         </div>
       </div>
