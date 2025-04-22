@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -105,7 +105,7 @@ const AuthCallback = () => {
               
               if (saveSuccess) {
                 console.log('Google user details saved successfully');
-                // Always redirect to dashboard for Google sign-in, even if no profile exists
+                // Always redirect to dashboard for Google sign-in
                 toast.success('Welcome! Redirecting to dashboard...');
                 setTimeout(() => navigate('/dashboard'), 500);
                 return;
@@ -124,7 +124,7 @@ const AuthCallback = () => {
               return;
             }
             
-            // For normal login, redirect to dashboard or home
+            // For normal login, redirect to dashboard
             navigate('/dashboard');
           } catch (err) {
             console.error('Exception setting session in callback:', err);
@@ -134,27 +134,28 @@ const AuthCallback = () => {
           }
         } else {
           // No tokens found but we're on the callback page
-          const error = searchParams.get('error');
-          const errorDescription = searchParams.get('error_description');
+          // This might be because we're on /auth/v1/callback without hash
+          // Try to get session directly
+          const { data: sessionData } = await supabase.auth.getSession();
           
-          if (error) {
-            console.error('Auth callback error:', error, errorDescription);
-            setError('Authentication Error');
-            setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
-            setIsProcessing(false);
+          if (sessionData.session) {
+            console.log('Active session found on callback page without tokens, redirecting to dashboard');
+            navigate('/dashboard');
+            return;
           } else {
-            console.log('No tokens and no error - attempting to check current session');
+            // Check if there's an error in the search parameters
+            const error = searchParams.get('error');
+            const errorDescription = searchParams.get('error_description');
             
-            // Check if we already have a session
-            const { data } = await supabase.auth.getSession();
-            if (data.session) {
-              console.log('Active session found, redirecting to dashboard');
-              navigate('/dashboard');
-              return;
+            if (error) {
+              console.error('Auth callback error:', error, errorDescription);
+              setError('Authentication Error');
+              setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
+              setIsProcessing(false);
+            } else {
+              console.log('No tokens or session found - redirecting to auth page');
+              setTimeout(() => navigate('/auth'), 1000);
             }
-            
-            console.log('No active session, redirecting to auth page');
-            setTimeout(() => navigate('/auth'), 1000);
           }
         }
       } catch (err) {
@@ -208,6 +209,11 @@ const AuthCallback = () => {
           <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
             <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
           </div>
+          {location.pathname.includes('/v1/callback') && (
+            <div className="mt-6 text-sm text-gray-400">
+              <p>Handling v1 callback path...</p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -22,12 +22,20 @@ const Dashboard = () => {
   
   useEffect(() => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the dashboard.",
-        variant: "destructive",
-      });
-      navigate('/auth');
+      // Check if we have a session but user state is not set yet
+      const checkSession = async () => {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access the dashboard.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        }
+      };
+      
+      checkSession();
       return;
     }
     
@@ -61,7 +69,7 @@ const Dashboard = () => {
     loadUserData();
   }, [user, navigate, toast, googleUserDetails, fetchGoogleUserDetails]);
 
-  if (!user || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">
