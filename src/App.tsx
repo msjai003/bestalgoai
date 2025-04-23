@@ -65,12 +65,12 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback paths - important to catch all potential callback formats */}
+      {/* Auth callback paths - ensure all variations are caught properly */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       <Route path="/callback" element={<AuthCallback />} />
+      <Route path="/auth/callback/*" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
@@ -82,6 +82,7 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       
+      {/* Protected routes - require authentication */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />

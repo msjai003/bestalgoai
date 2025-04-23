@@ -2,6 +2,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,11 +13,20 @@ const NotFound = () => {
       location.pathname
     );
     
-    // Check if this is an auth callback that is failing
+    // Enhanced debugging for auth callback errors
     if (location.pathname.includes('callback')) {
       console.error("Auth callback 404 detected! Full URL:", window.location.href);
       console.error("Search params:", window.location.search);
       console.error("Hash:", window.location.hash);
+      
+      // Check if there's a session despite the 404
+      supabase.auth.getSession().then(({ data }) => {
+        console.log("Current session on 404 page:", data.session ? "Active" : "None");
+        if (data.session) {
+          console.log("User ID:", data.session.user.id);
+          console.log("Auth provider:", data.session.user.app_metadata?.provider);
+        }
+      }).catch(err => console.error("Error checking session:", err));
     }
   }, [location.pathname]);
 

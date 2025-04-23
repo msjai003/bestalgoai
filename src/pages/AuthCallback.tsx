@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
@@ -23,19 +24,20 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
 
-        if (currentPath.includes('/callback')) {
+        // Handle callback for Google OAuth or any auth provider
+        if (currentPath.includes('/callback') || currentPath.includes('/auth/callback')) {
+          console.log('Auth callback detected, processing...');
+          
           const searchParams = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
           const code = searchParams.get('code');
           const errorParam = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
-          const state = searchParams.get('state');
 
           console.log('Auth callback params:', {
             code: !!code,
             error: !!errorParam,
-            state: !!state,
             fullSearch: window.location.search,
             fullHash: window.location.hash
           });
@@ -90,7 +92,11 @@ const AuthCallback = () => {
                   return;
                 }
 
+                toast.success('Login successful!');
+                
+                // Add a delay to ensure session is fully established before redirect
                 setTimeout(() => {
+                  console.log('Redirecting to dashboard after successful authentication');
                   navigate('/dashboard');
                 }, 2000);
                 return;
@@ -111,6 +117,7 @@ const AuthCallback = () => {
           }
         }
 
+        // Handle password recovery flow
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -122,6 +129,7 @@ const AuthCallback = () => {
           return;
         }
 
+        // Check if user already has a session
         const { data: sessionData } = await supabase.auth.getSession();
 
         if (sessionData.session) {
@@ -130,6 +138,7 @@ const AuthCallback = () => {
           return;
         }
 
+        // Handle access token in hash fragment (for legacy auth flows)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -152,6 +161,7 @@ const AuthCallback = () => {
           return;
         }
 
+        // If we reach here, no valid auth parameters were found
         console.log('No auth tokens or code, redirecting to auth page');
         setTimeout(() => {
           navigate('/auth');
