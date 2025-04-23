@@ -231,6 +231,8 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
+          example: string | null
+          explanation: string | null
           id: number
           options: string[] | null
           question: string
@@ -241,6 +243,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string[] | null
           question: string
@@ -251,6 +255,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string[] | null
           question?: string
@@ -387,6 +393,7 @@ export type Database = {
       custom_strategies: {
         Row: {
           broker_username: string | null
+          copied_from: number | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -405,6 +412,7 @@ export type Database = {
         }
         Insert: {
           broker_username?: string | null
+          copied_from?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -423,6 +431,7 @@ export type Database = {
         }
         Update: {
           broker_username?: string | null
+          copied_from?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -690,6 +699,8 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
+          example: string | null
+          explanation: string | null
           id: number
           options: string[] | null
           question: string
@@ -700,6 +711,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string[] | null
           question: string
@@ -710,6 +723,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string[] | null
           question?: string
@@ -1053,6 +1068,8 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
+          example: string | null
+          explanation: string | null
           id: number
           options: string | null
           question: string
@@ -1063,6 +1080,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string | null
           question: string
@@ -1073,6 +1092,8 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
+          example?: string | null
+          explanation?: string | null
           id?: number
           options?: string | null
           question?: string
@@ -1119,6 +1140,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_logs: {
+        Row: {
+          correct_answer: string | null
+          created_at: string | null
+          example: string | null
+          explanation: string | null
+          id: string
+          is_correct: boolean | null
+          level: string | null
+          question: string
+          selected_answer: string | null
+          user_id: string | null
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string | null
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          level?: string | null
+          question: string
+          selected_answer?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string | null
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          level?: string | null
+          question?: string
+          selected_answer?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       quiz_results: {
         Row: {
           completed_at: string | null
@@ -1140,6 +1200,51 @@ export type Database = {
           level?: string | null
           score?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_sessions: {
+        Row: {
+          app_version: string | null
+          correct_count: number | null
+          created_at: string | null
+          device_type: string | null
+          duration_seconds: number | null
+          final_level: string | null
+          id: string
+          quiz_mode: string | null
+          results: Json | null
+          score: number | null
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          final_level?: string | null
+          id?: string
+          quiz_mode?: string | null
+          results?: Json | null
+          score?: number | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          final_level?: string | null
+          id?: string
+          quiz_mode?: string | null
+          results?: Json | null
+          score?: number | null
+          source?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1208,6 +1313,47 @@ export type Database = {
           value?: string
         }
         Relationships: []
+      }
+      strategy_legs: {
+        Row: {
+          created_at: string | null
+          direction: string
+          id: string
+          is_exit_leg: boolean | null
+          quantity: number
+          strategy_id: string
+          symbol: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          direction: string
+          id?: string
+          is_exit_leg?: boolean | null
+          quantity: number
+          strategy_id: string
+          symbol: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          direction?: string
+          id?: string
+          is_exit_leg?: boolean | null
+          quantity?: number
+          strategy_id?: string
+          symbol?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_legs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       strategy_selections: {
         Row: {
@@ -1322,30 +1468,42 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          approved: boolean | null
+          can_create_strategies: boolean | null
           created_at: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst: boolean | null
+          license_number: string | null
           mobile_number: string | null
           profile_picture: string | null
           trading_experience: string | null
           updated_at: string | null
         }
         Insert: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email: string
           full_name: string
           id: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null
           updated_at?: string | null
         }
         Update: {
+          approved?: boolean | null
+          can_create_strategies?: boolean | null
           created_at?: string | null
           email?: string
           full_name?: string
           id?: string
+          is_research_analyst?: boolean | null
+          license_number?: string | null
           mobile_number?: string | null
           profile_picture?: string | null
           trading_experience?: string | null

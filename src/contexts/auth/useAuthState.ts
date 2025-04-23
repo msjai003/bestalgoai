@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchGoogleUserDetails, saveGoogleUserDetails } from './utils';
@@ -19,12 +18,16 @@ export const useAuthState = () => {
         }
         
         if (data.session?.user) {
-          setUser({
+          const authUser = {
             id: data.session.user.id,
             email: data.session.user.email || '',
-          });
+          };
           
-          fetchUserGoogleDetails(data.session.user.id);
+          setUser(authUser);
+          
+          if (data.session.user.app_metadata?.provider === 'google') {
+            fetchUserGoogleDetails(data.session.user.id);
+          }
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -36,16 +39,16 @@ export const useAuthState = () => {
     checkSession();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
-          setUser({
+          const authUser = {
             id: session.user.id,
             email: session.user.email || '',
-          });
+          };
           
-          fetchUserGoogleDetails(session.user.id);
+          setUser(authUser);
           
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
             console.log('Google sign-in detected, saving user details');
@@ -101,7 +104,16 @@ export const useAuthState = () => {
   const fetchUserGoogleDetails = async (userId: string) => {
     try {
       console.log('Fetching Google user details for user:', userId);
-      const data = await fetchGoogleUserDetails(userId);
+      const { data, error } = await supabase
+        .from('google_user_details')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching Google user details:', error);
+        return null;
+      }
       
       if (data) {
         console.log('Google user details fetched:', data);
@@ -126,4 +138,3 @@ export const useAuthState = () => {
     handleGoogleSignIn
   };
 };
-
