@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoogleAuth } from '@/utils/authCallbackUtils';
@@ -95,20 +94,17 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Explicitly set session storage with redundancy
-                localStorage.setItem('supabase.auth.token', JSON.stringify({
+                // Store the session in localStorage with redundancy to ensure persistence
+                const sessionData = {
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
                   expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
-                }));
+                };
                 
-                sessionStorage.setItem('supabase.auth.token', JSON.stringify({
-                  access_token: data.session.access_token,
-                  refresh_token: data.session.refresh_token,
-                  expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
-                }));
+                localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
+                sessionStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
                 
-                // Explicitly set session with Supabase
+                // Set the session in Supabase client
                 const { error: setSessionError } = await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
@@ -142,11 +138,8 @@ const AuthCallback = () => {
                 
                 if (verifyData?.user) {
                   console.log('Verified user exists, redirecting to', redirectTo);
-                  // Wait a small delay to ensure all state is properly updated
-                  setTimeout(() => {
-                    // Use a hard redirect to ensure a clean navigation with proper session
-                    window.location.href = redirectTo;
-                  }, 100);
+                  // Use a hard redirect to ensure clean navigation with proper session
+                  window.location.href = redirectTo;
                   return;
                 } else {
                   console.error('User verification failed after auth');

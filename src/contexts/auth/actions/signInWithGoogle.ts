@@ -36,12 +36,14 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.removeItem('supabase.auth.token');
 
-      // Use the correct redirect - explicitly directing to dashboard after callback processing
-      const redirectUrl = `${window.location.origin}/auth/callback?redirect_to=/dashboard`;
+      // Generate the absolute callback URL
+      const callbackUrl = `${window.location.origin}/auth/callback`;
+      console.log('Using callback URL:', callbackUrl);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl,
+          redirectTo: callbackUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

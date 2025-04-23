@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,13 @@ const Auth = () => {
         if (data?.session) {
           console.log('Active session detected on Auth page:', data.session.user.id);
           
+          // Store session in localStorage for redundancy
+          localStorage.setItem('supabase.auth.token', JSON.stringify({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
+          }));
+
           // Verify the session is still valid by getting the user
           const { data: userData, error: userError } = await supabase.auth.getUser();
           
