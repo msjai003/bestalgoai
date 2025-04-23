@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
@@ -24,7 +23,6 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
 
-        // Handle any path that includes 'callback' for Google OAuth
         if (currentPath.includes('/callback')) {
           const searchParams = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -59,7 +57,6 @@ const AuthCallback = () => {
             console.log('Found auth code in callback, exchanging for session');
 
             try {
-              // Exchange code for session explicitly
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
               if (exchangeError) {
@@ -80,12 +77,11 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Make sure session is properly set
                 const { error: sessionError } = await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
-                
+
                 if (sessionError) {
                   console.error('Error setting session:', sessionError);
                   setError('Authentication Error');
@@ -94,20 +90,8 @@ const AuthCallback = () => {
                   return;
                 }
 
-                // Use a delay to ensure session is properly established
                 setTimeout(() => {
-                  if (isGoogleAuth) {
-                    // Check if user missing full_name => redirect registration
-                    const needsRegistration = !user?.user_metadata?.full_name;
-                    const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
-
-                    console.log(`Google auth detected. Redirecting to ${redirectPath} after delay.`);
-                    navigate(redirectPath);
-                  } else {
-                    // Non-Google user redirect to dashboard
-                    console.log('Non-Google auth. Redirecting to dashboard after delay.');
-                    navigate('/dashboard');
-                  }
+                  navigate('/dashboard');
                 }, 2000);
                 return;
               } else {
@@ -127,7 +111,6 @@ const AuthCallback = () => {
           }
         }
 
-        // Fallback normal flow
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');

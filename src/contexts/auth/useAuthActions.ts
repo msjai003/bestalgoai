@@ -20,12 +20,8 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
 
       console.log('Attempting Google sign-in with Supabase');
 
-      // Get the origin without any trailing slashes
-      const origin = window.location.origin.replace(/\/$/, "");
-      
-      // Always use the consistent callback path that matches our routes
-      // This must match exactly what's configured in your Supabase dashboard
-      const redirectTo = `${origin}/auth/callback`;
+      // Use your deployed callback path
+      const redirectTo = "https://www.bestalgo.ai/auth/callback";
 
       console.log('Using redirect URL:', redirectTo);
 
