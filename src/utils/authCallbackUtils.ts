@@ -43,9 +43,14 @@ export const handleAuthSession = async (
       
       toast.success('Login successful!');
 
+      // Force verification of session before redirect
+      const { data: verifyData } = await supabase.auth.getUser();
+      console.log('Verified user before redirect:', verifyData?.user?.id);
+
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
-        navigate('/dashboard');
+        // Use window.location for a hard redirect instead of navigate
+        window.location.href = '/dashboard';
       }, 1000);
     } else {
       console.error('No user in session data after setting session');
@@ -108,6 +113,10 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
       console.error('Failed to persist session:', error);
       return false;
     }
+    
+    // Force verification of session before returning
+    const { data: verifyData } = await supabase.auth.getUser();
+    console.log('Verified user after setting session:', verifyData?.user?.id);
     
     return true;
   } catch (error) {

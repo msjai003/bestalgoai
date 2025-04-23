@@ -88,10 +88,15 @@ const AuthCallback = () => {
 
                 toast.success('Login successful!');
                 
+                // Force verification of session
+                const { data: verifyData } = await supabase.auth.getUser();
+                console.log('Verified user ID before redirect:', verifyData?.user?.id);
+                
                 // Add a delay to ensure session is fully established before redirect
                 setTimeout(() => {
                   console.log('Redirecting to dashboard after successful authentication');
-                  navigate('/dashboard');
+                  // Use window.location for a hard redirect
+                  window.location.href = '/dashboard';
                 }, 1000);
                 return;
               } else {
@@ -128,7 +133,8 @@ const AuthCallback = () => {
 
         if (sessionData.session) {
           console.log('User already has session, redirecting to dashboard');
-          navigate('/dashboard');
+          // Use window.location for a hard redirect
+          window.location.href = '/dashboard';
           return;
         }
 

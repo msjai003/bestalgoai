@@ -48,6 +48,20 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate, toast]);
   
+  // Add a listener for auth changes to improve session handling
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed in Dashboard:', event);
+      if (event === 'SIGNED_OUT') {
+        navigate('/auth');
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+  
   useEffect(() => {
     if (!user) {
       return;
