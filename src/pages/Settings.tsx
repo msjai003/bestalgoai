@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomNav } from "@/components/BottomNav";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -111,7 +113,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
+    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary pb-16">
       <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
         <div className="flex items-center justify-between px-4 h-16">
           <Button 
@@ -224,6 +226,8 @@ const Settings = () => {
         onOpenChange={(open) => setActiveDialog(open ? "personalDetails" : null)}
         onOpenSecuritySettings={openSecuritySettings}
       />
+      
+      <BottomNav />
     </div>
   );
 };
