@@ -36,7 +36,7 @@ export const handleAuthSession = async (
       // Using a longer delay for auth to ensure session is properly set
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
-        navigate('/dashboard', { replace: true });
+        navigate('/dashboard');
       }, 2000);
     } else {
       console.error('No user in session data after setting session');
@@ -73,6 +73,6 @@ export const handleAuthError = (
     }, 5000);
   } else {
     console.log('No error specified, redirecting to dashboard');
-    navigate('/dashboard', { replace: true });
+    navigate('/dashboard');
   }
 };
