@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -187,7 +188,8 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Catch all route - redirect to dashboard instead of showing not found */}
+      <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>
   );
 }
