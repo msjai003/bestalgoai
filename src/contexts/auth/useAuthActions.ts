@@ -24,7 +24,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       // Get the current origin for the redirect URL
       const origin = window.location.origin;
       
-      // Use the standard /auth/callback path for consistency
+      // Always use the same callback path that's registered in App.tsx routes
       const redirectTo = `${origin}/auth/callback`;
       
       console.log('Using redirect URL:', redirectTo);
@@ -46,7 +46,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       }
       
       // If we have a URL to redirect to, do the redirect
-      if (data.url) {
+      if (data?.url) {
         console.log('Got redirect URL from Supabase:', data.url);
         // Log the redirect and perform the redirection
         console.log('Redirecting browser to Google auth URL...');

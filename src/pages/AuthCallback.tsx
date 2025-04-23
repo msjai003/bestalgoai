@@ -40,9 +40,9 @@ const AuthCallback = () => {
           console.log('Auth callback params:', { 
             code: !!code, 
             error: !!error,
+            state: !!state,
             fullSearch: window.location.search,
-            fullHash: window.location.hash,
-            state: state
+            fullHash: window.location.hash
           });
           
           // Handle error if present
@@ -75,18 +75,27 @@ const AuthCallback = () => {
                 
                 // For Google auth we need a longer delay to ensure profile details are properly loaded
                 const isGoogleAuth = data.session.user?.app_metadata?.provider === 'google';
-                const delay = isGoogleAuth ? 3000 : 2000;
                 
-                const redirectPath = isGoogleAuth && !data.session.user?.user_metadata?.full_name 
-                  ? '/google-registration' 
-                  : '/dashboard';
-                
-                console.log(`Will redirect to ${redirectPath} after ${delay}ms delay`);
-                
-                setTimeout(() => {
-                  navigate(redirectPath);
-                }, delay);
-                
+                if (isGoogleAuth) {
+                  console.log('Google auth detected:', data.session.user);
+                  console.log('User metadata:', data.session.user?.user_metadata);
+                  
+                  // Check if we need to redirect to complete registration
+                  const needsRegistration = isGoogleAuth && !data.session.user?.user_metadata?.full_name;
+                  const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
+                  
+                  console.log(`Will redirect to ${redirectPath} after delay`);
+                  
+                  // Use a timeout to ensure the session is properly set before redirecting
+                  setTimeout(() => {
+                    navigate(redirectPath);
+                  }, 2000);
+                } else {
+                  // For non-Google auth, redirect directly to dashboard
+                  setTimeout(() => {
+                    navigate('/dashboard');
+                  }, 1000);
+                }
                 return;
               }
             } catch (err) {
