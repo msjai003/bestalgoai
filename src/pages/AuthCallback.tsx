@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,22 +15,18 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // First check for recovery token in URL (for password reset links)
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
         
         console.log('Auth callback processing, search params:', { token: !!token, type });
         
-        // If this is a recovery flow with token in the URL
         if (token && type === 'recovery') {
           console.log('Processing password recovery with token');
-          // Redirect to forgot-password page with the token
           navigate(`/forgot-password?token=${token}&type=${type}`);
           return;
         }
         
-        // Handle hash fragment tokens (normal auth flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -43,10 +38,8 @@ const AuthCallback = () => {
           type: hashType 
         });
         
-        // If we have tokens in the URL hash, we came from a successful auth flow
         if (accessToken && refreshToken) {
           try {
-            // Try to set the session with the tokens from the URL
             const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
@@ -62,13 +55,10 @@ const AuthCallback = () => {
             
             console.log('Auth callback: Session set successfully');
             
-            // If we have a Google provider, save the user details
             if (sessionData.session?.user?.app_metadata?.provider === 'google') {
               console.log('Google user authenticated, saving details...');
               
               const user = sessionData.session.user;
-              
-              // Extract Google user data from user.user_metadata
               const googleData = {
                 email: user.email || '',
                 google_id: user.user_metadata.sub,
@@ -81,7 +71,6 @@ const AuthCallback = () => {
               
               console.log('Saving Google user details with data:', googleData);
               
-              // Save Google user data to our google_user_details table
               const saveSuccess = await saveGoogleUserDetails(user.id, googleData);
               
               if (saveSuccess) {
@@ -89,40 +78,45 @@ const AuthCallback = () => {
               } else {
                 console.error('Failed to save Google user details');
               }
-              
-              // Check if we need to complete registration (if user profile doesn't exist)
+
               try {
-                const { data: profileData } = await supabase
+                const { data: existingProfile } = await supabase
                   .from('user_profiles')
                   .select('*')
                   .eq('id', user.id)
                   .maybeSingle();
-                  
-                if (!profileData) {
-                  console.log('User profile not found, redirecting to complete registration...');
-                  navigate('/google-registration');
-                  return;
-                } else {
-                  console.log('User profile found, redirecting to dashboard');
-                  navigate('/dashboard');
-                  return;
+
+                if (!existingProfile) {
+                  const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert({
+                      id: user.id,
+                      full_name: `${googleData.given_name} ${googleData.family_name || ''}`.trim(),
+                      email: googleData.email,
+                      trading_experience: 'beginner',
+                      profile_picture: googleData.picture_url
+                    });
+
+                  if (profileError) {
+                    console.error('Error creating profile:', profileError);
+                  }
                 }
-              } catch (profileErr) {
-                console.error('Error checking user profile:', profileErr);
-                // Continue to dashboard even if profile checking fails
+
+                navigate('/dashboard');
+                return;
+
+              } catch (profileError) {
+                console.error('Error handling user profile:', profileError);
                 navigate('/dashboard');
                 return;
               }
             }
             
-            // Check if this is a password reset flow
             if (hashType === 'recovery') {
-              console.log('Auth callback: Redirecting to forgot-password for hash recovery');
               navigate('/forgot-password?type=recovery');
               return;
             }
             
-            // For normal login, redirect to dashboard or home
             navigate('/dashboard');
           } catch (err) {
             console.error('Exception setting session in callback:', err);
@@ -131,7 +125,6 @@ const AuthCallback = () => {
             setIsProcessing(false);
           }
         } else {
-          // No tokens found but we're on the callback page
           const error = searchParams.get('error');
           const errorDescription = searchParams.get('error_description');
           
@@ -141,7 +134,6 @@ const AuthCallback = () => {
             setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
             setIsProcessing(false);
           } else {
-            // No tokens and no error - just redirect to auth page
             navigate('/auth');
           }
         }
