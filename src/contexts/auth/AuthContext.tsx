@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const {
     signIn,
-    signInWithGoogle,
+    signInWithGoogle: signInWithGoogleAction,
     signUp,
     signOut,
     resetPassword,
@@ -50,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signInWithGoogle: async () => {
-      const result = await signInWithGoogle();
+      const result = await signInWithGoogleAction();
+      // For Google sign-in, we don't expect user data immediately
+      // since it's a redirect flow. We just need to handle any errors.
       if (result.error) {
         toast.error("Google login failed. Please try again.");
-      } else if (result.data?.user) {
-        toast.success("Welcome! You're now logged in with Google.");
       }
-      return result;
+      return { error: result.error, data: result.data };
     },
     signUp: async (email, password, confirmPassword, userData) => {
       const result = await signUp(email, password, confirmPassword, userData);

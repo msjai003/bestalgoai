@@ -45,7 +45,7 @@ const Dashboard = () => {
             description: "Please log in to access the dashboard.",
             variant: "destructive",
           });
-          window.location.replace('/auth');
+          navigate('/auth');
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
@@ -62,7 +62,7 @@ const Dashboard = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed in Dashboard:', event);
       if (event === 'SIGNED_OUT') {
-        window.location.replace('/auth');
+        navigate('/auth');
       }
     });
     

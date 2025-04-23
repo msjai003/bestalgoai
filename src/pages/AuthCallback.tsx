@@ -107,7 +107,7 @@ const AuthCallback = () => {
                 // Redirect to dashboard with a full page reload
                 setTimeout(() => {
                   console.log('Redirecting to dashboard after successful authentication');
-                  // Using replace instead of href for a cleaner navigation
+                  // Using replace instead of navigate for a cleaner navigation and forced reload
                   window.location.replace('/dashboard');
                 }, 1000);
                 return;

@@ -25,7 +25,7 @@ export interface AuthContextType {
   user: AuthUser | null;
   googleUserDetails: GoogleUserDetails | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
-  signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
+  signInWithGoogle: () => Promise<{ error: Error | null, data?: any }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { 
     fullName: string, 
     mobileNumber: string, 

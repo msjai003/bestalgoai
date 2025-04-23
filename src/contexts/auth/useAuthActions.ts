@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -33,16 +34,17 @@ export const useAuthActions = ({
       
       if (error) {
         console.error('Error signing in with Google:', error);
-        return { data: null, error };
+        return { data: null, error: error as Error };
       }
       
       console.log('Google sign-in initiated successfully:', data);
-      return { data, error: null };
+      // Return the expected shape to match the AuthContext type definition
+      return { data: null, error: null };
     } catch (error: any) {
       console.error('Exception during Google sign-in:', error);
       return { 
         data: null, 
-        error: { message: error.message || 'An error occurred during Google sign-in' } 
+        error: new Error(error.message || 'An error occurred during Google sign-in')
       };
     } finally {
       setIsLoading(false);
