@@ -24,7 +24,14 @@ const Dashboard = () => {
     const checkAuth = async () => {
       try {
         console.log('Checking session on dashboard...');
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session on dashboard:', sessionError);
+          toast.error('Session verification failed');
+          navigate('/auth');
+          return;
+        }
         
         if (sessionData.session) {
           console.log('Active session found on dashboard for user:', sessionData.session.user.id);
@@ -63,8 +70,10 @@ const Dashboard = () => {
       console.log('Auth state changed in Dashboard:', event);
       if (event === 'SIGNED_OUT') {
         navigate('/auth');
+      } else if (event === 'SIGNED_IN' && session) {
+        console.log('New sign-in detected in Dashboard');
+        setSessionChecked(true);
       }
-      // We don't need to handle SIGNED_IN here as the checkAuth function already does that
     });
     
     return () => {

@@ -24,13 +24,16 @@ const Auth = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        setIsLoading(true);
         const { data } = await supabase.auth.getSession();
         if (data.session) {
-          console.log('User already has active session, redirecting to dashboard');
+          console.log('User already has active session on Auth page, redirecting to dashboard');
           navigate('/dashboard');
         }
       } catch (error) {
         console.error('Error checking session:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -39,6 +42,7 @@ const Auth = () => {
   
   useEffect(() => {
     if (user) {
+      console.log('User state detected in Auth page, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate]);
@@ -89,15 +93,13 @@ const Auth = () => {
         console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
         toast.error(error.message || 'Error signing in with Google');
+        setIsGoogleLoading(false);
       }
     } catch (error: any) {
       console.error('Google login exception:', error);
       setErrorMessage(error.message || 'An unexpected error occurred');
       toast.error(error.message || 'An unexpected error occurred');
-    } finally {
-      setTimeout(() => {
-        setIsGoogleLoading(false);
-      }, 5000);
+      setIsGoogleLoading(false);
     }
   };
 
