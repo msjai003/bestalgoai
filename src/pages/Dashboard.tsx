@@ -32,6 +32,10 @@ const Dashboard = () => {
           return;
         }
         
+        // Get session explicitly from both storage and Supabase
+        const storedSession = localStorage.getItem('supabase.auth.token');
+        console.log('Stored session exists:', !!storedSession);
+        
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -45,7 +49,7 @@ const Dashboard = () => {
           console.log('Active session found on dashboard for user:', sessionData.session.user.id);
           console.log('Provider:', sessionData.session.user.app_metadata?.provider);
           
-          // Store session in localStorage for redundancy (if not already there)
+          // Reinforce session storage
           localStorage.setItem('supabase.auth.token', JSON.stringify({
             access_token: sessionData.session.access_token,
             refresh_token: sessionData.session.refresh_token,
@@ -81,7 +85,7 @@ const Dashboard = () => {
     };
     
     checkAuth();
-  }, [fetchGoogleUserDetails, user]);
+  }, [fetchGoogleUserDetails, user, toast]);
   
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {

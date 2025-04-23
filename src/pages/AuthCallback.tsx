@@ -32,7 +32,8 @@ const AuthCallback = () => {
           console.log('Auth callback detected, processing...');
           
           const code = searchParams.get('code');
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const hashFragment = window.location.hash.substring(1);
+          const hashParams = new URLSearchParams(hashFragment);
           const errorParam = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
 
@@ -138,8 +139,11 @@ const AuthCallback = () => {
                 
                 if (verifyData?.user) {
                   console.log('Verified user exists, redirecting to', redirectTo);
-                  // Use a hard redirect to ensure clean navigation with proper session
-                  window.location.href = redirectTo;
+                  // Add a small delay to ensure all state updates are processed
+                  setTimeout(() => {
+                    // Use a hard redirect to ensure clean navigation with proper session
+                    window.location.href = redirectTo;
+                  }, 500);
                   return;
                 } else {
                   console.error('User verification failed after auth');
@@ -191,8 +195,8 @@ const AuthCallback = () => {
         }
 
         // Handle access token in hash fragment (for legacy auth flows)
-        // Define hashParams here for access token handling
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashFragment = window.location.hash.substring(1);
+        const hashParams = new URLSearchParams(hashFragment);
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
 

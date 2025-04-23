@@ -67,11 +67,11 @@ export const handleAuthSession = async (
       const { data: verifyData } = await supabase.auth.getUser();
       console.log('Verified user before redirect:', verifyData?.user?.id);
 
-      // Use a hard redirect with some delay to ensure session is established
+      // Use a hard redirect after a small delay to ensure session is established
       setTimeout(() => {
         console.log('Redirecting to', redirectTo, 'after successful auth with hard redirect');
         window.location.href = redirectTo;
-      }, 800);
+      }, 500);
     } else {
       console.error('No user in session data after setting session');
       setError('Authentication Error');
