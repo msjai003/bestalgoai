@@ -1,38 +1,47 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ErrorStateProps {
-  error: string;
+  error: string | null;
   errorDetails: string | null;
   onRetry: () => void;
+  debugInfo?: any;
 }
 
-const ErrorState = ({ error, errorDetails, onRetry }: ErrorStateProps) => {
+const ErrorState = ({ error, errorDetails, onRetry, debugInfo }: ErrorStateProps) => {
   return (
-    <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
-      <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4">
-        <AlertTriangle className="h-8 w-8 text-red-500" />
+    <div className="w-full max-w-md bg-charcoalSecondary p-6 rounded-lg border border-red-500/30 flex flex-col items-center text-center space-y-4">
+      <AlertTriangle className="h-12 w-12 text-charcoalDanger mb-2" />
+      <h2 className="text-xl font-semibold text-white">{error || 'Authentication Error'}</h2>
+      
+      {errorDetails && (
+        <p className="text-gray-300 text-sm">{errorDetails}</p>
+      )}
+      
+      <Button
+        onClick={onRetry}
+        className="mt-4 bg-cyan hover:bg-cyan/80 text-white px-4 py-2 rounded-md"
+      >
+        <RefreshCw className="h-4 w-4 mr-2" />
+        Try Again
+      </Button>
+      
+      <div className="text-xs text-gray-400 mt-4">
+        <p>If the problem persists, please contact support.</p>
       </div>
-      <h1 className="text-2xl font-bold mb-4">{error}</h1>
-      {errorDetails && <p className="text-red-400 mb-6">{errorDetails}</p>}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button 
-          onClick={onRetry}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Try Again
-        </Button>
-        <Link to="/auth">
-          <Button className="w-full">
-            Return to Login
-          </Button>
-        </Link>
-      </div>
+      
+      {debugInfo && (
+        <div className="mt-6 text-left w-full">
+          <details className="text-xs text-gray-400">
+            <summary className="cursor-pointer hover:text-gray-300">Debug Information</summary>
+            <pre className="mt-2 p-2 bg-gray-800/50 rounded text-gray-300 overflow-x-auto">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </details>
+        </div>
+      )}
     </div>
   );
 };

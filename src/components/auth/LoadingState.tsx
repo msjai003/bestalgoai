@@ -1,16 +1,18 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader } from 'lucide-react';
 
-const LoadingState = () => {
+interface LoadingStateProps {
+  message?: string;
+}
+
+const LoadingState = ({ message = "Processing authentication..." }: LoadingStateProps) => {
   return (
-    <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
-      <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
-      <h1 className="text-xl font-semibold">Authenticating...</h1>
-      <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
-      <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
-        <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
-      </div>
+    <div className="w-full max-w-md bg-charcoalSecondary p-6 rounded-lg border border-cyan/30 flex flex-col items-center text-center space-y-4">
+      <Loader className="h-12 w-12 text-cyan animate-spin mb-2" />
+      <h2 className="text-xl font-semibold text-white">Please Wait</h2>
+      <p className="text-gray-300">{message}</p>
+      <p className="text-sm text-gray-400 mt-2">This may take a few moments...</p>
     </div>
   );
 };

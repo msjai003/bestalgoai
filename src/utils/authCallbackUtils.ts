@@ -21,7 +21,15 @@ export const handleAuthSession = async (
     // Store session in localStorage for additional persistence
     localStorage.setItem('supabase.auth.token', JSON.stringify({
       access_token: accessToken,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
+      expires_at: Math.floor(Date.now() / 1000) + 3600 // Assume 1-hour expiry if not provided
+    }));
+    
+    // Also set in sessionStorage for redundancy
+    sessionStorage.setItem('supabase.auth.token', JSON.stringify({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_at: Math.floor(Date.now() / 1000) + 3600
     }));
     
     const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
@@ -32,7 +40,7 @@ export const handleAuthSession = async (
     if (sessionError) {
       console.error('Error setting session:', sessionError);
       setError('Authentication Error');
-      setErrorDetails(sessionError.message);
+      setErrorDetails(sessionError.message || 'Failed to set session');
       setIsProcessing(false);
       return;
     }
@@ -40,11 +48,16 @@ export const handleAuthSession = async (
     if (sessionData?.session?.user) {
       console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
       
+      // Ensure user metadata is saved correctly for Google users
+      if (sessionData.session.user.app_metadata?.provider === 'google') {
+        await saveGoogleUserData(sessionData.session.user);
+      }
+      
       // Ensure session is properly stored in localStorage
       localStorage.setItem('supabase.auth.token', JSON.stringify({
         access_token: sessionData.session.access_token,
         refresh_token: sessionData.session.refresh_token,
-        expires_at: sessionData.session.expires_at
+        expires_at: Math.floor(Date.now() / 1000) + sessionData.session.expires_in
       }));
       
       toast.success('Login successful!');
@@ -57,7 +70,7 @@ export const handleAuthSession = async (
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth with hard redirect');
         window.location.replace('/dashboard');
-      }, 1000);
+      }, 800);
     } else {
       console.error('No user in session data after setting session');
       setError('Authentication Error');
@@ -107,13 +120,13 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     localStorage.setItem('supabase.auth.token', JSON.stringify({
       access_token: session.access_token,
       refresh_token: session.refresh_token,
-      expires_at: session.expires_at
+      expires_at: Math.floor(Date.now() / 1000) + session.expires_in
     }));
     
     sessionStorage.setItem('supabase.auth.token', JSON.stringify({
       access_token: session.access_token,
       refresh_token: session.refresh_token,
-      expires_at: session.expires_at
+      expires_at: Math.floor(Date.now() / 1000) + session.expires_in
     }));
     
     // Store session data in browser storage for persistence
@@ -127,6 +140,11 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
       return false;
     }
     
+    // Save Google user data if this is a Google auth
+    if (session.user?.app_metadata?.provider === 'google') {
+      await saveGoogleUserData(session.user);
+    }
+    
     // Force verification of session before returning
     const { data: verifyData } = await supabase.auth.getUser();
     console.log('Verified user after setting session:', verifyData?.user?.id);
@@ -134,6 +152,93 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error persisting Google auth:', error);
+    return false;
+  }
+};
+
+// New function to save Google user data to Google user details table
+const saveGoogleUserData = async (user: any): Promise<boolean> => {
+  if (!user || !user.id || user.app_metadata?.provider !== 'google') {
+    console.log('Not a Google user or missing ID, skipping Google data save');
+    return false;
+  }
+  
+  try {
+    console.log('Saving Google user data for user:', user.id);
+    
+    const googleData = {
+      email: user.email || '',
+      google_id: user.user_metadata?.sub,
+      picture_url: user.user_metadata?.picture,
+      given_name: user.user_metadata?.given_name,
+      family_name: user.user_metadata?.family_name,
+      locale: user.user_metadata?.locale,
+      verified_email: user.user_metadata?.email_verified
+    };
+    
+    console.log('Google user data to save:', googleData);
+    
+    // First check if record exists
+    const { data: existingData, error: checkError } = await supabase
+      .from('google_user_details')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+      
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking for existing Google user details:', checkError);
+      return false;
+    }
+    
+    if (existingData) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('google_user_details')
+        .update({
+          email: googleData.email,
+          google_id: googleData.google_id,
+          picture_url: googleData.picture_url,
+          given_name: googleData.given_name,
+          family_name: googleData.family_name,
+          locale: googleData.locale,
+          verified_email: googleData.verified_email,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (updateError) {
+        console.error('Error updating Google user details:', updateError);
+        return false;
+      }
+      
+      console.log('Updated Google user details successfully');
+    } else {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('google_user_details')
+        .insert({
+          id: user.id,
+          email: googleData.email,
+          google_id: googleData.google_id,
+          picture_url: googleData.picture_url,
+          given_name: googleData.given_name,
+          family_name: googleData.family_name,
+          locale: googleData.locale,
+          verified_email: googleData.verified_email,
+          updated_at: new Date().toISOString()
+        });
+        
+      if (insertError) {
+        console.error('Error inserting Google user details:', insertError);
+        return false;
+      }
+      
+      console.log('Inserted Google user details successfully');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception saving Google user data:', error);
     return false;
   }
 };

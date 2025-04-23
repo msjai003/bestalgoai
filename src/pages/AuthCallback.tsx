@@ -14,6 +14,7 @@ const AuthCallback = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
     const processCallback = async () => {
@@ -34,6 +35,14 @@ const AuthCallback = () => {
           const code = searchParams.get('code');
           const errorParam = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+
+          setDebugInfo({
+            code: !!code,
+            errorParam,
+            errorDescription,
+            fullSearch: window.location.search,
+            fullHash: window.location.hash
+          });
 
           console.log('Auth callback params:', {
             code: !!code,
@@ -79,14 +88,21 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Persist the session strongly
+                // Force a strong session commitment
                 localStorage.setItem('supabase.auth.token', JSON.stringify({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
-                  expires_at: data.session.expires_at
+                  expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
                 }));
                 
-                // Additional session persistence
+                // Also set in sessionStorage for redundancy
+                sessionStorage.setItem('supabase.auth.token', JSON.stringify({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token,
+                  expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
+                }));
+                
+                // Explicitly set session
                 await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
@@ -98,18 +114,27 @@ const AuthCallback = () => {
                   console.warn('Session may not have been properly persisted');
                 }
 
-                toast.success('Login successful!');
+                toast.success('Google sign-in successful!');
                 
-                // Force verification of session
-                const { data: verifyData } = await supabase.auth.getUser();
+                // Force verification of session before redirect
+                const { data: verifyData, error: verifyError } = await supabase.auth.getUser();
+                if (verifyError) {
+                  console.error('Error verifying user after auth:', verifyError);
+                }
                 console.log('Verified user ID before redirect:', verifyData?.user?.id);
                 
-                // Redirect to dashboard with a full page reload
-                setTimeout(() => {
-                  console.log('Redirecting to dashboard after successful authentication');
-                  // Using replace instead of navigate for a cleaner navigation and forced reload
-                  window.location.replace('/dashboard');
-                }, 1000);
+                if (verifyData?.user) {
+                  // Redirect with a delay to ensure cookies and localStorage are properly set
+                  setTimeout(() => {
+                    console.log('Redirecting to dashboard after successful authentication');
+                    window.location.replace('/dashboard');
+                  }, 800);
+                } else {
+                  console.error('User verification failed after auth');
+                  setError('Authentication Error');
+                  setErrorDetails('User verification failed. Please try again.');
+                  setIsProcessing(false);
+                }
                 return;
               } else {
                 console.error('No session returned after code exchange');
@@ -141,9 +166,13 @@ const AuthCallback = () => {
         }
 
         // Check if user already has a session
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-        if (sessionData.session) {
+        if (sessionError) {
+          console.error('Error checking session:', sessionError);
+        }
+
+        if (sessionData?.session) {
           console.log('User already has session, redirecting to dashboard');
           // Hard redirect to dashboard
           window.location.replace('/dashboard');
@@ -177,7 +206,7 @@ const AuthCallback = () => {
         console.log('No auth tokens or code, redirecting to auth page');
         setTimeout(() => {
           navigate('/auth');
-        }, 1000);
+        }, 500);
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');
@@ -204,9 +233,10 @@ const AuthCallback = () => {
           error={error}
           errorDetails={errorDetails}
           onRetry={handleRetry}
+          debugInfo={debugInfo}
         />
       ) : (
-        <LoadingState />
+        <LoadingState message="Processing your authentication..." />
       )}
     </div>
   );

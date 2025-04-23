@@ -29,6 +29,10 @@ export const useAuthActions = ({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline', // This requests a refresh token from Google
+            prompt: 'consent' // Force the consent screen to ensure refresh token
+          }
         }
       });
       
@@ -39,7 +43,7 @@ export const useAuthActions = ({
       
       console.log('Google sign-in initiated successfully:', data);
       // Return the expected shape to match the AuthContext type definition
-      return { data: null, error: null };
+      return { data, error: null };
     } catch (error: any) {
       console.error('Exception during Google sign-in:', error);
       return { 
