@@ -22,8 +22,14 @@ const Dashboard = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('Checking session on dashboard...');
         const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session) {
+        
+        if (sessionData.session) {
+          console.log('Active session found on dashboard for user:', sessionData.session.user.id);
+          console.log('Provider:', sessionData.session.user.app_metadata?.provider);
+          setIsVerifyingAuth(false);
+        } else {
           console.log('No active session found on dashboard, redirecting to auth');
           toast({
             title: "Authentication Required",
@@ -31,12 +37,11 @@ const Dashboard = () => {
             variant: "destructive",
           });
           navigate('/auth');
-        } else {
-          setIsVerifyingAuth(false);
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
         setIsVerifyingAuth(false);
+        navigate('/auth');
       }
     };
     

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,8 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       // Get the origin without any trailing slashes
       const origin = window.location.origin.replace(/\/$/, "");
       
-      // Always use the standardized callback path that matches our routes
+      // Always use the consistent callback path that matches our routes
+      // This must match exactly what's configured in your Supabase dashboard
       const redirectTo = `${origin}/auth/callback`;
 
       console.log('Using redirect URL:', redirectTo);

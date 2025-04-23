@@ -5,6 +5,7 @@ import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/ut
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -79,11 +80,19 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Here explicitly set session, though exchangeCodeForSession should do it
-                await supabase.auth.setSession({
+                // Make sure session is properly set
+                const { error: sessionError } = await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
+                
+                if (sessionError) {
+                  console.error('Error setting session:', sessionError);
+                  setError('Authentication Error');
+                  setErrorDetails(sessionError.message || 'Failed to set user session.');
+                  setIsProcessing(false);
+                  return;
+                }
 
                 // Use a delay to ensure session is properly established
                 setTimeout(() => {
@@ -93,11 +102,11 @@ const AuthCallback = () => {
                     const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
 
                     console.log(`Google auth detected. Redirecting to ${redirectPath} after delay.`);
-                    navigate(redirectPath); // Remove { replace: true }
+                    navigate(redirectPath);
                   } else {
                     // Non-Google user redirect to dashboard
                     console.log('Non-Google auth. Redirecting to dashboard after delay.');
-                    navigate('/dashboard'); // Remove { replace: true }
+                    navigate('/dashboard');
                   }
                 }, 2000);
                 return;
@@ -134,7 +143,7 @@ const AuthCallback = () => {
 
         if (sessionData.session) {
           console.log('User already has session, redirecting to dashboard');
-          navigate('/dashboard'); // Remove { replace: true }
+          navigate('/dashboard');
           return;
         }
 
@@ -162,7 +171,7 @@ const AuthCallback = () => {
 
         console.log('No auth tokens or code, redirecting to auth page');
         setTimeout(() => {
-          navigate('/auth'); // Remove { replace: true }
+          navigate('/auth');
         }, 1000);
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
@@ -180,6 +189,7 @@ const AuthCallback = () => {
     setErrorDetails(null);
     setIsProcessing(true);
     setRetryCount(prev => prev + 1);
+    toast({ title: "Retrying authentication", description: "Please wait..." });
   };
 
   return (
