@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { persistGoogleAuth } from '@/utils/authCallbackUtils';
@@ -32,19 +31,21 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
         return { error: null, session: sessionData.session };
       }
 
-      // Clear any existing auth data to ensure a clean start
+      // Clear existing auth data as before
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.removeItem('supabase.auth.token');
 
-      // Proceed with Google sign-in with more explicit options
+      // Use the correct redirect (should point to your /auth/callback handler)
+      // This must also be registered in your Supabase > Authentication > Redirect URLs list!
+      const redirectUrl = `${window.location.origin}/auth/callback`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-            flow_type: 'auth-code' // Explicitly use auth-code flow for better token handling
+            flow_type: 'auth-code'
           }
         }
       });
