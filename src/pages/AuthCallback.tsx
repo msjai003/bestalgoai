@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoogleAuth } from '@/utils/authCallbackUtils';
@@ -21,7 +22,7 @@ const AuthCallback = () => {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
-        const redirectTo = searchParams.get('redirect_to') || '/dashboard'; // Default to dashboard
+        const redirectTo = searchParams.get('redirect_to') || '/dashboard';
 
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
@@ -29,8 +30,6 @@ const AuthCallback = () => {
 
         // Handle callback for Google OAuth or any auth provider
         if (currentPath.includes('/callback')) {
-          console.log('Auth callback detected, processing...');
-          
           const code = searchParams.get('code');
           const hashFragment = window.location.hash.substring(1);
           const hashParams = new URLSearchParams(hashFragment);
@@ -46,16 +45,8 @@ const AuthCallback = () => {
             redirectTo
           });
 
-          console.log('Auth callback params:', {
-            code: !!code,
-            error: !!errorParam,
-            redirectTo,
-            fullSearch: window.location.search,
-            fullHash: window.location.hash
-          });
-
+          // Error came from OAuth
           if (errorParam) {
-            console.error('Auth callback received error:', errorParam, errorDescription);
             handleAuthError(
               errorParam,
               errorDescription,
@@ -67,9 +58,8 @@ const AuthCallback = () => {
             return;
           }
 
+          // Handle code exchange
           if (code) {
-            console.log('Found auth code in callback, exchanging for session');
-
             try {
               // Clear any existing tokens to ensure a clean state
               localStorage.removeItem('supabase.auth.token');
@@ -78,7 +68,6 @@ const AuthCallback = () => {
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
               if (exchangeError) {
-                console.error('Error exchanging code for session:', exchangeError);
                 setError('Authentication Error');
                 setErrorDetails(exchangeError.message || 'Failed to complete authentication.');
                 setIsProcessing(false);
@@ -87,15 +76,8 @@ const AuthCallback = () => {
 
               if (data?.session) {
                 const user = data.session.user;
-                console.log('Successfully exchanged code for session', user?.id);
 
-                const isGoogleAuth = user?.app_metadata?.provider === 'google';
-
-                console.log('User metadata:', user?.user_metadata);
-                console.log('App metadata:', user?.app_metadata);
-                console.log('Is Google Auth:', isGoogleAuth);
-
-                // Store the session in localStorage with redundancy to ensure persistence
+                // Store the session securely
                 const sessionData = {
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
@@ -112,7 +94,6 @@ const AuthCallback = () => {
                 });
                 
                 if (setSessionError) {
-                  console.error('Error setting session:', setSessionError);
                   setError('Authentication Error');
                   setErrorDetails('Failed to set session: ' + setSessionError.message);
                   setIsProcessing(false);
@@ -120,47 +101,27 @@ const AuthCallback = () => {
                 }
                 
                 // Persist Google user details if applicable
-                if (isGoogleAuth) {
+                if (user?.app_metadata?.provider === 'google') {
                   const sessionPersisted = await persistGoogleAuth(data.session);
                   if (!sessionPersisted) {
                     console.warn('Session may not have been properly persisted');
                   }
                 }
-
+                
                 toast.success('Sign-in successful!');
-                
-                // Force verification of session before redirect
-                const { data: verifyData, error: verifyError } = await supabase.auth.getUser();
-                if (verifyError) {
-                  console.error('Error verifying user after auth:', verifyError);
-                }
-                
-                console.log('Verified user ID before redirect:', verifyData?.user?.id);
-                
-                if (verifyData?.user) {
-                  console.log('Verified user exists, redirecting to', redirectTo);
-                  // Add a small delay to ensure all state updates are processed
-                  setTimeout(() => {
-                    // Use a hard redirect to ensure clean navigation with proper session
-                    window.location.href = redirectTo;
-                  }, 500);
-                  return;
-                } else {
-                  console.error('User verification failed after auth');
-                  setError('Authentication Error');
-                  setErrorDetails('User verification failed. Please try again.');
-                  setIsProcessing(false);
-                }
+
+                // Always force redirect to dashboard (ignore redirectTo if it would cause errors)
+                setTimeout(() => {
+                  window.location.href = '/dashboard';
+                }, 500);
                 return;
               } else {
-                console.error('No session returned after code exchange');
                 setError('Authentication Error');
                 setErrorDetails('Failed to retrieve session.');
                 setIsProcessing(false);
                 return;
               }
             } catch (exchangeErr) {
-              console.error('Exception during code exchange:', exchangeErr);
               setError('Authentication Error');
               setErrorDetails('Error during authentication. Please try again.');
               setIsProcessing(false);
@@ -169,43 +130,26 @@ const AuthCallback = () => {
           }
         }
 
-        // Handle password recovery flow
+        // Password recovery fallback
         const token = searchParams.get('token');
         const type = searchParams.get('type');
-
-        console.log('Auth callback processing, search params:', { token: !!token, type });
-
         if (token && type === 'recovery') {
           handlePasswordRecovery(token, type, navigate);
           return;
         }
 
-        // Check if user already has a session
+        // Check for an already existing session, redirect if found
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error('Error checking session:', sessionError);
-        }
-
         if (sessionData?.session) {
-          console.log('User already has session, redirecting to', redirectTo);
-          // Hard redirect to dashboard
-          window.location.href = redirectTo;
+          window.location.href = '/dashboard';
           return;
         }
 
-        // Handle access token in hash fragment (for legacy auth flows)
+        // Legacy fragment tokens
         const hashFragment = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hashFragment);
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-
-        console.log('Auth callback processing hash params:', {
-          accessToken: !!accessToken,
-          refreshToken: !!refreshToken,
-          fullHash: window.location.hash
-        });
-
         if (accessToken && refreshToken) {
           await handleAuthSession(
             accessToken,
@@ -214,18 +158,16 @@ const AuthCallback = () => {
             setError,
             setErrorDetails,
             setIsProcessing,
-            redirectTo
+            '/dashboard'
           );
           return;
         }
 
-        // If we reach here, no valid auth parameters were found
-        console.log('No auth tokens or code found in callback, redirecting to auth page');
+        // No recognisable auth params, return to auth
         setTimeout(() => {
           navigate('/auth');
         }, 500);
       } catch (err) {
-        console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');
         setErrorDetails('An unexpected error occurred. Please try again.');
         setIsProcessing(false);
@@ -260,3 +202,4 @@ const AuthCallback = () => {
 };
 
 export default AuthCallback;
+
