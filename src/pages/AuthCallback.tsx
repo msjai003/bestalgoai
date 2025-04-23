@@ -117,10 +117,7 @@ const AuthCallback = () => {
                 toast.success('Sign-in successful!');
 
                 // Critical: Use hard redirect to dashboard - ensures all React contexts are properly reinitialized
-                setTimeout(() => {
-                  console.log('Performing hard redirect to dashboard...');
-                  window.location.href = '/dashboard';
-                }, 500);
+                window.location.href = redirectTo;
                 return;
               } else {
                 console.error('No session data returned from code exchange');

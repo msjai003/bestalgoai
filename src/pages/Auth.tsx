@@ -102,7 +102,7 @@ const Auth = () => {
         }
       } else {
         toast.success('Login successful!');
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch (error: any) {
       console.error('Login error:', error);

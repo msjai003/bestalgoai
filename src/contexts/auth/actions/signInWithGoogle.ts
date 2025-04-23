@@ -22,6 +22,7 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
           await handleGoogleUser(user);
         }
         setIsLoading(false);
+        window.location.href = '/dashboard';
         return { error: null, session: sessionData.session };
       }
 
@@ -51,7 +52,9 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
         setIsLoading(false);
         return { error };
       }
-      setIsLoading(false);
+      
+      console.log('OAuth sign-in initiated successfully');
+      // Don't reset isLoading here as we're about to redirect
       return { error: null };
     } catch (error: any) {
       toast.error('Google sign-in failed: ' + (error.message || 'Unknown error'));
