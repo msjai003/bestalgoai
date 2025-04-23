@@ -198,6 +198,8 @@ const AuthCallback = () => {
         }
 
         // Handle access token in hash fragment (for legacy auth flows)
+        // Define hashParams here for access token handling
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
 
