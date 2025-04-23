@@ -23,7 +23,8 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
 
-        if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
+        // Handle any path that includes 'callback' for Google OAuth
+        if (currentPath.includes('/callback')) {
           const searchParams = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
@@ -56,52 +57,61 @@ const AuthCallback = () => {
           if (code) {
             console.log('Found auth code in callback, exchanging for session');
 
-            // Exchange code for session explicitly
-            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            try {
+              // Exchange code for session explicitly
+              const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
-            if (exchangeError) {
-              console.error('Error exchanging code for session:', exchangeError);
-              setError('Authentication Error');
-              setErrorDetails(exchangeError.message || 'Failed to complete authentication.');
-              setIsProcessing(false);
-              return;
-            }
-
-            if (data?.session) {
-              const user = data.session.user;
-              console.log('Successfully exchanged code for session', user);
-
-              const isGoogleAuth = user?.app_metadata?.provider === 'google';
-
-              // Here explicitly set session, though exchangeCodeForSession should do it
-              // This ensures auth state is updated and triggers listeners
-              await supabase.auth.setSession({
-                access_token: data.session.access_token,
-                refresh_token: data.session.refresh_token
-              });
-
-              // Use timeout to delay navigation for session setup
-              if (isGoogleAuth) {
-                // Check if user missing full_name => redirect registration
-                const needsRegistration = !user?.user_metadata?.full_name;
-                const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
-
-                console.log(`Google auth detected. Redirecting to ${redirectPath} after delay.`);
-
-                setTimeout(() => {
-                  navigate(redirectPath, { replace: true });
-                }, 1500);
-              } else {
-                // Non-Google user redirect to dashboard fast
-                setTimeout(() => {
-                  navigate('/dashboard', { replace: true });
-                }, 1000);
+              if (exchangeError) {
+                console.error('Error exchanging code for session:', exchangeError);
+                setError('Authentication Error');
+                setErrorDetails(exchangeError.message || 'Failed to complete authentication.');
+                setIsProcessing(false);
+                return;
               }
-              return;
-            } else {
-              console.error('No session returned after code exchange');
+
+              if (data?.session) {
+                const user = data.session.user;
+                console.log('Successfully exchanged code for session', user);
+
+                const isGoogleAuth = user?.app_metadata?.provider === 'google';
+
+                console.log('User metadata:', user?.user_metadata);
+                console.log('App metadata:', user?.app_metadata);
+                console.log('Is Google Auth:', isGoogleAuth);
+
+                // Here explicitly set session, though exchangeCodeForSession should do it
+                await supabase.auth.setSession({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token
+                });
+
+                // Use a delay to ensure session is properly established
+                setTimeout(() => {
+                  if (isGoogleAuth) {
+                    // Check if user missing full_name => redirect registration
+                    const needsRegistration = !user?.user_metadata?.full_name;
+                    const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
+
+                    console.log(`Google auth detected. Redirecting to ${redirectPath} after delay.`);
+                    navigate(redirectPath, { replace: true });
+                  } else {
+                    // Non-Google user redirect to dashboard
+                    console.log('Non-Google auth. Redirecting to dashboard after delay.');
+                    navigate('/dashboard', { replace: true });
+                  }
+                }, 2000);
+                return;
+              } else {
+                console.error('No session returned after code exchange');
+                setError('Authentication Error');
+                setErrorDetails('Failed to retrieve session.');
+                setIsProcessing(false);
+                return;
+              }
+            } catch (exchangeErr) {
+              console.error('Exception during code exchange:', exchangeErr);
               setError('Authentication Error');
-              setErrorDetails('Failed to retrieve session.');
+              setErrorDetails('Error during authentication. Please try again.');
               setIsProcessing(false);
               return;
             }

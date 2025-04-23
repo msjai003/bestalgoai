@@ -33,10 +33,10 @@ export const handleAuthSession = async (
     if (sessionData?.session?.user) {
       console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
       
-      // Using a longer delay for Google auth to ensure session is properly set
+      // Using a longer delay for auth to ensure session is properly set
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }, 2000);
     } else {
       console.error('No user in session data after setting session');
@@ -73,6 +73,6 @@ export const handleAuthError = (
     }, 5000);
   } else {
     console.log('No error specified, redirecting to dashboard');
-    navigate('/dashboard');
+    navigate('/dashboard', { replace: true });
   }
 };

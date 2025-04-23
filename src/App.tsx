@@ -65,10 +65,12 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
+      {/* Auth callback paths - important to catch all potential callback formats */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
+      <Route path="/callback" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
