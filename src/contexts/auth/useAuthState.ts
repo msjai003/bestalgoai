@@ -12,6 +12,7 @@ export const useAuthState = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log("Checking session on initialization...");
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -20,7 +21,9 @@ export const useAuthState = () => {
         }
         
         if (data.session?.user) {
-          console.log('Active session found for user:', data.session.user.id);
+          console.log('Active session found on init for user:', data.session.user.id);
+          console.log('User auth provider:', data.session.user.app_metadata?.provider);
+          
           const authUser: AuthUser = {
             id: data.session.user.id,
             email: data.session.user.email || '',
@@ -33,9 +36,13 @@ export const useAuthState = () => {
           
           // If this is a Google user, fetch their details
           if (data.session.user.app_metadata?.provider === 'google') {
-            console.log('Google user detected, fetching details');
-            fetchUserGoogleDetails(data.session.user.id);
+            console.log('Google user detected on init, fetching details');
+            setTimeout(() => {
+              fetchUserGoogleDetails(data.session.user.id);
+            }, 0);
           }
+        } else {
+          console.log('No active session found on initialization');
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -46,6 +53,7 @@ export const useAuthState = () => {
     
     checkSession();
     
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);

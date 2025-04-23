@@ -49,7 +49,7 @@ const Auth = () => {
           setErrorMessage(error.message || 'An error occurred during login');
         }
       } else {
-        navigate('/dashboard');
+        window.location.replace('/dashboard');
         toast.success('Login successful!');
       }
     } catch (error: any) {

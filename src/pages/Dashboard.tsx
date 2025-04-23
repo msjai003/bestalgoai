@@ -17,6 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
@@ -36,6 +37,7 @@ const Dashboard = () => {
           }
           
           setIsVerifyingAuth(false);
+          setSessionChecked(true);
         } else {
           console.log('No active session found on dashboard, redirecting to auth');
           toast({
@@ -43,7 +45,7 @@ const Dashboard = () => {
             description: "Please log in to access the dashboard.",
             variant: "destructive",
           });
-          navigate('/auth');
+          window.location.replace('/auth');
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
@@ -60,7 +62,7 @@ const Dashboard = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed in Dashboard:', event);
       if (event === 'SIGNED_OUT') {
-        navigate('/auth');
+        window.location.replace('/auth');
       }
     });
     
@@ -70,7 +72,7 @@ const Dashboard = () => {
   }, [navigate]);
   
   useEffect(() => {
-    if (!user) {
+    if (!user || !sessionChecked) {
       return;
     }
     
@@ -93,7 +95,7 @@ const Dashboard = () => {
     };
     
     checkPremium();
-  }, [user]);
+  }, [user, sessionChecked]);
 
   if (isVerifyingAuth || user === null) {
     return (

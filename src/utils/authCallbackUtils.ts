@@ -53,10 +53,10 @@ export const handleAuthSession = async (
       const { data: verifyData } = await supabase.auth.getUser();
       console.log('Verified user before redirect:', verifyData?.user?.id);
 
+      // Use a hard redirect with some delay to ensure session is established
       setTimeout(() => {
-        console.log('Redirecting to dashboard after successful auth');
-        // Use window.location for a hard redirect instead of navigate
-        window.location.href = '/dashboard';
+        console.log('Redirecting to dashboard after successful auth with hard redirect');
+        window.location.replace('/dashboard');
       }, 1000);
     } else {
       console.error('No user in session data after setting session');
@@ -92,7 +92,7 @@ export const handleAuthError = (
     }, 5000);
   } else {
     // Hard redirect to ensure full page reload
-    window.location.href = '/dashboard';
+    window.location.replace('/dashboard');
   }
 };
 

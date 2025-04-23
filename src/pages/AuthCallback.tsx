@@ -107,7 +107,8 @@ const AuthCallback = () => {
                 // Redirect to dashboard with a full page reload
                 setTimeout(() => {
                   console.log('Redirecting to dashboard after successful authentication');
-                  window.location.href = '/dashboard';
+                  // Using replace instead of href for a cleaner navigation
+                  window.location.replace('/dashboard');
                 }, 1000);
                 return;
               } else {
@@ -145,7 +146,7 @@ const AuthCallback = () => {
         if (sessionData.session) {
           console.log('User already has session, redirecting to dashboard');
           // Hard redirect to dashboard
-          window.location.href = '/dashboard';
+          window.location.replace('/dashboard');
           return;
         }
 

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,82 +11,39 @@ interface AuthActionsProps {
   handleGoogleUser?: (user: any) => Promise<void>;
 }
 
-export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: AuthActionsProps) => {
+export const useAuthActions = ({
+  setUser,
+  setIsLoading,
+  handleGoogleUser
+}: AuthActionsProps) => {
   const { toast } = useToast();
 
   const signInWithGoogle = async () => {
+    setIsLoading(true);
+    console.log('Attempting to sign in with Google...');
+    
     try {
-      setIsLoading(true);
-
-      console.log('Attempting Google sign-in with Supabase');
-
-      // Use your deployed callback path 
-      // Make sure this exactly matches what's configured in Supabase dashboard
-      const redirectTo = `${window.location.origin}/auth/callback`;
-
-      console.log('Using redirect URL:', redirectTo);
-
+      // We need to use redirect method for more reliable auth persistence
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
+          redirectTo: `${window.location.origin}/auth/callback`,
         }
       });
-
+      
       if (error) {
-        console.error('Error during Google sign in:', error);
-        return { error };
+        console.error('Error signing in with Google:', error);
+        return { data: null, error };
       }
-
-      if (data?.url) {
-        console.log('Got redirect URL from Supabase:', data.url);
-        window.location.href = data.url;
-        return { error: null };
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Falling back to mock Google auth in development');
-        const mockResult = await mockSignInWithGoogle();
-
-        if (mockResult.error) {
-          toast.error(mockResult.error.message);
-          return { error: mockResult.error };
-        }
-
-        if (mockResult.data?.user) {
-          const authUser: AuthUser = {
-            id: mockResult.data.user.id,
-            email: mockResult.data.user.email,
-            app_metadata: {},
-            user_metadata: {},
-            aud: "authenticated",
-            created_at: new Date().toISOString()
-          };
-
-          setUser(authUser);
-          toast.success('Google login successful! (mock)');
-
-          if (handleGoogleUser) {
-            await handleGoogleUser(mockResult.data.user);
-          }
-
-          return { error: null, data: { user: authUser } };
-        }
-      } else {
-        console.error('Google authentication failed - no redirect URL provided');
-        return { error: new Error('Google authentication failed') };
-      }
-
-      return { error: null };
-
+      
+      console.log('Google sign-in initiated successfully:', data);
+      return { data, error: null };
     } catch (error: any) {
-      console.error('Exception during Google sign in:', error);
-      toast.error('Error during Google sign in: ' + (error.message || 'Unknown error'));
-      return { error: error as Error };
+      console.error('Exception during Google sign-in:', error);
+      return { 
+        data: null, 
+        error: { message: error.message || 'An error occurred during Google sign-in' } 
+      };
     } finally {
       setIsLoading(false);
     }
