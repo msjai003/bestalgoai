@@ -1,5 +1,2 @@
 
-project_id = "fzvrozrjtvflksumiqsk"
-
-[functions.send-welcome-email-resend.secrets]
-RESEND_API_KEY = "re_imwQvzLt_2M4brcto7qeytmHHQrewZoap"
+project_id = "fzvrozrjtvflsk"

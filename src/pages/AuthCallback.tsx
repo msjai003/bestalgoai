@@ -1,232 +1,212 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoogleAuth } from '@/utils/authCallbackUtils';
-import LoadingState from '@/components/auth/LoadingState';
-import ErrorState from '@/components/auth/ErrorState';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
-const GOOGLE_REGISTER_TOAST_SHOWN_KEY = "google.registered_toast_shown";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
+import { Button } from '@/components/ui/button';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
-    const processCallback = async () => {
+    const handleCallback = async () => {
       try {
-        const fullUrl = window.location.href;
-        const currentPath = location.pathname;
+        // First check for recovery token in URL (for password reset links)
         const searchParams = new URLSearchParams(window.location.search);
-
-        // Always redirect to dashboard after successful auth
-        const redirectTo = '/dashboard';
-
-        console.log('Processing auth callback on path:', currentPath);
-        console.log('Full callback URL:', fullUrl);
-        console.log('Redirect destination:', redirectTo);
-
-        // Handle callback for Google OAuth or any auth provider
-        if (currentPath.includes('/callback')) {
-          const code = searchParams.get('code');
-          const hashFragment = window.location.hash.substring(1);
-          const hashParams = new URLSearchParams(hashFragment);
-          const errorParam = searchParams.get('error') || hashParams.get('error');
-          const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
-
-          setDebugInfo({
-            code: !!code,
-            errorParam,
-            errorDescription,
-            fullSearch: window.location.search,
-            fullHash: window.location.hash,
-            redirectTo
-          });
-
-          // Error came from OAuth
-          if (errorParam) {
-            handleAuthError(
-              errorParam,
-              errorDescription,
-              setError,
-              setErrorDetails,
-              setIsProcessing,
-              navigate
-            );
-            return;
-          }
-
-          // Handle code exchange
-          if (code) {
-            try {
-              // Clear tokens for clean state
-              localStorage.removeItem('supabase.auth.token');
-              sessionStorage.removeItem('supabase.auth.token');
-              
-              console.log('Exchanging code for session...');
-              const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-              if (exchangeError) {
-                console.error('Error exchanging code for session:', exchangeError);
-                setError('Authentication Error');
-                setErrorDetails(exchangeError.message || 'Failed to complete authentication.');
-                setIsProcessing(false);
-                return;
-              }
-
-              // Session check
-              if (data?.session) {
-                const user = data.session.user;
-
-                // Store session tokens
-                const sessionData = {
-                  access_token: data.session.access_token,
-                  refresh_token: data.session.refresh_token,
-                  expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
-                };
-                localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
-                sessionStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
-
-                // Set session in Supabase client
-                await supabase.auth.setSession({
-                  access_token: data.session.access_token,
-                  refresh_token: data.session.refresh_token
-                });
-
-                // Persist Google user details if applicable
-                let isNewGoogleUser = false;
-                if (user?.app_metadata?.provider === 'google') {
-                  // Check if this user just got created by querying google_user_details
-                  try {
-                    const { data: googleInfo, error: gErr } = await supabase
-                      .from('google_user_details')
-                      .select('created_at')
-                      .eq('id', user.id)
-                      .maybeSingle();
-
-                    if (googleInfo && googleInfo.created_at) {
-                      // If created_at timestamp is within the last 2 minutes, consider as new registration
-                      const now = new Date();
-                      const createdAt = new Date(googleInfo.created_at);
-                      const diffMs = now.getTime() - createdAt.getTime();
-                      if (diffMs < 120000) {
-                        isNewGoogleUser = true;
-                      }
-                    }
-                  } catch (err) {
-                    // Fallback: skip new user toast
-                  }
-
-                  await persistGoogleAuth(data.session);
-
-                  // Fetch latest user details just in case
-                  try {
-                    await supabase.auth.getUser();
-                  } catch {}
-                }
-
-                // Show toast only if this is a new Google registration and not shown before
-                if (isNewGoogleUser && !localStorage.getItem(GOOGLE_REGISTER_TOAST_SHOWN_KEY)) {
-                  toast.success('Your account was successfully registered.');
-                  localStorage.setItem(GOOGLE_REGISTER_TOAST_SHOWN_KEY, 'true');
-                } else {
-                  toast.success('Sign-in successful!');
-                }
-
-                // Always redirect after login/registration
-                window.location.href = '/dashboard';
-                return;
-              } else {
-                console.error('No session data returned from code exchange');
-                setError('Authentication Error');
-                setErrorDetails('Failed to retrieve session.');
-                setIsProcessing(false);
-                return;
-              }
-            } catch (exchangeErr) {
-              console.error('Exception during code exchange:', exchangeErr);
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
+        
+        console.log('Auth callback processing, search params:', { token: !!token, type });
+        
+        // If this is a recovery flow with token in the URL
+        if (token && type === 'recovery') {
+          console.log('Processing password recovery with token');
+          // Redirect to forgot-password page with the token
+          navigate(`/forgot-password?token=${token}&type=${type}`);
+          return;
+        }
+        
+        // Handle hash fragment tokens (normal auth flow)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const hashType = hashParams.get('type');
+        
+        console.log('Auth callback processing hash params:', { 
+          accessToken: !!accessToken, 
+          refreshToken: !!refreshToken, 
+          type: hashType 
+        });
+        
+        // If we have tokens in the URL hash, we came from a successful auth flow
+        if (accessToken && refreshToken) {
+          try {
+            // Try to set the session with the tokens from the URL
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (sessionError) {
+              console.error('Error setting session from callback:', sessionError);
               setError('Authentication Error');
-              setErrorDetails('Error during authentication. Please try again.');
+              setErrorDetails(sessionError.message || 'Failed to authenticate session. Please try again.');
               setIsProcessing(false);
               return;
             }
+            
+            console.log('Auth callback: Session set successfully');
+            
+            // If we have a Google provider, save the user details
+            if (sessionData.session?.user?.app_metadata?.provider === 'google') {
+              console.log('Google user authenticated, saving details...');
+              
+              const user = sessionData.session.user;
+              
+              // Extract Google user data from user.user_metadata
+              const googleData = {
+                email: user.email || '',
+                google_id: user.user_metadata.sub,
+                picture_url: user.user_metadata.picture,
+                given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
+                family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
+                locale: user.user_metadata.locale,
+                verified_email: user.user_metadata.email_verified
+              };
+              
+              console.log('Saving Google user details with data:', googleData);
+              
+              // Save Google user data to our google_user_details table
+              const saveSuccess = await saveGoogleUserDetails(user.id, googleData);
+              
+              if (saveSuccess) {
+                console.log('Google user details saved successfully');
+              } else {
+                console.error('Failed to save Google user details');
+              }
+              
+              // Check if we need to complete registration (if user profile doesn't exist)
+              try {
+                const { data: profileData } = await supabase
+                  .from('user_profiles')
+                  .select('*')
+                  .eq('id', user.id)
+                  .maybeSingle();
+                  
+                if (!profileData) {
+                  console.log('User profile not found, creating basic profile...');
+                  
+                  // Create a basic profile for the Google user
+                  const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert({
+                      id: user.id,
+                      full_name: googleData.given_name + ' ' + (googleData.family_name || ''),
+                      email: googleData.email,
+                      trading_experience: 'beginner',
+                      profile_picture: googleData.picture_url
+                    });
+                    
+                  if (profileError) {
+                    console.error('Error creating profile for Google user:', profileError);
+                  } else {
+                    console.log('Basic profile created for Google user');
+                  }
+                }
+              } catch (profileErr) {
+                console.error('Error checking/creating user profile:', profileErr);
+                // Continue to dashboard even if profile creation fails
+                // We'll handle missing profile data elsewhere
+              }
+            }
+            
+            // Check if this is a password reset flow
+            if (hashType === 'recovery') {
+              console.log('Auth callback: Redirecting to forgot-password for hash recovery');
+              navigate('/forgot-password?type=recovery');
+              return;
+            }
+            
+            // For normal login, redirect to dashboard or home
+            navigate('/dashboard');
+          } catch (err) {
+            console.error('Exception setting session in callback:', err);
+            setError('Authentication Failed');
+            setErrorDetails('An unexpected error occurred while processing your login. Please try again.');
+            setIsProcessing(false);
+          }
+        } else {
+          // No tokens found but we're on the callback page
+          const error = searchParams.get('error');
+          const errorDescription = searchParams.get('error_description');
+          
+          if (error) {
+            console.error('Auth callback error:', error, errorDescription);
+            setError('Authentication Error');
+            setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
+            setIsProcessing(false);
+          } else {
+            // No tokens and no error - just redirect to auth page
+            navigate('/auth');
           }
         }
-
-        // Password recovery fallback
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        if (token && type === 'recovery') {
-          handlePasswordRecovery(token, type, navigate);
-          return;
-        }
-
-        // Check for an already existing session, redirect if found
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionData?.session) {
-          window.location.href = '/dashboard';
-          return;
-        }
-
-        // Legacy fragment tokens
-        const hashFragmentLegacy = window.location.hash.substring(1);
-        const hashParamsLegacy = new URLSearchParams(hashFragmentLegacy);
-        const accessToken = hashParamsLegacy.get('access_token');
-        const refreshToken = hashParamsLegacy.get('refresh_token');
-        if (accessToken && refreshToken) {
-          await handleAuthSession(
-            accessToken,
-            refreshToken,
-            navigate,
-            setError,
-            setErrorDetails,
-            setIsProcessing,
-            '/dashboard'
-          );
-          return;
-        }
-
-        // No recognisable auth params, return to auth
-        console.log('No recognizable auth parameters found, redirecting to auth page');
-        setTimeout(() => {
-          navigate('/auth');
-        }, 500);
       } catch (err) {
-        console.error('Unhandled exception in auth callback:', err);
+        console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');
         setErrorDetails('An unexpected error occurred. Please try again.');
         setIsProcessing(false);
       }
     };
 
-    processCallback();
-  }, [navigate, retryCount, location.pathname, toast]);
+    handleCallback();
+  }, [navigate, retryCount]);
 
   const handleRetry = () => {
     setError(null);
     setErrorDetails(null);
     setIsProcessing(true);
     setRetryCount(prev => prev + 1);
-    toast({ title: "Retrying authentication", description: "Please wait..." });
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white p-6">
       {error ? (
-        <ErrorState
-          error={error}
-          errorDetails={errorDetails}
-          onRetry={handleRetry}
-          debugInfo={debugInfo}
-        />
+        <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
+          <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="h-8 w-8 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">{error}</h1>
+          {errorDetails && <p className="text-red-400 mb-6">{errorDetails}</p>}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={handleRetry}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+            <Link to="/auth">
+              <Button className="w-full">
+                Return to Login
+              </Button>
+            </Link>
+          </div>
+        </div>
       ) : (
-        <LoadingState message="Processing your authentication..." />
+        <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
+          <h1 className="text-xl font-semibold">Authenticating...</h1>
+          <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
+          <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
+            <div className="bg-gradient-to-r from-cyan to-cyan/70 h-full animate-pulse"></div>
+          </div>
+        </div>
       )}
     </div>
   );

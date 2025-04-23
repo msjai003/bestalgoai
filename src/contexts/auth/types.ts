@@ -15,17 +15,13 @@ export interface GoogleUserDetails {
 export interface AuthUser {
   id: string;
   email: string;
-  app_metadata: Record<string, any>;
-  user_metadata: Record<string, any>;
-  aud: string;
-  created_at: string;
 }
 
 export interface AuthContextType {
   user: AuthUser | null;
   googleUserDetails: GoogleUserDetails | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
   signUp: (email: string, password: string, confirmPassword: string, userData: { 
     fullName: string, 
     mobileNumber: string, 

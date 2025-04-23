@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -18,75 +16,15 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signInWithGoogle, user } = useAuth();
+  const { signIn, signInWithGoogle, user, googleUserDetails } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        setIsLoading(true);
-        // Clear any authentication errors
-        setErrorMessage(null);
-        
-        console.log('Checking for active session on Auth page');
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error checking session on Auth page:', error);
-        }
-        
-        if (data?.session) {
-          console.log('Active session detected on Auth page:', data.session.user.id);
-          
-          // Store session in localStorage for redundancy
-          localStorage.setItem('supabase.auth.token', JSON.stringify({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-            expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
-          }));
-
-          // Set the session in the Supabase client
-          try {
-            await supabase.auth.setSession({
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token
-            });
-          } catch (setErr) {
-            console.error('Error setting session:', setErr);
-          }
-
-          // Verify the session is still valid by getting the user
-          const { data: userData, error: userError } = await supabase.auth.getUser();
-          
-          if (userError) {
-            console.error('Error verifying user on Auth page:', userError);
-            // Invalid session, clear it
-            await supabase.auth.signOut();
-          } else if (userData?.user) {
-            console.log('Valid user found, redirecting to dashboard');
-            // Use window.location for a hard redirect to ensure we get a fresh page load
-            window.location.href = '/dashboard';
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Exception checking session on Auth page:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkSession();
-  }, []);
-  
-  useEffect(() => {
     if (user) {
-      console.log('User state detected in Auth page, redirecting to dashboard');
-      // Use window.location for a hard redirect
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,8 +49,8 @@ const Auth = () => {
           setErrorMessage(error.message || 'An error occurred during login');
         }
       } else {
+        navigate('/dashboard');
         toast.success('Login successful!');
-        window.location.href = '/dashboard';
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -127,20 +65,25 @@ const Auth = () => {
     setIsGoogleLoading(true);
     
     try {
+      toast.info("Initiating Google login...");
       console.log("Starting Google login process");
+      
       const { error } = await signInWithGoogle();
       
       if (error) {
         console.error('Google login error:', error);
         setErrorMessage(error.message || 'Error signing in with Google');
         toast.error(error.message || 'Error signing in with Google');
-        setIsGoogleLoading(false);
+      } else {
+        toast.success('Google login initiated');
+        // Note: The redirect is handled by Supabase - we may not reach this point
+        console.log('Google login successful, awaiting redirect');
       }
-      // Note: We don't need to do anything on success as the redirect is handled by Supabase
     } catch (error: any) {
-      console.error('Google login exception:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred');
+      console.error('Google login error:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
       toast.error(error.message || 'An unexpected error occurred');
+    } finally {
       setIsGoogleLoading(false);
     }
   };

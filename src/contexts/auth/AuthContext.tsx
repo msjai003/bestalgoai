@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const {
     signIn,
-    signInWithGoogle: signInWithGoogleAction,
+    signInWithGoogle,
     signUp,
     signOut,
     resetPassword,
@@ -50,11 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signInWithGoogle: async () => {
-      const result = await signInWithGoogleAction();
+      const result = await signInWithGoogle();
       if (result.error) {
         toast.error("Google login failed. Please try again.");
+      } else if (result.data?.user) {
+        toast.success("Welcome! You're now logged in with Google.");
       }
-      return { error: result.error };
+      return result;
     },
     signUp: async (email, password, confirmPassword, userData) => {
       const result = await signUp(email, password, confirmPassword, userData);
@@ -66,7 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signOut: async () => {
+      // Remove the toast notification after logout
       await signOut();
+      // No toast message here
     },
     resetPassword,
     updatePassword: async (newPassword) => {
