@@ -58,7 +58,6 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Standard routes */}
       <Route path="/" element={<Index />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
@@ -66,13 +65,11 @@ function AppRoutes() {
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Auth callback routes with explicit paths for all variations */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       
-      {/* Registration routes */}
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -83,7 +80,6 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       
-      {/* Protected routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
