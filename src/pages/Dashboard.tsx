@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -41,6 +42,18 @@ const Dashboard = () => {
         if (sessionError) {
           console.error('Error getting session on dashboard:', sessionError);
           toast.error('Session verification failed');
+          
+          // Ensure we're completely logged out before redirecting
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {
+            console.error('Error during signout:', e);
+          }
+          
+          // Clear any stored tokens
+          localStorage.removeItem('supabase.auth.token');
+          sessionStorage.removeItem('supabase.auth.token');
+          
           window.location.href = '/auth';
           return;
         }
@@ -55,6 +68,16 @@ const Dashboard = () => {
             refresh_token: sessionData.session.refresh_token,
             expires_at: Math.floor(Date.now() / 1000) + sessionData.session.expires_in
           }));
+          
+          // Force set the session in the client for consistency
+          try {
+            await supabase.auth.setSession({
+              access_token: sessionData.session.access_token,
+              refresh_token: sessionData.session.refresh_token
+            });
+          } catch (e) {
+            console.error('Error setting session:', e);
+          }
           
           // If this is a Google user, make sure we fetch their details
           if (sessionData.session.user.app_metadata?.provider === 'google') {

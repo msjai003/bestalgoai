@@ -46,6 +46,16 @@ const Auth = () => {
             expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
           }));
 
+          // Set the session in the Supabase client
+          try {
+            await supabase.auth.setSession({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token
+            });
+          } catch (setErr) {
+            console.error('Error setting session:', setErr);
+          }
+
           // Verify the session is still valid by getting the user
           const { data: userData, error: userError } = await supabase.auth.getUser();
           

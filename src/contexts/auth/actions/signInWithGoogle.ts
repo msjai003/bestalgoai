@@ -32,6 +32,7 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
 
       // Get the current URL for constructing the callback URL
       const origin = window.location.origin;
+      
       // Explicitly include redirect_to=/dashboard in callback URL
       // This is critical for proper redirection after authentication
       const callbackUrl = `${origin}/auth/callback?redirect_to=/dashboard`;

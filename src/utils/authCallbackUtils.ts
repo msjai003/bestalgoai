@@ -131,14 +131,18 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     }));
     
     // Store session data in browser storage for persistence
-    const { error } = await supabase.auth.setSession({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token
-    });
-    
-    if (error) {
-      console.error('Failed to persist session:', error);
-      return false;
+    try {
+      const { error } = await supabase.auth.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token
+      });
+      
+      if (error) {
+        console.error('Failed to persist session:', error);
+        return false;
+      }
+    } catch (err) {
+      console.error('Error setting session:', err);
     }
     
     // Save Google user data if this is a Google auth
@@ -147,8 +151,12 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     }
     
     // Force verification of session before returning
-    const { data: verifyData } = await supabase.auth.getUser();
-    console.log('Verified user after setting session:', verifyData?.user?.id);
+    try {
+      const { data: verifyData } = await supabase.auth.getUser();
+      console.log('Verified user after setting session:', verifyData?.user?.id);
+    } catch (err) {
+      console.error('Error verifying user:', err);
+    }
     
     return true;
   } catch (error) {
@@ -169,9 +177,9 @@ const saveGoogleUserData = async (user: any): Promise<boolean> => {
     
     const googleData = {
       email: user.email || '',
-      google_id: user.user_metadata?.sub,
-      picture_url: user.user_metadata?.picture,
-      given_name: user.user_metadata?.given_name,
+      google_id: user.identities?.[0]?.id || user.user_metadata?.sub,
+      picture_url: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+      given_name: user.user_metadata?.name || user.user_metadata?.given_name,
       family_name: user.user_metadata?.family_name,
       locale: user.user_metadata?.locale,
       verified_email: user.user_metadata?.email_verified
