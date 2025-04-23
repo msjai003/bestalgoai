@@ -231,8 +231,6 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
-          example: string | null
-          explanation: string | null
           id: number
           options: string[] | null
           question: string
@@ -243,8 +241,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string[] | null
           question: string
@@ -255,8 +251,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string[] | null
           question?: string
@@ -696,8 +690,6 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
-          example: string | null
-          explanation: string | null
           id: number
           options: string[] | null
           question: string
@@ -708,8 +700,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string[] | null
           question: string
@@ -720,8 +710,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string[] | null
           question?: string
@@ -1065,8 +1053,6 @@ export type Database = {
           category: string
           created_at: string
           display_order: number
-          example: string | null
-          explanation: string | null
           id: number
           options: string | null
           question: string
@@ -1077,8 +1063,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string | null
           question: string
@@ -1089,8 +1073,6 @@ export type Database = {
           category?: string
           created_at?: string
           display_order?: number
-          example?: string | null
-          explanation?: string | null
           id?: number
           options?: string | null
           question?: string

@@ -1,8 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,21 +8,22 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailRequest {
-  email: string;
-  name: string;
-  welcomeMessage?: string;
-}
+// SMTP configuration - using the Gmail SMTP
+const SMTP_HOST = "smtp.gmail.com";
+const SMTP_PORT = 587; // Changed to standard TLS port for better deliverability
+const SMTP_USERNAME = "learnings1.infocap@gmail.com";
+const SMTP_PASSWORD = "jcpv fako lllb dfre"; // App password for Gmail
+const SENDER_EMAIL = "learnings1.infocap@gmail.com";
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log("Edge function triggered: Attempting to send welcome email via Resend");
+    console.log("Edge function triggered: Attempting to send welcome email");
     
     // Parse request body
     let requestBody;
@@ -42,7 +41,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, name, welcomeMessage } = requestBody as EmailRequest;
+    const { email, name, welcomeMessage } = requestBody;
     console.log(`Email request received - To: ${email}, Name: ${name}`);
 
     if (!email || !name) {
@@ -103,21 +102,59 @@ serve(async (req) => {
       </html>
     `;
     
-    console.log("Sending email via Resend...");
-    const { data, error } = await resend.emails.send({
-      from: "InfoCap <onboarding@resend.dev>",
-      to: [email],
-      subject: "Welcome to InfoCap!",
-      html: htmlContent,
-    });
+    console.log("Starting SMTP connection process...");
     
-    if (error) {
-      console.error("Resend error:", error);
+    try {
+      // Using TLS instead of direct SSL for better compatibility
+      const client = new SmtpClient();
+      
+      // Connect to SMTP server with detailed logging
+      console.log(`Connecting to SMTP server ${SMTP_HOST}:${SMTP_PORT}...`);
+      await client.connectTLS({
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        username: SMTP_USERNAME,
+        password: SMTP_PASSWORD,
+      });
+      console.log("Successfully connected to SMTP server");
+      
+      // Send the email with detailed logging
+      console.log(`Preparing to send email to ${email}...`);
+      const result = await client.send({
+        from: `InfoCap <${SENDER_EMAIL}>`,
+        to: email,
+        subject: "Welcome to InfoCap!",
+        content: "Welcome to InfoCap Company!",
+        html: htmlContent,
+      });
+      
+      console.log("Email sent successfully:", result);
+      
+      // Close connection
+      await client.close();
+      console.log("SMTP connection closed");
+      
+      return new Response(
+        JSON.stringify({ success: true, message: "Email sent successfully" }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    } catch (smtpError) {
+      // Detailed SMTP error logging
+      console.error("SMTP error details:", {
+        message: smtpError.message,
+        name: smtpError.name,
+        stack: smtpError.stack,
+        code: smtpError.code
+      });
+      
       return new Response(
         JSON.stringify({ 
           error: "Failed to send email", 
-          details: error.message,
-          code: error.statusCode
+          details: smtpError.message,
+          code: smtpError.code || "UNKNOWN"
         }),
         {
           status: 500,
@@ -125,26 +162,10 @@ serve(async (req) => {
         }
       );
     }
-    
-    console.log("Email sent successfully:", data);
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Email sent successfully",
-        data
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Unexpected error in edge function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: "Internal server error", 
-        details: error.message 
-      }),
+      JSON.stringify({ error: "Internal server error", details: error.message }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }

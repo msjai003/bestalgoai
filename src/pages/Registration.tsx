@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -30,8 +31,6 @@ import { supabase } from '@/integrations/supabase/client';
 import RegistrationHeader from '@/components/registration/RegistrationHeader';
 import ProgressIndicator from '@/components/registration/ProgressIndicator';
 import RegistrationStepOne from '@/components/registration/RegistrationStepOne';
-import { useRegistration } from '@/hooks/registration';
-import { useWelcomeMessages } from '@/hooks/registration/useWelcomeMessages';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -49,7 +48,6 @@ const Registration = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { sendWelcomeMessages } = useWelcomeMessages();
 
   useEffect(() => {
     if (user) {
@@ -149,31 +147,10 @@ const Registration = () => {
         } else {
           setErrorMessage(error.message);
         }
-        setIsLoading(false);
         return;
       }
       
       if (data?.user) {
-        // Send welcome messages
-        console.log("Registration successful, sending welcome messages");
-        
-        try {
-          // Explicitly call the welcome message function
-          const welcomeResult = await sendWelcomeMessages(
-            formData.email,
-            formData.fullName,
-            formData.mobile
-          );
-          
-          if (welcomeResult) {
-            console.log("Welcome messages sent successfully");
-          } else {
-            console.warn("Welcome messages may not have been sent successfully");
-          }
-        } catch (welcomeError) {
-          console.error("Error sending welcome messages:", welcomeError);
-        }
-        
         toast.success('Account created successfully! Please check your email inbox.');
         
         // Redirect after a short delay
