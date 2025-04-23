@@ -68,6 +68,10 @@ const AuthCallback = () => {
             console.log('Found auth code in callback, exchanging for session');
 
             try {
+              // Clear any existing tokens to ensure a clean state
+              localStorage.removeItem('supabase.auth.token');
+              sessionStorage.removeItem('supabase.auth.token');
+              
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
               if (exchangeError) {
@@ -88,8 +92,7 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Force a strong session commitment
-                // Store session in both localStorage and sessionStorage for redundancy
+                // Explicitly set session storage with redundancy
                 localStorage.setItem('supabase.auth.token', JSON.stringify({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
@@ -103,19 +106,28 @@ const AuthCallback = () => {
                 }));
                 
                 // Explicitly set session with Supabase
-                await supabase.auth.setSession({
+                const { error: setSessionError } = await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
                 
-                // Ensure Google user details are persisted
-                const sessionPersisted = await persistGoogleAuth(data.session);
+                if (setSessionError) {
+                  console.error('Error setting session:', setSessionError);
+                  setError('Authentication Error');
+                  setErrorDetails('Failed to set session: ' + setSessionError.message);
+                  setIsProcessing(false);
+                  return;
+                }
                 
-                if (!sessionPersisted) {
-                  console.warn('Session may not have been properly persisted');
+                // Persist Google user details if applicable
+                if (isGoogleAuth) {
+                  const sessionPersisted = await persistGoogleAuth(data.session);
+                  if (!sessionPersisted) {
+                    console.warn('Session may not have been properly persisted');
+                  }
                 }
 
-                toast.success('Google sign-in successful!');
+                toast.success('Sign-in successful!');
                 
                 // Force verification of session before redirect
                 const { data: verifyData, error: verifyError } = await supabase.auth.getUser();
@@ -127,8 +139,11 @@ const AuthCallback = () => {
                 
                 if (verifyData?.user) {
                   console.log('Verified user exists, redirecting to dashboard');
-                  // Use a hard redirect to ensure a clean navigation with proper session
-                  window.location.href = '/dashboard';
+                  // Wait a small delay to ensure all state is properly updated
+                  setTimeout(() => {
+                    // Use a hard redirect to ensure a clean navigation with proper session
+                    window.location.href = '/dashboard';
+                  }, 100);
                   return;
                 } else {
                   console.error('User verification failed after auth');
@@ -204,7 +219,7 @@ const AuthCallback = () => {
         }
 
         // If we reach here, no valid auth parameters were found
-        console.log('No auth tokens or code, redirecting to auth page');
+        console.log('No auth tokens or code found in callback, redirecting to auth page');
         setTimeout(() => {
           navigate('/auth');
         }, 500);

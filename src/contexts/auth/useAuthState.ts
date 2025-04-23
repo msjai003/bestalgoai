@@ -17,6 +17,8 @@ export const useAuthState = () => {
       if (googleDetails) {
         console.log('Found Google user details:', googleDetails);
         setGoogleUserDetails(googleDetails);
+      } else {
+        console.log('No Google user details found for user:', userId);
       }
     } catch (error) {
       console.error('Error fetching Google user details:', error);
@@ -26,7 +28,10 @@ export const useAuthState = () => {
   // Handle Google sign-in data
   const handleGoogleSignIn = useCallback(async (user: any) => {
     try {
-      if (!user || !user.id) return;
+      if (!user || !user.id) {
+        console.log('No valid user provided to handleGoogleSignIn');
+        return;
+      }
       
       console.log('Handling Google user sign-in for:', user.id);
       
@@ -44,7 +49,13 @@ export const useAuthState = () => {
       console.log('Saving Google user data:', googleData);
       
       // Save Google user details to database
-      await saveGoogleUserDetails(user.id, googleData);
+      const savedSuccessfully = await saveGoogleUserDetails(user.id, googleData);
+      
+      if (savedSuccessfully) {
+        console.log('Successfully saved Google user details');
+      } else {
+        console.warn('Failed to save Google user details');
+      }
       
       // Fetch the saved details for state
       await fetchUserGoogleDetails(user.id);
@@ -60,7 +71,7 @@ export const useAuthState = () => {
       try {
         setIsLoading(true);
         
-        // Listen for auth state changes
+        // Listen for auth state changes FIRST
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, session) => {
             console.log('Auth state changed:', event);
@@ -75,22 +86,27 @@ export const useAuthState = () => {
                 created_at: session.user.created_at || new Date().toISOString()
               };
               
+              console.log('Setting user state from auth change:', authUser.id);
               setUser(authUser);
               
               // If this is a Google user, handle the Google-specific data
+              // Use setTimeout to avoid deadlock with Supabase auth state
               if (session.user.app_metadata?.provider === 'google') {
+                console.log('Google user detected in auth state change');
                 setTimeout(() => {
                   handleGoogleSignIn(session.user);
                 }, 0);
               }
             } else {
+              console.log('Auth state change: No user in session');
               setUser(null);
               setGoogleUserDetails(null);
             }
           }
         );
         
-        // Check for existing session
+        // THEN check for existing session
+        console.log('Checking for existing session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -98,6 +114,13 @@ export const useAuthState = () => {
           setUser(null);
         } else if (session?.user) {
           console.log('Found existing session for user:', session.user.id);
+          
+          // Store session tokens in localStorage for redundancy
+          localStorage.setItem('supabase.auth.token', JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + session.expires_in
+          }));
           
           const authUser: AuthUser = {
             id: session.user.id,
@@ -108,12 +131,16 @@ export const useAuthState = () => {
             created_at: session.user.created_at || new Date().toISOString()
           };
           
+          console.log('Setting user state from existing session:', authUser.id);
           setUser(authUser);
           
           // If this is a Google user, fetch Google-specific data
           if (session.user.app_metadata?.provider === 'google') {
+            console.log('Google user detected in existing session');
             await fetchUserGoogleDetails(session.user.id);
           }
+        } else {
+          console.log('No existing session found');
         }
         
         return () => {

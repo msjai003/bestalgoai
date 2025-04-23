@@ -24,6 +24,15 @@ const Dashboard = () => {
     const checkAuth = async () => {
       try {
         console.log('Checking session on dashboard...');
+        
+        // First check local auth state
+        if (user) {
+          console.log('User already in state, can proceed with dashboard:', user.id);
+          setIsVerifyingAuth(false);
+          setSessionChecked(true);
+          return;
+        }
+        
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -33,14 +42,27 @@ const Dashboard = () => {
           return;
         }
         
-        if (sessionData.session) {
+        if (sessionData?.session) {
           console.log('Active session found on dashboard for user:', sessionData.session.user.id);
           console.log('Provider:', sessionData.session.user.app_metadata?.provider);
+          
+          // Store session in localStorage for redundancy (if not already there)
+          if (!localStorage.getItem('supabase.auth.token')) {
+            localStorage.setItem('supabase.auth.token', JSON.stringify({
+              access_token: sessionData.session.access_token,
+              refresh_token: sessionData.session.refresh_token,
+              expires_at: Math.floor(Date.now() / 1000) + sessionData.session.expires_in
+            }));
+          }
           
           // If this is a Google user, make sure we fetch their details
           if (sessionData.session.user.app_metadata?.provider === 'google') {
             console.log('Google user detected, fetching user details');
-            await fetchGoogleUserDetails();
+            try {
+              await fetchGoogleUserDetails();
+            } catch (error) {
+              console.error('Error fetching Google user details:', error);
+            }
           }
           
           setIsVerifyingAuth(false);
@@ -62,7 +84,7 @@ const Dashboard = () => {
     };
     
     checkAuth();
-  }, [navigate, toast, fetchGoogleUserDetails]);
+  }, [navigate, toast, fetchGoogleUserDetails, user]);
   
   // Add a listener for auth changes to improve session handling
   useEffect(() => {

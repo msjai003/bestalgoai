@@ -18,8 +18,8 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       // Check if there's an existing session before initiating Google sign-in
       const { data: sessionData } = await supabase.auth.getSession();
       
-      if (sessionData.session) {
-        console.log('User already has an active session');
+      if (sessionData?.session) {
+        console.log('User already has an active session:', sessionData.session.user.id);
         const user = sessionData.session.user;
         
         // If this is a Google user and we have a handler, process it
@@ -32,22 +32,28 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
         return { error: null, session: sessionData.session };
       }
 
-      // Proceed with Google sign-in
+      // Clear any existing auth data to ensure a clean start
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.removeItem('supabase.auth.token');
+
+      // Proceed with Google sign-in with more explicit options
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent'
+            prompt: 'consent',
+            flow_type: 'auth-code' // Explicitly use auth-code flow for better token handling
           }
         }
       });
       
       if (error) {
         console.error('Error signing in with Google:', error);
+        toast.error('Google sign-in failed: ' + error.message);
         setIsLoading(false);
-        return { error: error as Error };
+        return { error };
       }
       
       console.log('Google sign-in initiated successfully:', data);
@@ -58,6 +64,7 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       return { error: null };
     } catch (error: any) {
       console.error('Exception during Google sign-in:', error);
+      toast.error('Google sign-in failed: ' + (error.message || 'Unknown error'));
       setIsLoading(false);
       return { error: new Error(error.message || 'An error occurred during Google sign-in') };
     }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,13 +26,36 @@ const Auth = () => {
     const checkSession = async () => {
       try {
         setIsLoading(true);
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          console.log('User already has active session on Auth page, redirecting to dashboard');
-          navigate('/dashboard');
+        // Clear any authentication errors
+        setErrorMessage(null);
+        
+        console.log('Checking for active session on Auth page');
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error checking session on Auth page:', error);
+        }
+        
+        if (data?.session) {
+          console.log('Active session detected on Auth page:', data.session.user.id);
+          
+          // Verify the session is still valid by getting the user
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          
+          if (userError) {
+            console.error('Error verifying user on Auth page:', userError);
+            // Invalid session, clear it
+            await supabase.auth.signOut();
+          } else if (userData?.user) {
+            console.log('Valid user found, redirecting to dashboard');
+            // Use timeout to ensure state updates complete before navigation
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 100);
+          }
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('Exception checking session on Auth page:', error);
       } finally {
         setIsLoading(false);
       }
