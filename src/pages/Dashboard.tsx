@@ -13,7 +13,7 @@ import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, fetchGoogleUserDetails } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
@@ -28,6 +28,13 @@ const Dashboard = () => {
         if (sessionData.session) {
           console.log('Active session found on dashboard for user:', sessionData.session.user.id);
           console.log('Provider:', sessionData.session.user.app_metadata?.provider);
+          
+          // If this is a Google user, make sure we fetch their details
+          if (sessionData.session.user.app_metadata?.provider === 'google') {
+            console.log('Google user detected, fetching user details');
+            await fetchGoogleUserDetails();
+          }
+          
           setIsVerifyingAuth(false);
         } else {
           console.log('No active session found on dashboard, redirecting to auth');
@@ -46,7 +53,7 @@ const Dashboard = () => {
     };
     
     checkAuth();
-  }, [navigate, toast]);
+  }, [navigate, toast, fetchGoogleUserDetails]);
   
   // Add a listener for auth changes to improve session handling
   useEffect(() => {

@@ -79,7 +79,19 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Persist the session
+                // Persist the session strongly
+                localStorage.setItem('supabase.auth.token', JSON.stringify({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token,
+                  expires_at: data.session.expires_at
+                }));
+                
+                // Additional session persistence
+                await supabase.auth.setSession({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token
+                });
+                
                 const sessionPersisted = await persistGoogleAuth(data.session);
                 
                 if (!sessionPersisted) {
@@ -92,10 +104,9 @@ const AuthCallback = () => {
                 const { data: verifyData } = await supabase.auth.getUser();
                 console.log('Verified user ID before redirect:', verifyData?.user?.id);
                 
-                // Add a delay to ensure session is fully established before redirect
+                // Redirect to dashboard with a full page reload
                 setTimeout(() => {
                   console.log('Redirecting to dashboard after successful authentication');
-                  // Use window.location for a hard redirect
                   window.location.href = '/dashboard';
                 }, 1000);
                 return;
@@ -133,7 +144,7 @@ const AuthCallback = () => {
 
         if (sessionData.session) {
           console.log('User already has session, redirecting to dashboard');
-          // Use window.location for a hard redirect
+          // Hard redirect to dashboard
           window.location.href = '/dashboard';
           return;
         }

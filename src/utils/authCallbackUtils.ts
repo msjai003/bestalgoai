@@ -18,6 +18,12 @@ export const handleAuthSession = async (
   try {
     console.log('Setting session with tokens from callback');
     
+    // Store session in localStorage for additional persistence
+    localStorage.setItem('supabase.auth.token', JSON.stringify({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    }));
+    
     const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken
@@ -85,7 +91,8 @@ export const handleAuthError = (
       navigate('/auth');
     }, 5000);
   } else {
-    navigate('/dashboard');
+    // Hard redirect to ensure full page reload
+    window.location.href = '/dashboard';
   }
 };
 
@@ -96,8 +103,14 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     
     console.log('Persisting Google authentication session');
     
-    // Ensure proper session storage in localStorage
+    // Explicitly set the session in localStorage and sessionStorage
     localStorage.setItem('supabase.auth.token', JSON.stringify({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at
+    }));
+    
+    sessionStorage.setItem('supabase.auth.token', JSON.stringify({
       access_token: session.access_token,
       refresh_token: session.refresh_token,
       expires_at: session.expires_at
