@@ -49,7 +49,6 @@ import CustomStrategyAdmin from "@/pages/CustomStrategyAdmin";
 import StrategyConfigAdmin from "@/pages/StrategyConfigAdmin";
 import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
-import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
 import GoogleRegistration from "@/pages/GoogleRegistration";
 
