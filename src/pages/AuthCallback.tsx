@@ -112,10 +112,10 @@ const AuthCallback = () => {
                 }
                 
                 toast.success('Sign-in successful!');
-                console.log('Authentication successful, redirecting to:', redirectTo);
+                console.log('Authentication successful, redirecting to dashboard');
 
                 // Force a hard redirect to ensure complete page reload and context reinitialization
-                window.location.href = redirectTo;
+                window.location.href = '/dashboard';
                 return;
               } else {
                 console.error('No session data returned from code exchange');

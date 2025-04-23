@@ -33,7 +33,7 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       // Get the current URL for constructing the callback URL
       const origin = window.location.origin;
       
-      // Updated to use /auth/v1/callback to match Supabase configuration
+      // Set direct redirect to dashboard after authentication
       const callbackUrl = `${origin}/auth/v1/callback?redirect_to=/dashboard`;
       console.log('Google sign-in using callback URL:', callbackUrl);
 
