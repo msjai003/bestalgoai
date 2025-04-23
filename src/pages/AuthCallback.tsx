@@ -5,7 +5,7 @@ import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoog
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const AuthCallback = () => {
   const [isProcessing, setIsProcessing] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const processCallback = async () => {
@@ -100,16 +101,21 @@ const AuthCallback = () => {
                 if (user?.app_metadata?.provider === 'google') {
                   console.log('Persisting Google auth session...');
                   await persistGoogleAuth(data.session);
+                  
+                  // Also force fetch user details to ensure we have Google profile data
+                  try {
+                    const { data: userData } = await supabase.auth.getUser();
+                    console.log("User data retrieved:", userData?.user?.id);
+                  } catch (e) {
+                    console.error("Error getting user after session setup:", e);
+                  }
                 }
                 
-                console.log('Authentication successful, redirecting to:', redirectTo);
                 toast.success('Sign-in successful!');
+                console.log('Authentication successful, redirecting to:', redirectTo);
 
-                // Force a small delay to ensure session is properly stored
-                setTimeout(() => {
-                  // Hard redirect to ensure complete page reload and context reinitialization
-                  window.location.href = redirectTo;
-                }, 300);
+                // Force a hard redirect to ensure complete page reload and context reinitialization
+                window.location.href = redirectTo;
                 return;
               } else {
                 console.error('No session data returned from code exchange');
@@ -176,7 +182,7 @@ const AuthCallback = () => {
     };
 
     processCallback();
-  }, [navigate, retryCount, location.pathname]);
+  }, [navigate, retryCount, location.pathname, toast]);
 
   const handleRetry = () => {
     setError(null);

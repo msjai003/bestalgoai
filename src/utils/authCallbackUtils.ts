@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -154,11 +153,13 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
     try {
       const { data: verifyData } = await supabase.auth.getUser();
       console.log('Verified user after setting session:', verifyData?.user?.id);
+      
+      // If successful, we're properly authenticated
+      return !!verifyData?.user;
     } catch (err) {
       console.error('Error verifying user:', err);
+      return false;
     }
-    
-    return true;
   } catch (error) {
     console.error('Error persisting Google auth:', error);
     return false;

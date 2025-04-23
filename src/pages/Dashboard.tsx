@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -34,8 +33,8 @@ const Dashboard = () => {
         }
         
         // Get session explicitly from both storage and Supabase
-        const storedSession = localStorage.getItem('supabase.auth.token');
-        console.log('Stored session exists:', !!storedSession);
+        const storedSessionStr = localStorage.getItem('supabase.auth.token');
+        console.log('Stored session exists:', !!storedSessionStr);
         
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
@@ -108,7 +107,7 @@ const Dashboard = () => {
     };
     
     checkAuth();
-  }, [fetchGoogleUserDetails, user, toast]);
+  }, [fetchGoogleUserDetails, user, toast, navigate]);
   
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
