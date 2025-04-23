@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoogleAuth } from '@/utils/authCallbackUtils';
@@ -6,6 +5,8 @@ import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+const GOOGLE_REGISTER_TOAST_SHOWN_KEY = "google.registered_toast_shown";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const AuthCallback = () => {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
-        
+
         // Always redirect to dashboard after successful auth
         const redirectTo = '/dashboard';
 
@@ -64,7 +65,7 @@ const AuthCallback = () => {
           // Handle code exchange
           if (code) {
             try {
-              // Clear any existing tokens to ensure a clean state
+              // Clear tokens for clean state
               localStorage.removeItem('supabase.auth.token');
               sessionStorage.removeItem('supabase.auth.token');
               
@@ -79,44 +80,66 @@ const AuthCallback = () => {
                 return;
               }
 
+              // Session check
               if (data?.session) {
-                console.log('Session obtained successfully:', data.session.user.id);
                 const user = data.session.user;
 
-                // Store the session securely in both localStorage and sessionStorage
+                // Store session tokens
                 const sessionData = {
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
                   expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
                 };
-                
                 localStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
                 sessionStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
-                
-                // Set the session in Supabase client
+
+                // Set session in Supabase client
                 await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
-                
-                // Persist Google user details if applicable
-                if (user?.app_metadata?.provider === 'google') {
-                  console.log('Persisting Google auth session...');
-                  await persistGoogleAuth(data.session);
-                  
-                  // Also force fetch user details to ensure we have Google profile data
-                  try {
-                    const { data: userData } = await supabase.auth.getUser();
-                    console.log("User data retrieved:", userData?.user?.id);
-                  } catch (e) {
-                    console.error("Error getting user after session setup:", e);
-                  }
-                }
-                
-                toast.success('Sign-in successful!');
-                console.log('Authentication successful, redirecting to dashboard');
 
-                // Force a hard redirect to ensure complete page reload and context reinitialization
+                // Persist Google user details if applicable
+                let isNewGoogleUser = false;
+                if (user?.app_metadata?.provider === 'google') {
+                  // Check if this user just got created by querying google_user_details
+                  try {
+                    const { data: googleInfo, error: gErr } = await supabase
+                      .from('google_user_details')
+                      .select('created_at')
+                      .eq('id', user.id)
+                      .maybeSingle();
+
+                    if (googleInfo && googleInfo.created_at) {
+                      // If created_at timestamp is within the last 2 minutes, consider as new registration
+                      const now = new Date();
+                      const createdAt = new Date(googleInfo.created_at);
+                      const diffMs = now.getTime() - createdAt.getTime();
+                      if (diffMs < 120000) {
+                        isNewGoogleUser = true;
+                      }
+                    }
+                  } catch (err) {
+                    // Fallback: skip new user toast
+                  }
+
+                  await persistGoogleAuth(data.session);
+
+                  // Fetch latest user details just in case
+                  try {
+                    await supabase.auth.getUser();
+                  } catch {}
+                }
+
+                // Show toast only if this is a new Google registration and not shown before
+                if (isNewGoogleUser && !localStorage.getItem(GOOGLE_REGISTER_TOAST_SHOWN_KEY)) {
+                  toast.success('Your account was successfully registered.');
+                  localStorage.setItem(GOOGLE_REGISTER_TOAST_SHOWN_KEY, 'true');
+                } else {
+                  toast.success('Sign-in successful!');
+                }
+
+                // Always redirect after login/registration
                 window.location.href = '/dashboard';
                 return;
               } else {
@@ -147,16 +170,15 @@ const AuthCallback = () => {
         // Check for an already existing session, redirect if found
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionData?.session) {
-          console.log('Existing session found, redirecting to dashboard');
           window.location.href = '/dashboard';
           return;
         }
 
         // Legacy fragment tokens
-        const hashFragment = window.location.hash.substring(1);
-        const hashParams = new URLSearchParams(hashFragment);
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        const hashFragmentLegacy = window.location.hash.substring(1);
+        const hashParamsLegacy = new URLSearchParams(hashFragmentLegacy);
+        const accessToken = hashParamsLegacy.get('access_token');
+        const refreshToken = hashParamsLegacy.get('refresh_token');
         if (accessToken && refreshToken) {
           await handleAuthSession(
             accessToken,
