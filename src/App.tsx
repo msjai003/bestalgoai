@@ -67,10 +67,11 @@ function AppRoutes() {
       
       {/* Auth callback paths - ensure all variations are caught properly */}
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback" element={<AuthCallback />} />
-      <Route path="/callback" element={<AuthCallback />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
+      <Route path="/callback" element={<AuthCallback />} />
+      <Route path="/callback/*" element={<AuthCallback />} />
+      <Route path="/v1/auth/callback" element={<AuthCallback />} />
+      <Route path="/v1/callback" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
@@ -187,7 +188,7 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
