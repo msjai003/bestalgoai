@@ -91,32 +91,21 @@ const AuthCallback = () => {
                 sessionStorage.setItem('supabase.auth.token', JSON.stringify(sessionData));
                 
                 // Set the session in Supabase client
-                const { error: setSessionError } = await supabase.auth.setSession({
+                await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
                 
-                if (setSessionError) {
-                  console.error('Failed to set session:', setSessionError);
-                  setError('Authentication Error');
-                  setErrorDetails('Failed to set session: ' + setSessionError.message);
-                  setIsProcessing(false);
-                  return;
-                }
-                
                 // Persist Google user details if applicable
                 if (user?.app_metadata?.provider === 'google') {
                   console.log('Persisting Google auth session...');
-                  const sessionPersisted = await persistGoogleAuth(data.session);
-                  if (!sessionPersisted) {
-                    console.warn('Session may not have been properly persisted');
-                  }
+                  await persistGoogleAuth(data.session);
                 }
                 
-                console.log('Authentication successful, redirecting to dashboard...');
+                console.log('Authentication successful, redirecting to:', redirectTo);
                 toast.success('Sign-in successful!');
 
-                // Critical: Use hard redirect to dashboard - ensures all React contexts are properly reinitialized
+                // Hard redirect to ensure complete page reload and context reinitialization
                 window.location.href = redirectTo;
                 return;
               } else {
