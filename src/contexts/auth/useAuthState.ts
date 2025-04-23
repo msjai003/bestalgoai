@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchGoogleUserDetails, saveGoogleUserDetails } from './utils';
@@ -52,7 +53,7 @@ export const useAuthState = () => {
           
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
             console.log('Google sign-in detected, saving user details');
-            handleGoogleSignIn(session.user);
+            await handleGoogleSignIn(session.user);
           }
         } else {
           setUser(null);

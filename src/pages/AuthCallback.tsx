@@ -99,29 +99,19 @@ const AuthCallback = () => {
                   .maybeSingle();
                   
                 if (!profileData) {
-                  console.log('User profile not found, creating basic profile...');
-                  
-                  // Create a basic profile for the Google user
-                  const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .insert({
-                      id: user.id,
-                      full_name: googleData.given_name + ' ' + (googleData.family_name || ''),
-                      email: googleData.email,
-                      trading_experience: 'beginner',
-                      profile_picture: googleData.picture_url
-                    });
-                    
-                  if (profileError) {
-                    console.error('Error creating profile for Google user:', profileError);
-                  } else {
-                    console.log('Basic profile created for Google user');
-                  }
+                  console.log('User profile not found, redirecting to complete registration...');
+                  navigate('/google-registration');
+                  return;
+                } else {
+                  console.log('User profile found, redirecting to dashboard');
+                  navigate('/dashboard');
+                  return;
                 }
               } catch (profileErr) {
-                console.error('Error checking/creating user profile:', profileErr);
-                // Continue to dashboard even if profile creation fails
-                // We'll handle missing profile data elsewhere
+                console.error('Error checking user profile:', profileErr);
+                // Continue to dashboard even if profile checking fails
+                navigate('/dashboard');
+                return;
               }
             }
             

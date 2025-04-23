@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import Support from "@/pages/Support";
 import Auth from "@/pages/Auth";
 import AuthCallback from "@/pages/AuthCallback";
 import Registration from "@/pages/Registration";
+import GoogleRegistration from "@/pages/GoogleRegistration";
 import Signup from "@/pages/Signup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Terms from "@/pages/Terms";
@@ -65,6 +67,7 @@ function AppRoutes() {
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/registration" element={<Registration />} />
+      <Route path="/google-registration" element={<GoogleRegistration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />

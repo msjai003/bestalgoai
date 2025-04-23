@@ -16,7 +16,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signInWithGoogle, user, googleUserDetails } = useAuth();
+  const { signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -82,8 +82,8 @@ const Auth = () => {
         });
       } else {
         toast({
-          title: "Google login successful",
-          description: "Redirecting you to complete your profile...",
+          title: "Google login initiated",
+          description: "Redirecting to Google authentication...",
         });
       }
     } catch (error: any) {
