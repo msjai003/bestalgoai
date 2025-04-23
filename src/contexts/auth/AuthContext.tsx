@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
@@ -51,12 +50,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
     signInWithGoogle: async () => {
       const result = await signInWithGoogleAction();
-      // For Google sign-in, we don't expect user data immediately
-      // since it's a redirect flow. We just need to handle any errors.
       if (result.error) {
         toast.error("Google login failed. Please try again.");
       }
-      return { error: result.error, data: result.data };
+      return { error: result.error };
     },
     signUp: async (email, password, confirmPassword, userData) => {
       const result = await signUp(email, password, confirmPassword, userData);
@@ -68,9 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signOut: async () => {
-      // Remove the toast notification after logout
       await signOut();
-      // No toast message here
     },
     resetPassword,
     updatePassword: async (newPassword) => {

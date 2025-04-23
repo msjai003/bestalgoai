@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,34 +21,27 @@ export const useAuthActions = ({
   const signInWithGoogle = async () => {
     setIsLoading(true);
     console.log('Attempting to sign in with Google...');
-    
     try {
-      // We need to use redirect method for more reliable auth persistence
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
-            access_type: 'offline', // This requests a refresh token from Google
-            prompt: 'consent' // Force the consent screen to ensure refresh token
+            access_type: 'offline',
+            prompt: 'consent'
           }
         }
       });
-      
       if (error) {
         console.error('Error signing in with Google:', error);
-        return { data: null, error: error as Error };
+        return { error: error as Error };
       }
-      
       console.log('Google sign-in initiated successfully:', data);
-      // Return the expected shape to match the AuthContext type definition
-      return { data, error: null };
+      // Only return error; no user returned in redirect flow
+      return { error: null };
     } catch (error: any) {
       console.error('Exception during Google sign-in:', error);
-      return { 
-        data: null, 
-        error: new Error(error.message || 'An error occurred during Google sign-in')
-      };
+      return { error: new Error(error.message || 'An error occurred during Google sign-in') };
     } finally {
       setIsLoading(false);
     }
