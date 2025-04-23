@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,28 +71,24 @@ const AuthCallback = () => {
               };
               
               console.log('Saving Google user details with data:', googleData);
-              
-              const saveSuccess = await saveGoogleUserDetails(user.id, googleData);
-              
-              if (saveSuccess) {
-                console.log('Google user details saved successfully');
-              } else {
-                console.error('Failed to save Google user details');
-              }
+              await saveGoogleUserDetails(user.id, googleData);
 
               try {
+                // Check if user profile exists
                 const { data: existingProfile } = await supabase
                   .from('user_profiles')
-                  .select('*')
+                  .select('id')
                   .eq('id', user.id)
                   .maybeSingle();
 
                 if (!existingProfile) {
+                  console.log('Creating new user profile for Google user');
+                  // Create a basic profile for the Google user
                   const { error: profileError } = await supabase
                     .from('user_profiles')
                     .insert({
                       id: user.id,
-                      full_name: `${googleData.given_name} ${googleData.family_name || ''}`.trim(),
+                      full_name: `${googleData.given_name || ''} ${googleData.family_name || ''}`.trim(),
                       email: googleData.email,
                       trading_experience: 'beginner',
                       profile_picture: googleData.picture_url
@@ -100,13 +97,17 @@ const AuthCallback = () => {
                   if (profileError) {
                     console.error('Error creating profile:', profileError);
                   }
+                } else {
+                  console.log('User profile already exists for Google user');
                 }
-
+                
+                // Always redirect to dashboard after successful Google authentication
+                console.log('Redirecting to dashboard after Google authentication');
                 navigate('/dashboard');
                 return;
-
               } catch (profileError) {
                 console.error('Error handling user profile:', profileError);
+                // Still redirect to dashboard even if there's an error with the profile
                 navigate('/dashboard');
                 return;
               }
@@ -134,6 +135,7 @@ const AuthCallback = () => {
             setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
             setIsProcessing(false);
           } else {
+            // If we get here with no tokens and no error, redirect back to auth
             navigate('/auth');
           }
         }

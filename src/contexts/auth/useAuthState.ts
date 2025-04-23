@@ -52,7 +52,7 @@ export const useAuthState = () => {
           setUser(authUser);
           
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
-            console.log('Google sign-in detected, saving user details');
+            console.log('Google sign-in detected, fetching user details');
             await handleGoogleSignIn(session.user);
           }
         } else {
@@ -105,20 +105,11 @@ export const useAuthState = () => {
   const fetchUserGoogleDetails = async (userId: string) => {
     try {
       console.log('Fetching Google user details for user:', userId);
-      const { data, error } = await supabase
-        .from('google_user_details')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const details = await fetchGoogleUserDetails(userId);
       
-      if (error) {
-        console.error('Error fetching Google user details:', error);
-        return null;
-      }
-      
-      if (data) {
-        console.log('Google user details fetched:', data);
-        setGoogleUserDetails(data);
+      if (details) {
+        console.log('Google user details fetched:', details);
+        setGoogleUserDetails(details);
       } else {
         console.log('No Google user details found for user:', userId);
         setGoogleUserDetails(null);

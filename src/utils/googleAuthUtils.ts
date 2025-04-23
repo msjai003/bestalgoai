@@ -36,6 +36,11 @@ export const isGoogleUser = async (userId: string): Promise<boolean> => {
   if (!userId) return false;
   
   try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData?.session?.user?.app_metadata?.provider === 'google') {
+      return true;
+    }
+    
     const googleDetails = await fetchGoogleUserDetails(userId);
     return !!googleDetails;
   } catch (error) {
