@@ -64,6 +64,7 @@ const Dashboard = () => {
       if (event === 'SIGNED_OUT') {
         navigate('/auth');
       }
+      // We don't need to handle SIGNED_IN here as the checkAuth function already does that
     });
     
     return () => {

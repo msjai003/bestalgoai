@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -16,10 +17,26 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signInWithGoogle, user, googleUserDetails } = useAuth();
+  const { signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          console.log('User already has active session, redirecting to dashboard');
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
+  
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
@@ -49,8 +66,8 @@ const Auth = () => {
           setErrorMessage(error.message || 'An error occurred during login');
         }
       } else {
-        window.location.replace('/dashboard');
         toast.success('Login successful!');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -78,7 +95,9 @@ const Auth = () => {
       setErrorMessage(error.message || 'An unexpected error occurred');
       toast.error(error.message || 'An unexpected error occurred');
     } finally {
-      setIsGoogleLoading(false);
+      setTimeout(() => {
+        setIsGoogleLoading(false);
+      }, 5000);
     }
   };
 

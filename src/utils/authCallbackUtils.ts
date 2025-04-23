@@ -69,7 +69,7 @@ export const handleAuthSession = async (
       // Use a hard redirect with some delay to ensure session is established
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth with hard redirect');
-        window.location.replace('/dashboard');
+        window.location.href = '/dashboard';
       }, 800);
     } else {
       console.error('No user in session data after setting session');
@@ -105,7 +105,7 @@ export const handleAuthError = (
     }, 5000);
   } else {
     // Hard redirect to ensure full page reload
-    window.location.replace('/dashboard');
+    window.location.href = '/dashboard';
   }
 };
 
@@ -156,7 +156,7 @@ export const persistGoogleAuth = async (session: any): Promise<boolean> => {
   }
 };
 
-// New function to save Google user data to Google user details table
+// Function to save Google user data to Google user details table
 const saveGoogleUserData = async (user: any): Promise<boolean> => {
   if (!user || !user.id || user.app_metadata?.provider !== 'google') {
     console.log('Not a Google user or missing ID, skipping Google data save');

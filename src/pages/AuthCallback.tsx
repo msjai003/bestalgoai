@@ -80,7 +80,7 @@ const AuthCallback = () => {
 
               if (data?.session) {
                 const user = data.session.user;
-                console.log('Successfully exchanged code for session', user);
+                console.log('Successfully exchanged code for session', user?.id);
 
                 const isGoogleAuth = user?.app_metadata?.provider === 'google';
 
@@ -89,25 +89,26 @@ const AuthCallback = () => {
                 console.log('Is Google Auth:', isGoogleAuth);
 
                 // Force a strong session commitment
+                // Store session in both localStorage and sessionStorage for redundancy
                 localStorage.setItem('supabase.auth.token', JSON.stringify({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
                   expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
                 }));
                 
-                // Also set in sessionStorage for redundancy
                 sessionStorage.setItem('supabase.auth.token', JSON.stringify({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
                   expires_at: Math.floor(Date.now() / 1000) + data.session.expires_in
                 }));
                 
-                // Explicitly set session
+                // Explicitly set session with Supabase
                 await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
                 });
                 
+                // Ensure Google user details are persisted
                 const sessionPersisted = await persistGoogleAuth(data.session);
                 
                 if (!sessionPersisted) {
@@ -121,14 +122,14 @@ const AuthCallback = () => {
                 if (verifyError) {
                   console.error('Error verifying user after auth:', verifyError);
                 }
+                
                 console.log('Verified user ID before redirect:', verifyData?.user?.id);
                 
                 if (verifyData?.user) {
-                  // Redirect with a delay to ensure cookies and localStorage are properly set
-                  setTimeout(() => {
-                    console.log('Redirecting to dashboard after successful authentication');
-                    window.location.replace('/dashboard');
-                  }, 800);
+                  console.log('Verified user exists, redirecting to dashboard');
+                  // Use a hard redirect to ensure a clean navigation with proper session
+                  window.location.href = '/dashboard';
+                  return;
                 } else {
                   console.error('User verification failed after auth');
                   setError('Authentication Error');
@@ -175,7 +176,7 @@ const AuthCallback = () => {
         if (sessionData?.session) {
           console.log('User already has session, redirecting to dashboard');
           // Hard redirect to dashboard
-          window.location.replace('/dashboard');
+          window.location.href = '/dashboard';
           return;
         }
 
