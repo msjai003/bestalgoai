@@ -3,11 +3,13 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Log the 404 error for debugging
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
@@ -25,8 +27,24 @@ const NotFound = () => {
         if (data.session) {
           console.log("User ID:", data.session.user.id);
           console.log("Auth provider:", data.session.user.app_metadata?.provider);
+          
+          // If we have a valid session but landed on 404, try redirecting to dashboard
+          if (data.session.user) {
+            toast.info("Redirecting to dashboard...");
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 2000);
+          }
         }
       }).catch(err => console.error("Error checking session:", err));
+      
+      // Try to recover by manually processing the state and code params
+      if (window.location.search.includes('code=') || window.location.hash.includes('access_token=')) {
+        toast.info("Recovering from callback error...");
+        setTimeout(() => {
+          window.location.href = "/auth/callback" + window.location.search + window.location.hash;
+        }, 1000);
+      }
     }
   }, [location.pathname]);
 

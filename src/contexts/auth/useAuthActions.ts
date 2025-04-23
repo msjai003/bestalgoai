@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,8 +21,9 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
 
       console.log('Attempting Google sign-in with Supabase');
 
-      // Use your deployed callback path
-      const redirectTo = "https://www.bestalgo.ai/auth/callback";
+      // Use your deployed callback path 
+      // Make sure this exactly matches what's configured in Supabase dashboard
+      const redirectTo = `${window.location.origin}/auth/callback`;
 
       console.log('Using redirect URL:', redirectTo);
 

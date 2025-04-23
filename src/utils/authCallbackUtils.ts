@@ -1,4 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
   console.log('Processing password recovery with token');
@@ -31,11 +33,12 @@ export const handleAuthSession = async (
 
     if (sessionData?.session?.user) {
       console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
+      toast.success('Login successful!');
 
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
         navigate('/dashboard');
-      }, 2000);
+      }, 1000);
     } else {
       console.error('No user in session data after setting session');
       setError('Authentication Error');

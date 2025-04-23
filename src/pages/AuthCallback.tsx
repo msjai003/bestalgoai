@@ -25,7 +25,7 @@ const AuthCallback = () => {
         console.log('Full callback URL:', fullUrl);
 
         // Handle callback for Google OAuth or any auth provider
-        if (currentPath.includes('/callback') || currentPath.includes('/auth/callback')) {
+        if (currentPath.includes('/callback')) {
           console.log('Auth callback detected, processing...');
           
           const searchParams = new URLSearchParams(window.location.search);
@@ -79,6 +79,7 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
+                // Explicitly set the session to ensure it's stored properly
                 const { error: sessionError } = await supabase.auth.setSession({
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token
@@ -98,7 +99,7 @@ const AuthCallback = () => {
                 setTimeout(() => {
                   console.log('Redirecting to dashboard after successful authentication');
                   navigate('/dashboard');
-                }, 2000);
+                }, 1000);
                 return;
               } else {
                 console.error('No session returned after code exchange');
