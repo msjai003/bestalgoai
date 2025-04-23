@@ -23,7 +23,9 @@ const AuthCallback = () => {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
         const searchParams = new URLSearchParams(window.location.search);
-        const redirectTo = searchParams.get('redirect_to') || '/dashboard';
+        
+        // Always redirect to dashboard after successful auth
+        const redirectTo = '/dashboard';
 
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);

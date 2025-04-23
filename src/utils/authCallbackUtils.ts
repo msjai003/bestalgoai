@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -66,11 +67,8 @@ export const handleAuthSession = async (
       const { data: verifyData } = await supabase.auth.getUser();
       console.log('Verified user before redirect:', verifyData?.user?.id);
 
-      // Use a hard redirect after a small delay to ensure session is established
-      setTimeout(() => {
-        console.log('Redirecting to', redirectTo, 'after successful auth with hard redirect');
-        window.location.href = redirectTo;
-      }, 500);
+      // Use a hard redirect to dashboard
+      window.location.href = redirectTo;
     } else {
       console.error('No user in session data after setting session');
       setError('Authentication Error');
@@ -104,7 +102,7 @@ export const handleAuthError = (
       navigate('/auth');
     }, 5000);
   } else {
-    // Hard redirect to ensure full page reload
+    // Hard redirect to dashboard
     window.location.href = '/dashboard';
   }
 };
