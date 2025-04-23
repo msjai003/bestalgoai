@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -48,10 +47,9 @@ const Auth = () => {
             await supabase.auth.signOut();
           } else if (userData?.user) {
             console.log('Valid user found, redirecting to dashboard');
-            // Use timeout to ensure state updates complete before navigation
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 100);
+            // Use window.location for a hard redirect to ensure we get a fresh page load
+            window.location.href = '/dashboard';
+            return;
           }
         }
       } catch (error) {
@@ -62,14 +60,15 @@ const Auth = () => {
     };
     
     checkSession();
-  }, [navigate]);
+  }, []);
   
   useEffect(() => {
     if (user) {
       console.log('User state detected in Auth page, redirecting to dashboard');
-      navigate('/dashboard');
+      // Use window.location for a hard redirect
+      window.location.href = '/dashboard';
     }
-  }, [user, navigate]);
+  }, [user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +118,7 @@ const Auth = () => {
         toast.error(error.message || 'Error signing in with Google');
         setIsGoogleLoading(false);
       }
+      // Note: We don't need to do anything on success as the redirect is handled by Supabase
     } catch (error: any) {
       console.error('Google login exception:', error);
       setErrorMessage(error.message || 'An unexpected error occurred');

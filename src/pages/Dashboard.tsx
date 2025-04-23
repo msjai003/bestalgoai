@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -38,7 +37,7 @@ const Dashboard = () => {
         if (sessionError) {
           console.error('Error getting session on dashboard:', sessionError);
           toast.error('Session verification failed');
-          navigate('/auth');
+          window.location.href = '/auth';
           return;
         }
         
@@ -47,13 +46,11 @@ const Dashboard = () => {
           console.log('Provider:', sessionData.session.user.app_metadata?.provider);
           
           // Store session in localStorage for redundancy (if not already there)
-          if (!localStorage.getItem('supabase.auth.token')) {
-            localStorage.setItem('supabase.auth.token', JSON.stringify({
-              access_token: sessionData.session.access_token,
-              refresh_token: sessionData.session.refresh_token,
-              expires_at: Math.floor(Date.now() / 1000) + sessionData.session.expires_in
-            }));
-          }
+          localStorage.setItem('supabase.auth.token', JSON.stringify({
+            access_token: sessionData.session.access_token,
+            refresh_token: sessionData.session.refresh_token,
+            expires_at: Math.floor(Date.now() / 1000) + sessionData.session.expires_in
+          }));
           
           // If this is a Google user, make sure we fetch their details
           if (sessionData.session.user.app_metadata?.provider === 'google') {
@@ -74,19 +71,18 @@ const Dashboard = () => {
             description: "Please log in to access the dashboard.",
             variant: "destructive",
           });
-          navigate('/auth');
+          window.location.href = '/auth';
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
         setIsVerifyingAuth(false);
-        navigate('/auth');
+        window.location.href = '/auth';
       }
     };
     
     checkAuth();
-  }, [navigate, toast, fetchGoogleUserDetails, user]);
+  }, [fetchGoogleUserDetails, user]);
   
-  // Add a listener for auth changes to improve session handling
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed in Dashboard:', event);

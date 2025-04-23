@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { persistGoogleAuth } from '@/utils/authCallbackUtils';
@@ -35,9 +36,8 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.removeItem('supabase.auth.token');
 
-      // Use the correct redirect (should point to your /auth/callback handler)
-      // This must also be registered in your Supabase > Authentication > Redirect URLs list!
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      // Use the correct redirect - explicitly directing to dashboard after callback processing
+      const redirectUrl = `${window.location.origin}/auth/callback?redirect_to=/dashboard`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -60,7 +60,6 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
       console.log('Google sign-in initiated successfully:', data);
       
       // The actual authentication will happen in the callback
-      // We don't return session data here because we're being redirected
       setIsLoading(false);
       return { error: null };
     } catch (error: any) {

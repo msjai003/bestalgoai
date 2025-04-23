@@ -21,18 +21,19 @@ const AuthCallback = () => {
       try {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
+        const searchParams = new URLSearchParams(window.location.search);
+        const redirectTo = searchParams.get('redirect_to') || '/dashboard'; // Default to dashboard
 
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
+        console.log('Redirect destination:', redirectTo);
 
         // Handle callback for Google OAuth or any auth provider
         if (currentPath.includes('/callback')) {
           console.log('Auth callback detected, processing...');
           
-          const searchParams = new URLSearchParams(window.location.search);
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
           const code = searchParams.get('code');
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const errorParam = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
 
@@ -41,12 +42,14 @@ const AuthCallback = () => {
             errorParam,
             errorDescription,
             fullSearch: window.location.search,
-            fullHash: window.location.hash
+            fullHash: window.location.hash,
+            redirectTo
           });
 
           console.log('Auth callback params:', {
             code: !!code,
             error: !!errorParam,
+            redirectTo,
             fullSearch: window.location.search,
             fullHash: window.location.hash
           });
@@ -138,11 +141,11 @@ const AuthCallback = () => {
                 console.log('Verified user ID before redirect:', verifyData?.user?.id);
                 
                 if (verifyData?.user) {
-                  console.log('Verified user exists, redirecting to dashboard');
+                  console.log('Verified user exists, redirecting to', redirectTo);
                   // Wait a small delay to ensure all state is properly updated
                   setTimeout(() => {
                     // Use a hard redirect to ensure a clean navigation with proper session
-                    window.location.href = '/dashboard';
+                    window.location.href = redirectTo;
                   }, 100);
                   return;
                 } else {
@@ -170,7 +173,6 @@ const AuthCallback = () => {
         }
 
         // Handle password recovery flow
-        const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
 
@@ -189,14 +191,13 @@ const AuthCallback = () => {
         }
 
         if (sessionData?.session) {
-          console.log('User already has session, redirecting to dashboard');
+          console.log('User already has session, redirecting to', redirectTo);
           // Hard redirect to dashboard
-          window.location.href = '/dashboard';
+          window.location.href = redirectTo;
           return;
         }
 
         // Handle access token in hash fragment (for legacy auth flows)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
 
@@ -213,7 +214,8 @@ const AuthCallback = () => {
             navigate,
             setError,
             setErrorDetails,
-            setIsProcessing
+            setIsProcessing,
+            redirectTo
           );
           return;
         }
