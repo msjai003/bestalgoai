@@ -93,11 +93,11 @@ const AuthCallback = () => {
                     const redirectPath = needsRegistration ? '/google-registration' : '/dashboard';
 
                     console.log(`Google auth detected. Redirecting to ${redirectPath} after delay.`);
-                    navigate(redirectPath, { replace: true });
+                    navigate(redirectPath); // Remove { replace: true }
                   } else {
                     // Non-Google user redirect to dashboard
                     console.log('Non-Google auth. Redirecting to dashboard after delay.');
-                    navigate('/dashboard', { replace: true });
+                    navigate('/dashboard'); // Remove { replace: true }
                   }
                 }, 2000);
                 return;
@@ -134,7 +134,7 @@ const AuthCallback = () => {
 
         if (sessionData.session) {
           console.log('User already has session, redirecting to dashboard');
-          navigate('/dashboard', { replace: true });
+          navigate('/dashboard'); // Remove { replace: true }
           return;
         }
 
@@ -162,7 +162,7 @@ const AuthCallback = () => {
 
         console.log('No auth tokens or code, redirecting to auth page');
         setTimeout(() => {
-          navigate('/auth', { replace: true });
+          navigate('/auth'); // Remove { replace: true }
         }, 1000);
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);

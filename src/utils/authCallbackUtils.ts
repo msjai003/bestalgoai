@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
@@ -32,7 +31,7 @@ export const handleAuthSession = async (
 
     if (sessionData?.session?.user) {
       console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
-      
+
       // Using a longer delay for auth to ensure session is properly set
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
