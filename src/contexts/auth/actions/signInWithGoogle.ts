@@ -25,11 +25,14 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
         return { error: null, session: sessionData.session };
       }
 
+      // Clear any existing tokens to ensure a clean state
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.removeItem('supabase.auth.token');
 
-      // Always include redirect_to=/dashboard in callback URL
+      // Explicitly include redirect_to=/dashboard in callback URL
+      // This is critical for proper redirection after authentication
       const callbackUrl = `${window.location.origin}/auth/callback?redirect_to=/dashboard`;
+      console.log('Google sign-in using callback URL:', callbackUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -59,4 +62,3 @@ export const useSignInWithGoogle = ({ setIsLoading, handleGoogleUser }: SignInWi
 
   return { signInWithGoogle };
 };
-

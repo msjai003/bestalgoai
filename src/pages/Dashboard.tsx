@@ -49,7 +49,7 @@ const Dashboard = () => {
           console.log('Active session found on dashboard for user:', sessionData.session.user.id);
           console.log('Provider:', sessionData.session.user.app_metadata?.provider);
           
-          // Reinforce session storage
+          // Reinforce session storage for added reliability
           localStorage.setItem('supabase.auth.token', JSON.stringify({
             access_token: sessionData.session.access_token,
             refresh_token: sessionData.session.refresh_token,

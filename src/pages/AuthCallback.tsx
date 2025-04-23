@@ -65,9 +65,11 @@ const AuthCallback = () => {
               localStorage.removeItem('supabase.auth.token');
               sessionStorage.removeItem('supabase.auth.token');
               
+              console.log('Exchanging code for session...');
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
               if (exchangeError) {
+                console.error('Error exchanging code for session:', exchangeError);
                 setError('Authentication Error');
                 setErrorDetails(exchangeError.message || 'Failed to complete authentication.');
                 setIsProcessing(false);
@@ -75,9 +77,10 @@ const AuthCallback = () => {
               }
 
               if (data?.session) {
+                console.log('Session obtained successfully:', data.session.user.id);
                 const user = data.session.user;
 
-                // Store the session securely
+                // Store the session securely in both localStorage and sessionStorage
                 const sessionData = {
                   access_token: data.session.access_token,
                   refresh_token: data.session.refresh_token,
@@ -94,6 +97,7 @@ const AuthCallback = () => {
                 });
                 
                 if (setSessionError) {
+                  console.error('Failed to set session:', setSessionError);
                   setError('Authentication Error');
                   setErrorDetails('Failed to set session: ' + setSessionError.message);
                   setIsProcessing(false);
@@ -102,26 +106,31 @@ const AuthCallback = () => {
                 
                 // Persist Google user details if applicable
                 if (user?.app_metadata?.provider === 'google') {
+                  console.log('Persisting Google auth session...');
                   const sessionPersisted = await persistGoogleAuth(data.session);
                   if (!sessionPersisted) {
                     console.warn('Session may not have been properly persisted');
                   }
                 }
                 
+                console.log('Authentication successful, redirecting to dashboard...');
                 toast.success('Sign-in successful!');
 
-                // Always force redirect to dashboard (ignore redirectTo if it would cause errors)
+                // Critical: Use hard redirect to dashboard - ensures all React contexts are properly reinitialized
                 setTimeout(() => {
+                  console.log('Performing hard redirect to dashboard...');
                   window.location.href = '/dashboard';
                 }, 500);
                 return;
               } else {
+                console.error('No session data returned from code exchange');
                 setError('Authentication Error');
                 setErrorDetails('Failed to retrieve session.');
                 setIsProcessing(false);
                 return;
               }
             } catch (exchangeErr) {
+              console.error('Exception during code exchange:', exchangeErr);
               setError('Authentication Error');
               setErrorDetails('Error during authentication. Please try again.');
               setIsProcessing(false);
@@ -141,6 +150,7 @@ const AuthCallback = () => {
         // Check for an already existing session, redirect if found
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionData?.session) {
+          console.log('Existing session found, redirecting to dashboard');
           window.location.href = '/dashboard';
           return;
         }
@@ -164,10 +174,12 @@ const AuthCallback = () => {
         }
 
         // No recognisable auth params, return to auth
+        console.log('No recognizable auth parameters found, redirecting to auth page');
         setTimeout(() => {
           navigate('/auth');
         }, 500);
       } catch (err) {
+        console.error('Unhandled exception in auth callback:', err);
         setError('Authentication Failed');
         setErrorDetails('An unexpected error occurred. Please try again.');
         setIsProcessing(false);
@@ -202,4 +214,3 @@ const AuthCallback = () => {
 };
 
 export default AuthCallback;
-
