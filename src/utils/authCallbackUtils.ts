@@ -33,6 +33,14 @@ export const handleAuthSession = async (
 
     if (sessionData?.session?.user) {
       console.log('Session set successfully, user authenticated:', sessionData.session.user.id);
+      
+      // Ensure session is properly stored in localStorage
+      localStorage.setItem('supabase.auth.token', JSON.stringify({
+        access_token: sessionData.session.access_token,
+        refresh_token: sessionData.session.refresh_token,
+        expires_at: sessionData.session.expires_at
+      }));
+      
       toast.success('Login successful!');
 
       setTimeout(() => {
@@ -73,5 +81,37 @@ export const handleAuthError = (
     }, 5000);
   } else {
     navigate('/dashboard');
+  }
+};
+
+// Improved function to persist Google authentication
+export const persistGoogleAuth = async (session: any): Promise<boolean> => {
+  try {
+    if (!session) return false;
+    
+    console.log('Persisting Google authentication session');
+    
+    // Ensure proper session storage in localStorage
+    localStorage.setItem('supabase.auth.token', JSON.stringify({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at
+    }));
+    
+    // Store session data in browser storage for persistence
+    const { error } = await supabase.auth.setSession({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token
+    });
+    
+    if (error) {
+      console.error('Failed to persist session:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error persisting Google auth:', error);
+    return false;
   }
 };

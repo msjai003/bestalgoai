@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
+import { handlePasswordRecovery, handleAuthSession, handleAuthError, persistGoogleAuth } from '@/utils/authCallbackUtils';
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,18 +79,11 @@ const AuthCallback = () => {
                 console.log('App metadata:', user?.app_metadata);
                 console.log('Is Google Auth:', isGoogleAuth);
 
-                // Explicitly set the session to ensure it's stored properly
-                const { error: sessionError } = await supabase.auth.setSession({
-                  access_token: data.session.access_token,
-                  refresh_token: data.session.refresh_token
-                });
-
-                if (sessionError) {
-                  console.error('Error setting session:', sessionError);
-                  setError('Authentication Error');
-                  setErrorDetails(sessionError.message || 'Failed to set user session.');
-                  setIsProcessing(false);
-                  return;
+                // Persist the session
+                const sessionPersisted = await persistGoogleAuth(data.session);
+                
+                if (!sessionPersisted) {
+                  console.warn('Session may not have been properly persisted');
                 }
 
                 toast.success('Login successful!');
