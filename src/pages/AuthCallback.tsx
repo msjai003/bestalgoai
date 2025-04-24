@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth(); 
+  const { user } = useAuth(); // Remove setUser as it doesn't exist in AuthContextType
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -19,9 +18,6 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('AuthCallback: Processing authentication callback');
-        console.log('Current path:', location.pathname);
-        console.log('Current hash:', location.hash);
-        console.log('Current search:', location.search);
         
         // Handle password recovery token
         const searchParams = new URLSearchParams(window.location.search);
@@ -47,35 +43,6 @@ const AuthCallback = () => {
           refreshToken: !!refreshToken, 
           type: hashType 
         });
-        
-        // Check if URL already has proper structure or if it's the v1 callback route
-        if (location.pathname === '/auth/v1/callback') {
-          console.log('Processing v1 callback path, extracting state from URL');
-          
-          // This is the special case where we're handling the /auth/v1/callback route
-          // Try to extract the session data from the current URL or session storage
-          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            console.error('Error getting session from v1 callback:', sessionError);
-            setError('Authentication Error');
-            setErrorDetails('Failed to authenticate with Google. Please try again.');
-            setIsProcessing(false);
-            return;
-          }
-          
-          if (sessionData.session) {
-            console.log('Successfully retrieved session from v1 callback');
-            navigate('/dashboard', { replace: true });
-            return;
-          } else {
-            console.log('No session found in v1 callback');
-            setError('Authentication Error');
-            setErrorDetails('No session data found. Please try signing in again.');
-            setIsProcessing(false);
-            return;
-          }
-        }
         
         if (accessToken && refreshToken) {
           try {
@@ -173,14 +140,6 @@ const AuthCallback = () => {
             setErrorDetails(errorDescription || 'Authentication failed. Please try again.');
             setIsProcessing(false);
           } else {
-            // If we're on this page without any parameters, try to get the session directly
-            const { data: directSessionData } = await supabase.auth.getSession();
-            if (directSessionData.session) {
-              console.log('Found active session, redirecting to dashboard');
-              navigate('/dashboard', { replace: true });
-              return;
-            }
-            
             // If we get here with no tokens and no error, redirect back to auth
             console.log('No tokens or errors found in callback, redirecting to auth');
             navigate('/auth', { replace: true });
@@ -195,7 +154,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, retryCount, location]);
+  }, [navigate, retryCount]);
 
   const handleRetry = () => {
     setError(null);

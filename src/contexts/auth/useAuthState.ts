@@ -178,7 +178,7 @@ export const useAuthState = () => {
   };
 
   // Create a dedicated function to fetch Google details from the context
-  const fetchGoogleDetails = useCallback(async () => {
+  const fetchGoogleUserDetails = useCallback(async () => {
     if (user) {
       await fetchUserGoogleDetails(user.id);
     } else {
@@ -194,7 +194,7 @@ export const useAuthState = () => {
     isLoading,
     setIsLoading,
     fetchUserGoogleDetails,
-    fetchGoogleDetails,  // Return the corrected function name
+    fetchGoogleUserDetails,  // Expose the new function
     handleGoogleSignIn
   };
 };
