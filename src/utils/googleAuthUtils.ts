@@ -14,18 +14,39 @@ export interface GoogleUserDetails {
 
 export const fetchGoogleUserDetails = async (userId: string): Promise<GoogleUserDetails | null> => {
   try {
+    console.log('Fetching Google user details for user:', userId);
+    
     const { data, error } = await supabase
       .from('google_user_details')
       .select('*')
       .eq('id', userId)
-      .maybeSingle();
+      .single();
     
     if (error) {
+      if (error.code === 'PGRST116') {
+        // No record found
+        console.log('No Google user details found for user:', userId);
+        return null;
+      }
+      
       console.error('Error fetching Google user details:', error);
       return null;
     }
     
-    return data as GoogleUserDetails | null;
+    if (!data) {
+      return null;
+    }
+    
+    return {
+      id: data.id,
+      email: data.email,
+      google_id: data.google_id,
+      picture_url: data.picture_url,
+      given_name: data.given_name,
+      family_name: data.family_name,
+      locale: data.locale,
+      verified_email: data.verified_email
+    };
   } catch (error) {
     console.error('Exception fetching Google user details:', error);
     return null;

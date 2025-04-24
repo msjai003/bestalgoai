@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
-import { saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { Button } from '@/components/ui/button';
 
 const AuthCallback = () => {
@@ -16,7 +15,9 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Clear any existing session to prevent issues
+        console.log('AuthCallback: Processing authentication callback');
+        
+        // Handle password recovery token
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -29,6 +30,7 @@ const AuthCallback = () => {
           return;
         }
         
+        // Handle OAuth (Google) authentication
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -42,6 +44,8 @@ const AuthCallback = () => {
         
         if (accessToken && refreshToken) {
           try {
+            console.log('Setting session with access and refresh tokens');
+            
             const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
@@ -57,42 +61,33 @@ const AuthCallback = () => {
             
             console.log('Auth callback: Session set successfully');
             
+            // Process Google specific auth
             if (sessionData.session?.user?.app_metadata?.provider === 'google') {
-              console.log('Google user authenticated, saving details...');
+              console.log('Google user authenticated, ensuring profile exists...');
               
-              const user = sessionData.session.user;
-              const googleData = {
-                email: user.email || '',
-                google_id: user.user_metadata.sub,
-                picture_url: user.user_metadata.picture,
-                given_name: user.user_metadata.given_name || user.user_metadata.name?.split(' ')[0],
-                family_name: user.user_metadata.family_name || user.user_metadata.name?.split(' ').slice(1).join(' '),
-                locale: user.user_metadata.locale,
-                verified_email: user.user_metadata.email_verified
-              };
-              
-              console.log('Saving Google user details with data:', googleData);
-              await saveGoogleUserDetails(user.id, googleData);
-
               try {
                 // Check if user profile exists
                 const { data: existingProfile } = await supabase
                   .from('user_profiles')
                   .select('id')
-                  .eq('id', user.id)
+                  .eq('id', sessionData.session.user.id)
                   .maybeSingle();
 
                 if (!existingProfile) {
                   console.log('Creating new user profile for Google user');
+                  
+                  const user = sessionData.session.user;
+                  const fullName = `${user.user_metadata?.given_name || ''} ${user.user_metadata?.family_name || ''}`.trim();
+                  
                   // Create a basic profile for the Google user
                   const { error: profileError } = await supabase
                     .from('user_profiles')
                     .insert({
                       id: user.id,
-                      full_name: `${googleData.given_name || ''} ${googleData.family_name || ''}`.trim() || 'Google User',
-                      email: googleData.email,
+                      full_name: fullName || 'Google User',
+                      email: user.email,
                       trading_experience: 'beginner',
-                      profile_picture: googleData.picture_url
+                      profile_picture: user.user_metadata?.picture
                     });
 
                   if (profileError) {
@@ -117,10 +112,11 @@ const AuthCallback = () => {
             }
             
             if (hashType === 'recovery') {
-              navigate('/forgot-password?type=recovery');
+              navigate('/forgot-password?type=recovery', { replace: true });
               return;
             }
             
+            // Default redirect for any other authenticated user
             navigate('/dashboard', { replace: true });
           } catch (err) {
             console.error('Exception setting session in callback:', err);
@@ -139,7 +135,8 @@ const AuthCallback = () => {
             setIsProcessing(false);
           } else {
             // If we get here with no tokens and no error, redirect back to auth
-            navigate('/auth');
+            console.log('No tokens or errors found in callback, redirecting to auth');
+            navigate('/auth', { replace: true });
           }
         }
       } catch (err) {
@@ -187,7 +184,7 @@ const AuthCallback = () => {
         </div>
       ) : (
         <div className="max-w-md w-full bg-charcoalSecondary rounded-xl border border-gray-700/50 p-8 shadow-xl text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-cyan mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin text-cyan mb-4 mx-auto" />
           <h1 className="text-xl font-semibold">Authenticating...</h1>
           <p className="text-gray-400 mt-2 mb-6">Please wait while we complete your authentication</p>
           <div className="w-full bg-charcoalPrimary/50 rounded-full h-2 overflow-hidden">
