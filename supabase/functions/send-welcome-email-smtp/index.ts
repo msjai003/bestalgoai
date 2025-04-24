@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,6 +89,7 @@ serve(async (req) => {
     }
     
     console.log("Creating Supabase client with URL:", supabaseUrl);
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.38.4");
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Fetch welcome message from the database if not provided
@@ -155,12 +155,12 @@ serve(async (req) => {
     try {
       const client = new SMTPClient({
         connection: {
-          hostname: "smtp.gmail.com",
-          port: 465,  // Updated to use port 465
-          tls: true,  // Using TLS/SSL
+          hostname: Deno.env.get("SMTP_HOST") || "",
+          port: parseInt(Deno.env.get("SMTP_PORT") || "465"),
+          tls: true,
           auth: {
-            username: "learnings1.infocap@gmail.com",
-            password: "jcpv fako lllb dfre"
+            username: Deno.env.get("SMTP_USERNAME") || "",
+            password: Deno.env.get("SMTP_PASSWORD") || ""
           }
         }
       });
@@ -168,7 +168,7 @@ serve(async (req) => {
       console.log("SMTP client initialized, preparing to send email to:", email);
       
       const emailToSend = {
-        from: "BestAlgo.ai <learnings1.infocap@gmail.com>",
+        from: Deno.env.get("SMTP_FROM_EMAIL") || "",
         to: email,
         subject: "Welcome to BestAlgo.ai!",
         html: htmlContent,
