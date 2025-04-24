@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/auth/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -18,6 +20,10 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log('AuthCallback: Processing authentication callback');
+        console.log('Current URL pathname:', location.pathname);
+        console.log('Current URL search params:', location.search);
+        console.log('Current URL hash:', location.hash);
+        console.log('URL params:', params);
         
         // Handle password recovery token
         const searchParams = new URLSearchParams(window.location.search);
@@ -155,7 +161,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, retryCount, fetchGoogleUserDetails]);
+  }, [navigate, retryCount, fetchGoogleUserDetails, location, params]);
 
   const handleRetry = () => {
     setError(null);
