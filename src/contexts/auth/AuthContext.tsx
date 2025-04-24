@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
 import { AuthContextType } from './types';
@@ -32,11 +31,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     handleGoogleUser: handleGoogleSignIn
   });
 
-  const fetchGoogleUserDetails = useCallback(async () => {
-    if (!user) return;
-    await fetchUserGoogleDetails(user.id);
-  }, [user, fetchUserGoogleDetails]);
-
   const contextValue: AuthContextType = {
     user,
     googleUserDetails,
@@ -44,17 +38,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signIn(email, password);
       if (result.error) {
         toast.error("Login failed. Please check your credentials.");
-      } else if (result.data?.user) {
-        toast.success("Login successful!");
       }
       return result;
     },
     signInWithGoogle: async () => {
+      console.log('Starting Google sign-in process...');
       const result = await signInWithGoogle();
       if (result.error) {
+        console.error('Google sign-in error:', result.error);
         toast.error("Google login failed. Please try again.");
-      } else if (result.data?.user) {
-        toast.success("Welcome! You're now logged in with Google.");
       }
       return result;
     },
@@ -68,9 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     signOut: async () => {
-      // Remove the toast notification after logout
       await signOut();
-      // No toast message here
     },
     resetPassword,
     updatePassword: async (newPassword) => {

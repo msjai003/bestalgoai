@@ -1,10 +1,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { fetchGoogleUserDetails, saveGoogleUserDetails } from './utils';
+import { fetchGoogleUserDetails, saveGoogleUserDetails } from '@/utils/googleAuthUtils';
 import { AuthUser, GoogleUserDetails } from './types';
+import { useNavigate } from 'react-router-dom';
 
 export const useAuthState = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [googleUserDetails, setGoogleUserDetails] = useState<GoogleUserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,23 +14,24 @@ export const useAuthState = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error checking auth session:', error);
+          return;
         }
         
-        if (data.session?.user) {
+        if (session?.user) {
           const authUser = {
-            id: data.session.user.id,
-            email: data.session.user.email || '',
+            id: session.user.id,
+            email: session.user.email || '',
           };
           
           setUser(authUser);
           
-          if (data.session.user.app_metadata?.provider === 'google') {
-            console.log('Google user detected on session check, fetching details');
-            fetchUserGoogleDetails(data.session.user.id);
+          if (session.user.app_metadata?.provider === 'google') {
+            console.log('Google user detected, fetching details...');
+            fetchUserGoogleDetails(session.user.id);
           }
         }
       } catch (error) {
@@ -42,7 +45,7 @@ export const useAuthState = () => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('Auth state changed:', event);
         
         if (session?.user) {
           const authUser = {
@@ -53,13 +56,15 @@ export const useAuthState = () => {
           setUser(authUser);
           
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
-            console.log('Google sign-in detected, fetching user details');
+            console.log('Google sign-in detected');
             await handleGoogleSignIn(session.user);
+            navigate('/dashboard');
           }
         } else {
           setUser(null);
           setGoogleUserDetails(null);
         }
+        
         setIsLoading(false);
       }
     );
@@ -95,8 +100,8 @@ export const useAuthState = () => {
           id: user.id,
           ...googleData
         });
-
-        // Check and create user profile if needed
+        
+        // Create user profile if it doesn't exist
         await ensureUserProfile(user.id, googleData);
       } else {
         console.error('Failed to save Google user details');
@@ -108,17 +113,11 @@ export const useAuthState = () => {
 
   const ensureUserProfile = async (userId: string, googleData: any) => {
     try {
-      console.log('Checking if user profile exists:', userId);
-      const { data: existingProfile, error: profileCheckError } = await supabase
+      const { data: existingProfile } = await supabase
         .from('user_profiles')
         .select('id')
         .eq('id', userId)
         .maybeSingle();
-
-      if (profileCheckError) {
-        console.error('Error checking user profile:', profileCheckError);
-        return;
-      }
 
       if (!existingProfile) {
         console.log('Creating new user profile for Google user');
@@ -130,8 +129,8 @@ export const useAuthState = () => {
             id: userId,
             full_name: fullName || 'Google User',
             email: googleData.email,
-            trading_experience: 'beginner',
-            profile_picture: googleData.picture_url
+            profile_picture: googleData.picture_url,
+            trading_experience: 'beginner'
           });
 
         if (profileError) {
@@ -140,7 +139,7 @@ export const useAuthState = () => {
           console.log('User profile created successfully');
         }
       } else {
-        console.log('User profile already exists for Google user');
+        console.log('User profile already exists');
       }
     } catch (error) {
       console.error('Error ensuring user profile:', error);
@@ -155,12 +154,9 @@ export const useAuthState = () => {
       if (details) {
         console.log('Google user details fetched:', details);
         setGoogleUserDetails(details);
-      } else {
-        console.log('No Google user details found for user:', userId);
-        setGoogleUserDetails(null);
       }
     } catch (error) {
-      console.error('Exception fetching Google user details:', error);
+      console.error('Error fetching Google user details:', error);
     }
   };
 
