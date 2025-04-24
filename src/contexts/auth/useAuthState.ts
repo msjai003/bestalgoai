@@ -14,6 +14,7 @@ export const useAuthState = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('Checking auth session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -22,6 +23,7 @@ export const useAuthState = () => {
         }
         
         if (session?.user) {
+          console.log('Active session found for user:', session.user.id);
           const authUser = {
             id: session.user.id,
             email: session.user.email || '',
@@ -33,6 +35,8 @@ export const useAuthState = () => {
             console.log('Google user detected, fetching details...');
             fetchUserGoogleDetails(session.user.id);
           }
+        } else {
+          console.log('No active session found');
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -45,7 +49,7 @@ export const useAuthState = () => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
           const authUser = {
@@ -72,11 +76,14 @@ export const useAuthState = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleGoogleSignIn = async (user: any) => {
     try {
-      if (!user || !user.id) return;
+      if (!user || !user.id) {
+        console.log('Invalid user data for Google sign-in');
+        return;
+      }
       
       console.log('Handling Google sign-in for user:', user.id);
       
@@ -154,6 +161,8 @@ export const useAuthState = () => {
       if (details) {
         console.log('Google user details fetched:', details);
         setGoogleUserDetails(details);
+      } else {
+        console.log('No Google details found for user:', userId);
       }
     } catch (error) {
       console.error('Error fetching Google user details:', error);

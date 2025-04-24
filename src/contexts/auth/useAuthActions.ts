@@ -39,12 +39,14 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
+        // This is crucial - we need to redirect to the OAuth URL provided by Supabase
         window.location.href = data.url;
         return { error: null };
       }
       
       console.warn('No redirect URL received from Supabase Google auth');
       
+      // Only use mock as fallback if no redirect URL was provided
       console.log('Falling back to mock Google auth');
       const mockResult = await mockSignInWithGoogle();
       

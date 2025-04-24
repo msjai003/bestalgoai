@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ const AuthCallback = () => {
               return;
             }
             
-            console.log('Auth callback: Session set successfully');
+            console.log('Auth callback: Session set successfully', sessionData);
             
             // Process Google specific auth
             if (sessionData.session?.user?.app_metadata?.provider === 'google') {
