@@ -22,6 +22,7 @@ export const useAuthState = () => {
         }
         
         if (session?.user) {
+          console.log('Active session found:', session.user.id);
           const authUser = {
             id: session.user.id,
             email: session.user.email || '',
@@ -33,6 +34,9 @@ export const useAuthState = () => {
             console.log('Google user detected, fetching details...');
             fetchUserGoogleDetails(session.user.id);
           }
+        } else {
+          console.log('No active session found');
+          setUser(null);
         }
       } catch (error) {
         console.error('Error during session check:', error);
@@ -48,6 +52,7 @@ export const useAuthState = () => {
         console.log('Auth state changed:', event);
         
         if (session?.user) {
+          console.log('User signed in:', session.user.id);
           const authUser = {
             id: session.user.id,
             email: session.user.email || '',
@@ -55,12 +60,14 @@ export const useAuthState = () => {
           
           setUser(authUser);
           
+          // For Google sign-ins, process additional data
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
             console.log('Google sign-in detected');
             await handleGoogleSignIn(session.user);
-            navigate('/dashboard');
+            // Don't navigate here - let AuthCallback handle navigation
           }
         } else {
+          console.log('User signed out or session expired');
           setUser(null);
           setGoogleUserDetails(null);
         }
@@ -72,7 +79,7 @@ export const useAuthState = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleGoogleSignIn = async (user: any) => {
     try {

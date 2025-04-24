@@ -4,9 +4,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -99,14 +101,27 @@ const AuthCallback = () => {
                   console.log('User profile already exists for Google user');
                 }
                 
+                // Make sure the user state is set
+                if (sessionData.session?.user) {
+                  const authUser = {
+                    id: sessionData.session.user.id,
+                    email: sessionData.session.user.email || ''
+                  };
+                  console.log('Setting user state before redirect:', authUser);
+                }
+                
                 // Always redirect to dashboard after successful Google authentication
                 console.log('Redirecting to dashboard after Google authentication');
-                navigate('/dashboard', { replace: true });
+                setTimeout(() => {
+                  navigate('/dashboard', { replace: true });
+                }, 100);
                 return;
               } catch (profileError) {
                 console.error('Error handling user profile:', profileError);
                 // Still redirect to dashboard even if there's an error with the profile
-                navigate('/dashboard', { replace: true });
+                setTimeout(() => {
+                  navigate('/dashboard', { replace: true });
+                }, 100);
                 return;
               }
             }

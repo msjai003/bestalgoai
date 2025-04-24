@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Loader } from "lucide-react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -13,14 +13,30 @@ import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, fetchGoogleUserDetails } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [hasWelcomed, setHasWelcomed] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  
+  // Log for debugging
+  useEffect(() => {
+    console.log('Dashboard - Mounted with user:', !!user);
+    console.log('Dashboard - Current location:', location.pathname);
+    
+    // When first arriving from Google auth, fetch additional details
+    if (user && !isInitialized) {
+      console.log('Dashboard - Fetching Google user details after redirect');
+      fetchGoogleUserDetails();
+      setIsInitialized(true);
+    }
+  }, [user, location, fetchGoogleUserDetails, isInitialized]);
   
   useEffect(() => {
     if (!user) {
+      console.log('Dashboard - No user detected, redirecting to auth');
       toast({
         title: "Authentication Required",
         description: "Please log in to access the dashboard.",
@@ -28,6 +44,8 @@ const Dashboard = () => {
       });
       navigate('/auth');
     } else {
+      console.log('Dashboard - User authenticated, proceeding with initialization');
+      
       const checkPremium = async () => {
         try {
           const { data, error } = await supabase
@@ -75,7 +93,7 @@ const Dashboard = () => {
       checkPremium();
       checkRegistrationTime();
     }
-  }, [user, navigate, toast, hasWelcomed]);
+  }, [user, navigate, toast, hasWelcomed, fetchGoogleUserDetails]);
 
   if (user === null) {
     return (
