@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { user } = useAuth(); // Remove setUser as it doesn't exist in AuthContextType
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -61,7 +61,7 @@ const AuthCallback = () => {
               return;
             }
             
-            console.log('Auth callback: Session set successfully');
+            console.log('Auth callback: Session set successfully', sessionData);
             
             // Process Google specific auth
             if (sessionData.session?.user?.app_metadata?.provider === 'google') {
@@ -99,15 +99,6 @@ const AuthCallback = () => {
                   }
                 } else {
                   console.log('User profile already exists for Google user');
-                }
-                
-                // Make sure the user state is set
-                if (sessionData.session?.user) {
-                  const authUser = {
-                    id: sessionData.session.user.id,
-                    email: sessionData.session.user.email || ''
-                  };
-                  console.log('Setting user state before redirect:', authUser);
                 }
                 
                 // Always redirect to dashboard after successful Google authentication

@@ -1,5 +1,8 @@
 
-import { User } from '@supabase/supabase-js';
+export interface AuthUser {
+  id: string;
+  email: string;
+}
 
 export interface GoogleUserDetails {
   id: string;
@@ -12,22 +15,17 @@ export interface GoogleUserDetails {
   verified_email?: boolean;
 }
 
-export interface AuthUser {
-  id: string;
-  email: string;
-}
-
 export interface AuthContextType {
   user: AuthUser | null;
   googleUserDetails: GoogleUserDetails | null;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
-  signInWithGoogle: () => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
-  signUp: (email: string, password: string, confirmPassword: string, userData: { 
-    fullName: string, 
-    mobileNumber: string, 
-    tradingExperience: string, 
-    profilePictureUrl?: string | null 
-  }) => Promise<{ error: Error | null, data?: { user: AuthUser | null } }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; data?: { user: AuthUser } | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null; data?: { user: AuthUser } | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    confirmPassword: string,
+    userData: { fullName: string; mobileNumber: string; tradingExperience: string; profilePictureUrl?: string | null }
+  ) => Promise<{ error: Error | null; data?: { user: AuthUser | null } | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;

@@ -14,15 +14,20 @@ export const useAuthState = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('useAuthState - Checking active session');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error checking auth session:', error);
+          setIsLoading(false);
           return;
         }
         
         if (session?.user) {
           console.log('Active session found:', session.user.id);
+          console.log('User metadata:', session.user.user_metadata);
+          console.log('Auth provider:', session.user.app_metadata?.provider);
+          
           const authUser = {
             id: session.user.id,
             email: session.user.email || '',
@@ -53,6 +58,9 @@ export const useAuthState = () => {
         
         if (session?.user) {
           console.log('User signed in:', session.user.id);
+          console.log('User metadata:', session.user.user_metadata);
+          console.log('Auth provider:', session.user.app_metadata?.provider);
+          
           const authUser = {
             id: session.user.id,
             email: session.user.email || '',
@@ -64,7 +72,6 @@ export const useAuthState = () => {
           if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
             console.log('Google sign-in detected');
             await handleGoogleSignIn(session.user);
-            // Don't navigate here - let AuthCallback handle navigation
           }
         } else {
           console.log('User signed out or session expired');
@@ -83,7 +90,10 @@ export const useAuthState = () => {
 
   const handleGoogleSignIn = async (user: any) => {
     try {
-      if (!user || !user.id) return;
+      if (!user || !user.id) {
+        console.log('Invalid user object for Google sign-in');
+        return;
+      }
       
       console.log('Handling Google sign-in for user:', user.id);
       
@@ -167,6 +177,15 @@ export const useAuthState = () => {
     }
   };
 
+  // Create a dedicated function to fetch Google details from the context
+  const fetchGoogleUserDetails = useCallback(async () => {
+    if (user) {
+      await fetchUserGoogleDetails(user.id);
+    } else {
+      console.log('Cannot fetch Google details - no user is signed in');
+    }
+  }, [user]);
+
   return {
     user,
     setUser,
@@ -175,6 +194,7 @@ export const useAuthState = () => {
     isLoading,
     setIsLoading,
     fetchUserGoogleDetails,
+    fetchGoogleUserDetails,  // Expose the new function
     handleGoogleSignIn
   };
 };

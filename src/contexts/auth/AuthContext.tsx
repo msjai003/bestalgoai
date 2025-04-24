@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     setIsLoading,
     fetchUserGoogleDetails,
+    fetchGoogleUserDetails,  // Include the new function
     handleGoogleSignIn
   } = useAuthState();
 
@@ -75,9 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
     isLoading,
     fetchGoogleUserDetails: async () => {
-      if (user) {
-        await fetchUserGoogleDetails(user.id);
-      }
+      await fetchGoogleUserDetails();
     }
   };
 
