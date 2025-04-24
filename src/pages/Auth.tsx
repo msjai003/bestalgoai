@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('User is authenticated, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate]);
@@ -49,8 +51,8 @@ const Auth = () => {
           setErrorMessage(error.message || 'An error occurred during login');
         }
       } else {
+        console.log('Login successful, redirecting to dashboard');
         navigate('/dashboard');
-        toast.success('Login successful!');
       }
     } catch (error: any) {
       console.error('Login error:', error);

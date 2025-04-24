@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const AuthCallback = () => {
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const { fetchGoogleUserDetails } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -66,6 +68,11 @@ const AuthCallback = () => {
               console.log('Google user authenticated, ensuring profile exists...');
               
               try {
+                if (sessionData.session.user) {
+                  console.log('Fetching Google user details for', sessionData.session.user.id);
+                  await fetchGoogleUserDetails(sessionData.session.user.id);
+                }
+                
                 // Check if user profile exists
                 const { data: existingProfile } = await supabase
                   .from('user_profiles')
@@ -148,7 +155,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, retryCount]);
+  }, [navigate, retryCount, fetchGoogleUserDetails]);
 
   const handleRetry = () => {
     setError(null);

@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signInWithGoogle: async () => {
       console.log('Starting Google sign-in process...');
       const result = await signInWithGoogle();
+      console.log('Google sign-in result:', result);
       if (result.error) {
         console.error('Google sign-in error:', result.error);
         toast.error("Google login failed. Please try again.");
