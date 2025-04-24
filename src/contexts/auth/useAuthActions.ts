@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,7 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/v1/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -39,14 +38,12 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
       
       if (data.url) {
         console.log('Got redirect URL from Supabase:', data.url);
-        // This is crucial - we need to redirect to the OAuth URL provided by Supabase
         window.location.href = data.url;
         return { error: null };
       }
       
       console.warn('No redirect URL received from Supabase Google auth');
       
-      // Only use mock as fallback if no redirect URL was provided
       console.log('Falling back to mock Google auth');
       const mockResult = await mockSignInWithGoogle();
       
@@ -235,7 +232,6 @@ export const useAuthActions = ({ setUser, setIsLoading, handleGoogleUser }: Auth
         
         if (error) {
           console.error('Error during sign out:', error);
-          // Removed toast notification for error during sign out
         }
       } else {
         console.log('No active session found, clearing local user state');

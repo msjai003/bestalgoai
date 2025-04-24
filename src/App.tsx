@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -65,6 +64,7 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/support" element={<Support />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/registration" element={<Registration />} />
       <Route path="/google-registration" element={<GoogleRegistration />} />
