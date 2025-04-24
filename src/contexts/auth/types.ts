@@ -32,5 +32,5 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   isLoading: boolean;
-  fetchGoogleUserDetails: () => Promise<void>;
+  fetchGoogleUserDetails: (userId: string) => Promise<void>;
 }
