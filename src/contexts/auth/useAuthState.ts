@@ -27,6 +27,7 @@ export const useAuthState = () => {
           setUser(authUser);
           
           if (data.session.user.app_metadata?.provider === 'google') {
+            console.log('Google user detected on session check, fetching details');
             fetchUserGoogleDetails(data.session.user.id);
           }
         }
@@ -94,11 +95,55 @@ export const useAuthState = () => {
           id: user.id,
           ...googleData
         });
+
+        // Check and create user profile if needed
+        await ensureUserProfile(user.id, googleData);
       } else {
         console.error('Failed to save Google user details');
       }
     } catch (error) {
       console.error('Error handling Google sign-in:', error);
+    }
+  };
+
+  const ensureUserProfile = async (userId: string, googleData: any) => {
+    try {
+      console.log('Checking if user profile exists:', userId);
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileCheckError) {
+        console.error('Error checking user profile:', profileCheckError);
+        return;
+      }
+
+      if (!existingProfile) {
+        console.log('Creating new user profile for Google user');
+        const fullName = `${googleData.given_name || ''} ${googleData.family_name || ''}`.trim();
+        
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: userId,
+            full_name: fullName || 'Google User',
+            email: googleData.email,
+            trading_experience: 'beginner',
+            profile_picture: googleData.picture_url
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        } else {
+          console.log('User profile created successfully');
+        }
+      } else {
+        console.log('User profile already exists for Google user');
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error);
     }
   };
 

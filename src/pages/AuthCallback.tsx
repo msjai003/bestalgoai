@@ -16,6 +16,7 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // Clear any existing session to prevent issues
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -88,7 +89,7 @@ const AuthCallback = () => {
                     .from('user_profiles')
                     .insert({
                       id: user.id,
-                      full_name: `${googleData.given_name || ''} ${googleData.family_name || ''}`.trim(),
+                      full_name: `${googleData.given_name || ''} ${googleData.family_name || ''}`.trim() || 'Google User',
                       email: googleData.email,
                       trading_experience: 'beginner',
                       profile_picture: googleData.picture_url
@@ -96,6 +97,8 @@ const AuthCallback = () => {
 
                   if (profileError) {
                     console.error('Error creating profile:', profileError);
+                  } else {
+                    console.log('User profile created successfully');
                   }
                 } else {
                   console.log('User profile already exists for Google user');
@@ -103,12 +106,12 @@ const AuthCallback = () => {
                 
                 // Always redirect to dashboard after successful Google authentication
                 console.log('Redirecting to dashboard after Google authentication');
-                navigate('/dashboard');
+                navigate('/dashboard', { replace: true });
                 return;
               } catch (profileError) {
                 console.error('Error handling user profile:', profileError);
                 // Still redirect to dashboard even if there's an error with the profile
-                navigate('/dashboard');
+                navigate('/dashboard', { replace: true });
                 return;
               }
             }
@@ -118,7 +121,7 @@ const AuthCallback = () => {
               return;
             }
             
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
           } catch (err) {
             console.error('Exception setting session in callback:', err);
             setError('Authentication Failed');
