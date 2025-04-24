@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
@@ -73,7 +74,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     isLoading,
-    fetchGoogleUserDetails
+    fetchGoogleUserDetails: async () => {
+      if (user) {
+        await fetchUserGoogleDetails(user.id);
+      }
+    }
   };
 
   return (
