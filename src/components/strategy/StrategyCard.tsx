@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Strategy } from "@/hooks/strategy/types";
 import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -24,8 +25,55 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   hasPremium = false
 }) => {
   const navigate = useNavigate();
-  const isPremium = strategy.id > 1; // First strategy is free, others are premium
+  const { toast } = useToast();
+  const isPremium = strategy.id > 1;
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
+
+  const handleCopyStrategy = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Copy the strategy to custom_strategies
+      const { data, error } = await supabase
+        .from('custom_strategies')
+        .insert({
+          name: `Copy of ${strategy.name}`,
+          description: strategy.description,
+          user_id: user.id,
+          copied_from: strategy.id,
+          strategy_type: 'custom',
+          legs: [], // You'll need to implement the legs copying logic based on your data structure
+          performance: strategy.performance,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Strategy Copied Successfully",
+        description: "You can find the copied strategy in your custom strategies section",
+      });
+      
+    } catch (error) {
+      console.error('Error copying strategy:', error);
+      toast({
+        title: "Error",
+        description: "Failed to copy strategy. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,6 +120,23 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               </h3>
             </div>
             <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="text-gray-400 hover:text-cyan transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full px-3 h-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md"
+                      onClick={handleCopyStrategy}
+                    >
+                      Copy
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy this strategy</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { 
   ChevronLeft,
   FileSpreadsheet,
@@ -22,28 +21,14 @@ const ZenflowBacktest = () => {
           <Link to="/backtest" className="p-2">
             <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
           </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Zenflow Backtest</h1>
+          <h1 className="text-charcoalTextPrimary text-lg font-medium">Backtest Reports</h1>
           <div className="w-8"></div>
         </div>
       </header>
 
       <main className="pt-16 pb-20 px-4">
-        <div className="bg-charcoalSecondary/50 p-1 rounded-xl mt-4 mb-6">
-          <div className="grid grid-cols-3 gap-1">
-            <Link to="/backtest" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
-              Backtesting
-            </Link>
-            <Link to="/strategy-builder" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
-              Strategy Builder
-            </Link>
-            <button className="bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary py-2 px-4 rounded-lg text-sm font-medium">
-              Zenflow
-            </button>
-          </div>
-        </div>
-
         <section className="mt-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Zenflow Backtest Tools</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Backtest Reports</h2>
           
           <div className="space-y-4">
             <Link to="/zenflow-backtest-report?strategy=zenflow" className="flex items-center justify-between p-4 bg-charcoalSecondary/40 rounded-xl border border-gray-700 hover:border-cyan/50 transition-colors">

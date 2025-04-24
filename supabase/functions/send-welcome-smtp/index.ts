@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-// Using SMTPClient directly from smtp@v0.7.0 which has better stability
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 // CORS headers to allow cross-origin requests
@@ -58,7 +57,7 @@ const getSmtpConfig = () => {
   };
 };
 
-interface EmailRequest {
+interface WelcomeEmailRequest {
   email: string;
   name: string;
   welcomeMessage?: string;
@@ -120,6 +119,15 @@ serve(async (req: Request) => {
 
   try {
     logInfo(`[${requestId}] Processing welcome email request`);
+    
+    // Print the request body for debugging
+    try {
+      const clonedReq = req.clone();
+      const bodyText = await clonedReq.text();
+      logInfo(`[${requestId}] Request body raw: ${bodyText}`);
+    } catch (bodyReadError) {
+      logError(`[${requestId}] Failed to read request body`, bodyReadError);
+    }
     
     // Validate SMTP configuration
     let smtpConfig;
@@ -192,7 +200,7 @@ serve(async (req: Request) => {
       );
     }
     
-    const { email, name, welcomeMessage } = requestData as EmailRequest;
+    const { email, name, welcomeMessage } = requestData as WelcomeEmailRequest;
     
     if (!email || !name) {
       logError(`[${requestId}] Missing required fields`, { email, name });
@@ -265,7 +273,7 @@ serve(async (req: Request) => {
       // Send the email
       logInfo(`[${requestId}] Sending email from ${smtpConfig.fromEmail} to ${email}`);
       
-      await client.send({
+      const sendResult = await client.send({
         from: `BestAlgo <${smtpConfig.fromEmail}>`,
         to: email,
         subject: "Welcome to BestAlgo!",
@@ -300,6 +308,7 @@ The BestAlgo Team
         `
       });
       
+      logInfo(`[${requestId}] Email send result:`, sendResult);
       logInfo(`[${requestId}] Email sent successfully`);
       
       // Close the connection

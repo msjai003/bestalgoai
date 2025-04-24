@@ -15,6 +15,10 @@ export interface GoogleUserDetails {
 export interface AuthUser {
   id: string;
   email: string;
+  app_metadata: Record<string, any>;
+  user_metadata: Record<string, any>;
+  aud: string;
+  created_at: string;
 }
 
 export interface AuthContextType {
@@ -32,5 +36,5 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   isLoading: boolean;
-  fetchGoogleUserDetails: (userId: string) => Promise<void>;
+  fetchGoogleUserDetails: () => Promise<void>;
 }

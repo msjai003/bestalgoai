@@ -16,68 +16,60 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
-  const [hasWelcomed, setHasWelcomed] = useState<boolean>(false);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          console.log('No active session found on dashboard, redirecting to auth');
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access the dashboard.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        } else {
+          setIsVerifyingAuth(false);
+        }
+      } catch (error) {
+        console.error('Error checking auth session:', error);
+        setIsVerifyingAuth(false);
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
+  
+  useEffect(() => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the dashboard.",
-        variant: "destructive",
-      });
-      navigate('/auth');
-    } else {
-      const checkPremium = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('plan_details')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('selected_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-            
-          if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
-            setHasPremium(true);
-          }
-        } catch (error) {
-          console.error('Error checking premium status:', error);
-        }
-      };
-      
-      // Get welcome message for newly registered users
-      const checkRegistrationTime = async () => {
-        if (hasWelcomed) return;
-        
-        try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData && sessionData.session) {
-            const creationTime = new Date(sessionData.session.user.created_at);
-            const now = new Date();
-            const minutesSinceCreation = (now.getTime() - creationTime.getTime()) / (1000 * 60);
-            
-            // If user account was created in the last 5 minutes, show a welcome toast
-            if (minutesSinceCreation < 5) {
-              toast({
-                title: "Welcome to BestAlgo.ai!",
-                description: "Your account has been created successfully. Check your email for a welcome message.",
-                duration: 6000,
-              });
-              setHasWelcomed(true);
-            }
-          }
-        } catch (error) {
-          console.error('Error checking user registration time:', error);
-        }
-      };
-      
-      checkPremium();
-      checkRegistrationTime();
+      return;
     }
-  }, [user, navigate, toast, hasWelcomed]);
+    
+    const checkPremium = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+          setHasPremium(true);
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+      }
+    };
+    
+    checkPremium();
+  }, [user]);
 
-  if (user === null) {
+  if (isVerifyingAuth || user === null) {
     return (
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">

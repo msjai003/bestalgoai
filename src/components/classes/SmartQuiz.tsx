@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import QuizQuestion from './quiz/QuizQuestion';
-import QuizComplete from './quiz/QuizComplete';
 import { useQuiz } from '@/hooks/useQuiz';
+import QuizQuestion from '@/components/quiz/QuizQuestion';
+import QuizComplete from '@/components/quiz/QuizComplete';
 
 const SmartQuiz = () => {
   const {

@@ -1,5 +1,6 @@
 
-// Mock authentication service to replace Supabase
+// Reorganized mock authentication logic, most helpers moved to src/lib/auth-mock/
+
 import { toast } from 'sonner';
 
 interface User {
@@ -110,44 +111,6 @@ export const directSignUp = async (email: string, password: string, userData: an
   localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
   
   console.log('Mock signup successful:', user);
-  
-  return { data: { user }, error: null };
-};
-
-// Mock Google sign in function
-export const signInWithGoogle = async () => {
-  console.log('Mock Google sign in attempt');
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Generate a mock Google email
-  const randomId = Math.floor(Math.random() * 10000);
-  const email = `google.user${randomId}@gmail.com`;
-  
-  // Create mock user
-  const user: User = {
-    id: `google_user_${Date.now()}`,
-    email,
-    full_name: `Google User ${randomId}`,
-  };
-  
-  // Create mock profile
-  const profile: UserProfile = {
-    id: user.id,
-    full_name: user.full_name,
-    email: user.email,
-    mobile: null,
-    trading_experience: 'beginner',
-    is_research_analyst: false,
-    certification_number: null,
-  };
-  
-  // Store in localStorage
-  localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
-  localStorage.setItem(LOCAL_STORAGE_PROFILE_KEY, JSON.stringify(profile));
-  
-  console.log('Mock Google sign in successful:', user);
   
   return { data: { user }, error: null };
 };
