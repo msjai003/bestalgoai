@@ -51,7 +51,6 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
-import GoogleRegistration from "@/pages/GoogleRegistration";
 
 const queryClient = new QueryClient();
 
@@ -85,8 +84,6 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       } />
-      
-      <Route path="/google-registration" element={<GoogleRegistration />} />
       
       <Route path="/onboarding" element={
         <ProtectedRoute>
