@@ -1,8 +1,7 @@
 
-import React, { ReactNode, useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
 
 export interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,33 +13,28 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles = ['user']
 }) => {
   const { user, isLoading } = useAuth();
-  const location = useLocation();
 
-  // Add extensive logging to debug authentication issues
-  useEffect(() => {
-    console.log('ProtectedRoute - User state:', !!user);
-    console.log('ProtectedRoute - isLoading:', isLoading);
-    console.log('ProtectedRoute - Current location:', location.pathname);
-  }, [user, isLoading, location]);
-
-  // If authentication is still loading, show a loader
+  // If authentication is still loading, show nothing or a loader
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-charcoalPrimary text-white">
-        <Loader2 className="h-10 w-10 animate-spin text-cyan mb-4" />
-        <p className="text-gray-300">Verifying authentication...</p>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   // If no user is logged in, redirect to login
   if (!user) {
-    console.log('ProtectedRoute - No user detected, redirecting to auth');
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return <Navigate to="/auth" replace />;
   }
 
-  console.log('ProtectedRoute - Authentication confirmed, rendering protected content');
-  
+  // If roles are specified, check if user has the required role
+  // This is a simplified implementation since we don't have a proper role system yet
+  if (allowedRoles.includes('admin')) {
+    // For now, we'll just check by user email to determine admin status
+    // In a real application, you'd check against a roles table or similar
+    const isAdmin = user.email === 'admin@example.com'; // Replace with your admin check logic
+    if (!isAdmin) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+  }
+
   // If all checks pass, render the protected content
   return <>{children}</>;
 };

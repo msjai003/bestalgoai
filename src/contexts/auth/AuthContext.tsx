@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
@@ -16,7 +15,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     setIsLoading,
     fetchUserGoogleDetails,
-    fetchGoogleUserDetails,  // Include the new function
     handleGoogleSignIn
   } = useAuthState();
 
@@ -75,9 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return result;
     },
     isLoading,
-    fetchGoogleUserDetails: async () => {
-      await fetchGoogleUserDetails();
-    }
+    fetchGoogleUserDetails
   };
 
   return (
