@@ -59,7 +59,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return result;
     },
-    isLoading
+    isLoading,
+    googleUserDetails: null,
+    signInWithGoogle: async () => {
+      return { error: new Error('Google sign-in has been removed'), data: null };
+    },
+    fetchGoogleUserDetails: async () => {
+      return { error: new Error('Google sign-in has been removed'), data: null };
+    }
   };
 
   return (

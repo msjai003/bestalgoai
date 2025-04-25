@@ -1,9 +1,9 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import InstallPrompt from "@/components/InstallPrompt";
 import { initializeCapacitor } from "@/services/capacitorService";
 
 import { Toaster } from "@/components/ui/toaster";
@@ -209,7 +209,6 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
-            <InstallPrompt />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
