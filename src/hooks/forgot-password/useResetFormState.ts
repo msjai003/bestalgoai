@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 
-export type ResetStep = 'email' | 'otp' | 'reset';
+export type ResetStep = 'email' | 'otp';
 
 export const useResetFormState = () => {
   const [email, setEmail] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
-  const [newPassword, setNewPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<ResetStep>('email');
@@ -21,10 +19,6 @@ export const useResetFormState = () => {
     setEmail,
     otp,
     setOtp,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
     isLoading,
     setIsLoading,
     errorMessage,

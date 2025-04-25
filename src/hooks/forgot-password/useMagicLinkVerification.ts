@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,37 +48,21 @@ export const useMagicLinkVerification = (
             if (userEmail) {
               setEmail(userEmail);
               setMagicLinkSessionActive(true);
-              setCurrentStep('reset');
-              toast.success('You can now set your new password');
+              setCurrentStep('otp');
+              toast.success('Please verify your email to continue');
             } else {
               setErrorMessage('Could not retrieve your email. Please try again.');
             }
           } else {
-            setErrorMessage('Your password reset link is invalid or has expired.');
+            setErrorMessage('Your verification link is invalid or has expired.');
           }
         } catch (error) {
-          console.error('Error processing recovery token:', error);
-          setErrorMessage('An error occurred while processing your password reset link.');
+          console.error('Error processing verification token:', error);
+          setErrorMessage('An error occurred while processing your verification link.');
         } finally {
           setVerificationInProgress(false);
         }
         return;
-      }
-      
-      if (reset === 'true' || type === 'recovery') {
-        console.log("Reset parameter detected in URL");
-        
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          const userEmail = data.session.user.email;
-          if (userEmail) {
-            setEmail(userEmail);
-            setMagicLinkSessionActive(true);
-            setCurrentStep('reset');
-            toast.success('You can now set your new password');
-            return;
-          }
-        }
       }
       
       if (verificationId && currentStep === 'email') {

@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,16 +6,11 @@ import { useEmailVerification } from './useEmailVerification';
 import { useMagicLinkVerification } from './useMagicLinkVerification';
 
 export const useForgotPassword = () => {
-  const navigate = useNavigate();
   const {
     email,
     setEmail,
     otp,
     setOtp,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
     isLoading,
     setIsLoading,
     errorMessage,
@@ -27,10 +21,10 @@ export const useForgotPassword = () => {
     setVerificationInProgress,
     verificationId,
     setVerificationId,
-    resetLinkSent,
-    setResetLinkSent,
     magicLinkSessionActive,
     setMagicLinkSessionActive,
+    resetLinkSent,
+    setResetLinkSent,
   } = useResetFormState();
 
   const { sendOtpToEmail, verifyOtp } = useEmailVerification();
@@ -129,68 +123,25 @@ export const useForgotPassword = () => {
       
       setEmail(storedEmail);
       
-      await verifyOtp(storedEmail, otp);
-      setCurrentStep('reset');
-      toast.success('Verification successful');
+      try {
+        const { error } = await verifyOtp(storedEmail, otp);
+        
+        if (error) {
+          setErrorMessage('Invalid verification code. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        toast.success('Email verified successfully');
+        navigate('/auth');
+      } catch (verifyError: any) {
+        console.error('Error during OTP verification:', verifyError);
+        setErrorMessage(verifyError?.message || 'Error verifying code');
+        setIsLoading(false);
+      }
       
     } catch (error: any) {
       console.error('OTP verification error:', error);
-      setErrorMessage(error?.message || 'An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setIsLoading(true);
-
-    try {
-      if (!newPassword.trim() || !confirmPassword.trim()) {
-        setErrorMessage('Please enter both password fields');
-        setIsLoading(false);
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        setErrorMessage('Passwords do not match');
-        setIsLoading(false);
-        return;
-      }
-
-      if (newPassword.length < 8) {
-        setErrorMessage('Password must be at least 8 characters');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Updating password...");
-      
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-      
-      if (error) {
-        console.error('Password update error:', error);
-        setErrorMessage(error.message || 'Failed to update password');
-        setIsLoading(false);
-        return;
-      }
-        
-      console.log("Password updated successfully");
-      toast.success('Password has been reset successfully');
-      
-      if (verificationId) {
-        sessionStorage.removeItem(`email_${verificationId}`);
-      }
-      
-      setTimeout(() => {
-        navigate('/auth', { replace: true });
-      }, 1500);
-      
-    } catch (error: any) {
-      console.error('Password update error:', error);
       setErrorMessage(error?.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -208,10 +159,6 @@ export const useForgotPassword = () => {
     setEmail,
     otp,
     setOtp,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
     isLoading,
     errorMessage,
     currentStep,
@@ -223,7 +170,6 @@ export const useForgotPassword = () => {
     handleResendOtp,
     handleVerifyOtp,
     handleBackToEmail,
-    handleResetPassword
   };
 };
 

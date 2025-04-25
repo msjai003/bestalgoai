@@ -1,9 +1,7 @@
-
 import React, { useEffect } from 'react';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
-import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 import { useForgotPassword } from '@/hooks/forgot-password/useForgotPassword';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -15,10 +13,6 @@ const ForgotPassword = () => {
     setEmail,
     otp,
     setOtp,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
     isLoading,
     errorMessage,
     currentStep,
@@ -28,7 +22,6 @@ const ForgotPassword = () => {
     handleResendOtp,
     handleVerifyOtp,
     handleBackToEmail,
-    handleResetPassword
   } = useForgotPassword();
   
   useEffect(() => {
@@ -55,7 +48,7 @@ const ForgotPassword = () => {
 
   return (
     <ForgotPasswordLayout 
-      step={currentStep === 'email' ? 1 : currentStep === 'otp' ? 2 : 3}
+      step={currentStep === 'email' ? 1 : 2}
       errorMessage={errorMessage}
       verificationInProgress={verificationInProgress}
     >
@@ -78,17 +71,6 @@ const ForgotPassword = () => {
           onResendOtp={handleResendOtp}
           email={email}
           resetLinkSent={resetLinkSent}
-        />
-      )}
-      
-      {currentStep === 'reset' && (
-        <ResetPasswordStep 
-          newPassword={newPassword}
-          setNewPassword={setNewPassword}
-          confirmPassword={confirmPassword}
-          setConfirmPassword={setConfirmPassword}
-          isLoading={isLoading}
-          onSubmit={handleResetPassword}
         />
       )}
     </ForgotPasswordLayout>
