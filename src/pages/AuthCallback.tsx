@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -111,6 +112,13 @@ const AuthCallback = () => {
               } else if (data.session) {
                 console.log('Successfully exchanged code for session');
                 
+                // Check if this is a recovery (password reset) flow
+                if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
+                  console.log('Recovery flow detected after exchanging code, redirecting to forgot-password');
+                  navigate('/forgot-password?reset=true', { replace: true });
+                  return;
+                }
+                
                 const isGoogleAuth = data.session.user?.app_metadata?.provider === 'google';
                 const delay = isGoogleAuth ? 3000 : 2000;
                 
@@ -138,6 +146,13 @@ const AuthCallback = () => {
         
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
+          // Check if this is a recovery (password reset) flow
+          if (fullUrl.includes('type=recovery') || location.search.includes('type=recovery')) {
+            console.log('Recovery flow detected with active session, redirecting to forgot-password');
+            navigate('/forgot-password?reset=true', { replace: true });
+            return;
+          }
+          
           console.log('User already has an active session, redirecting to dashboard');
           navigate('/dashboard', { replace: true });
           return;
