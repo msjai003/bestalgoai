@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -76,7 +77,7 @@ export const handleAuthSession = async (
     
     const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
       access_token: accessToken,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     });
     
     if (sessionError) {

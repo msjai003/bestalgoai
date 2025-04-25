@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -93,7 +94,6 @@ const AuthCallback = () => {
           }
 
           if (error) {
-            console.error('Auth callback received error:', error, errorDescription);
             handleAuthError(
               error,
               errorDescription,
