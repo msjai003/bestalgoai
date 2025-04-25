@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +15,10 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, user } = useAuth();
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const { signIn, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,6 +64,27 @@ const Auth = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSendingReset(true);
+
+    try {
+      const { error } = await resetPassword(forgotPasswordEmail);
+      
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Password reset instructions sent to your email');
+        setShowForgotPasswordDialog(false);
+        setForgotPasswordEmail('');
+      }
+    } catch (error: any) {
+      toast.error('Failed to send reset instructions');
+    } finally {
+      setIsSendingReset(false);
+    }
   };
 
   return (
@@ -120,7 +144,16 @@ const Auth = () => {
             </div>
             
             <div>
-              <Label htmlFor="password" className="text-gray-300 mb-2 block">Password</Label>
+              <div className="flex justify-between items-center mb-2">
+                <Label htmlFor="password" className="text-gray-300">Password</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordDialog(true)}
+                  className="text-cyan text-sm hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -165,6 +198,46 @@ const Auth = () => {
             </p>
           </div>
         </form>
+
+        <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
+          <DialogContent className="bg-charcoalSecondary border-cyan/30">
+            <DialogHeader>
+              <DialogTitle className="text-white">Reset Password</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Enter your email address and we'll send you instructions to reset your password.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSendingReset}
+                variant="gradient"
+                className="w-full"
+              >
+                {isSendingReset ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Instructions...
+                  </>
+                ) : (
+                  'Send Reset Instructions'
+                )}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {isLoading && (

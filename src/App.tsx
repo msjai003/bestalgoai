@@ -64,6 +64,10 @@ function AppRoutes() {
       {/* Handle authentication callback from Supabase email */}
       <Route path="/auth/v1/callback*" element={<AuthCallback />} />
       <Route path="/#access_token=*" element={<AuthCallback />} />
+
+      {/* Handle reset password redirects */}
+      <Route path="/reset-password" element={<AuthCallback />} />
+      <Route path="/reset-password/*" element={<AuthCallback />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
