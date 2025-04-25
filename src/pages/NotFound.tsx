@@ -1,10 +1,11 @@
 
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
@@ -12,13 +13,36 @@ const NotFound = () => {
       location.pathname
     );
     
+    const fullUrl = window.location.href;
+    
+    // Recovery links special handling
+    if (fullUrl.includes('type=recovery') || location.pathname.includes('verify')) {
+      console.log("Recovery URL detected in 404 page, attempting rescue");
+      
+      // Extract token from URL if possible
+      let token = null;
+      if (fullUrl.includes('token=')) {
+        const tokenParam = fullUrl.split('token=')[1];
+        if (tokenParam) {
+          token = tokenParam.split('&')[0];
+        }
+      }
+      
+      // Redirect to forgot-password page with token if found
+      if (token) {
+        console.log("Recovery token found, redirecting to forgot-password page");
+        navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery`, { replace: true });
+        return;
+      }
+    }
+    
     // Check if this is an auth callback that is failing
-    if (location.pathname.includes('callback')) {
+    if (location.pathname.includes('callback') || location.pathname.includes('auth/v1')) {
       console.error("Auth callback 404 detected! Full URL:", window.location.href);
       console.error("Search params:", window.location.search);
       console.error("Hash:", window.location.hash);
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
@@ -60,7 +84,7 @@ const NotFound = () => {
           </button>
         </div>
         
-        {location.pathname.includes('callback') && (
+        {(location.pathname.includes('callback') || location.pathname.includes('verify')) && (
           <div className="mt-6">
             <Link 
               to="/auth" 

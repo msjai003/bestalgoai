@@ -67,6 +67,10 @@ function AppRoutes() {
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
       <Route path="/auth/callback/*" element={<AuthCallback />} />
       <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
+      <Route path="/auth/verify" element={<AuthCallback />} />
+      <Route path="/auth/v1/verify" element={<AuthCallback />} />
+      <Route path="/auth/verify/*" element={<AuthCallback />} />
+      <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />

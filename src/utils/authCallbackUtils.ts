@@ -1,15 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
-export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
+export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
   console.log('Processing password recovery with token');
-  // Navigate to forgot-password with token and type as query params
-  navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`);
+  // Navigate to forgot-password with token and type as query params, using replace: true to prevent back navigation issues
+  navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
 };
 
 export const handleAuthSession = async (
   accessToken: string,
   refreshToken: string,
-  navigate: (path: string) => void,
+  navigate: (path: string, options?: {replace: boolean}) => void,
   setError: (error: string | null) => void,
   setErrorDetails: (details: string | null) => void,
   setIsProcessing: (isProcessing: boolean) => void
@@ -36,7 +37,7 @@ export const handleAuthSession = async (
       // Using a longer delay for Google auth to ensure session is properly set
       setTimeout(() => {
         console.log('Redirecting to dashboard after successful auth');
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }, 2000);
     } else {
       console.error('No user in session data after setting session');
@@ -59,7 +60,7 @@ export const handleAuthError = (
   setError: (error: string | null) => void,
   setErrorDetails: (details: string | null) => void,
   setIsProcessing: (isProcessing: boolean) => void,
-  navigate: (path: string) => void
+  navigate: (path: string, options?: {replace: boolean}) => void
 ) => {
   if (error) {
     console.error('Auth error:', error, errorDescription);
@@ -69,10 +70,10 @@ export const handleAuthError = (
     
     // Give user a way back instead of staying on error page
     setTimeout(() => {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     }, 5000);
   } else {
     console.log('No error specified, redirecting to dashboard');
-    navigate('/dashboard');
+    navigate('/dashboard', { replace: true });
   }
 };

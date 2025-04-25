@@ -23,18 +23,34 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Check for token in query parameters (recovery flow)
-        const searchParams = new URLSearchParams(window.location.search);
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        
-        // Special handling for password recovery tokens
-        if (token && type === 'recovery') {
-          console.log('Password recovery token found, redirecting to reset password page');
-          navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
-          return;
+        // Special handling for password recovery flows - check URL for tokens
+        if (fullUrl.includes('type=recovery') || currentPath.includes('/verify')) {
+          console.log('Recovery flow detected in URL');
+          
+          // Extract token from either query params or from path
+          let token = null;
+          let type = 'recovery';
+          
+          const searchParams = new URLSearchParams(window.location.search);
+          token = searchParams.get('token');
+          
+          // If token is not in search params, try to extract from URL path for /v1/verify format
+          if (!token && (currentPath.includes('/auth/v1/verify') || currentPath.includes('/auth/verify'))) {
+            const urlParts = fullUrl.split('token=');
+            if (urlParts.length > 1) {
+              token = urlParts[1].split('&')[0];
+              console.log('Extracted token from URL path:', token);
+            }
+          }
+          
+          if (token) {
+            console.log('Password recovery token found, redirecting to reset password page');
+            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
+            return;
+          }
         }
 
+        // Handle standard auth callback flows
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
           
@@ -45,11 +61,15 @@ const AuthCallback = () => {
           const error = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
           
-          // Look for recovery flow in auth callback path
-          if (token && type === 'recovery') {
-            console.log('Password recovery token found in auth callback, redirecting to forgot-password page');
-            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
-            return;
+          // Look for reset flow in auth callback path
+          const reset = searchParams.get('reset');
+          if (reset === 'true') {
+            const { data: sessionData } = await supabase.auth.getSession();
+            if (sessionData.session) {
+              console.log('Active session found and reset flag is true, redirecting to password reset page');
+              navigate('/forgot-password?reset=true', { replace: true });
+              return;
+            }
           }
 
           if (error) {
@@ -88,7 +108,7 @@ const AuthCallback = () => {
                 console.log(`Will redirect to ${redirectPath} after ${delay}ms delay`);
                 
                 setTimeout(() => {
-                  navigate(redirectPath);
+                  navigate(redirectPath, { replace: true });
                 }, delay);
                 
                 return;
@@ -103,16 +123,10 @@ const AuthCallback = () => {
           }
         }
         
-        // Check again for token in case it wasn't handled above
-        if (token && type === 'recovery') {
-          handlePasswordRecovery(token, type, navigate);
-          return;
-        }
-        
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
           console.log('User already has an active session, redirecting to dashboard');
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
           return;
         }
         
@@ -137,7 +151,7 @@ const AuthCallback = () => {
           );
         } else {
           console.log('No authentication data found in URL, redirecting to auth page');
-          setTimeout(() => navigate('/auth'), 1000);
+          setTimeout(() => navigate('/auth', { replace: true }), 1000);
         }
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);

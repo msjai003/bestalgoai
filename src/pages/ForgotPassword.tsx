@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLayout';
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
+import { toast } from 'sonner';
 
 const ForgotPassword = () => {
   const {
@@ -27,6 +28,13 @@ const ForgotPassword = () => {
     handleBackToEmail,
     handleResetPassword
   } = useForgotPassword();
+  
+  useEffect(() => {
+    // Show toast when component mounts with reset token
+    if (currentStep === 'reset') {
+      toast.success('You can now set your new password');
+    }
+  }, [currentStep]);
 
   return (
     <ForgotPasswordLayout 

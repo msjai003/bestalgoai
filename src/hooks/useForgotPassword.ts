@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -134,14 +135,14 @@ export const useForgotPassword = () => {
     };
     
     checkForMagicLink();
-  }, [searchParams, currentStep]);
+  }, [searchParams, currentStep, verificationId]);
 
   const sendOtpToEmail = async (emailAddress: string) => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?reset=true`,
       });
       
       if (error) {
@@ -328,7 +329,7 @@ export const useForgotPassword = () => {
       }
       
       setTimeout(() => {
-        navigate('/auth');
+        navigate('/auth', { replace: true });
       }, 1500);
       
     } catch (error: any) {
