@@ -49,35 +49,30 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
+import ResetPassword from "@/pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Priority routes for auth verification - these catch auth verification URLs */}
       <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/v1/verify/:token" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       
-      {/* Handle authentication callback from Supabase email */}
       <Route path="/auth/v1/callback*" element={<AuthCallback />} />
       <Route path="/#access_token=*" element={<AuthCallback />} />
 
-      {/* Handle reset password redirects */}
-      <Route path="/reset-password" element={<AuthCallback />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-password/*" element={<AuthCallback />} />
       
-      {/* Basic routes */}
       <Route path="/" element={<Index />} />
       
-      {/* Authentication Routes */}
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
       
-      {/* Redirect all verify paths to auth callback for processing */}
       <Route path="/verify/*" element={<AuthCallback />} />
       <Route path="/auth/verify/*" element={<AuthCallback />} />
       <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
