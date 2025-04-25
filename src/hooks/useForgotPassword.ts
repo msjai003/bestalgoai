@@ -30,7 +30,7 @@ export const useForgotPassword = () => {
       console.log("Checking for magic link or parameters in URL");
       console.log("URL parameters:", { token, type, reset });
       
-      if (token && type === 'recovery') {
+      if (token && (type === 'recovery' || reset === 'true')) {
         console.log("Recovery token detected in URL");
         setVerificationInProgress(true);
         

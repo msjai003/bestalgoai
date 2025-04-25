@@ -18,6 +18,7 @@ const NotFound = () => {
     
     // Handle all verification and reset-password URLs immediately
     if (fullUrl.includes('type=recovery') || 
+        fullUrl.includes('reset=true') ||
         location.pathname.includes('verify') || 
         location.pathname.includes('/auth/v1/verify') ||
         location.pathname.includes('reset-password')) {
@@ -29,7 +30,7 @@ const NotFound = () => {
       // Redirect to forgot-password page with token if found
       if (token) {
         console.log("Recovery token found, redirecting to forgot-password page");
-        navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery`, { replace: true });
+        navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery&reset=true`, { replace: true });
       } else {
         // Even if no token found, redirect to forgot-password to handle the case
         console.log("No token found, redirecting to forgot-password page anyway");

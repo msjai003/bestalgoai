@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -144,10 +143,11 @@ const AuthCallback = () => {
           }
         }
         
+        // Check if user already has a session and if this is a recovery flow
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
           // Check if this is a recovery (password reset) flow
-          if (fullUrl.includes('type=recovery') || location.search.includes('type=recovery')) {
+          if (fullUrl.includes('type=recovery') || location.search.includes('type=recovery') || searchParams.get('reset') === 'true') {
             console.log('Recovery flow detected with active session, redirecting to forgot-password');
             navigate('/forgot-password?reset=true', { replace: true });
             return;
