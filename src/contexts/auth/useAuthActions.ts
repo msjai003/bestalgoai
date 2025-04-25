@@ -92,14 +92,6 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
             
           if (profileError) {
             console.error('Error creating profile for new user:', profileError);
-          } else {
-            if (userData.mobileNumber) {
-              await sendWelcomeSMS(
-                data.user.id,
-                userData.fullName,
-                userData.mobileNumber
-              );
-            }
           }
         } catch (profileInsertError) {
           console.error('Exception during profile creation:', profileInsertError);

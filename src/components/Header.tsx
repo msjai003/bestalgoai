@@ -1,80 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Download } from 'lucide-react';
-import { BeforeInstallPromptEvent } from '@/types/installation';
+import { Menu, X } from 'lucide-react';
 import { toast } from 'sonner';
-import InstallButton from '@/components/install/InstallButton';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isInstallable, setIsInstallable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
   
-  useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                          (window.navigator as any).standalone || 
-                          document.referrer.includes('android-app://');
-    
-    if (isStandalone) {
-      setIsInstallable(false);
-      return;
-    }
-    
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.deferredInstallPrompt = promptEvent;
-      setDeferredPrompt(promptEvent);
-      setIsInstallable(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    const userAgent = navigator.userAgent || '';
-    const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-    const isAndroidDevice = /Android/.test(userAgent);
-    
-    setIsIOS(isIOSDevice);
-    setIsAndroid(isAndroidDevice);
-    
-    if (isIOSDevice && !isStandalone) {
-      setIsInstallable(true);
-    }
-
-    if (isAndroidDevice && !isStandalone) {
-      setIsInstallable(true);
-    }
-
-    window.addEventListener('appinstalled', () => {
-      window.deferredInstallPrompt = null;
-      setDeferredPrompt(null);
-      setIsInstallable(false);
-      toast.success("App installed successfully!");
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => {});
-    };
-  }, []);
-  
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const handleDownloadClick = () => {
-    if (window.showInstallPrompt) {
-      window.showInstallPrompt();
-    } else {
-      toast.info("Installation not available in this browser or device");
-    }
   };
   
   const navigation = [
@@ -82,7 +20,6 @@ const Header = () => {
     { name: 'Pricing', href: '/pricing' },
     { name: 'Education', href: '/education' },
     { name: 'About', href: '/about' },
-    { name: 'Download', href: '#', isDownload: true },
   ];
   
   const isActive = (path: string) => {
@@ -101,30 +38,19 @@ const Header = () => {
           </Link>
           
           <div className="hidden md:ml-10 md:flex md:space-x-8">
-            {navigation.map((item) => 
-              item.isDownload ? (
-                <button
-                  key={item.name}
-                  className="flex items-center text-sm font-medium text-cyan hover:text-white transition-colors duration-200"
-                  onClick={handleDownloadClick}
-                >
-                  <Download className="mr-1 h-4 w-4" />
-                  <span>{item.name}</span>
-                </button>
-              ) : (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`text-sm font-medium transition-colors duration-200 ${
-                    isActive(item.href)
-                      ? 'text-cyan'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              )
-            )}
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? 'text-cyan'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
         </div>
         
@@ -159,33 +85,20 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
-            {navigation.map((item) => 
-              item.isDownload ? (
-                <button
-                  key={item.name}
-                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-cyan hover:bg-charcoalPrimary/20 hover:text-white flex items-center"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleDownloadClick();
-                  }}
-                >
-                  {item.name} <Download className="h-4 w-4 inline ml-1" />
-                </button>
-              ) : (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive(item.href)
-                      ? 'text-cyan bg-charcoalPrimary/40'
-                      : 'text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              )
-            )}
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(item.href)
+                    ? 'text-cyan bg-charcoalPrimary/40'
+                    : 'text-gray-300 hover:bg-charcoalPrimary/20 hover:text-white'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
             
             {user ? (
               <Link
