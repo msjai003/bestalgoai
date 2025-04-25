@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, ShieldAlert } from 'lucide-react';
 
 interface ResetPasswordStepProps {
-  email?: string;
-  setEmail?: (email: string) => void;
   newPassword: string;
   setNewPassword: (password: string) => void;
   confirmPassword: string;
@@ -17,8 +15,6 @@ interface ResetPasswordStepProps {
 }
 
 const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
-  email,
-  setEmail,
   newPassword,
   setNewPassword,
   confirmPassword,
@@ -30,21 +26,12 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
 
-  const toggleNewPasswordVisibility = () => {
-    setShowNewPassword(!showNewPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
   const checkPasswordStrength = (password: string) => {
     if (!password) {
       setPasswordStrength(null);
       return;
     }
     
-    // Check password strength
     const hasLowerCase = /[a-z]/.test(password);
     const hasUpperCase = /[A-Z]/.test(password);
     const hasNumber = /\d/.test(password);
@@ -66,21 +53,6 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      {email !== undefined && setEmail !== undefined && (
-        <div>
-          <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="bg-gray-800/50 border-gray-700 text-white h-12 mb-4"
-            disabled={isLoading}
-          />
-        </div>
-      )}
-      
       <div>
         <Label htmlFor="newPassword" className="text-gray-300 mb-2 block">New Password</Label>
         <div className="relative">
@@ -95,7 +67,7 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
           />
           <button 
             type="button"
-            onClick={toggleNewPasswordVisibility}
+            onClick={() => setShowNewPassword(!showNewPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
             aria-label={showNewPassword ? "Hide password" : "Show password"}
           >
@@ -141,7 +113,7 @@ const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
           />
           <button 
             type="button"
-            onClick={toggleConfirmPasswordVisibility}
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >

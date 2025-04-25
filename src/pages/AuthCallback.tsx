@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
@@ -17,27 +16,21 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
-        // Get the full URL to process
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
         
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
-        
-        // Process Google auth callback route (handle both callback formats)
+
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
           
-          // Get auth code or tokens from URL
           const searchParams = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           
           const code = searchParams.get('code');
           const error = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
-          const state = searchParams.get('state');
-          
-          // Check for password recovery token
           const token = searchParams.get('token');
           const type = searchParams.get('type');
           
@@ -45,20 +38,15 @@ const AuthCallback = () => {
             code: !!code, 
             error: !!error,
             token: !!token,
-            type,
-            fullSearch: window.location.search,
-            fullHash: window.location.hash,
-            state: state
+            type
           });
           
-          // Handle password recovery token if present
           if (token && type === 'recovery') {
             console.log('Password recovery token found, redirecting to forgot-password page');
-            handlePasswordRecovery(token, type, navigate);
+            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`);
             return;
           }
-          
-          // Handle error if present
+
           if (error) {
             console.error('Auth callback received error:', error, errorDescription);
             handleAuthError(
@@ -71,8 +59,7 @@ const AuthCallback = () => {
             );
             return;
           }
-          
-          // Process code if available (used in most OAuth flows including Google)
+
           if (code) {
             console.log('Found auth code in callback, exchanging for session');
             try {
@@ -86,7 +73,6 @@ const AuthCallback = () => {
               } else if (data.session) {
                 console.log('Successfully exchanged code for session');
                 
-                // For Google auth we need a longer delay to ensure profile details are properly loaded
                 const isGoogleAuth = data.session.user?.app_metadata?.provider === 'google';
                 const delay = isGoogleAuth ? 3000 : 2000;
                 
@@ -111,8 +97,7 @@ const AuthCallback = () => {
             return;
           }
         }
-        
-        // Standard callback processing for other routes
+
         const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const type = searchParams.get('type');
@@ -124,7 +109,6 @@ const AuthCallback = () => {
           return;
         }
         
-        // Check if there's a session first (user might already be logged in)
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
           console.log('User already has an active session, redirecting to dashboard');
@@ -132,7 +116,6 @@ const AuthCallback = () => {
           return;
         }
         
-        // Check for hash params (used in implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -153,7 +136,6 @@ const AuthCallback = () => {
             setIsProcessing
           );
         } else {
-          // No tokens, no code, no errors - redirect to the auth page
           console.log('No authentication data found in URL, redirecting to auth page');
           setTimeout(() => navigate('/auth'), 1000);
         }
