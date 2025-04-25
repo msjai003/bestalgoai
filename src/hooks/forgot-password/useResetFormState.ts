@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 
+export type ResetStep = 'email' | 'otp' | 'reset';
+
 export const useResetFormState = () => {
   const [email, setEmail] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
@@ -8,7 +10,7 @@ export const useResetFormState = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<'email' | 'otp' | 'reset'>('email');
+  const [currentStep, setCurrentStep] = useState<ResetStep>('email');
   const [verificationInProgress, setVerificationInProgress] = useState<boolean>(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
   const [magicLinkSessionActive, setMagicLinkSessionActive] = useState<boolean>(false);

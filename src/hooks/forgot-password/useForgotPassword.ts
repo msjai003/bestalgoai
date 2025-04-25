@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useResetFormState } from './useResetFormState';
+import { useResetFormState, ResetStep } from './useResetFormState';
 import { useEmailVerification } from './useEmailVerification';
 import { useMagicLinkVerification } from './useMagicLinkVerification';
 
@@ -42,6 +42,7 @@ export const useForgotPassword = () => {
     setVerificationInProgress,
     setErrorMessage,
     verificationId,
+    currentStep,
   );
 
   const handleRequestReset = async (e: React.FormEvent) => {

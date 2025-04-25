@@ -3,14 +3,16 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ResetStep } from './useResetFormState';
 
 export const useMagicLinkVerification = (
   setEmail: (email: string) => void,
   setMagicLinkSessionActive: (active: boolean) => void,
-  setCurrentStep: (step: 'email' | 'otp' | 'reset') => void,
+  setCurrentStep: (step: ResetStep) => void,
   setVerificationInProgress: (inProgress: boolean) => void,
   setErrorMessage: (message: string | null) => void,
   verificationId: string | null,
+  currentStep: ResetStep,
 ) => {
   const [searchParams] = useSearchParams();
 
@@ -87,5 +89,5 @@ export const useMagicLinkVerification = (
     };
     
     checkForMagicLink();
-  }, [searchParams, verificationId]);
+  }, [searchParams, verificationId, currentStep, setCurrentStep, setEmail, setErrorMessage, setMagicLinkSessionActive, setVerificationInProgress]);
 };
