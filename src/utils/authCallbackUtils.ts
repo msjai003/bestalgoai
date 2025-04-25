@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
   console.log('Processing password recovery with token:', token ? token.substring(0, 5) + '...' : 'null');
   // Directly navigate to reset-password instead of auth
-  navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&reset=true`, { replace: true });
+  navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
 };
 
 export const extractVerificationToken = (url: string, path: string): string | null => {
