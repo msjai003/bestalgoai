@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -18,6 +19,7 @@ const AuthCallback = () => {
       try {
         const fullUrl = window.location.href;
         const currentPath = location.pathname;
+        const searchParams = new URLSearchParams(window.location.search);
         
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
