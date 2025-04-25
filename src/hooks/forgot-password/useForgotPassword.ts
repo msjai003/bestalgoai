@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -129,7 +128,6 @@ export const useForgotPassword = () => {
       try {
         const result = await verifyOtp(storedEmail, otp);
         
-        // Check for error in the result
         if (!result || result.error) {
           setErrorMessage('Invalid verification code. Please try again.');
           setIsLoading(false);
@@ -137,7 +135,7 @@ export const useForgotPassword = () => {
         }
         
         toast.success('Email verified successfully');
-        navigate('/auth');
+        navigate('/reset-password');
       } catch (verifyError: any) {
         console.error('Error during OTP verification:', verifyError);
         setErrorMessage(verifyError?.message || 'Error verifying code');

@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,7 +50,7 @@ export const useMagicLinkVerification = (
               setEmail(userEmail);
               setMagicLinkSessionActive(true);
               setCurrentStep('otp');
-              toast.success('Please verify your email to continue');
+              toast.success('Please enter the verification code sent to your email');
             } else {
               setErrorMessage('Could not retrieve your email. Please try again.');
             }

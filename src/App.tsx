@@ -50,6 +50,7 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
+import ResetLink from "@/pages/ResetLink";
 
 const queryClient = new QueryClient();
 
@@ -62,11 +63,11 @@ function AppRoutes() {
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       
-      {/* Handle reset password redirects from Supabase directly to the forgot-password page */}
-      <Route path="/reset-password" element={<Navigate to="/forgot-password?reset=true" replace />} />
-      <Route path="/reset-password/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
-      <Route path="/recovery" element={<Navigate to="/forgot-password?reset=true" replace />} />
-      <Route path="/recovery/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
+      {/* Handle reset password redirects from Supabase directly to the ResetLink page */}
+      <Route path="/reset-password" element={<ResetLink />} />
+      <Route path="/reset-password/*" element={<ResetLink />} />
+      <Route path="/recovery" element={<ResetLink />} />
+      <Route path="/recovery/*" element={<ResetLink />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
