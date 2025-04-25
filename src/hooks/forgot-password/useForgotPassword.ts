@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +7,8 @@ import { useEmailVerification } from './useEmailVerification';
 import { useMagicLinkVerification } from './useMagicLinkVerification';
 
 export const useForgotPassword = () => {
+  const navigate = useNavigate();
+  
   const {
     email,
     setEmail,
@@ -124,9 +127,10 @@ export const useForgotPassword = () => {
       setEmail(storedEmail);
       
       try {
-        const { error } = await verifyOtp(storedEmail, otp);
+        const result = await verifyOtp(storedEmail, otp);
         
-        if (error) {
+        // Check for error in the result
+        if (!result || result.error) {
           setErrorMessage('Invalid verification code. Please try again.');
           setIsLoading(false);
           return;

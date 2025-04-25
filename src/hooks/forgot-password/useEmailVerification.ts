@@ -27,22 +27,22 @@ export const useEmailVerification = () => {
     console.log(`Verifying OTP for email: ${email}`);
     
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      const result = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email'
       });
       
-      if (error) {
-        console.error('OTP verification error:', error);
-        throw error;
+      if (result.error) {
+        console.error('OTP verification error:', result.error);
+        return { error: result.error };
       }
       
-      console.log("OTP verification response:", data);
-      return data;
-    } catch (error) {
+      console.log("OTP verification response:", result.data);
+      return { data: result.data };
+    } catch (error: any) {
       console.error('Error during OTP verification:', error);
-      throw error;
+      return { error };
     }
   };
 
