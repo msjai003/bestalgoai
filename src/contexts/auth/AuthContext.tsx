@@ -65,7 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: new Error('Google sign-in has been removed'), data: null };
     },
     fetchGoogleUserDetails: async () => {
-      return { error: new Error('Google sign-in has been removed'), data: null };
+      // Changed to match the expected return type (Promise<void>)
+      console.log('Google sign-in functionality has been removed');
+      // No return value (void)
     }
   };
 
