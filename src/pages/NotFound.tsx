@@ -1,7 +1,7 @@
-
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
+import { extractVerificationToken } from '@/utils/authCallbackUtils';
 
 const NotFound = () => {
   const location = useLocation();
@@ -21,37 +21,16 @@ const NotFound = () => {
         location.pathname.includes('/auth/v1/verify')) {
       console.log("Recovery URL detected in 404 page, attempting rescue");
       
-      // Extract token from URL if possible
-      let token = null;
-      
-      // Try to extract from query params
-      const searchParams = new URLSearchParams(window.location.search);
-      token = searchParams.get('token');
-      
-      // If token is not in search params, try to extract from URL path
-      if (!token) {
-        if (fullUrl.includes('token=')) {
-          const tokenParam = fullUrl.split('token=')[1];
-          if (tokenParam) {
-            token = tokenParam.split('&')[0];
-          }
-        }
-        
-        // Also check path segments
-        const pathParts = location.pathname.split('/');
-        const lastPart = pathParts[pathParts.length - 1];
-        
-        // Check if last part might be a token (not "verify")
-        if (lastPart && lastPart !== 'verify') {
-          token = lastPart;
-        }
-      }
+      // Extract token from URL if possible using our utility function
+      const token = extractVerificationToken(fullUrl, location.pathname);
       
       // Redirect to forgot-password page with token if found
       if (token) {
         console.log("Recovery token found, redirecting to forgot-password page");
         navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery`, { replace: true });
         return;
+      } else {
+        console.error('Recovery flow detected in 404 page but no token found in URL');
       }
     }
     

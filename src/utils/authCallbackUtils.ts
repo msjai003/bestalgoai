@@ -7,6 +7,53 @@ export const handlePasswordRecovery = (token: string, type: string, navigate: (p
   navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
 };
 
+export const extractVerificationToken = (url: string, path: string): string | null => {
+  console.log('Extracting verification token from URL:', url, 'Path:', path);
+  
+  // First check query parameters
+  const searchParams = new URLSearchParams(window.location.search);
+  let token = searchParams.get('token');
+  
+  if (token) {
+    console.log('Found token in query params:', token.substring(0, 5) + '...');
+    return token;
+  }
+  
+  // Check URL hash fragment
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  token = hashParams.get('token');
+  
+  if (token) {
+    console.log('Found token in hash fragment:', token.substring(0, 5) + '...');
+    return token;
+  }
+  
+  // Check if token might be in the path segment for /auth/v1/verify/:token format
+  if (path.includes('/verify')) {
+    const pathSegments = path.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // If last segment is not "verify" itself, it might be the token
+    if (lastSegment && lastSegment !== 'verify') {
+      console.log('Extracted token from path segment:', lastSegment.substring(0, 5) + '...');
+      return lastSegment;
+    }
+  }
+  
+  // Check if token is part of the URL after token=
+  if (url.includes('token=')) {
+    const tokenPart = url.split('token=')[1];
+    if (tokenPart) {
+      token = tokenPart.split('&')[0];
+      console.log('Extracted token from URL string:', token.substring(0, 5) + '...');
+      return token;
+    }
+  }
+  
+  console.log('No token found in URL');
+  return null;
+};
+
 export const handleAuthSession = async (
   accessToken: string,
   refreshToken: string,

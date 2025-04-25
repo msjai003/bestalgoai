@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
+import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,54 +22,26 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Special handling for password recovery flows - check URL for tokens
+        // Special handling for password recovery and verification flows
         if (fullUrl.includes('type=recovery') || 
             currentPath.includes('/verify') || 
             currentPath.includes('/auth/v1/verify')) {
-          console.log('Recovery flow detected in URL');
+          console.log('Recovery or verification flow detected in URL');
           
-          // Extract token from either query params or from path
-          let token = null;
-          let type = 'recovery';
-          
-          const searchParams = new URLSearchParams(window.location.search);
-          token = searchParams.get('token');
-          
-          // If token is not in search params, try to extract from URL path for /v1/verify format
-          if (!token && (currentPath.includes('/auth/v1/verify') || currentPath.includes('/auth/verify'))) {
-            // Try to extract token from path segment
-            const pathParts = currentPath.split('/');
-            const lastPart = pathParts[pathParts.length - 1];
-            
-            // Check if last part might be a token (not "verify")
-            if (lastPart && lastPart !== 'verify') {
-              token = lastPart;
-              console.log('Extracted token from URL path segment:', token);
-            } else {
-              // Try to extract from URL query string or hash
-              const urlParts = fullUrl.split('token=');
-              if (urlParts.length > 1) {
-                token = urlParts[1].split('&')[0];
-                console.log('Extracted token from URL query string:', token);
-              }
-            }
-          }
-          
-          // Also try to extract from hash fragment
-          if (!token && window.location.hash) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            token = hashParams.get('token');
-            if (token) {
-              console.log('Extracted token from URL hash:', token);
-            }
-          }
+          // Use our enhanced token extraction function
+          const token = extractVerificationToken(fullUrl, currentPath);
+          const type = 'recovery';
           
           if (token) {
-            console.log('Password recovery token found, redirecting to reset password page');
+            console.log('Recovery/verification token found, redirecting to reset password page');
             handlePasswordRecovery(token, type, navigate);
             return;
           } else {
-            console.error('Recovery flow detected but no token found in URL');
+            console.error('Recovery/verification flow detected but no token found in URL');
+            setError('Missing Verification Token');
+            setErrorDetails('No verification token was found in the URL. Please check your email and click the link again, or request a new verification email.');
+            setIsProcessing(false);
+            return;
           }
         }
 
