@@ -19,7 +19,6 @@ import Auth from "@/pages/Auth";
 import AuthCallback from "@/pages/AuthCallback";
 import Registration from "@/pages/Registration";
 import Signup from "@/pages/Signup";
-import ForgotPassword from "@/pages/ForgotPassword";
 import Terms from "@/pages/Terms";
 import Logout from "@/pages/Logout";
 import ColorTest from "@/pages/ColorTest";
@@ -50,7 +49,6 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
-import ResetLink from "@/pages/ResetLink";
 
 const queryClient = new QueryClient();
 
@@ -63,15 +61,9 @@ function AppRoutes() {
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       
-      {/* Handle password recovery links from Supabase email */}
+      {/* Handle authentication callback from Supabase email */}
       <Route path="/auth/v1/callback*" element={<AuthCallback />} />
       <Route path="/#access_token=*" element={<AuthCallback />} />
-      
-      {/* Handle reset password redirects from Supabase directly to the ResetLink page */}
-      <Route path="/reset-password" element={<ResetLink />} />
-      <Route path="/reset-password/*" element={<ResetLink />} />
-      <Route path="/recovery" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/recovery/*" element={<Navigate to="/auth/callback" replace />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
@@ -85,8 +77,6 @@ function AppRoutes() {
       <Route path="/verify/*" element={<AuthCallback />} />
       <Route path="/auth/verify/*" element={<AuthCallback />} />
       <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
-      
-      <Route path="/forgot-password" element={<ForgotPassword />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />

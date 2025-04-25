@@ -120,12 +120,7 @@ const Auth = () => {
             </div>
             
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="password" className="text-gray-300">Password</Label>
-                <Link to="/forgot-password" className="text-cyan text-sm hover:underline">
-                  Forgot Password?
-                </Link>
-              </div>
+              <Label htmlFor="password" className="text-gray-300 mb-2 block">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
