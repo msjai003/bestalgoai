@@ -36,6 +36,14 @@ const ForgotPassword = () => {
     }
   }, [currentStep]);
 
+  // Debug output to help track the component state
+  console.log('ForgotPassword component state:', { 
+    currentStep, 
+    verificationInProgress, 
+    resetLinkSent,
+    hasEmailInput: !!email
+  });
+
   return (
     <ForgotPasswordLayout 
       step={currentStep === 'email' ? 1 : currentStep === 'otp' ? 2 : 3}

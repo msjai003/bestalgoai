@@ -16,15 +16,34 @@ const NotFound = () => {
     const fullUrl = window.location.href;
     
     // Recovery links special handling
-    if (fullUrl.includes('type=recovery') || location.pathname.includes('verify')) {
+    if (fullUrl.includes('type=recovery') || 
+        location.pathname.includes('verify') || 
+        location.pathname.includes('/auth/v1/verify')) {
       console.log("Recovery URL detected in 404 page, attempting rescue");
       
       // Extract token from URL if possible
       let token = null;
-      if (fullUrl.includes('token=')) {
-        const tokenParam = fullUrl.split('token=')[1];
-        if (tokenParam) {
-          token = tokenParam.split('&')[0];
+      
+      // Try to extract from query params
+      const searchParams = new URLSearchParams(window.location.search);
+      token = searchParams.get('token');
+      
+      // If token is not in search params, try to extract from URL path
+      if (!token) {
+        if (fullUrl.includes('token=')) {
+          const tokenParam = fullUrl.split('token=')[1];
+          if (tokenParam) {
+            token = tokenParam.split('&')[0];
+          }
+        }
+        
+        // Also check path segments
+        const pathParts = location.pathname.split('/');
+        const lastPart = pathParts[pathParts.length - 1];
+        
+        // Check if last part might be a token (not "verify")
+        if (lastPart && lastPart !== 'verify') {
+          token = lastPart;
         }
       }
       

@@ -24,7 +24,9 @@ const AuthCallback = () => {
         console.log('Full callback URL:', fullUrl);
         
         // Special handling for password recovery flows - check URL for tokens
-        if (fullUrl.includes('type=recovery') || currentPath.includes('/verify')) {
+        if (fullUrl.includes('type=recovery') || 
+            currentPath.includes('/verify') || 
+            currentPath.includes('/auth/v1/verify')) {
           console.log('Recovery flow detected in URL');
           
           // Extract token from either query params or from path
@@ -36,17 +38,39 @@ const AuthCallback = () => {
           
           // If token is not in search params, try to extract from URL path for /v1/verify format
           if (!token && (currentPath.includes('/auth/v1/verify') || currentPath.includes('/auth/verify'))) {
-            const urlParts = fullUrl.split('token=');
-            if (urlParts.length > 1) {
-              token = urlParts[1].split('&')[0];
-              console.log('Extracted token from URL path:', token);
+            // Try to extract token from path segment
+            const pathParts = currentPath.split('/');
+            const lastPart = pathParts[pathParts.length - 1];
+            
+            // Check if last part might be a token (not "verify")
+            if (lastPart && lastPart !== 'verify') {
+              token = lastPart;
+              console.log('Extracted token from URL path segment:', token);
+            } else {
+              // Try to extract from URL query string or hash
+              const urlParts = fullUrl.split('token=');
+              if (urlParts.length > 1) {
+                token = urlParts[1].split('&')[0];
+                console.log('Extracted token from URL query string:', token);
+              }
+            }
+          }
+          
+          // Also try to extract from hash fragment
+          if (!token && window.location.hash) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            token = hashParams.get('token');
+            if (token) {
+              console.log('Extracted token from URL hash:', token);
             }
           }
           
           if (token) {
             console.log('Password recovery token found, redirecting to reset password page');
-            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
+            handlePasswordRecovery(token, type, navigate);
             return;
+          } else {
+            console.error('Recovery flow detected but no token found in URL');
           }
         }
 
