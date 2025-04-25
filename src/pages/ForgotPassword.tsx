@@ -4,7 +4,7 @@ import ForgotPasswordLayout from '@/components/forgot-password/ForgotPasswordLay
 import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
-import { useForgotPassword } from '@/hooks/useForgotPassword';
+import { useForgotPassword } from '@/hooks/forgot-password/useForgotPassword';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
