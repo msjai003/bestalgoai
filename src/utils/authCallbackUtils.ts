@@ -1,9 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string) => void) => {
   console.log('Processing password recovery with token');
-  // Instead of directly navigating to forgot-password, add the token and type as query params
-  navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`);
+  // Navigate to forgot-password with token and type as query params, using replace:true
+  navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
 };
 
 export const handleAuthSession = async (

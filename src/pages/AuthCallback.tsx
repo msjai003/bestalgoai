@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError } from '@/utils/authCallbackUtils';
@@ -21,6 +22,18 @@ const AuthCallback = () => {
         
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
+        
+        // Check for token in query parameters (recovery flow)
+        const searchParams = new URLSearchParams(window.location.search);
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
+        
+        // Special handling for password recovery tokens
+        if (token && type === 'recovery') {
+          console.log('Password recovery token found, redirecting to reset password page');
+          navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
+          return;
+        }
 
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
@@ -31,19 +44,11 @@ const AuthCallback = () => {
           const code = searchParams.get('code');
           const error = searchParams.get('error') || hashParams.get('error');
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
-          const token = searchParams.get('token');
-          const type = searchParams.get('type');
           
-          console.log('Auth callback params:', { 
-            code: !!code, 
-            error: !!error,
-            token: !!token,
-            type
-          });
-          
+          // Look for recovery flow in auth callback path
           if (token && type === 'recovery') {
-            console.log('Password recovery token found, redirecting to forgot-password page');
-            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`);
+            console.log('Password recovery token found in auth callback, redirecting to forgot-password page');
+            navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
             return;
           }
 
@@ -97,13 +102,8 @@ const AuthCallback = () => {
             return;
           }
         }
-
-        const searchParams = new URLSearchParams(window.location.search);
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
         
-        console.log('Auth callback processing, search params:', { token: !!token, type });
-        
+        // Check again for token in case it wasn't handled above
         if (token && type === 'recovery') {
           handlePasswordRecovery(token, type, navigate);
           return;

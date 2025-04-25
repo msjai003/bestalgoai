@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -25,12 +24,10 @@ export const useForgotPassword = () => {
     const checkForMagicLink = async () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
-      const urlVerificationId = searchParams.get('verification');
-
+      const reset = searchParams.get('reset');
+      
       console.log("Checking for magic link or parameters in URL");
-      console.log("URL parameters:", { token, type, accessToken, refreshToken, urlVerificationId });
+      console.log("URL parameters:", { token, type, reset });
       
       if (token && type === 'recovery') {
         console.log("Recovery token detected in URL");
@@ -77,42 +74,57 @@ export const useForgotPassword = () => {
         return;
       }
       
-      if (type === 'recovery' || accessToken || refreshToken) {
-        console.log("Magic link authentication detected");
+      const urlHash = window.location.hash;
+      if (urlHash && urlHash.includes('access_token')) {
+        console.log("Magic link authentication detected in hash");
         setVerificationInProgress(true);
         
         try {
-          const { data, error } = await supabase.auth.getSession();
+          const hashParams = new URLSearchParams(urlHash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
           
-          if (error) {
-            console.error('Error getting session:', error);
-            setErrorMessage('Your password reset link is invalid or has expired.');
-            setVerificationInProgress(false);
-            return;
-          }
-          
-          if (data.session) {
-            console.log("Active session found from magic link");
-            const userEmail = data.session.user.email;
-            if (userEmail) {
-              setEmail(userEmail);
-              setMagicLinkSessionActive(true);
-              setCurrentStep('reset');
-              toast.success('You can now set your new password');
-            } else {
-              setErrorMessage('Could not retrieve your email. Please try again.');
+          if (accessToken && refreshToken) {
+            console.log("Setting session from hash tokens");
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            
+            if (error) {
+              console.error("Error setting session:", error);
+              setErrorMessage('Failed to authenticate. Please try again.');
+            } else if (data.session) {
+              console.log("Session set successfully");
+              const userEmail = data.session.user.email;
+              if (userEmail) {
+                setEmail(userEmail);
+                setMagicLinkSessionActive(true);
+                setCurrentStep('reset');
+                toast.success('You can now set your new password');
+              }
             }
-          } else {
-            console.log("No active session found");
-            setErrorMessage('Your password reset link is invalid or has expired. Please try requesting a new reset link.');
           }
         } catch (error) {
-          console.error('Error processing magic link:', error);
-          setErrorMessage('An error occurred while processing your password reset link.');
+          console.error('Error processing hash tokens:', error);
+          setErrorMessage('An error occurred while processing authentication.');
         } finally {
           setVerificationInProgress(false);
         }
         return;
+      }
+      
+      if (currentStep === 'email') {
+        const { data } = await supabase.auth.getSession();
+        if (data.session && reset === 'true') {
+          console.log("User has an active session and reset parameter is true");
+          const userEmail = data.session.user.email;
+          if (userEmail) {
+            setEmail(userEmail);
+            setMagicLinkSessionActive(true);
+            setCurrentStep('reset');
+          }
+        }
       }
       
       if (urlVerificationId && currentStep === 'email') {

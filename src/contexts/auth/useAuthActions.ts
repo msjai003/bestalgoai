@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -183,9 +184,9 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     try {
       setIsLoading(true);
       
-      // Update the redirectTo URL to point to the auth callback endpoint
+      // Ensure the redirectTo URL points to the auth callback endpoint
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?reset=true`,
       });
 
       if (error) {
