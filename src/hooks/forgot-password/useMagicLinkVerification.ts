@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ResetStep } from './useResetFormState';
@@ -15,6 +15,7 @@ export const useMagicLinkVerification = (
   currentStep: ResetStep,
 ) => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkForMagicLink = async () => {
@@ -49,8 +50,8 @@ export const useMagicLinkVerification = (
             if (userEmail) {
               setEmail(userEmail);
               setMagicLinkSessionActive(true);
-              setCurrentStep('otp');
-              toast.success('Please enter the verification code sent to your email');
+              navigate('/reset-password'); // Changed from 'auth' to 'reset-password'
+              toast.success('Please set your new password');
             } else {
               setErrorMessage('Could not retrieve your email. Please try again.');
             }
@@ -73,5 +74,5 @@ export const useMagicLinkVerification = (
     };
     
     checkForMagicLink();
-  }, [searchParams, verificationId, currentStep, setCurrentStep, setEmail, setErrorMessage, setMagicLinkSessionActive, setVerificationInProgress]);
+  }, [searchParams, verificationId, currentStep, setCurrentStep, setEmail, setErrorMessage, setMagicLinkSessionActive, setVerificationInProgress, navigate]);
 };
