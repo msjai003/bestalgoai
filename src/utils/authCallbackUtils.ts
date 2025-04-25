@@ -29,12 +29,13 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   }
   
   // Check if token might be in the path segment for /auth/v1/verify/:token format
-  if (path.includes('/verify')) {
+  // This handles routes like /auth/v1/verify/TOKEN_VALUE
+  if (path.includes('/verify') || path.includes('/reset-password')) {
     const pathSegments = path.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
     
-    // If last segment is not "verify" itself, it might be the token
-    if (lastSegment && lastSegment !== 'verify') {
+    // If last segment is not "verify" or "reset-password" itself, it might be the token
+    if (lastSegment && lastSegment !== 'verify' && lastSegment !== 'reset-password') {
       console.log('Extracted token from path segment:', lastSegment.substring(0, 5) + '...');
       return lastSegment;
     }
@@ -47,6 +48,17 @@ export const extractVerificationToken = (url: string, path: string): string | nu
       token = tokenPart.split('&')[0];
       console.log('Extracted token from URL string:', token.substring(0, 5) + '...');
       return token;
+    }
+  }
+  
+  // Check if the URL itself might contain a token (sometimes tokens are embedded directly in paths)
+  // This is a fallback for non-standard URLs
+  const urlParts = url.split('/');
+  for (const part of urlParts) {
+    // Look for parts that might be tokens (long strings that aren't common path segments)
+    if (part && part.length > 20 && !part.includes('.') && !part.includes('?')) {
+      console.log('Found possible token in URL path part:', part.substring(0, 5) + '...');
+      return part;
     }
   }
   

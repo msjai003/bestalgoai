@@ -18,7 +18,8 @@ const NotFound = () => {
     // Recovery links special handling
     if (fullUrl.includes('type=recovery') || 
         location.pathname.includes('verify') || 
-        location.pathname.includes('/auth/v1/verify')) {
+        location.pathname.includes('/auth/v1/verify') ||
+        location.pathname.includes('reset-password')) {
       console.log("Recovery URL detected in 404 page, attempting rescue");
       
       // Extract token from URL if possible using our utility function
@@ -39,6 +40,14 @@ const NotFound = () => {
       console.error("Auth callback 404 detected! Full URL:", window.location.href);
       console.error("Search params:", window.location.search);
       console.error("Hash:", window.location.hash);
+      
+      // If it looks like an auth flow, try to redirect to auth page
+      if (fullUrl.includes('token=') || fullUrl.includes('access_token=') || 
+          fullUrl.includes('reset') || fullUrl.includes('recovery')) {
+        setTimeout(() => {
+          navigate('/auth', { replace: true });
+        }, 2000);
+      }
     }
   }, [location.pathname, navigate]);
 
@@ -82,7 +91,9 @@ const NotFound = () => {
           </button>
         </div>
         
-        {(location.pathname.includes('callback') || location.pathname.includes('verify')) && (
+        {(location.pathname.includes('callback') || 
+          location.pathname.includes('verify') || 
+          location.pathname.includes('reset-password')) && (
           <div className="mt-6">
             <Link 
               to="/auth" 

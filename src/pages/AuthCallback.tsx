@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -26,7 +25,8 @@ const AuthCallback = () => {
         // Special handling for password recovery and verification flows
         if (fullUrl.includes('type=recovery') || 
             currentPath.includes('/verify') || 
-            currentPath.includes('/auth/v1/verify')) {
+            currentPath.includes('/auth/v1/verify') ||
+            currentPath.includes('/reset-password')) {
           console.log('Recovery or verification flow detected in URL');
           
           const token = extractVerificationToken(fullUrl, currentPath);

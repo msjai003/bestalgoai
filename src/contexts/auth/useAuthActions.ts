@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -184,7 +183,6 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     try {
       setIsLoading(true);
       
-      // Use the custom domain URL for password reset
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `https://bestalgoai.lovable.app/forgot-password`,
       });
