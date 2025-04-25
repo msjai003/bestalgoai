@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -33,6 +34,7 @@ const AuthCallback = () => {
           
           if (token) {
             console.log('Recovery/verification token found, redirecting to reset password page');
+            // Handle the password recovery flow with the token
             handlePasswordRecovery(token, type, navigate);
             return;
           } else {
