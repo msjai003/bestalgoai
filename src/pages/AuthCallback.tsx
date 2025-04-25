@@ -28,7 +28,6 @@ const AuthCallback = () => {
             currentPath.includes('/auth/v1/verify')) {
           console.log('Recovery or verification flow detected in URL');
           
-          // Use our enhanced token extraction function
           const token = extractVerificationToken(fullUrl, currentPath);
           const type = 'recovery';
           
