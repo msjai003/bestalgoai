@@ -5,9 +5,11 @@ import EmailStep from '@/components/forgot-password/EmailStep';
 import OtpStep from '@/components/forgot-password/OtpStep';
 import ResetPasswordStep from '@/components/forgot-password/ResetPasswordStep';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const ForgotPassword = () => {
+  const [searchParams] = useSearchParams();
   const {
     email,
     setEmail,
@@ -30,18 +32,25 @@ const ForgotPassword = () => {
   } = useForgotPassword();
   
   useEffect(() => {
-    // Show toast when component mounts with reset token
-    if (currentStep === 'reset') {
-      toast.success('You can now set your new password');
+    // Check for reset parameter in URL when component mounts
+    const resetParam = searchParams.get('reset');
+    if (resetParam === 'true' && currentStep === 'email') {
+      console.log('Reset parameter detected in URL, showing password reset form');
+      // Toast notification is handled in the useForgotPassword hook
     }
-  }, [currentStep]);
+  }, [searchParams, currentStep]);
 
   // Debug output to help track the component state
   console.log('ForgotPassword component state:', { 
     currentStep, 
     verificationInProgress, 
     resetLinkSent,
-    hasEmailInput: !!email
+    hasEmailInput: !!email,
+    urlParams: {
+      reset: searchParams.get('reset'),
+      token: searchParams.get('token'),
+      type: searchParams.get('type')
+    }
   });
 
   return (

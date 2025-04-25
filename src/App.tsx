@@ -61,8 +61,12 @@ function AppRoutes() {
       <Route path="/auth/v1/verify/:token" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
-      <Route path="/recovery" element={<Navigate to="/forgot-password" replace />} />
+      
+      {/* Handle reset password redirects from Supabase directly to the forgot-password page */}
+      <Route path="/reset-password" element={<Navigate to="/forgot-password?reset=true" replace />} />
+      <Route path="/reset-password/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
+      <Route path="/recovery" element={<Navigate to="/forgot-password?reset=true" replace />} />
+      <Route path="/recovery/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
@@ -81,9 +85,6 @@ function AppRoutes() {
       <Route path="/auth/verify/*" element={<AuthCallback />} />
       <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
       
-      {/* Handle reset password routes */}
-      <Route path="/reset-password/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
-      <Route path="/recovery/*" element={<Navigate to="/forgot-password?reset=true" replace />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       
       <Route path="/registration" element={<Registration />} />

@@ -42,6 +42,7 @@ const AuthCallback = () => {
             });
             
             if (error) {
+              console.error('Error verifying recovery token:', error);
               setError('Invalid or Expired Link');
               setErrorDetails('Please request a new password reset link.');
               setIsProcessing(false);
@@ -49,31 +50,24 @@ const AuthCallback = () => {
             }
 
             if (data?.user) {
+              console.log('Recovery token verification successful, redirecting to reset password form');
               navigate('/forgot-password?reset=true', { replace: true });
               return;
             }
+          } else {
+            // Still try to redirect to forgot-password with reset flag, even if we couldn't verify the token
+            // This handles cases where the token is in a format we didn't extract properly
+            console.log('No token found in URL but path suggests recovery, redirecting to reset password page');
+            navigate('/forgot-password?reset=true', { replace: true });
+            return;
           }
         }
         
         // Special handling for password recovery and verification flows
         if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
-          
-          const token = extractVerificationToken(fullUrl, currentPath);
-          const type = 'recovery';
-          
-          if (token) {
-            console.log('Recovery token found, redirecting to reset password page');
-            // Handle the password recovery flow with the token
-            handlePasswordRecovery(token, type, navigate);
-            return;
-          } else {
-            console.error('Recovery flow detected but no token found in URL');
-            setError('Missing Verification Token');
-            setErrorDetails('No verification token was found in the URL. Please check your email and click the link again, or request a new verification email.');
-            setIsProcessing(false);
-            return;
-          }
+          navigate('/forgot-password?reset=true', { replace: true });
+          return;
         }
 
         // Handle standard auth callback flows

@@ -74,6 +74,23 @@ export const useForgotPassword = () => {
         return;
       }
       
+      if (reset === 'true' || type === 'recovery') {
+        console.log("Reset parameter detected in URL");
+        
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          console.log("Active session found with reset parameter");
+          const userEmail = data.session.user.email;
+          if (userEmail) {
+            setEmail(userEmail);
+            setMagicLinkSessionActive(true);
+            setCurrentStep('reset');
+            toast.success('You can now set your new password');
+            return;
+          }
+        }
+      }
+      
       const urlHash = window.location.hash;
       if (urlHash && urlHash.includes('access_token')) {
         console.log("Magic link authentication detected in hash");
@@ -114,19 +131,6 @@ export const useForgotPassword = () => {
         return;
       }
       
-      if (currentStep === 'email') {
-        const { data } = await supabase.auth.getSession();
-        if (data.session && reset === 'true') {
-          console.log("User has an active session and reset parameter is true");
-          const userEmail = data.session.user.email;
-          if (userEmail) {
-            setEmail(userEmail);
-            setMagicLinkSessionActive(true);
-            setCurrentStep('reset');
-          }
-        }
-      }
-      
       if (verificationId && currentStep === 'email') {
         console.log("Found verification ID, moving to OTP step");
         setCurrentStep('otp');
@@ -140,7 +144,6 @@ export const useForgotPassword = () => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
-      // Make sure to use the complete URL including the origin for the redirect
       const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
         redirectTo: `${window.location.origin}/forgot-password?reset=true`,
       });
@@ -328,7 +331,6 @@ export const useForgotPassword = () => {
         sessionStorage.removeItem(`email_${verificationId}`);
       }
       
-      // Give user time to see the success message before redirecting
       setTimeout(() => {
         navigate('/auth', { replace: true });
       }, 1500);
