@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -24,46 +23,33 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Immediately handle any verify paths or recovery links to prevent them from showing
-        if (currentPath.includes('/verify') || 
-            currentPath.includes('/auth/v1/verify') ||
-            currentPath.includes('/reset-password') ||
-            currentPath.includes('/recovery') ||
-            searchParams.get('type') === 'recovery' ||
-            searchParams.get('reset') === 'true') {
-          console.log('Verification or reset path detected, immediately processing');
-          
+        // First check for recovery type in query params
+        if (searchParams.get('type') === 'recovery' || fullUrl.includes('type=recovery')) {
+          console.log('Recovery flow detected in query params');
           const token = extractVerificationToken(fullUrl, currentPath);
-          
           if (token) {
-            console.log('Recovery token found, verifying...');
-            const { data, error } = await supabase.auth.verifyOtp({
-              token_hash: token,
-              type: 'recovery'
-            });
-            
-            if (error) {
-              console.error('Error verifying recovery token:', error);
-              setError('Invalid or Expired Link');
-              setErrorDetails('Please request a new password reset link.');
-              setIsProcessing(false);
-              return;
-            }
-
-            if (data?.user) {
-              console.log('Recovery token verification successful, redirecting to reset password form');
-              navigate('/reset-password', { replace: true });
-              return;
-            }
-          } else {
-            // Still try to redirect to reset-password with reset flag, even if we couldn't verify the token
-            // This handles cases where the token is in a format we didn't extract properly
-            console.log('No token found in URL but path suggests recovery, redirecting to reset password page');
-            navigate('/reset-password', { replace: true });
+            console.log('Found recovery token, redirecting to reset password');
+            handlePasswordRecovery(token, 'recovery', navigate);
             return;
           }
         }
         
+        // Check for reset password paths
+        if (currentPath.includes('/verify') || 
+            currentPath.includes('/auth/v1/verify') ||
+            currentPath.includes('/reset-password') ||
+            currentPath.includes('/recovery')) {
+          console.log('Verification or reset path detected');
+          
+          const token = extractVerificationToken(fullUrl, currentPath);
+          
+          if (token) {
+            console.log('Token found, handling password recovery');
+            handlePasswordRecovery(token, 'recovery', navigate);
+            return;
+          }
+        }
+
         // Special handling for password recovery and verification flows
         if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
