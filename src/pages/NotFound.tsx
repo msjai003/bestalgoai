@@ -21,7 +21,8 @@ const NotFound = () => {
         fullUrl.includes('reset=true') ||
         location.pathname.includes('verify') || 
         location.pathname.includes('/auth/v1/verify') ||
-        location.pathname.includes('reset-password')) {
+        location.pathname.includes('reset-password') ||
+        location.pathname.includes('recovery')) {
       console.log("Verification or recovery URL detected in 404 page, attempting immediate redirect");
       
       // Extract token from URL if possible

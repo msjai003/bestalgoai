@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -29,12 +28,12 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   }
   
   // Check if token might be in the path segment for /auth/v1/verify/:token format
-  if (path.includes('/verify') || path.includes('/reset-password')) {
+  if (path.includes('/verify') || path.includes('/reset-password') || path.includes('/recovery')) {
     const pathSegments = path.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
     
     // If last segment is not "verify" or "reset-password" itself, it might be the token
-    if (lastSegment && lastSegment !== 'verify' && lastSegment !== 'reset-password') {
+    if (lastSegment && lastSegment !== 'verify' && lastSegment !== 'reset-password' && lastSegment !== 'recovery') {
       console.log('Extracted token from path segment:', lastSegment.substring(0, 5) + '...');
       return lastSegment;
     }

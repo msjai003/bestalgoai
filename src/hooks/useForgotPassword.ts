@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -140,8 +141,9 @@ export const useForgotPassword = () => {
     console.log(`Sending OTP to email: ${emailAddress}`);
     
     try {
+      // Make sure to use the complete URL including the origin for the redirect
       const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
-        redirectTo: `${window.location.origin}/auth/callback?reset=true`,
+        redirectTo: `${window.location.origin}/forgot-password?reset=true`,
       });
       
       if (error) {
@@ -327,6 +329,7 @@ export const useForgotPassword = () => {
         sessionStorage.removeItem(`email_${verificationId}`);
       }
       
+      // Give user time to see the success message before redirecting
       setTimeout(() => {
         navigate('/auth', { replace: true });
       }, 1500);
