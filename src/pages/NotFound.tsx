@@ -1,3 +1,4 @@
+
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
@@ -15,12 +16,12 @@ const NotFound = () => {
     
     const fullUrl = window.location.href;
     
-    // Recovery links special handling
+    // Handle all verification and reset-password URLs immediately
     if (fullUrl.includes('type=recovery') || 
         location.pathname.includes('verify') || 
         location.pathname.includes('/auth/v1/verify') ||
         location.pathname.includes('reset-password')) {
-      console.log("Recovery URL detected in 404 page, attempting rescue");
+      console.log("Verification or recovery URL detected in 404 page, attempting immediate redirect");
       
       // Extract token from URL if possible
       const token = extractVerificationToken(fullUrl, location.pathname);
@@ -29,8 +30,12 @@ const NotFound = () => {
       if (token) {
         console.log("Recovery token found, redirecting to forgot-password page");
         navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery`, { replace: true });
-        return;
+      } else {
+        // Even if no token found, redirect to forgot-password to handle the case
+        console.log("No token found, redirecting to forgot-password page anyway");
+        navigate('/forgot-password', { replace: true });
       }
+      return;
     }
     
     // Check if this is an auth callback that is failing
@@ -38,7 +43,7 @@ const NotFound = () => {
       console.error("Auth callback 404 detected, redirecting to auth page");
       setTimeout(() => {
         navigate('/auth', { replace: true });
-      }, 2000);
+      }, 1000);
       return;
     }
   }, [location.pathname, navigate]);

@@ -22,23 +22,40 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Special handling for password recovery and verification flows
-        if (fullUrl.includes('type=recovery') || 
-            currentPath.includes('/verify') || 
+        // Immediately handle any verify paths to prevent them from showing
+        if (currentPath.includes('/verify') || 
             currentPath.includes('/auth/v1/verify') ||
             currentPath.includes('/reset-password')) {
-          console.log('Recovery or verification flow detected in URL');
+          console.log('Verification or reset path detected, immediately processing');
+          
+          const token = extractVerificationToken(fullUrl, currentPath);
+          
+          if (token) {
+            console.log('Verification token found, redirecting to forgot-password page');
+            handlePasswordRecovery(token, 'recovery', navigate);
+            return;
+          } else {
+            // If we can't find a token but we're in a verification path, go to forgot password
+            console.log('No verification token found, redirecting to forgot-password');
+            navigate('/forgot-password', { replace: true });
+            return;
+          }
+        }
+        
+        // Special handling for password recovery and verification flows
+        if (fullUrl.includes('type=recovery')) {
+          console.log('Recovery flow detected in URL');
           
           const token = extractVerificationToken(fullUrl, currentPath);
           const type = 'recovery';
           
           if (token) {
-            console.log('Recovery/verification token found, redirecting to reset password page');
+            console.log('Recovery token found, redirecting to reset password page');
             // Handle the password recovery flow with the token
             handlePasswordRecovery(token, type, navigate);
             return;
           } else {
-            console.error('Recovery/verification flow detected but no token found in URL');
+            console.error('Recovery flow detected but no token found in URL');
             setError('Missing Verification Token');
             setErrorDetails('No verification token was found in the URL. Please check your email and click the link again, or request a new verification email.');
             setIsProcessing(false);

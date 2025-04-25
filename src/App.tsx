@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -56,6 +57,14 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
+      {/* Priority routes for auth verification - these catch auth verification URLs */}
+      <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/v1/verify/:token" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
+      
+      {/* Basic routes */}
       <Route path="/" element={<Index />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
