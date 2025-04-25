@@ -1,10 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
   console.log('Processing password recovery with token:', token ? token.substring(0, 5) + '...' : 'null');
-  // Directly navigate to forgot-password with token and type as query params
-  navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&reset=true`, { replace: true });
+  // Directly navigate to reset-password instead of forgot-password
+  navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&reset=true`, { replace: true });
 };
 
 export const extractVerificationToken = (url: string, path: string): string | null => {
@@ -26,6 +25,16 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   if (token) {
     console.log('Found token in hash fragment:', token.substring(0, 5) + '...');
     return token;
+  }
+  
+  // Check access_token in hash (common for magic links)
+  if (window.location.hash && window.location.hash.includes('access_token=')) {
+    const accessToken = window.location.hash.split('access_token=')[1]?.split('&')[0];
+    if (accessToken) {
+      console.log('Found access_token in hash:', accessToken.substring(0, 5) + '...');
+      // This isn't the recovery token itself, but indicates we're in a magic link flow
+      return 'access_token_present';
+    }
   }
   
   // Check if token might be in the path segment for /auth/v1/verify/:token format

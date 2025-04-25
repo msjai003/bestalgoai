@@ -63,18 +63,18 @@ function AppRoutes() {
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       
+      {/* Handle password recovery links from Supabase email */}
+      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
+      <Route path="/#access_token=*" element={<AuthCallback />} />
+      
       {/* Handle reset password redirects from Supabase directly to the ResetLink page */}
       <Route path="/reset-password" element={<ResetLink />} />
       <Route path="/reset-password/*" element={<ResetLink />} />
-      <Route path="/recovery" element={<ResetLink />} />
-      <Route path="/recovery/*" element={<ResetLink />} />
+      <Route path="/recovery" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/recovery/*" element={<Navigate to="/auth/callback" replace />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/support" element={<Support />} />
       
       {/* Authentication Routes */}
       <Route path="/auth" element={<Auth />} />

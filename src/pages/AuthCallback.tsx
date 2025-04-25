@@ -52,14 +52,14 @@ const AuthCallback = () => {
 
             if (data?.user) {
               console.log('Recovery token verification successful, redirecting to reset password form');
-              navigate('/forgot-password?reset=true', { replace: true });
+              navigate('/reset-password', { replace: true });
               return;
             }
           } else {
-            // Still try to redirect to forgot-password with reset flag, even if we couldn't verify the token
+            // Still try to redirect to reset-password with reset flag, even if we couldn't verify the token
             // This handles cases where the token is in a format we didn't extract properly
             console.log('No token found in URL but path suggests recovery, redirecting to reset password page');
-            navigate('/forgot-password?reset=true', { replace: true });
+            navigate('/reset-password', { replace: true });
             return;
           }
         }
@@ -67,7 +67,7 @@ const AuthCallback = () => {
         // Special handling for password recovery and verification flows
         if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
-          navigate('/forgot-password?reset=true', { replace: true });
+          navigate('/reset-password', { replace: true });
           return;
         }
 

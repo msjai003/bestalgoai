@@ -50,7 +50,7 @@ export const useMagicLinkVerification = (
             if (userEmail) {
               setEmail(userEmail);
               setMagicLinkSessionActive(true);
-              navigate('/reset-password'); // Changed from 'auth' to 'reset-password'
+              navigate('/reset-password', { replace: true }); // Ensure this redirects properly
               toast.success('Please set your new password');
             } else {
               setErrorMessage('Could not retrieve your email. Please try again.');
