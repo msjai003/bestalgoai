@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -36,20 +35,23 @@ const AuthCallback = () => {
           const token = extractVerificationToken(fullUrl, currentPath);
           
           if (token) {
-            console.log('Verification token found, redirecting to forgot-password page');
-            // Explicitly specify recovery type for all reset scenarios
-            handlePasswordRecovery(token, 'recovery', navigate);
-            return;
-          } else if (searchParams.get('type') === 'recovery' || searchParams.get('reset') === 'true') {
-            // If we have recovery parameters but no token, still go to forgot password
-            console.log('Recovery parameters found without token, redirecting to forgot-password');
-            navigate('/forgot-password?reset=true', { replace: true });
-            return;
-          } else {
-            // If we can't find a token but we're in a verification path, go to forgot password
-            console.log('No verification token found, redirecting to forgot-password');
-            navigate('/forgot-password', { replace: true });
-            return;
+            console.log('Recovery token found, verifying...');
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery'
+            });
+            
+            if (error) {
+              setError('Invalid or Expired Link');
+              setErrorDetails('Please request a new password reset link.');
+              setIsProcessing(false);
+              return;
+            }
+
+            if (data?.user) {
+              navigate('/forgot-password?reset=true', { replace: true });
+              return;
+            }
           }
         }
         
