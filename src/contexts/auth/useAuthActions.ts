@@ -184,7 +184,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
     try {
       setIsLoading(true);
       
-      // Ensure the redirectTo URL points to the auth callback endpoint
+      // Ensure the redirectTo URL points to the auth callback endpoint with reset flag
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?reset=true`,
       });
