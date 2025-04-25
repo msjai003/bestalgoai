@@ -127,9 +127,8 @@ export const useForgotPassword = () => {
         }
       }
       
-      if (urlVerificationId && currentStep === 'email') {
-        console.log("Found verification ID in URL, moving to OTP step");
-        setVerificationId(urlVerificationId);
+      if (verificationId && currentStep === 'email') {
+        console.log("Found verification ID, moving to OTP step");
         setCurrentStep('otp');
       }
     };
@@ -341,7 +340,6 @@ export const useForgotPassword = () => {
   };
 
   return {
-    // State
     email,
     setEmail,
     otp,
@@ -357,7 +355,6 @@ export const useForgotPassword = () => {
     resetLinkSent,
     verificationId,
     
-    // Handlers
     handleRequestReset,
     handleResendOtp,
     handleVerifyOtp,
