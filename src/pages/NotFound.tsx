@@ -22,7 +22,7 @@ const NotFound = () => {
         location.pathname.includes('reset-password')) {
       console.log("Recovery URL detected in 404 page, attempting rescue");
       
-      // Extract token from URL if possible using our utility function
+      // Extract token from URL if possible
       const token = extractVerificationToken(fullUrl, location.pathname);
       
       // Redirect to forgot-password page with token if found
@@ -30,24 +30,16 @@ const NotFound = () => {
         console.log("Recovery token found, redirecting to forgot-password page");
         navigate(`/forgot-password?token=${encodeURIComponent(token)}&type=recovery`, { replace: true });
         return;
-      } else {
-        console.error('Recovery flow detected in 404 page but no token found in URL');
       }
     }
     
     // Check if this is an auth callback that is failing
-    if (location.pathname.includes('callback') || location.pathname.includes('auth/v1')) {
-      console.error("Auth callback 404 detected! Full URL:", window.location.href);
-      console.error("Search params:", window.location.search);
-      console.error("Hash:", window.location.hash);
-      
-      // If it looks like an auth flow, try to redirect to auth page
-      if (fullUrl.includes('token=') || fullUrl.includes('access_token=') || 
-          fullUrl.includes('reset') || fullUrl.includes('recovery')) {
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 2000);
-      }
+    if (location.pathname.includes('callback')) {
+      console.error("Auth callback 404 detected, redirecting to auth page");
+      setTimeout(() => {
+        navigate('/auth', { replace: true });
+      }, 2000);
+      return;
     }
   }, [location.pathname, navigate]);
 

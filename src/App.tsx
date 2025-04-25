@@ -61,24 +61,23 @@ function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/support" element={<Support />} />
-      <Route path="/auth" element={<Auth />} />
       
+      {/* Authentication Routes */}
+      <Route path="/auth" element={<Auth />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/auth/v1/callback" element={<AuthCallback />} />
-      <Route path="/auth/callback/*" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback/*" element={<AuthCallback />} />
       
-      <Route path="/auth/verify" element={<AuthCallback />} />
-      <Route path="/auth/v1/verify" element={<AuthCallback />} />
+      {/* Redirect all verify paths to auth callback for processing */}
+      <Route path="/verify/*" element={<AuthCallback />} />
       <Route path="/auth/verify/*" element={<AuthCallback />} />
       <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
-      <Route path="/verify/*" element={<AuthCallback />} />
+      
+      {/* Handle reset password routes */}
       <Route path="/reset-password/*" element={<AuthCallback />} />
-      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
