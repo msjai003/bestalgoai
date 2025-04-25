@@ -63,6 +63,7 @@ function AppRoutes() {
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
+      <Route path="/recovery" element={<Navigate to="/forgot-password" replace />} />
       
       {/* Basic routes */}
       <Route path="/" element={<Index />} />
@@ -83,6 +84,7 @@ function AppRoutes() {
       
       {/* Handle reset password routes */}
       <Route path="/reset-password/*" element={<AuthCallback />} />
+      <Route path="/recovery/*" element={<AuthCallback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       
       <Route path="/registration" element={<Registration />} />

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -114,7 +113,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
       setIsLoading(false);
     }
   };
-
+  
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);

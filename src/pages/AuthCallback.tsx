@@ -114,7 +114,8 @@ const AuthCallback = () => {
                 console.log('Successfully exchanged code for session');
                 
                 // Check if this is a recovery (password reset) flow
-                if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
+                const currentSearchParams = new URLSearchParams(window.location.search);
+                if (fullUrl.includes('type=recovery') || currentSearchParams.get('type') === 'recovery' || currentSearchParams.get('reset') === 'true') {
                   console.log('Recovery flow detected after exchanging code, redirecting to forgot-password');
                   navigate('/forgot-password?reset=true', { replace: true });
                   return;
