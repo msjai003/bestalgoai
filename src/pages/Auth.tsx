@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -15,12 +17,17 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [isSendingReset, setIsSendingReset] = useState(false);
   const { signIn, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [otpValue, setOTPValue] = useState('');
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -71,19 +78,47 @@ const Auth = () => {
     setIsSendingReset(true);
 
     try {
+      if (!forgotPasswordEmail.trim()) {
+        toast.error('Please enter your email address');
+        return;
+      }
+
       const { error } = await resetPassword(forgotPasswordEmail);
       
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Password reset instructions sent to your email');
-        setShowForgotPasswordDialog(false);
-        setForgotPasswordEmail('');
+        toast.success('Verification code sent to your email');
+        setShowOTPInput(true);
       }
     } catch (error: any) {
-      toast.error('Failed to send reset instructions');
+      toast.error('Failed to send verification code');
     } finally {
       setIsSendingReset(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsVerifyingOTP(true);
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: forgotPasswordEmail,
+        token: otpValue,
+        type: 'recovery'
+      });
+
+      if (error) {
+        toast.error('Invalid verification code');
+      } else {
+        toast.success('Email verified successfully');
+        setShowOTPInput(false);
+      }
+    } catch (error: any) {
+      toast.error('Failed to verify code');
+    } finally {
+      setIsVerifyingOTP(false);
     }
   };
 
@@ -204,38 +239,89 @@ const Auth = () => {
             <DialogHeader>
               <DialogTitle className="text-white">Reset Password</DialogTitle>
               <DialogDescription className="text-gray-400">
-                Enter your email address and we'll send you instructions to reset your password.
+                {!showOTPInput 
+                  ? 'Enter your email address to receive a verification code.'
+                  : 'Enter the verification code sent to your email.'
+                }
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
-                  required
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={isSendingReset}
-                variant="gradient"
-                className="w-full"
-              >
-                {isSendingReset ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Instructions...
-                  </>
-                ) : (
-                  'Send Reset Instructions'
-                )}
-              </Button>
-            </form>
+
+            {!showOTPInput ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isSendingReset}
+                  variant="gradient"
+                  className="w-full"
+                >
+                  {isSendingReset ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending Code...
+                    </>
+                  ) : (
+                    'Send Verification Code'
+                  )}
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <Label htmlFor="otp" className="text-gray-300">Verification Code</Label>
+                  <InputOTP
+                    value={otpValue}
+                    onChange={(value) => setOTPValue(value)}
+                    maxLength={6}
+                    className="gap-2"
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                      <InputOTPSlot index={1} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                      <InputOTPSlot index={2} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                      <InputOTPSlot index={3} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                      <InputOTPSlot index={4} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                      <InputOTPSlot index={5} className="bg-charcoalPrimary/50 border-gray-700 text-white" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isVerifyingOTP || otpValue.length !== 6}
+                  variant="gradient"
+                  className="w-full"
+                >
+                  {isVerifyingOTP ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify Code'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-2"
+                  onClick={handleForgotPassword}
+                  disabled={isSendingReset}
+                >
+                  Resend Code
+                </Button>
+              </form>
+            )}
           </DialogContent>
         </Dialog>
       </div>
