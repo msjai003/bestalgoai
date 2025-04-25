@@ -26,7 +26,7 @@ const AuthCallback = () => {
         
         // Process Google auth callback route (handle both callback formats)
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
-          console.log('Detected Google auth callback route, processing...');
+          console.log('Detected auth callback route, processing...');
           
           // Get auth code or tokens from URL
           const searchParams = new URLSearchParams(window.location.search);
@@ -37,13 +37,26 @@ const AuthCallback = () => {
           const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
           const state = searchParams.get('state');
           
+          // Check for password recovery token
+          const token = searchParams.get('token');
+          const type = searchParams.get('type');
+          
           console.log('Auth callback params:', { 
             code: !!code, 
             error: !!error,
+            token: !!token,
+            type,
             fullSearch: window.location.search,
             fullHash: window.location.hash,
             state: state
           });
+          
+          // Handle password recovery token if present
+          if (token && type === 'recovery') {
+            console.log('Password recovery token found, redirecting to forgot-password page');
+            handlePasswordRecovery(token, type, navigate);
+            return;
+          }
           
           // Handle error if present
           if (error) {
