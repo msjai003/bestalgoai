@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -24,17 +23,26 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         
-        // Immediately handle any verify paths to prevent them from showing
+        // Immediately handle any verify paths or recovery links to prevent them from showing
         if (currentPath.includes('/verify') || 
             currentPath.includes('/auth/v1/verify') ||
-            currentPath.includes('/reset-password')) {
+            currentPath.includes('/reset-password') ||
+            currentPath.includes('/recovery') ||
+            searchParams.get('type') === 'recovery' ||
+            searchParams.get('reset') === 'true') {
           console.log('Verification or reset path detected, immediately processing');
           
           const token = extractVerificationToken(fullUrl, currentPath);
           
           if (token) {
             console.log('Verification token found, redirecting to forgot-password page');
+            // Explicitly specify recovery type for all reset scenarios
             handlePasswordRecovery(token, 'recovery', navigate);
+            return;
+          } else if (searchParams.get('type') === 'recovery' || searchParams.get('reset') === 'true') {
+            // If we have recovery parameters but no token, still go to forgot password
+            console.log('Recovery parameters found without token, redirecting to forgot-password');
+            navigate('/forgot-password?reset=true', { replace: true });
             return;
           } else {
             // If we can't find a token but we're in a verification path, go to forgot password
@@ -45,7 +53,7 @@ const AuthCallback = () => {
         }
         
         // Special handling for password recovery and verification flows
-        if (fullUrl.includes('type=recovery')) {
+        if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
           
           const token = extractVerificationToken(fullUrl, currentPath);
@@ -78,7 +86,7 @@ const AuthCallback = () => {
           
           // Look for reset flow in auth callback path
           const reset = searchParams.get('reset');
-          if (reset === 'true') {
+          if (reset === 'true' || searchParams.get('type') === 'recovery') {
             const { data: sessionData } = await supabase.auth.getSession();
             if (sessionData.session) {
               console.log('Active session found and reset flag is true, redirecting to password reset page');
@@ -115,7 +123,9 @@ const AuthCallback = () => {
                 
                 // Check if this is a recovery (password reset) flow
                 const currentSearchParams = new URLSearchParams(window.location.search);
-                if (fullUrl.includes('type=recovery') || currentSearchParams.get('type') === 'recovery' || currentSearchParams.get('reset') === 'true') {
+                if (fullUrl.includes('type=recovery') || 
+                    currentSearchParams.get('type') === 'recovery' || 
+                    currentSearchParams.get('reset') === 'true') {
                   console.log('Recovery flow detected after exchanging code, redirecting to forgot-password');
                   navigate('/forgot-password?reset=true', { replace: true });
                   return;
@@ -150,7 +160,9 @@ const AuthCallback = () => {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
           // Check if this is a recovery (password reset) flow
-          if (fullUrl.includes('type=recovery') || location.search.includes('type=recovery') || searchParams.get('reset') === 'true') {
+          if (fullUrl.includes('type=recovery') || 
+              searchParams.get('type') === 'recovery' || 
+              searchParams.get('reset') === 'true') {
             console.log('Recovery flow detected with active session, redirecting to forgot-password');
             navigate('/forgot-password?reset=true', { replace: true });
             return;

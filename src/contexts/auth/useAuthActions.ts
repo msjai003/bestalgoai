@@ -184,7 +184,6 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
       setIsLoading(true);
       
       const baseUrl = window.location.origin;
-      // Make sure the type parameter is set to recovery
       const redirectUrl = `${baseUrl}/auth/callback?type=recovery&reset=true`;
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
