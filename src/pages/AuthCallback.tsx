@@ -56,11 +56,11 @@ const AuthCallback = () => {
         }
 
         // Special handling for magic links that contain tokens in the hash
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        if (hashParams.get('access_token') || window.location.hash.includes('access_token=')) {
+        const urlHashParams = new URLSearchParams(window.location.hash.substring(1));
+        if (urlHashParams.get('access_token') || window.location.hash.includes('access_token=')) {
           console.log('Magic link with hash detected');
           
-          if (hashParams.get('type') === 'recovery' || 
+          if (urlHashParams.get('type') === 'recovery' || 
               window.location.hash.includes('type=recovery') ||
               fullUrl.includes('reset-password')) {
             console.log('Recovery hash detected, redirecting to reset password');
@@ -84,11 +84,11 @@ const AuthCallback = () => {
           console.log('Detected auth callback route, processing...');
           
           const searchParams = new URLSearchParams(window.location.search);
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const authHashParams = new URLSearchParams(window.location.hash.substring(1));
           
           const code = searchParams.get('code');
-          const error = searchParams.get('error') || hashParams.get('error');
-          const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+          const error = searchParams.get('error') || authHashParams.get('error');
+          const errorDescription = searchParams.get('error_description') || authHashParams.get('error_description');
           
           // Look for reset flow in auth callback path
           const reset = searchParams.get('reset');
