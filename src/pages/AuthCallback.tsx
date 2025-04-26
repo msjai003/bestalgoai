@@ -62,16 +62,15 @@ const AuthCallback = () => {
           // If token is in URL query params, redirect to reset password with the token
           if (token || type === 'recovery') {
             console.log('Found token in URL for recovery, redirecting to reset password');
-            navigate(`/reset-password?token=${token || ''}&type=${type || 'recovery'}`, { replace: true });
+            navigate('/reset-password', { replace: true });
             return;
           }
           
           // Extract token from URL path for v1 format (/auth/v1/verify/:token)
           const match = location.pathname.match(/\/auth\/v1\/verify\/(.*)/);
           if (match && match[1]) {
-            const pathToken = match[1];
-            console.log('Found token in URL path:', pathToken.substring(0, 10) + '...');
-            navigate(`/reset-password?token=${encodeURIComponent(pathToken)}&type=recovery`, { replace: true });
+            console.log('Found token in URL path, redirecting to reset password');
+            navigate('/reset-password', { replace: true });
             return;
           }
           
