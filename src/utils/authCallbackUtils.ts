@@ -1,7 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
   console.log('Processing password recovery with token:', token ? token.substring(0, 5) + '...' : 'null');
+  
+  if (!token) {
+    console.log('No token provided for password recovery, redirecting to reset-password with reset flag');
+    navigate('/reset-password?reset=true', { replace: true });
+    return;
+  }
+  
+  // Add token to the URL to ensure it's available on the reset page
   navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
 };
 
@@ -18,20 +27,28 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   }
   
   // Check URL hash fragment
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  token = hashParams.get('token');
-  
-  if (token) {
-    console.log('Found token in hash fragment:', token.substring(0, 5) + '...');
-    return token;
-  }
-  
-  // Check access_token in hash (common for magic links)
-  if (window.location.hash && window.location.hash.includes('access_token=')) {
-    const accessToken = hashParams.get('access_token') || window.location.hash.split('access_token=')[1]?.split('&')[0];
+  if (window.location.hash) {
+    // Handle standard hash params format
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    token = hashParams.get('token');
+    
+    if (token) {
+      console.log('Found token in hash fragment:', token.substring(0, 5) + '...');
+      return token;
+    }
+    
+    // Check access_token in hash (common for magic links)
+    const accessToken = hashParams.get('access_token');
     if (accessToken) {
       console.log('Found access_token in hash:', accessToken.substring(0, 5) + '...');
       return accessToken;
+    }
+    
+    // Try to extract raw token from hash if it doesn't contain standard params
+    if (window.location.hash.length > 10 && !window.location.hash.includes('=')) {
+      const cleanHash = window.location.hash.replace(/^#/, '');
+      console.log('Extracted potential token from raw hash:', cleanHash.substring(0, 5) + '...');
+      return cleanHash;
     }
   }
   
@@ -147,10 +164,13 @@ export const isPasswordResetFlow = (url: string): boolean => {
                        url.includes('reset=true');
   const hasResetPath = url.includes('/reset-password') || 
                       url.includes('/recovery');
+                      
+  // Check for "action=resetPassword" parameter which is used by some providers
+  const hasResetAction = url.includes('action=resetPassword');
   
-  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, url });
+  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, hasResetAction, url });
   
-  return hasResetParam || hasResetPath;
+  return hasResetParam || hasResetPath || hasResetAction;
 };
 
 export const handleMagicLinkAuth = async (hash: string, navigate: (path: string, options?: {replace: boolean}) => void): Promise<boolean> => {
@@ -171,7 +191,7 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
     }
     
     // If this is a recovery flow, redirect to password reset
-    if (type === 'recovery' || hash.includes('type=recovery')) {
+    if (type === 'recovery' || hash.includes('type=recovery') || hash.includes('recovery')) {
       console.log('Magic link is for password recovery, redirecting to reset page');
       
       // Set the session first

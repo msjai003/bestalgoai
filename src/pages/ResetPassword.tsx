@@ -35,7 +35,7 @@ const ResetPassword = () => {
         token: token ? token.substring(0, 5) + '...' : 'null', 
         type, 
         reset,
-        hash: window.location.hash ? 'present' : 'none'
+        hash: window.location.hash ? window.location.hash.substring(0, 20) + '...' : 'none'
       });
       
       // If reset=true parameter is passed, we assume the session is already set up
@@ -59,9 +59,9 @@ const ResetPassword = () => {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
-          const type = hashParams.get('type');
+          const hashType = hashParams.get('type');
           
-          if (type === 'recovery' && accessToken && refreshToken) {
+          if (accessToken && refreshToken) {
             // Try to set session with tokens from hash
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
@@ -86,57 +86,59 @@ const ResetPassword = () => {
         }
       }
       
-      if (!token) {
-        // Check if we already have a session regardless
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData.session) {
-          console.log('Active session found without token in URL');
-          setIsVerifyingToken(false);
-          return;
-        }
-        
-        setError('No reset token found. Please use the link from your email.');
-        setIsVerifyingToken(false);
-        return;
-      }
-      
-      console.log('Verifying token for password reset...');
-      try {
-        // Try to verify the token if it's a recovery token
-        if (type === 'recovery' || !type) {
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery',
-          });
+      // If we have a token in the URL
+      if (token) {
+        console.log('Verifying token for password reset...');
+        try {
+          // Try to verify the token if it's a recovery token
+          if (type === 'recovery' || !type) {
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery',
+            });
+            
+            if (error) {
+              console.error('Token verification error:', error);
+              setError('Invalid or expired password reset link.');
+              setIsVerifyingToken(false);
+              return;
+            }
+            
+            console.log('Token verified successfully:', !!data?.user);
+            toast.success('You can now reset your password');
+          }
           
-          if (error) {
-            console.error('Token verification error:', error);
-            setError('Invalid or expired password reset link.');
+          // Check if we have an active session
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (!sessionData.session) {
+            console.log('No session found after token verification');
+            setError('Please click the reset link from your email again as your session has expired.');
             setIsVerifyingToken(false);
             return;
           }
           
-          console.log('Token verified successfully:', !!data?.user);
-          toast.success('You can now reset your password');
-        }
-        
-        // Check if we have an active session
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session) {
-          console.log('No session found after token verification');
-          setError('Please click the reset link from your email again as your session has expired.');
+          console.log('Session found, ready for password reset');
           setIsVerifyingToken(false);
-          return;
+          
+        } catch (err) {
+          console.error('Error during token verification:', err);
+          setError('Failed to verify your reset token. Please try again with a new reset link.');
+          setIsVerifyingToken(false);
         }
-        
-        console.log('Session found, ready for password reset');
-        setIsVerifyingToken(false);
-        
-      } catch (err) {
-        console.error('Error during token verification:', err);
-        setError('Failed to verify your reset token. Please try again with a new reset link.');
-        setIsVerifyingToken(false);
+        return;
       }
+      
+      // Check if we already have a session regardless
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) {
+        console.log('Active session found without token in URL');
+        setIsVerifyingToken(false);
+        return;
+      }
+      
+      // If we got here, we don't have a token or a session
+      setError('No reset token found. Please use the link from your email.');
+      setIsVerifyingToken(false);
     };
     
     verifyToken();

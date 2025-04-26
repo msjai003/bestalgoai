@@ -78,15 +78,24 @@ const Auth = () => {
         return;
       }
 
-      const { error } = await resetPassword(forgotPasswordEmail);
+      const baseUrl = window.location.origin;
+      const redirectUrl = `${baseUrl}/reset-password`;
+      
+      console.log('Sending password reset to email with redirect URL:', redirectUrl);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: redirectUrl
+      });
       
       if (error) {
+        console.error('Error sending reset link:', error);
         toast.error(error.message);
       } else {
         setResetLinkSent(true);
         toast.success('Password reset link has been sent to your email');
       }
     } catch (error: any) {
+      console.error('Exception sending reset link:', error);
       toast.error('Failed to send reset link');
     } finally {
       setIsSendingReset(false);
