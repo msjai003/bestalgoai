@@ -57,7 +57,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Supabase v1 auth callback routes */}
+      {/* Auth callback routes */}
       <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
