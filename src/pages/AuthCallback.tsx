@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
@@ -22,10 +23,14 @@ const AuthCallback = () => {
         
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
+        console.log('Query params:', Object.fromEntries(searchParams));
         
-        // First check for recovery type in query params
-        if (searchParams.get('type') === 'recovery' || fullUrl.includes('type=recovery')) {
-          console.log('Recovery flow detected in query params');
+        // First check for recovery type in query params or URL
+        if (searchParams.get('type') === 'recovery' || 
+            fullUrl.includes('type=recovery') || 
+            fullUrl.includes('access_token=')) {
+          console.log('Recovery flow detected in URL parameters');
+          
           const token = extractVerificationToken(fullUrl, currentPath);
           if (token) {
             console.log('Found recovery token, redirecting to reset password');
@@ -50,13 +55,30 @@ const AuthCallback = () => {
           }
         }
 
-        // Special handling for password recovery and verification flows
+        // Special handling for magic links that contain tokens in the hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        if (hashParams.get('access_token') || window.location.hash.includes('access_token=')) {
+          console.log('Magic link with hash detected');
+          
+          if (hashParams.get('type') === 'recovery' || 
+              window.location.hash.includes('type=recovery') ||
+              fullUrl.includes('reset-password')) {
+            console.log('Recovery hash detected, redirecting to reset password');
+            const token = extractVerificationToken(window.location.hash, currentPath);
+            if (token) {
+              handlePasswordRecovery(token, 'recovery', navigate);
+              return;
+            }
+          }
+        }
+
+        // Special handling for password recovery flows
         if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
           navigate('/reset-password', { replace: true });
           return;
         }
-
+        
         // Handle standard auth callback flows
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
@@ -74,11 +96,12 @@ const AuthCallback = () => {
             const { data: sessionData } = await supabase.auth.getSession();
             if (sessionData.session) {
               console.log('Active session found and reset flag is true, redirecting to password reset page');
-              navigate('/forgot-password?reset=true', { replace: true });
+              navigate('/reset-password?reset=true', { replace: true });
               return;
             }
           }
 
+          // Handle errors in the callback
           if (error) {
             handleAuthError(
               error,
@@ -91,6 +114,7 @@ const AuthCallback = () => {
             return;
           }
 
+          // Handle auth code exchange
           if (code) {
             console.log('Found auth code in callback, exchanging for session');
             try {
@@ -110,7 +134,7 @@ const AuthCallback = () => {
                     currentSearchParams.get('type') === 'recovery' || 
                     currentSearchParams.get('reset') === 'true') {
                   console.log('Recovery flow detected after exchanging code, redirecting to forgot-password');
-                  navigate('/forgot-password?reset=true', { replace: true });
+                  navigate('/reset-password?reset=true', { replace: true });
                   return;
                 }
                 
@@ -147,7 +171,7 @@ const AuthCallback = () => {
               searchParams.get('type') === 'recovery' || 
               searchParams.get('reset') === 'true') {
             console.log('Recovery flow detected with active session, redirecting to forgot-password');
-            navigate('/forgot-password?reset=true', { replace: true });
+            navigate('/reset-password?reset=true', { replace: true });
             return;
           }
           

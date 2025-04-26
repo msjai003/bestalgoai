@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -32,8 +31,7 @@ export const extractVerificationToken = (url: string, path: string): string | nu
     const accessToken = window.location.hash.split('access_token=')[1]?.split('&')[0];
     if (accessToken) {
       console.log('Found access_token in hash:', accessToken.substring(0, 5) + '...');
-      // This isn't the recovery token itself, but indicates we're in a magic link flow
-      return 'access_token_present';
+      return accessToken;
     }
   }
   
