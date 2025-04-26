@@ -77,11 +77,12 @@ const Auth = () => {
     try {
       if (!forgotPasswordEmail.trim()) {
         toast.error('Please enter your email address');
+        setIsSendingReset(false);
         return;
       }
 
       const baseUrl = window.location.origin;
-      const redirectUrl = `${baseUrl}/reset-password`;
+      const redirectUrl = `${baseUrl}/auth/callback`;
       
       console.log('Sending password reset to email with redirect URL:', redirectUrl);
 
@@ -268,39 +269,64 @@ const Auth = () => {
             <DialogHeader>
               <DialogTitle className="text-white">Reset Password</DialogTitle>
               <DialogDescription className="text-gray-400">
-                Enter your email address to receive a password reset link.
+                {!resetLinkSent 
+                  ? 'Enter your email address to receive a password reset link.'
+                  : 'Check your email for the password reset link.'}
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
-                  required
-                />
+            {!resetLinkSent ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isSendingReset}
+                  variant="gradient"
+                  className="w-full"
+                >
+                  {isSendingReset ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending Reset Link...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </Button>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <Alert className="bg-cyan/10 border-cyan/30">
+                  <Info className="h-4 w-4 text-cyan" />
+                  <AlertDescription className="text-gray-200 ml-2">
+                    A password reset link has been sent to your email. Please check your inbox and spam folder.
+                  </AlertDescription>
+                </Alert>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setShowForgotPasswordDialog(false);
+                    setResetLinkSent(false);
+                    setForgotPasswordEmail('');
+                  }}
+                >
+                  Close
+                </Button>
               </div>
-              <Button
-                type="submit"
-                disabled={isSendingReset}
-                variant="gradient"
-                className="w-full"
-              >
-                {isSendingReset ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Reset Link...
-                  </>
-                ) : (
-                  'Send Reset Link'
-                )}
-              </Button>
-            </form>
+            )}
           </DialogContent>
         </Dialog>
       </div>

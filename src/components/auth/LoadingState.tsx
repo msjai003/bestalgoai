@@ -1,11 +1,18 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
-const LoadingState: React.FC = () => {
+interface LoadingStateProps {
+  message?: string;
+}
+
+const LoadingState: React.FC<LoadingStateProps> = ({ message = 'Loading...' }) => {
   return (
-    <div className="flex flex-col items-center justify-center space-y-4">
-      <div className="w-12 h-12 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
-      <p className="text-lg text-gray-300">Authenticating...</p>
+    <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+      <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
+        <Loader2 className="h-10 w-10 animate-spin text-cyan mb-4 mx-auto" />
+        <p className="text-white text-center">{message}</p>
+      </div>
     </div>
   );
 };

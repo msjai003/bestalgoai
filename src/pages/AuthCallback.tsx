@@ -5,6 +5,7 @@ import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isPasswordResetFlow, handleMagicLinkAuth } from '@/utils/authCallbackUtils';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -15,52 +16,83 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
-        // First check if we have a hash from magic link
-        if (window.location.hash && window.location.hash.includes('access_token=')) {
-          console.log('Found magic link hash, processing...');
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-          const type = hashParams.get('type');
-
-          if (accessToken && refreshToken) {
-            // Set the session with the tokens from the magic link
-            const { data, error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken
-            });
-
-            if (error) {
-              console.error('Error setting session from magic link:', error);
-              setError('Invalid or expired magic link.');
-              return;
-            }
-
-            if (data.session) {
-              console.log('Successfully authenticated with magic link');
+        console.log('Processing auth callback with URL:', window.location.href);
+        
+        // First check if this is a password recovery/reset flow
+        if (isPasswordResetFlow(window.location.href)) {
+          console.log('Detected password reset flow');
+          
+          // Handle magic link hash (most common)
+          if (window.location.hash && window.location.hash.includes('access_token=')) {
+            console.log('Found magic link hash for recovery, processing...');
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+              // Set the session first
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
               
-              // If this is a recovery (password reset) flow
-              if (type === 'recovery' || location.pathname.includes('recovery')) {
+              if (error) {
+                console.error('Error setting session from password reset link:', error);
+                setError('Invalid or expired password reset link.');
+                setIsProcessing(false);
+                return;
+              }
+              
+              if (data.session) {
+                console.log('Successfully set session from password reset link');
                 toast.success('You can now reset your password');
                 navigate('/reset-password', { replace: true });
                 return;
               }
-              
-              // Regular magic link authentication
-              toast.success('Successfully signed in!');
-              navigate('/dashboard', { replace: true });
-              return;
             }
+          }
+          
+          // If we have query params for password reset
+          const searchParams = new URLSearchParams(window.location.search);
+          const token = searchParams.get('token');
+          const type = searchParams.get('type');
+          
+          if (token || type === 'recovery') {
+            console.log('Found token in URL for recovery');
+            navigate(`/reset-password?token=${token || ''}&type=${type || 'recovery'}`, { replace: true });
+            return;
+          }
+          
+          // Default to reset password page anyway if we detect recovery
+          navigate('/reset-password', { replace: true });
+          return;
+        }
+
+        // Handle regular magic link authentication (for login, not recovery)
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+          const handled = await handleMagicLinkAuth(window.location.hash.substring(1), navigate);
+          if (handled) {
+            return;
           }
         }
 
         // If no valid authentication data found
         setError('No valid authentication data found.');
+        setIsProcessing(false);
+        
+        // Redirect to login page after error
+        setTimeout(() => {
+          navigate('/auth', { replace: true });
+        }, 3000);
       } catch (err) {
         console.error('Error processing authentication:', err);
         setError('An unexpected error occurred.');
-      } finally {
         setIsProcessing(false);
+        
+        // Redirect to login page after error
+        setTimeout(() => {
+          navigate('/auth', { replace: true });
+        }, 3000);
       }
     };
 
@@ -71,7 +103,7 @@ const AuthCallback = () => {
     return <ErrorState error={error} />;
   }
 
-  return <LoadingState />;
+  return <LoadingState message="Processing authentication..." />;
 };
 
 export default AuthCallback;
