@@ -1,7 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { handlePasswordRecovery, handleAuthSession, handleAuthError, extractVerificationToken } from '@/utils/authCallbackUtils';
+import { 
+  handlePasswordRecovery, 
+  handleAuthSession, 
+  handleAuthError, 
+  extractVerificationToken,
+  isPasswordResetFlow,
+  handleMagicLinkAuth
+} from '@/utils/authCallbackUtils';
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +31,15 @@ const AuthCallback = () => {
         console.log('Processing auth callback on path:', currentPath);
         console.log('Full callback URL:', fullUrl);
         console.log('Query params:', Object.fromEntries(searchParams));
+        
+        // Check if this is a magic link in the URL hash first (highest priority)
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+          const handled = await handleMagicLinkAuth(window.location.hash, navigate);
+          if (handled) {
+            console.log('Successfully handled magic link authentication');
+            return;
+          }
+        }
         
         // First check for recovery type in query params or URL
         if (searchParams.get('type') === 'recovery' || 
@@ -56,9 +72,9 @@ const AuthCallback = () => {
         }
 
         // Special handling for magic links that contain tokens in the hash
-        const urlHashParams = new URLSearchParams(window.location.hash.substring(1));
-        if (urlHashParams.get('access_token') || window.location.hash.includes('access_token=')) {
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
           console.log('Magic link with hash detected');
+          const urlHashParams = new URLSearchParams(window.location.hash.substring(1));
           
           if (urlHashParams.get('type') === 'recovery' || 
               window.location.hash.includes('type=recovery') ||
@@ -91,16 +107,16 @@ const AuthCallback = () => {
         if (currentPath.includes('/auth/callback') || currentPath.includes('/auth/v1/callback')) {
           console.log('Detected auth callback route, processing...');
           
-          const searchParams = new URLSearchParams(window.location.search);
+          const callbackSearchParams = new URLSearchParams(window.location.search);
           const authHashParams = new URLSearchParams(window.location.hash.substring(1));
           
-          const code = searchParams.get('code');
-          const error = searchParams.get('error') || authHashParams.get('error');
-          const errorDescription = searchParams.get('error_description') || authHashParams.get('error_description');
+          const code = callbackSearchParams.get('code');
+          const error = callbackSearchParams.get('error') || authHashParams.get('error');
+          const errorDescription = callbackSearchParams.get('error_description') || authHashParams.get('error_description');
           
           // Look for reset flow in auth callback path
-          const reset = searchParams.get('reset');
-          if (reset === 'true' || searchParams.get('type') === 'recovery') {
+          const reset = callbackSearchParams.get('reset');
+          if (reset === 'true' || callbackSearchParams.get('type') === 'recovery') {
             const { data: sessionData } = await supabase.auth.getSession();
             if (sessionData.session) {
               console.log('Active session found and reset flag is true, redirecting to password reset page');
@@ -137,10 +153,7 @@ const AuthCallback = () => {
                 console.log('Successfully exchanged code for session');
                 
                 // Check if this is a recovery (password reset) flow
-                const currentSearchParams = new URLSearchParams(window.location.search);
-                if (fullUrl.includes('type=recovery') || 
-                    currentSearchParams.get('type') === 'recovery' || 
-                    currentSearchParams.get('reset') === 'true') {
+                if (isPasswordResetFlow(fullUrl)) {
                   console.log('Recovery flow detected after exchanging code, redirecting to reset-password');
                   navigate('/reset-password?reset=true', { replace: true });
                   return;
@@ -175,9 +188,7 @@ const AuthCallback = () => {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
           // Check if this is a recovery (password reset) flow
-          if (fullUrl.includes('type=recovery') || 
-              searchParams.get('type') === 'recovery' || 
-              searchParams.get('reset') === 'true') {
+          if (isPasswordResetFlow(fullUrl)) {
             console.log('Recovery flow detected with active session, redirecting to reset password page');
             navigate('/reset-password?reset=true', { replace: true });
             return;
@@ -188,19 +199,13 @@ const AuthCallback = () => {
           return;
         }
         
-        // Check for magic link tokens in hash
+        // Check for magic link tokens in hash again (as fallback)
         if (window.location.hash) {
+          console.log('Processing hash parameters as fallback');
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
           const type = hashParams.get('type');
-          
-          console.log('Auth callback processing hash params:', { 
-            accessToken: !!accessToken, 
-            refreshToken: !!refreshToken,
-            type,
-            fullHash: window.location.hash
-          });
           
           // For password reset flow
           if (type === 'recovery' || window.location.hash.includes('type=recovery')) {

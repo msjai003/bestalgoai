@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -140,5 +139,78 @@ export const handleAuthError = (
   } else {
     console.log('No error specified, redirecting to dashboard');
     navigate('/dashboard', { replace: true });
+  }
+};
+
+export const isPasswordResetFlow = (url: string): boolean => {
+  const hasResetParam = url.includes('type=recovery') || 
+                       url.includes('reset=true');
+  const hasResetPath = url.includes('/reset-password') || 
+                      url.includes('/recovery');
+  
+  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, url });
+  
+  return hasResetParam || hasResetPath;
+};
+
+export const handleMagicLinkAuth = async (hash: string, navigate: (path: string, options?: {replace: boolean}) => void): Promise<boolean> => {
+  if (!hash || !hash.includes('access_token=')) {
+    return false;
+  }
+
+  try {
+    console.log('Processing magic link authentication from hash');
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    const type = hashParams.get('type');
+    
+    if (!accessToken || !refreshToken) {
+      console.log('Missing required tokens in hash');
+      return false;
+    }
+    
+    // If this is a recovery flow, redirect to password reset
+    if (type === 'recovery' || hash.includes('type=recovery')) {
+      console.log('Magic link is for password recovery, redirecting to reset page');
+      
+      // Set the session first
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      
+      if (error) {
+        console.error('Error setting session from recovery magic link:', error);
+        return false;
+      }
+      
+      // Redirect to reset password page
+      navigate('/reset-password?reset=true', { replace: true });
+      return true;
+    }
+    
+    // Otherwise handle as regular magic link authentication
+    console.log('Setting session from magic link tokens');
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+    
+    if (error) {
+      console.error('Error setting session from magic link:', error);
+      return false;
+    }
+    
+    if (data.session) {
+      console.log('Successfully set session from magic link, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+      return true;
+    }
+    
+    return false;
+  } catch (err) {
+    console.error('Error handling magic link auth:', err);
+    return false;
   }
 };

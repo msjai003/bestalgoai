@@ -31,7 +31,12 @@ const ResetPassword = () => {
       const type = searchParams.get('type');
       const reset = searchParams.get('reset');
       
-      console.log('Reset password page loaded with params:', { token: token?.substring(0, 5) + '...', type, reset });
+      console.log('Reset password page loaded with params:', { 
+        token: token ? token.substring(0, 5) + '...' : 'null', 
+        type, 
+        reset,
+        hash: window.location.hash ? 'present' : 'none'
+      });
       
       // If reset=true parameter is passed, we assume the session is already set up
       if (reset === 'true') {
@@ -47,40 +52,41 @@ const ResetPassword = () => {
         }
       }
       
-      if (!token) {
-        // Check URL hash for tokens (common in magic links)
-        if (window.location.hash && window.location.hash.includes('access_token=')) {
+      // Process hash fragment for magic links
+      if (window.location.hash && window.location.hash.includes('access_token=')) {
+        console.log('Found hash fragment with access token, trying to set session');
+        try {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
+          const type = hashParams.get('type');
           
-          console.log('Found tokens in URL hash, attempting to set session');
-          
-          if (accessToken && refreshToken) {
-            try {
-              const { data, error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken
-              });
-              
-              if (error) {
-                console.error('Error setting session from hash tokens:', error);
-                setError('Failed to authenticate with your reset link. Please request a new one.');
-                setIsVerifyingToken(false);
-                return;
-              }
-              
-              if (data.session) {
-                console.log('Session set successfully from hash tokens');
-                setIsVerifyingToken(false);
-                return;
-              }
-            } catch (err) {
-              console.error('Exception setting session from hash:', err);
+          if (type === 'recovery' && accessToken && refreshToken) {
+            // Try to set session with tokens from hash
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (error) {
+              console.error('Error setting session from hash tokens:', error);
+              setError('Your password reset link is invalid or has expired.');
+              setIsVerifyingToken(false);
+              return;
+            }
+            
+            if (data.session) {
+              console.log('Successfully set session from hash tokens');
+              setIsVerifyingToken(false);
+              return;
             }
           }
+        } catch (err) {
+          console.error('Error processing hash tokens:', err);
         }
-        
+      }
+      
+      if (!token) {
         // Check if we already have a session regardless
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
@@ -153,9 +159,18 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
+      // First ensure we have a session
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        setError('Your session has expired. Please request a new password reset link.');
+        setIsLoading(false);
+        return;
+      }
+      
       const { error: resetError } = await updatePassword(newPassword);
 
       if (resetError) {
+        console.error('Error updating password:', resetError);
         setError(resetError.message);
       } else {
         setIsSuccess(true);
@@ -166,6 +181,7 @@ const ResetPassword = () => {
         }, 3000);
       }
     } catch (err: any) {
+      console.error('Exception in password reset:', err);
       setError(err.message || 'Failed to reset password');
     } finally {
       setIsLoading(false);
