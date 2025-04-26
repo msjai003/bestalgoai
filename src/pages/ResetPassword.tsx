@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, Info } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -28,9 +29,67 @@ const ResetPassword = () => {
       
       const token = searchParams.get('token');
       const type = searchParams.get('type');
+      const reset = searchParams.get('reset');
+      
+      console.log('Reset password page loaded with params:', { token: token?.substring(0, 5) + '...', type, reset });
+      
+      // If reset=true parameter is passed, we assume the session is already set up
+      if (reset === 'true') {
+        console.log('Reset flag is true, checking for active session');
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (sessionData.session) {
+          console.log('Active session found, ready for password reset');
+          setIsVerifyingToken(false);
+          return;
+        } else {
+          console.log('No active session found with reset=true flag');
+        }
+      }
       
       if (!token) {
-        setError('No reset token found in URL.');
+        // Check URL hash for tokens (common in magic links)
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          console.log('Found tokens in URL hash, attempting to set session');
+          
+          if (accessToken && refreshToken) {
+            try {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+              
+              if (error) {
+                console.error('Error setting session from hash tokens:', error);
+                setError('Failed to authenticate with your reset link. Please request a new one.');
+                setIsVerifyingToken(false);
+                return;
+              }
+              
+              if (data.session) {
+                console.log('Session set successfully from hash tokens');
+                setIsVerifyingToken(false);
+                return;
+              }
+            } catch (err) {
+              console.error('Exception setting session from hash:', err);
+            }
+          }
+        }
+        
+        // Check if we already have a session regardless
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          console.log('Active session found without token in URL');
+          setIsVerifyingToken(false);
+          return;
+        }
+        
+        setError('No reset token found. Please use the link from your email.');
         setIsVerifyingToken(false);
         return;
       }
@@ -38,7 +97,7 @@ const ResetPassword = () => {
       console.log('Verifying token for password reset...');
       try {
         // Try to verify the token if it's a recovery token
-        if (type === 'recovery') {
+        if (type === 'recovery' || !type) {
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: 'recovery',
@@ -52,6 +111,7 @@ const ResetPassword = () => {
           }
           
           console.log('Token verified successfully:', !!data?.user);
+          toast.success('You can now reset your password');
         }
         
         // Check if we have an active session
@@ -99,6 +159,7 @@ const ResetPassword = () => {
         setError(resetError.message);
       } else {
         setIsSuccess(true);
+        toast.success('Password reset successful!');
         // Redirect to login page after 3 seconds
         setTimeout(() => {
           navigate('/auth', { replace: true });

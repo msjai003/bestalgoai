@@ -75,6 +75,14 @@ const AuthCallback = () => {
         // Special handling for password recovery flows
         if (fullUrl.includes('type=recovery') || searchParams.get('type') === 'recovery') {
           console.log('Recovery flow detected in URL');
+          
+          // Try to extract token from various places in the URL
+          const token = extractVerificationToken(fullUrl, currentPath);
+          if (token) {
+            handlePasswordRecovery(token, 'recovery', navigate);
+            return;
+          }
+          
           navigate('/reset-password', { replace: true });
           return;
         }
@@ -133,7 +141,7 @@ const AuthCallback = () => {
                 if (fullUrl.includes('type=recovery') || 
                     currentSearchParams.get('type') === 'recovery' || 
                     currentSearchParams.get('reset') === 'true') {
-                  console.log('Recovery flow detected after exchanging code, redirecting to forgot-password');
+                  console.log('Recovery flow detected after exchanging code, redirecting to reset-password');
                   navigate('/reset-password?reset=true', { replace: true });
                   return;
                 }
@@ -170,7 +178,7 @@ const AuthCallback = () => {
           if (fullUrl.includes('type=recovery') || 
               searchParams.get('type') === 'recovery' || 
               searchParams.get('reset') === 'true') {
-            console.log('Recovery flow detected with active session, redirecting to forgot-password');
+            console.log('Recovery flow detected with active session, redirecting to reset password page');
             navigate('/reset-password?reset=true', { replace: true });
             return;
           }
@@ -180,29 +188,46 @@ const AuthCallback = () => {
           return;
         }
         
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        
-        console.log('Auth callback processing hash params:', { 
-          accessToken: !!accessToken, 
-          refreshToken: !!refreshToken,
-          fullHash: window.location.hash
-        });
-        
-        if (accessToken && refreshToken) {
-          await handleAuthSession(
-            accessToken,
-            refreshToken,
-            navigate,
-            setError,
-            setErrorDetails,
-            setIsProcessing
-          );
-        } else {
-          console.log('No authentication data found in URL, redirecting to auth page');
-          setTimeout(() => navigate('/auth', { replace: true }), 1000);
+        // Check for magic link tokens in hash
+        if (window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          const type = hashParams.get('type');
+          
+          console.log('Auth callback processing hash params:', { 
+            accessToken: !!accessToken, 
+            refreshToken: !!refreshToken,
+            type,
+            fullHash: window.location.hash
+          });
+          
+          // For password reset flow
+          if (type === 'recovery' || window.location.hash.includes('type=recovery')) {
+            console.log('Recovery token found in hash');
+            const token = accessToken || extractVerificationToken(window.location.hash, currentPath);
+            if (token) {
+              handlePasswordRecovery(token, 'recovery', navigate);
+              return;
+            }
+          }
+          
+          // For regular auth session
+          if (accessToken && refreshToken) {
+            await handleAuthSession(
+              accessToken,
+              refreshToken,
+              navigate,
+              setError,
+              setErrorDetails,
+              setIsProcessing
+            );
+            return;
+          }
         }
+        
+        console.log('No authentication data found in URL, redirecting to auth page');
+        setTimeout(() => navigate('/auth', { replace: true }), 1000);
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('Authentication Failed');

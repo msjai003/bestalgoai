@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -28,7 +29,7 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   
   // Check access_token in hash (common for magic links)
   if (window.location.hash && window.location.hash.includes('access_token=')) {
-    const accessToken = window.location.hash.split('access_token=')[1]?.split('&')[0];
+    const accessToken = hashParams.get('access_token') || window.location.hash.split('access_token=')[1]?.split('&')[0];
     if (accessToken) {
       console.log('Found access_token in hash:', accessToken.substring(0, 5) + '...');
       return accessToken;
