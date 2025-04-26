@@ -19,63 +19,11 @@ const AuthCallback = () => {
       try {
         console.log('Processing auth callback with URL:', window.location.href);
         
-        // First check if this is a password recovery/reset flow
+        // Check if this is a password recovery/reset flow
         if (isPasswordResetFlow(window.location.href)) {
-          console.log('Detected password reset flow');
+          console.log('Detected password reset flow, redirecting to reset password page');
           
-          // Check for token in query parameters
-          const searchParams = new URLSearchParams(window.location.search);
-          const token = searchParams.get('token');
-          const type = searchParams.get('type');
-          
-          // Handle magic link hash for password reset
-          if (window.location.hash && window.location.hash.includes('access_token=')) {
-            console.log('Found magic link hash for password reset, processing...');
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const accessToken = hashParams.get('access_token');
-            const refreshToken = hashParams.get('refresh_token');
-            
-            if (accessToken && refreshToken) {
-              // Set the session first
-              const { data, error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken
-              });
-              
-              if (error) {
-                console.error('Error setting session from password reset link:', error);
-                setError('Invalid or expired password reset link.');
-                setErrorDetails(error.message);
-                setIsProcessing(false);
-                return;
-              }
-              
-              if (data.session) {
-                console.log('Successfully set session from password reset link');
-                toast.success('You can now reset your password');
-                navigate('/reset-password', { replace: true });
-                return;
-              }
-            }
-          }
-          
-          // If token is in URL query params, redirect to reset password with the token
-          if (token || type === 'recovery') {
-            console.log('Found token in URL for recovery, redirecting to reset password');
-            navigate('/reset-password', { replace: true });
-            return;
-          }
-          
-          // Extract token from URL path for v1 format (/auth/v1/verify/:token)
-          const match = location.pathname.match(/\/auth\/v1\/verify\/(.*)/);
-          if (match && match[1]) {
-            console.log('Found token in URL path, redirecting to reset password');
-            navigate('/reset-password', { replace: true });
-            return;
-          }
-          
-          // Fallback: redirect to reset password page anyway if we detect it's a recovery flow
-          console.log('No specific token found but detected recovery flow, redirecting to reset password');
+          // Always redirect to reset password for any recovery flow
           navigate('/reset-password', { replace: true });
           return;
         }
