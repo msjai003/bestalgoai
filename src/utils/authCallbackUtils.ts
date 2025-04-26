@@ -160,8 +160,11 @@ export const handleAuthError = (
 };
 
 export const isPasswordResetFlow = (url: string): boolean => {
+  // Check for recovery parameters in query string
   const hasResetParam = url.includes('type=recovery') || 
                        url.includes('reset=true');
+                       
+  // Check for recovery in path segments
   const hasResetPath = url.includes('/reset-password') || 
                       url.includes('/recovery');
                       

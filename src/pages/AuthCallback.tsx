@@ -22,7 +22,7 @@ const AuthCallback = () => {
         if (isPasswordResetFlow(window.location.href)) {
           console.log('Detected password reset flow');
           
-          // Handle magic link hash (most common)
+          // Handle magic link hash for password reset (most common)
           if (window.location.hash && window.location.hash.includes('access_token=')) {
             console.log('Found magic link hash for recovery, processing...');
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
