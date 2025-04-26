@@ -22,9 +22,14 @@ const AuthCallback = () => {
         if (isPasswordResetFlow(window.location.href)) {
           console.log('Detected password reset flow');
           
-          // Handle magic link hash for password reset (most common)
+          // Check for token in query parameters
+          const searchParams = new URLSearchParams(window.location.search);
+          const token = searchParams.get('token');
+          const type = searchParams.get('type');
+          
+          // Handle magic link hash for password reset
           if (window.location.hash && window.location.hash.includes('access_token=')) {
-            console.log('Found magic link hash for recovery, processing...');
+            console.log('Found magic link hash for password reset, processing...');
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
             const accessToken = hashParams.get('access_token');
             const refreshToken = hashParams.get('refresh_token');
@@ -52,18 +57,15 @@ const AuthCallback = () => {
             }
           }
           
-          // If we have query params for password reset
-          const searchParams = new URLSearchParams(window.location.search);
-          const token = searchParams.get('token');
-          const type = searchParams.get('type');
-          
+          // If token is in URL query params, redirect to reset password with the token
           if (token || type === 'recovery') {
-            console.log('Found token in URL for recovery');
+            console.log('Found token in URL for recovery, redirecting to reset password');
             navigate(`/reset-password?token=${token || ''}&type=${type || 'recovery'}`, { replace: true });
             return;
           }
           
-          // Default to reset password page anyway if we detect recovery
+          // Fallback: redirect to reset password page anyway if we detect it's a recovery flow
+          console.log('No specific token found but detected recovery flow, redirecting to reset password');
           navigate('/reset-password', { replace: true });
           return;
         }
@@ -77,6 +79,7 @@ const AuthCallback = () => {
         }
 
         // If no valid authentication data found
+        console.error('No valid authentication data found. Redirecting to login page.');
         setError('No valid authentication data found.');
         setIsProcessing(false);
         

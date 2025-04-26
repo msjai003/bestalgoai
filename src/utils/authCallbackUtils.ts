@@ -162,18 +162,24 @@ export const handleAuthError = (
 export const isPasswordResetFlow = (url: string): boolean => {
   // Check for recovery parameters in query string
   const hasResetParam = url.includes('type=recovery') || 
-                       url.includes('reset=true');
+                       url.includes('reset=true') ||
+                       url.includes('flow=recovery');
                        
   // Check for recovery in path segments
   const hasResetPath = url.includes('/reset-password') || 
-                      url.includes('/recovery');
+                      url.includes('/recovery') ||
+                      url.includes('/auth/recovery');
                       
   // Check for "action=resetPassword" parameter which is used by some providers
   const hasResetAction = url.includes('action=resetPassword');
   
-  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, hasResetAction, url });
+  // Check if URL contains hash with recovery type
+  const hasRecoveryHash = url.includes('#type=recovery') ||
+                         (url.includes('#') && url.toLowerCase().includes('recover'));
   
-  return hasResetParam || hasResetPath || hasResetAction;
+  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, hasResetAction, hasRecoveryHash, url });
+  
+  return hasResetParam || hasResetPath || hasResetAction || hasRecoveryHash;
 };
 
 export const handleMagicLinkAuth = async (hash: string, navigate: (path: string, options?: {replace: boolean}) => void): Promise<boolean> => {

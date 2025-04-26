@@ -60,6 +60,8 @@ function AppRoutes() {
       <Route path="/auth/v1/verify/:token" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/recovery" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/recovery" element={<Navigate to="/auth/callback" replace />} />
       
       <Route path="/auth/v1/callback*" element={<AuthCallback />} />
       <Route path="/#access_token=*" element={<AuthCallback />} />
