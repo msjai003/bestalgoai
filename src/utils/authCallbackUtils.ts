@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -54,6 +53,13 @@ export const extractVerificationToken = (url: string, path: string): string | nu
   
   // Check if token might be in the path segment for /auth/v1/verify/:token format
   if (path.includes('/verify') || path.includes('/reset-password') || path.includes('/recovery')) {
+    // Check for v1 API format: /auth/v1/verify/:token
+    const v1Match = path.match(/\/auth\/v1\/verify\/(.*)/);
+    if (v1Match && v1Match[1]) {
+      console.log('Extracted token from v1 path format:', v1Match[1].substring(0, 5) + '...');
+      return v1Match[1];
+    }
+    
     const pathSegments = path.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
     
@@ -135,7 +141,7 @@ export const handleAuthSession = async (
   }
 };
 
-export const handleAuthError = (
+export const handleAuthError = async (
   error: string | null,
   errorDescription: string | null,
   setError: (error: string | null) => void,
@@ -168,7 +174,8 @@ export const isPasswordResetFlow = (url: string): boolean => {
   // Check for recovery in path segments
   const hasResetPath = url.includes('/reset-password') || 
                       url.includes('/recovery') ||
-                      url.includes('/auth/recovery');
+                      url.includes('/auth/recovery') ||
+                      url.includes('/auth/v1/verify');
                       
   // Check for "action=resetPassword" parameter which is used by some providers
   const hasResetAction = url.includes('action=resetPassword');

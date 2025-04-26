@@ -56,8 +56,9 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
+      {/* Supabase v1 auth callback routes */}
       <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/auth/v1/verify/:token" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/recovery" element={<Navigate to="/auth/callback" replace />} />
@@ -77,7 +78,6 @@ function AppRoutes() {
       
       <Route path="/verify/*" element={<AuthCallback />} />
       <Route path="/auth/verify/*" element={<AuthCallback />} />
-      <Route path="/auth/v1/verify/*" element={<AuthCallback />} />
       
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />

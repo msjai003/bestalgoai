@@ -11,6 +11,7 @@ const AuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ const AuthCallback = () => {
               if (error) {
                 console.error('Error setting session from password reset link:', error);
                 setError('Invalid or expired password reset link.');
+                setErrorDetails(error.message);
                 setIsProcessing(false);
                 return;
               }
@@ -64,6 +66,15 @@ const AuthCallback = () => {
             return;
           }
           
+          // Extract token from URL path for v1 format (/auth/v1/verify/:token)
+          const match = location.pathname.match(/\/auth\/v1\/verify\/(.*)/);
+          if (match && match[1]) {
+            const pathToken = match[1];
+            console.log('Found token in URL path:', pathToken.substring(0, 10) + '...');
+            navigate(`/reset-password?token=${encodeURIComponent(pathToken)}&type=recovery`, { replace: true });
+            return;
+          }
+          
           // Fallback: redirect to reset password page anyway if we detect it's a recovery flow
           console.log('No specific token found but detected recovery flow, redirecting to reset password');
           navigate('/reset-password', { replace: true });
@@ -81,15 +92,17 @@ const AuthCallback = () => {
         // If no valid authentication data found
         console.error('No valid authentication data found. Redirecting to login page.');
         setError('No valid authentication data found.');
+        setErrorDetails('Unable to process authentication. The link may have expired or is invalid.');
         setIsProcessing(false);
         
         // Redirect to login page after error
         setTimeout(() => {
           navigate('/auth', { replace: true });
         }, 3000);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error processing authentication:', err);
         setError('An unexpected error occurred.');
+        setErrorDetails(err?.message || 'Please try logging in again.');
         setIsProcessing(false);
         
         // Redirect to login page after error
@@ -103,7 +116,13 @@ const AuthCallback = () => {
   }, [navigate, location]);
 
   if (error) {
-    return <ErrorState error={error} />;
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center p-4">
+        <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
+          <ErrorState error={error} errorDetails={errorDetails} />
+        </div>
+      </div>
+    );
   }
 
   return <LoadingState message="Processing authentication..." />;
