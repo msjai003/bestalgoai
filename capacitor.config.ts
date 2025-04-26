@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   appName: 'bestalgoai',
   webDir: 'dist',
   server: {
-    url: 'https://bestalgo.ai',
+    url: 'https://bestalgoai.lovable.app',
     cleartext: true
   },
   android: {
