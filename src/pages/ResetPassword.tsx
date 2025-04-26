@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,12 +20,14 @@ const ResetPassword = () => {
   const { updatePassword } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   useEffect(() => {
     const verifyToken = async () => {
       setIsVerifyingToken(true);
       setError(null);
       
+      // Extract token from URL or hash
       const token = searchParams.get('token');
       const type = searchParams.get('type');
       const reset = searchParams.get('reset');
@@ -35,114 +36,83 @@ const ResetPassword = () => {
         token: token ? token.substring(0, 5) + '...' : 'null', 
         type, 
         reset,
-        hash: window.location.hash ? window.location.hash.substring(0, 20) + '...' : 'none'
+        hash: window.location.hash ? window.location.hash.substring(0, 20) + '...' : 'none',
+        fullUrl: window.location.href
       });
-      
-      // If reset=true parameter is passed, we assume the session is already set up
-      if (reset === 'true') {
-        console.log('Reset flag is true, checking for active session');
-        const { data: sessionData } = await supabase.auth.getSession();
-        
-        if (sessionData.session) {
-          console.log('Active session found, ready for password reset');
-          setIsVerifyingToken(false);
-          return;
-        } else {
-          console.log('No active session found with reset=true flag');
-        }
-      }
-      
-      // Process hash fragment for magic links
-      if (window.location.hash && window.location.hash.includes('access_token=')) {
-        console.log('Found hash fragment with access token, trying to set session');
-        try {
+
+      try {
+        // First check if we have a hash from magic link
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+          console.log('Found magic link hash, processing...');
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
-          const hashType = hashParams.get('type');
-          
+
           if (accessToken && refreshToken) {
-            // Try to set session with tokens from hash
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
             });
-            
+
             if (error) {
-              console.error('Error setting session from hash tokens:', error);
+              console.error('Error setting session from magic link:', error);
               setError('Your password reset link is invalid or has expired.');
               setIsVerifyingToken(false);
               return;
             }
-            
+
             if (data.session) {
-              console.log('Successfully set session from hash tokens');
+              console.log('Successfully set session from magic link');
               setIsVerifyingToken(false);
+              toast.success('You can now reset your password');
               return;
             }
           }
-        } catch (err) {
-          console.error('Error processing hash tokens:', err);
         }
-      }
-      
-      // If we have a token in the URL
-      if (token) {
-        console.log('Verifying token for password reset...');
-        try {
-          // Try to verify the token if it's a recovery token
-          if (type === 'recovery' || !type) {
-            const { data, error } = await supabase.auth.verifyOtp({
-              token_hash: token,
-              type: 'recovery',
-            });
-            
-            if (error) {
-              console.error('Token verification error:', error);
-              setError('Invalid or expired password reset link.');
-              setIsVerifyingToken(false);
-              return;
-            }
-            
-            console.log('Token verified successfully:', !!data?.user);
-            toast.success('You can now reset your password');
-          }
-          
-          // Check if we have an active session
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (!sessionData.session) {
-            console.log('No session found after token verification');
-            setError('Please click the reset link from your email again as your session has expired.');
+
+        // Check for reset token in URL
+        if (token) {
+          console.log('Found token in URL, verifying...');
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery'
+          });
+
+          if (error) {
+            console.error('Token verification error:', error);
+            setError('Invalid or expired password reset link.');
             setIsVerifyingToken(false);
             return;
           }
-          
-          console.log('Session found, ready for password reset');
-          setIsVerifyingToken(false);
-          
-        } catch (err) {
-          console.error('Error during token verification:', err);
-          setError('Failed to verify your reset token. Please try again with a new reset link.');
-          setIsVerifyingToken(false);
+
+          if (data) {
+            console.log('Token verified successfully');
+            toast.success('You can now reset your password');
+            setIsVerifyingToken(false);
+            return;
+          }
         }
-        return;
-      }
-      
-      // Check if we already have a session regardless
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        console.log('Active session found without token in URL');
+
+        // If no token found, check if we already have an active session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log('Active session found');
+          setIsVerifyingToken(false);
+          return;
+        }
+
+        // If we get here, we don't have a valid token or session
+        setError('No valid reset token found. Please use the link from your email.');
         setIsVerifyingToken(false);
-        return;
+      } catch (err) {
+        console.error('Error during token verification:', err);
+        setError('An error occurred while verifying your reset token.');
+        setIsVerifyingToken(false);
       }
-      
-      // If we got here, we don't have a token or a session
-      setError('No reset token found. Please use the link from your email.');
-      setIsVerifyingToken(false);
     };
-    
+
     verifyToken();
-  }, [searchParams]);
+  }, [searchParams, location]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,31 +131,34 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      // First ensure we have a session
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         setError('Your session has expired. Please request a new password reset link.');
         setIsLoading(false);
         return;
       }
-      
+
       const { error: resetError } = await updatePassword(newPassword);
 
       if (resetError) {
         console.error('Error updating password:', resetError);
         setError(resetError.message);
+        setIsLoading(false);
       } else {
         setIsSuccess(true);
         toast.success('Password reset successful!');
-        // Redirect to login page after 3 seconds
+        
+        // Sign out the user after successful password reset
+        await supabase.auth.signOut();
+        
+        // Redirect to login page after 2 seconds
         setTimeout(() => {
           navigate('/auth', { replace: true });
-        }, 3000);
+        }, 2000);
       }
     } catch (err: any) {
       console.error('Exception in password reset:', err);
       setError(err.message || 'Failed to reset password');
-    } finally {
       setIsLoading(false);
     }
   };
