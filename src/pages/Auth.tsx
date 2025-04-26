@@ -9,6 +9,7 @@ import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucid
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -103,6 +104,36 @@ const Auth = () => {
     }
   };
 
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        console.error('Magic link error:', error);
+        setErrorMessage(error.message);
+      } else {
+        toast.success('Magic link sent! Check your email.');
+        if (showForgotPasswordDialog) {
+          setShowForgotPasswordDialog(false);
+        }
+      }
+    } catch (error: any) {
+      console.error('Exception during magic link:', error);
+      setErrorMessage(error.message || 'Failed to send magic link');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
       <div className="pt-4 px-4">
@@ -194,24 +225,41 @@ const Auth = () => {
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col gap-4 mt-6">
             <Button
               type="submit"
               disabled={isLoading}
               variant="gradient"
-              className="px-8 py-2.5 w-3/4 rounded-xl shadow-lg text-base"
+              className="px-8 py-2.5 w-full rounded-xl shadow-lg text-base"
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
-          </div>
 
-          <div className="text-center mt-6">
-            <p className="text-gray-400 text-sm">
-              Don't have an account? 
-              <Link to="/registration" className="text-cyan ml-2 hover:underline">
-                Create an account
-              </Link>
-            </p>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-700"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-charcoalPrimary px-2 text-gray-400">Or continue with</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleMagicLink}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending Link...
+                </>
+              ) : (
+                'Sign in with Magic Link'
+              )}
+            </Button>
           </div>
         </form>
 
