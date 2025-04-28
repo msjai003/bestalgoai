@@ -164,9 +164,13 @@ export const handleAuthError = async (
 };
 
 export const isPasswordResetFlow = (url: string): boolean => {
-  // Special case check for the old domain redirect
-  if ((url.includes('/auth/v1/verify') || url.includes('bestalgo.ai')) && url.includes('type=recovery')) {
-    console.log('Detected old domain password reset redirect');
+  // Special case check for bestalgo.ai domain
+  if (url.includes('bestalgo.ai') && (
+    url.includes('/auth/callback') || 
+    url.includes('/auth/v1/verify') || 
+    url.includes('type=recovery')
+  )) {
+    console.log('Detected password reset from bestalgo.ai domain');
     return true;
   }
   

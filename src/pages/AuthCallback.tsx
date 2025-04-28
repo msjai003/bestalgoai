@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LoadingState from '@/components/auth/LoadingState';
@@ -35,8 +34,17 @@ const AuthCallback = () => {
         if (isPasswordResetFlow(currentUrl)) {
           console.log('Detected password reset flow');
           
-          // Check if token is in URL path (from old domain redirect)
           let resetToken = token;
+          
+          // Handle bestalgo.ai domain redirect
+          if (currentUrl.includes('bestalgo.ai')) {
+            console.log('Processing request from bestalgo.ai domain');
+            const redirectUrl = currentUrl.replace('bestalgo.ai', 'lovable.app');
+            if (!token) {
+              navigate('/auth', { replace: true });
+              return;
+            }
+          }
           
           // Check for token in URL path format
           const urlTokenMatch = currentUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
