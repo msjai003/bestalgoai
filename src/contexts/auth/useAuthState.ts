@@ -3,6 +3,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchGoogleUserDetails, saveGoogleUserDetails } from './utils';
 import { AuthUser, GoogleUserDetails } from './types';
+import { User } from '@supabase/supabase-js';
+
+// Helper function to convert Supabase User to AuthUser
+const mapToAuthUser = (user: User | null): AuthUser | null => {
+  if (!user) return null;
+  
+  return {
+    id: user.id,
+    email: user.email || '', // Ensure email is always a string as required by AuthUser
+    app_metadata: user.app_metadata,
+    user_metadata: user.user_metadata,
+    aud: user.aud || "authenticated",
+    created_at: user.created_at || new Date().toISOString()
+  };
+};
 
 export const useAuthState = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -21,14 +36,7 @@ export const useAuthState = () => {
         
         if (data.session?.user) {
           console.log('Active session found for user:', data.session.user.id);
-          const authUser: AuthUser = {
-            id: data.session.user.id,
-            email: data.session.user.email || '',
-            app_metadata: data.session.user.app_metadata || {},
-            user_metadata: data.session.user.user_metadata || {},
-            aud: data.session.user.aud || "authenticated",
-            created_at: data.session.user.created_at || new Date().toISOString()
-          };
+          const authUser = mapToAuthUser(data.session.user);
           setUser(authUser);
           
           // If this is a Google user, fetch their details
@@ -51,14 +59,7 @@ export const useAuthState = () => {
         console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
-          const authUser: AuthUser = {
-            id: session.user.id,
-            email: session.user.email || '',
-            app_metadata: session.user.app_metadata || {},
-            user_metadata: session.user.user_metadata || {},
-            aud: session.user.aud || "authenticated",
-            created_at: session.user.created_at || new Date().toISOString()
-          };
+          const authUser = mapToAuthUser(session.user);
           setUser(authUser);
           
           // Handle Google sign-in event separately to avoid race conditions
@@ -81,7 +82,7 @@ export const useAuthState = () => {
     };
   }, []);
 
-  const handleGoogleSignIn = async (user: any) => {
+  const handleGoogleSignIn = async (user: User) => {
     try {
       if (!user || !user.id) return;
       

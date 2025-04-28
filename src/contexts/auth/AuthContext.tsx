@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser,
     isLoading,
     setIsLoading,
+    googleUserDetails
   } = useAuthState();
 
   const {
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     resetPassword,
     updatePassword,
     isLoading,
-    googleUserDetails: null,
+    googleUserDetails,
     signInWithGoogle: async () => {
       return { error: new Error('Google sign-in has been removed'), data: null };
     },

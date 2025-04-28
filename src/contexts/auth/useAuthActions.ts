@@ -3,11 +3,26 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AuthUser } from './types';
+import { User } from '@supabase/supabase-js';
 
 interface UseAuthActionsProps {
   setUser: (user: AuthUser | null) => void;
   setIsLoading: (loading: boolean) => void;
 }
+
+// Helper function to convert Supabase User to AuthUser
+const mapToAuthUser = (user: User | null): AuthUser | null => {
+  if (!user) return null;
+  
+  return {
+    id: user.id,
+    email: user.email || '', // Ensure email is always a string as required by AuthUser
+    app_metadata: user.app_metadata,
+    user_metadata: user.user_metadata,
+    aud: user.aud || "authenticated",
+    created_at: user.created_at || new Date().toISOString()
+  };
+};
 
 export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) => {
   return {
@@ -57,8 +72,9 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error, data: null };
         }
         
-        setUser(data.user as AuthUser);
-        return { error: null, data };
+        const authUser = mapToAuthUser(data.user);
+        setUser(authUser);
+        return { error: null, data: { user: authUser } };
       } catch (error: any) {
         console.error('Error during sign in:', error);
         return { error: error as Error, data: null };
@@ -98,11 +114,13 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error, data: null };
         }
         
-        if (data.user) {
-          setUser(data.user as AuthUser);
+        const authUser = mapToAuthUser(data.user);
+        
+        if (authUser) {
+          setUser(authUser);
         }
         
-        return { error: null, data };
+        return { error: null, data: { user: authUser } };
       } catch (error: any) {
         console.error('Error during sign up:', error);
         return { error: error as Error, data: null };
