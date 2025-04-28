@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -82,18 +81,12 @@ const Auth = () => {
         return;
       }
 
-      // Generate callback URLs for both domains
-      const baseUrls = [window.location.origin];
-      // Add bestalgo.ai domain if not already included
-      if (!window.location.origin.includes('bestalgo.ai')) {
-        baseUrls.push('https://bestalgo.ai');
-      }
-
-      console.log('Sending password reset with redirect URLs:', baseUrls);
-
-      // Send reset email with both redirect URLs
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      
+      console.log('Sending password reset with redirect to:', redirectUrl);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: `${baseUrls[0]}/auth/callback`
+        redirectTo: redirectUrl,
       });
       
       if (error) {

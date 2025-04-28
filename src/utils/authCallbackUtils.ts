@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -164,7 +165,7 @@ export const handleAuthError = async (
 };
 
 export const isPasswordResetFlow = (url: string): boolean => {
-  // Special case check for bestalgo.ai domain
+  // Check for bestalgo.ai domain with reset parameters
   if (url.includes('bestalgo.ai') && (
     url.includes('/auth/callback') || 
     url.includes('/auth/v1/verify') || 
