@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -57,7 +56,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Auth callback routes */}
+      {/* Auth callback routes - handle all variations */}
       <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />

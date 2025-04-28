@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const handlePasswordRecovery = (token: string, type: string, navigate: (path: string, options?: {replace: boolean}) => void) => {
@@ -11,7 +10,7 @@ export const handlePasswordRecovery = (token: string, type: string, navigate: (p
   }
   
   // Add token to the URL to ensure it's available on the reset page
-  navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
+  navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type || 'recovery')}`, { replace: true });
 };
 
 export const extractVerificationToken = (url: string, path: string): string | null => {
@@ -165,27 +164,28 @@ export const handleAuthError = async (
 };
 
 export const isPasswordResetFlow = (url: string): boolean => {
-  // Check for bestalgo.ai domain with reset parameters
-  if (url.includes('bestalgo.ai') && (
-    url.includes('/auth/callback') || 
-    url.includes('/auth/v1/verify') || 
-    url.includes('type=recovery')
-  )) {
-    console.log('Detected password reset from bestalgo.ai domain');
-    return true;
+  // Check for bestalgo.ai domain with reset parameters - explicit check first
+  if (url.includes('bestalgo.ai')) {
+    console.log('Detected request from bestalgo.ai domain');
+    if (url.includes('/auth/callback') || 
+        url.includes('/auth/v1/verify') || 
+        url.includes('type=recovery')) {
+      console.log('Confirmed password reset flow from bestalgo.ai domain');
+      return true;
+    }
   }
   
   // Check for recovery parameters in query string
   const hasResetParam = url.includes('type=recovery') || 
-                         url.includes('reset=true') ||
-                         url.includes('flow=recovery');
-                       
+                        url.includes('reset=true') ||
+                        url.includes('flow=recovery');
+  
   // Check for recovery in path segments
   const hasResetPath = url.includes('/reset-password') || 
                        url.includes('/recovery') ||
                        url.includes('/auth/recovery') ||
                        url.includes('/auth/v1/verify');
-                      
+  
   // Check for "action=resetPassword" parameter which is used by some providers
   const hasResetAction = url.includes('action=resetPassword');
   
@@ -193,7 +193,13 @@ export const isPasswordResetFlow = (url: string): boolean => {
   const hasRecoveryHash = url.includes('#type=recovery') ||
                           (url.includes('#') && url.toLowerCase().includes('recover'));
   
-  console.log('Checking if password reset flow:', { hasResetParam, hasResetPath, hasResetAction, hasRecoveryHash, url });
+  console.log('Checking if password reset flow:', { 
+    hasResetParam, 
+    hasResetPath, 
+    hasResetAction, 
+    hasRecoveryHash, 
+    url 
+  });
   
   return hasResetParam || hasResetPath || hasResetAction || hasRecoveryHash;
 };
@@ -260,11 +266,11 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
   }
 };
 
-// Add a utility function to handle redirects from old domain
+// Updated function to handle redirects from old domain
 export const handleOldDomainRedirect = (url: string, navigate: (path: string, options?: {replace: boolean}) => void): boolean => {
   // Check if this is a redirect from the old bestalgo.ai domain or any URL with the old format
-  if ((url.includes('bestalgo.ai') || url.includes('/auth/v1/verify')) && url.includes('type=recovery')) {
-    console.log('Detected redirect from old domain format');
+  if (url.includes('bestalgo.ai') || url.includes('/auth/v1/verify')) {
+    console.log('Detected redirect from bestalgo.ai domain or old URL format');
     
     // Extract the token from the URL
     const tokenMatch = url.match(/\/auth\/v1\/verify\/([^?&]+)/);
@@ -286,12 +292,14 @@ export const handleOldDomainRedirect = (url: string, navigate: (path: string, op
     const searchParams = new URLSearchParams(window.location.search);
     const type = searchParams.get('type') || 'recovery'; // Default to recovery
     
-    // Redirect to reset password with the token
+    // Always redirect to reset password page, with or without token
     if (token) {
+      console.log('Redirecting to reset password page with token');
       navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
       return true;
     } else {
       // If no token found but still a recovery flow, redirect to reset password
+      console.log('Redirecting to reset password page without token');
       navigate(`/reset-password?type=${encodeURIComponent(type)}`, { replace: true });
       return true;
     }

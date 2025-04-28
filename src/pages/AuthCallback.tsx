@@ -20,9 +20,9 @@ const AuthCallback = () => {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
         
-        // Check for old domain redirect first (bestalgo.ai redirect)
+        // Always check for old domain redirect first (bestalgo.ai redirect)
         if (handleOldDomainRedirect(currentUrl, navigate)) {
-          console.log('Handled old domain redirect successfully');
+          console.log('Handled domain redirect successfully');
           return;
         }
         
@@ -31,9 +31,9 @@ const AuthCallback = () => {
         const token = searchParams.get('token');
         const type = searchParams.get('type');
         
-        // Check URL for recovery tokens in various formats
+        // Check URL for password reset flow detection
         if (isPasswordResetFlow(currentUrl)) {
-          console.log('Detected password reset flow');
+          console.log('Detected password reset flow in callback');
           
           let resetToken = token;
           
@@ -44,9 +44,9 @@ const AuthCallback = () => {
             console.log('Extracted token from URL path:', resetToken.substring(0, 5) + '...');
           }
           
-          // Redirect to reset password with the token if available
-          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '');
-          console.log('Redirecting to:', redirectPath);
+          // Always redirect to reset password page
+          console.log('Redirecting to reset password page');
+          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '?reset=true');
           navigate(redirectPath, { replace: true });
           return;
         }
