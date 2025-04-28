@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -57,29 +56,28 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Auth callback routes - handle all variations */}
+      {/* Auth callback routes - handle all variations with highest priority */}
       <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
       <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
       <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
+      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/#access_token=*" element={<AuthCallback />} />
+      
+      {/* Make reset-password route directly accessible with highest priority */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/*" element={<ResetPassword />} />
       
       {/* Specific reset password routes */}
       <Route path="/auth/recovery" element={<Navigate to="/reset-password" replace />} />
       <Route path="/recovery" element={<Navigate to="/reset-password" replace />} />
       
-      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
-      <Route path="/#access_token=*" element={<AuthCallback />} />
-
-      {/* Make reset-password route directly accessible */}
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/reset-password/*" element={<ResetPassword />} />
-      
+      {/* Regular application routes */}
       <Route path="/" element={<Index />} />
-      
       <Route path="/auth" element={<Auth />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback" element={<AuthCallback />} />
       
+      {/* Additional verification paths */}
       <Route path="/verify/*" element={<AuthCallback />} />
       <Route path="/auth/verify/*" element={<AuthCallback />} />
       

@@ -20,34 +20,31 @@ const AuthCallback = () => {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
         
-        // Always check for old domain redirect first (bestalgo.ai redirect)
-        if (handleOldDomainRedirect(currentUrl, navigate)) {
-          console.log('Handled domain redirect successfully');
-          return;
-        }
-        
-        // Extract any query parameters
-        const searchParams = new URLSearchParams(window.location.search);
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        
-        // Check URL for password reset flow detection
+        // Check for reset password flow first - this should take priority
         if (isPasswordResetFlow(currentUrl)) {
-          console.log('Detected password reset flow in callback');
+          console.log('Password reset flow detected, redirecting to reset-password page');
           
-          let resetToken = token;
+          // Extract any query parameters
+          const searchParams = new URLSearchParams(window.location.search);
+          let token = searchParams.get('token');
           
           // Check for token in URL path format
           const urlTokenMatch = currentUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
           if (urlTokenMatch && urlTokenMatch[1]) {
-            resetToken = urlTokenMatch[1];
-            console.log('Extracted token from URL path:', resetToken.substring(0, 5) + '...');
+            token = urlTokenMatch[1];
+            console.log('Extracted token from URL path:', token.substring(0, 5) + '...');
           }
           
-          // Always redirect to reset password page, preserving the token
-          console.log('Redirecting to reset password page');
-          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '');
+          // Direct navigation to reset-password with token
+          const redirectPath = '/reset-password' + (token ? `?token=${encodeURIComponent(token)}` : '');
+          console.log('Redirecting to:', redirectPath);
           navigate(redirectPath, { replace: true });
+          return;
+        }
+        
+        // Always check for old domain redirect (bestalgo.ai redirect)
+        if (handleOldDomainRedirect(currentUrl, navigate)) {
+          console.log('Handled domain redirect successfully');
           return;
         }
 

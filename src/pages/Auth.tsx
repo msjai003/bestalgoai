@@ -84,7 +84,7 @@ const Auth = () => {
       // First determine the current origin
       const currentOrigin = window.location.origin;
       
-      // Create redirectTo URL that points directly to reset-password page instead of auth/callback
+      // Create redirectTo URL - Point directly to reset-password instead of auth/callback
       const redirectUrl = `${currentOrigin}/reset-password`;
       
       console.log('Sending password reset with redirect to:', redirectUrl);

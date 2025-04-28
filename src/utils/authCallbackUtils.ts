@@ -164,7 +164,15 @@ export const handleAuthError = async (
 };
 
 export const isPasswordResetFlow = (url: string): boolean => {
-  // Check for bestalgo.ai domain with reset parameters - explicit check first
+  // Check for obvious reset parameters first
+  if (url.includes('type=recovery') || 
+      url.includes('/reset-password') || 
+      url.includes('/auth/v1/verify')) {
+    console.log('Detected password reset flow from recovery parameters');
+    return true;
+  }
+  
+  // Check for bestalgo.ai domain with reset parameters - explicit check 
   if (url.includes('bestalgo.ai')) {
     console.log('Detected request from bestalgo.ai domain');
     if (url.includes('/auth/callback') || 
@@ -192,16 +200,17 @@ export const isPasswordResetFlow = (url: string): boolean => {
   // Check if URL contains hash with recovery type
   const hasRecoveryHash = url.includes('#type=recovery') ||
                           (url.includes('#') && url.toLowerCase().includes('recover'));
+                          
+  const result = hasResetParam || hasResetPath || hasResetAction || hasRecoveryHash;
   
-  console.log('Checking if password reset flow:', { 
+  console.log('Password reset flow check result:', result, { 
     hasResetParam, 
     hasResetPath, 
     hasResetAction, 
-    hasRecoveryHash, 
-    url 
+    hasRecoveryHash
   });
   
-  return hasResetParam || hasResetPath || hasResetAction || hasRecoveryHash;
+  return result;
 };
 
 export const handleMagicLinkAuth = async (hash: string, navigate: (path: string, options?: {replace: boolean}) => void): Promise<boolean> => {
@@ -236,9 +245,8 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
         return false;
       }
       
-      // Redirect to reset password page with hash in URL to maintain state
-      const encodedHash = encodeURIComponent(hash);
-      navigate(`/reset-password?hash=${encodedHash}`, { replace: true });
+      // Redirect to reset password page
+      navigate('/reset-password', { replace: true });
       return true;
     }
     
@@ -292,7 +300,7 @@ export const handleOldDomainRedirect = (url: string, navigate: (path: string, op
     const searchParams = new URLSearchParams(window.location.search);
     const type = searchParams.get('type') || 'recovery'; // Default to recovery
     
-    // Always redirect to reset password page
+    // Always redirect to reset password page for old domain formats
     if (token) {
       console.log('Redirecting to reset password page with token');
       navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
