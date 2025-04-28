@@ -10,28 +10,15 @@ const AuthVerifyHandler: React.FC = () => {
   useEffect(() => {
     const processVerification = async () => {
       try {
-        // Get the current URL and process it
         const currentUrl = window.location.href;
         console.log('AuthVerifyHandler processing URL:', currentUrl);
         
-        // Check for type parameter in both query params and hash
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, '?'));
         
-        // Look for type parameter in both places
-        const type = urlParams.get('type') || hashParams.get('type');
         const token = urlParams.get('token') || hashParams.get('access_token');
         
-        console.log('Auth parameters detected:', { type, hasToken: !!token });
-        
-        if (type === 'recovery') {
-          console.log('Password reset flow detected, redirecting to reset page');
-          
-          // For recovery flow, immediately redirect to reset password page
-          setTimeout(() => {
-            navigate('/reset-password', { replace: true });
-          }, 100);
-        } else if (token || currentUrl.includes('access_token=')) {
+        if (token || currentUrl.includes('access_token=')) {
           console.log('Auth verification with token detected');
           navigate('/auth', { replace: true });
         } else {
