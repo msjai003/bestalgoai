@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -81,21 +82,22 @@ const Auth = () => {
         return;
       }
 
-      // First determine the current origin
+      // First determine the current origin to create absolute URLs
       const currentOrigin = window.location.origin;
       
-      // Create redirectTo URL - Point directly to reset-password instead of auth/callback
+      // Use reset-password page directly instead of auth/callback
       const redirectUrl = `${currentOrigin}/reset-password`;
       
       console.log('Sending password reset with redirect to:', redirectUrl);
       
+      // Send the reset password email with a direct link to reset-password
       const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: redirectUrl,
+        redirectTo: redirectUrl
       });
       
       if (error) {
         console.error('Error sending reset link:', error);
-        toast.error(error.message);
+        toast.error(error.message || 'Failed to send reset link');
       } else {
         setResetLinkSent(true);
         toast.success('Password reset link has been sent to your email');

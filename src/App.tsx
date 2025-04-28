@@ -56,26 +56,25 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Auth callback routes - handle all variations with highest priority */}
-      <Route path="/auth/v1/verify" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
-      <Route path="/auth/verify" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/verify" element={<Navigate to="/auth/callback" replace />} />
-      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/#access_token=*" element={<AuthCallback />} />
-      
-      {/* Make reset-password route directly accessible with highest priority */}
+      {/* Reset Password Routes - highest priority */}
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/reset-password/*" element={<ResetPassword />} />
-      
-      {/* Specific reset password routes */}
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/auth/recovery" element={<Navigate to="/reset-password" replace />} />
       <Route path="/recovery" element={<Navigate to="/reset-password" replace />} />
       
-      {/* Regular application routes */}
+      {/* Auth callback routes */}
+      <Route path="/auth/v1/verify" element={<AuthCallback />} />
+      <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
+      <Route path="/auth/verify" element={<AuthCallback />} />
+      <Route path="/verify" element={<AuthCallback />} />
+      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/callback/*" element={<AuthCallback />} />
+      
+      {/* Standard routes */}
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/logout" element={<Logout />} />
       
       {/* Additional verification paths */}
       <Route path="/verify/*" element={<AuthCallback />} />
@@ -84,7 +83,6 @@ function AppRoutes() {
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/terms" element={<Terms />} />
-      <Route path="/logout" element={<Logout />} />
       <Route path="/colortest" element={<ColorTest />} />
       <Route path="/education" element={<Education />} />
       <Route path="/classes" element={<Classes />} />

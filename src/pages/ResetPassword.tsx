@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,35 +23,23 @@ const ResetPassword = () => {
   const location = useLocation();
 
   useEffect(() => {
+    console.log("ResetPassword page loaded with pathname:", location.pathname);
+    console.log("Current search params:", Object.fromEntries(searchParams.entries()));
+    console.log("Current hash:", window.location.hash);
+    console.log("Full URL:", window.location.href);
+    
     const verifyToken = async () => {
       setIsVerifyingToken(true);
       setError(null);
       
-      // Extract token from URL or hash
+      // Extract token from URL, query params, or hash
       let token = searchParams.get('token');
-      const type = searchParams.get('type');
-      const reset = searchParams.get('reset');
       const fullUrl = window.location.href;
       
-      console.log('Reset password page loaded with params:', { 
-        token: token ? token.substring(0, 5) + '...' : 'null', 
-        type, 
-        reset,
-        hash: window.location.hash ? window.location.hash.substring(0, 20) + '...' : 'none',
-        fullUrl
-      });
-
-      // Check for token in URL path format
-      if (!token && fullUrl.includes('/auth/v1/verify/')) {
-        const tokenMatch = fullUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
-        if (tokenMatch && tokenMatch[1]) {
-          token = tokenMatch[1];
-          console.log('Extracted token from URL path:', token.substring(0, 5) + '...');
-        }
-      }
+      console.log('Reset password page loaded with token param:', token ? `${token.substring(0, 5)}...` : 'null');
 
       try {
-        // First check if we have a hash from magic link
+        // Check if we have a hash from magic link
         if (window.location.hash && window.location.hash.includes('access_token=')) {
           console.log('Found magic link hash, processing...');
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -60,6 +47,7 @@ const ResetPassword = () => {
           const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken && refreshToken) {
+            console.log('Setting session from hash tokens');
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
@@ -74,17 +62,19 @@ const ResetPassword = () => {
 
             if (data.session) {
               console.log('Successfully set session from magic link');
-              setIsVerifyingToken(false);
               toast.success('You can now reset your password');
+              setIsVerifyingToken(false);
               return;
             }
           }
         } 
-        // Look for a direct reset hit with token parameter
+        
+        // If we have a token in query params, verify it
         else if (token) {
-          console.log('Found token in URL params, verifying...');
-          
           try {
+            console.log('Verifying token...');
+            
+            // Verify the token directly
             const { data, error } = await supabase.auth.verifyOtp({
               token_hash: token,
               type: 'recovery'
@@ -93,10 +83,12 @@ const ResetPassword = () => {
             if (error) {
               console.error('Token verification error:', error);
               
-              // Try a second time with the raw token in case it was already URL encoded
+              // Try a second time with decoded token
               try {
+                const decodedToken = decodeURIComponent(token);
+                console.log('Trying with decoded token');
                 const { data: secondData, error: secondError } = await supabase.auth.verifyOtp({
-                  token_hash: decodeURIComponent(token),
+                  token_hash: decodedToken,
                   type: 'recovery'
                 });
                 
@@ -109,7 +101,6 @@ const ResetPassword = () => {
                 
                 if (secondData) {
                   console.log('Token verified successfully on second attempt');
-                  toast.success('You can now reset your password');
                   setIsVerifyingToken(false);
                   return;
                 }
@@ -136,8 +127,7 @@ const ResetPassword = () => {
           }
         }
 
-        // If we reach here without a token or hash, check if we already have an active session
-        // This handles direct navigation to /reset-password after a successful magic link auth
+        // As a last resort, check if we have an active session
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           console.log('Active session found, allowing password reset');
@@ -146,6 +136,7 @@ const ResetPassword = () => {
         }
 
         // If we get here, we don't have a valid token, hash or session
+        console.error('No valid reset token or session found');
         setError('No valid reset token found. Please request a new password reset link.');
         setIsVerifyingToken(false);
       } catch (err) {
