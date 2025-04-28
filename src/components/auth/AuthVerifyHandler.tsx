@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from './LoadingState';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 const AuthVerifyHandler: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const AuthVerifyHandler: React.FC = () => {
         const currentUrl = window.location.href;
         console.log('AuthVerifyHandler processing URL:', currentUrl);
         
-        // Parse URL parameters - handle both query params and hash fragments
+        // Check for type parameter in both query params and hash
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, '?'));
         
@@ -29,13 +28,12 @@ const AuthVerifyHandler: React.FC = () => {
           console.log('Password reset flow detected, redirecting to reset page');
           
           // For recovery flow, immediately redirect to reset password page
-          // The token is automatically handled by Supabase client
           setTimeout(() => {
             navigate('/reset-password', { replace: true });
           }, 100);
         } else if (token || currentUrl.includes('access_token=')) {
           console.log('Auth verification with token detected');
-          navigate('/auth/callback', { replace: true });
+          navigate('/auth', { replace: true });
         } else {
           console.log('Unrecognized auth URL, redirecting to auth page');
           toast.error('Authentication link may be invalid or expired');

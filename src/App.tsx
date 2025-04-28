@@ -179,7 +179,7 @@ function AppRoutes() {
       <Route path="/broker-management" element={<BrokerManagement />} />
       
       {/* Make sure all unmatched routes redirect to auth */}
-      <Route path="*" element={<Navigate to="/auth" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

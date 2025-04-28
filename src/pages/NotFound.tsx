@@ -20,18 +20,12 @@ const NotFound = () => {
       console.error("Auth link 404 detected, redirecting to auth handler");
       
       // For auth verification links, redirect to the AuthVerifyHandler
-      if (location.search && (location.search.includes('type=recovery') || location.search.includes('access_token'))) {
-        navigate('/auth/v1/verify' + location.search, { replace: true });
-        return;
-      }
-      
-      // For other auth URLs, just go to auth page
       setTimeout(() => {
-        navigate('/auth', { replace: true });
-      }, 500);
+        navigate('/auth/v1/verify' + location.search + location.hash, { replace: true });
+      }, 100);
       return;
     }
-  }, [location.pathname, location.search, navigate]);
+  }, [location.pathname, location.search, location.hash, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
