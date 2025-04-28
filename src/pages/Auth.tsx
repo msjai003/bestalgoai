@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -85,8 +84,8 @@ const Auth = () => {
       // First determine the current origin
       const currentOrigin = window.location.origin;
       
-      // Create redirectTo URL that will work for both domains
-      const redirectUrl = `${currentOrigin}/auth/callback`;
+      // Create redirectTo URL that points directly to reset-password page instead of auth/callback
+      const redirectUrl = `${currentOrigin}/reset-password`;
       
       console.log('Sending password reset with redirect to:', redirectUrl);
       

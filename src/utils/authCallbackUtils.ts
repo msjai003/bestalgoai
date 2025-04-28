@@ -236,8 +236,9 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
         return false;
       }
       
-      // Redirect to reset password page
-      navigate('/reset-password?reset=true', { replace: true });
+      // Redirect to reset password page with hash in URL to maintain state
+      const encodedHash = encodeURIComponent(hash);
+      navigate(`/reset-password?hash=${encodedHash}`, { replace: true });
       return true;
     }
     
@@ -266,7 +267,6 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
   }
 };
 
-// Updated function to handle redirects from old domain
 export const handleOldDomainRedirect = (url: string, navigate: (path: string, options?: {replace: boolean}) => void): boolean => {
   // Check if this is a redirect from the old bestalgo.ai domain or any URL with the old format
   if (url.includes('bestalgo.ai') || url.includes('/auth/v1/verify')) {
@@ -292,7 +292,7 @@ export const handleOldDomainRedirect = (url: string, navigate: (path: string, op
     const searchParams = new URLSearchParams(window.location.search);
     const type = searchParams.get('type') || 'recovery'; // Default to recovery
     
-    // Always redirect to reset password page, with or without token
+    // Always redirect to reset password page
     if (token) {
       console.log('Redirecting to reset password page with token');
       navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });

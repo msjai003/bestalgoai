@@ -42,7 +42,7 @@ const ResetPassword = () => {
         fullUrl
       });
 
-      // Check for token in old domain format path
+      // Check for token in URL path format
       if (!token && fullUrl.includes('/auth/v1/verify/')) {
         const tokenMatch = fullUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
         if (tokenMatch && tokenMatch[1]) {
@@ -79,11 +79,10 @@ const ResetPassword = () => {
               return;
             }
           }
-        }
-
-        // Check for reset token in URL
-        if (token) {
-          console.log('Found token in URL, verifying...');
+        } 
+        // Look for a direct reset hit with token parameter
+        else if (token) {
+          console.log('Found token in URL params, verifying...');
           
           try {
             const { data, error } = await supabase.auth.verifyOtp({
@@ -137,16 +136,17 @@ const ResetPassword = () => {
           }
         }
 
-        // If no token found, check if we already have an active session
+        // If we reach here without a token or hash, check if we already have an active session
+        // This handles direct navigation to /reset-password after a successful magic link auth
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('Active session found');
+          console.log('Active session found, allowing password reset');
           setIsVerifyingToken(false);
           return;
         }
 
-        // If we get here, we don't have a valid token or session
-        setError('No valid reset token found. Please use the link from your email or request a new link.');
+        // If we get here, we don't have a valid token, hash or session
+        setError('No valid reset token found. Please request a new password reset link.');
         setIsVerifyingToken(false);
       } catch (err) {
         console.error('Error during token verification:', err);

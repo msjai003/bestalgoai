@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -69,8 +70,9 @@ function AppRoutes() {
       <Route path="/auth/v1/callback*" element={<AuthCallback />} />
       <Route path="/#access_token=*" element={<AuthCallback />} />
 
+      {/* Make reset-password route directly accessible */}
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/reset-password/*" element={<AuthCallback />} />
+      <Route path="/reset-password/*" element={<ResetPassword />} />
       
       <Route path="/" element={<Index />} />
       

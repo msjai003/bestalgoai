@@ -44,9 +44,9 @@ const AuthCallback = () => {
             console.log('Extracted token from URL path:', resetToken.substring(0, 5) + '...');
           }
           
-          // Always redirect to reset password page
+          // Always redirect to reset password page, preserving the token
           console.log('Redirecting to reset password page');
-          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '?reset=true');
+          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '');
           navigate(redirectPath, { replace: true });
           return;
         }
