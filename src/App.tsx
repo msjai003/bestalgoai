@@ -178,7 +178,7 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      {/* Make sure all unmatched routes redirect to auth */}
+      {/* Make sure all unmatched routes show NotFound */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
