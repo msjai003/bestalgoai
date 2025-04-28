@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -83,21 +84,54 @@ const ResetPassword = () => {
         // Check for reset token in URL
         if (token) {
           console.log('Found token in URL, verifying...');
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery'
-          });
+          
+          try {
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery'
+            });
 
-          if (error) {
-            console.error('Token verification error:', error);
-            setError('Invalid or expired password reset link.');
-            setIsVerifyingToken(false);
-            return;
-          }
+            if (error) {
+              console.error('Token verification error:', error);
+              
+              // Try a second time with the raw token in case it was already URL encoded
+              try {
+                const { data: secondData, error: secondError } = await supabase.auth.verifyOtp({
+                  token_hash: decodeURIComponent(token),
+                  type: 'recovery'
+                });
+                
+                if (secondError) {
+                  console.error('Second token verification attempt failed:', secondError);
+                  setError('Invalid or expired password reset link.');
+                  setIsVerifyingToken(false);
+                  return;
+                }
+                
+                if (secondData) {
+                  console.log('Token verified successfully on second attempt');
+                  toast.success('You can now reset your password');
+                  setIsVerifyingToken(false);
+                  return;
+                }
+              } catch (secondAttemptError) {
+                console.error('Error in second verification attempt:', secondAttemptError);
+              }
+              
+              setError('Invalid or expired password reset link.');
+              setIsVerifyingToken(false);
+              return;
+            }
 
-          if (data) {
-            console.log('Token verified successfully');
-            toast.success('You can now reset your password');
+            if (data) {
+              console.log('Token verified successfully');
+              toast.success('You can now reset your password');
+              setIsVerifyingToken(false);
+              return;
+            }
+          } catch (verifyError) {
+            console.error('Exception during token verification:', verifyError);
+            setError('An error occurred while verifying your reset token.');
             setIsVerifyingToken(false);
             return;
           }
@@ -112,7 +146,7 @@ const ResetPassword = () => {
         }
 
         // If we get here, we don't have a valid token or session
-        setError('No valid reset token found. Please use the link from your email.');
+        setError('No valid reset token found. Please use the link from your email or request a new link.');
         setIsVerifyingToken(false);
       } catch (err) {
         console.error('Error during token verification:', err);

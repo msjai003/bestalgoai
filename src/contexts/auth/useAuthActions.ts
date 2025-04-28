@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -187,7 +186,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: AuthActionsProps) => {
       // Use the current window location to determine the redirect URL dynamically
       // This ensures we don't hardcode any domains that might change
       const baseUrl = window.location.origin;
-      const redirectUrl = `${baseUrl}/reset-password`;
+      const redirectUrl = `${baseUrl}/auth/callback`;
       
       console.log('Sending password reset with redirect to:', redirectUrl);
       

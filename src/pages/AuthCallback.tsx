@@ -5,7 +5,7 @@ import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { isPasswordResetFlow, handleMagicLinkAuth } from '@/utils/authCallbackUtils';
+import { isPasswordResetFlow, handleMagicLinkAuth, handleOldDomainRedirect } from '@/utils/authCallbackUtils';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -19,6 +19,12 @@ const AuthCallback = () => {
       try {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
+        
+        // Check for old domain redirect first (bestalgo.ai redirect)
+        if (handleOldDomainRedirect(currentUrl, navigate)) {
+          console.log('Handled old domain redirect successfully');
+          return;
+        }
         
         // Extract any query parameters
         const searchParams = new URLSearchParams(window.location.search);
@@ -36,18 +42,20 @@ const AuthCallback = () => {
           const urlTokenMatch = currentUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
           if (urlTokenMatch && urlTokenMatch[1]) {
             resetToken = urlTokenMatch[1];
-            console.log('Extracted token from URL path');
+            console.log('Extracted token from URL path:', resetToken.substring(0, 5) + '...');
           }
           
           // Redirect to reset password with the token if available
-          navigate('/reset-password' + (resetToken ? `?token=${resetToken}` : ''), { replace: true });
+          const redirectPath = '/reset-password' + (resetToken ? `?token=${encodeURIComponent(resetToken)}` : '');
+          console.log('Redirecting to:', redirectPath);
+          navigate(redirectPath, { replace: true });
           return;
         }
 
         // Handle regular magic link authentication via hash
         const hash = window.location.hash;
         if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
-          console.log('Processing magic link from hash');
+          console.log('Processing magic link from hash:', hash.substring(0, 20) + '...');
           const handled = await handleMagicLinkAuth(hash.substring(1), navigate);
           if (handled) {
             return;

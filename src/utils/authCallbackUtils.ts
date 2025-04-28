@@ -165,7 +165,7 @@ export const handleAuthError = async (
 
 export const isPasswordResetFlow = (url: string): boolean => {
   // Special case check for the old domain redirect
-  if (url.includes('bestalgo.ai/auth/v1/verify') && url.includes('type=recovery')) {
+  if ((url.includes('/auth/v1/verify') || url.includes('bestalgo.ai')) && url.includes('type=recovery')) {
     console.log('Detected old domain password reset redirect');
     return true;
   }
@@ -200,7 +200,7 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
 
   try {
     console.log('Processing magic link authentication from hash');
-    const hashParams = new URLSearchParams(hash.substring(1));
+    const hashParams = new URLSearchParams(hash);
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
     const type = hashParams.get('type');
@@ -257,9 +257,9 @@ export const handleMagicLinkAuth = async (hash: string, navigate: (path: string,
 
 // Add a utility function to handle redirects from old domain
 export const handleOldDomainRedirect = (url: string, navigate: (path: string, options?: {replace: boolean}) => void): boolean => {
-  // Check if this is a redirect from the old bestalgo.ai domain
-  if (url.includes('bestalgo.ai') && url.includes('/auth/v1/verify')) {
-    console.log('Detected redirect from old domain');
+  // Check if this is a redirect from the old bestalgo.ai domain or any URL with the old format
+  if ((url.includes('bestalgo.ai') || url.includes('/auth/v1/verify')) && url.includes('type=recovery')) {
+    console.log('Detected redirect from old domain format');
     
     // Extract the token from the URL
     const tokenMatch = url.match(/\/auth\/v1\/verify\/([^?&]+)/);
@@ -267,7 +267,14 @@ export const handleOldDomainRedirect = (url: string, navigate: (path: string, op
     
     if (tokenMatch && tokenMatch[1]) {
       token = tokenMatch[1];
-      console.log('Extracted token from old domain URL:', token.substring(0, 5) + '...');
+      console.log('Extracted token from URL path:', token.substring(0, 5) + '...');
+    } else {
+      // Try to get from search parameters
+      const searchParams = new URLSearchParams(window.location.search);
+      token = searchParams.get('token');
+      if (token) {
+        console.log('Extracted token from query params:', token.substring(0, 5) + '...');
+      }
     }
     
     // Extract type from query parameters
@@ -277,6 +284,10 @@ export const handleOldDomainRedirect = (url: string, navigate: (path: string, op
     // Redirect to reset password with the token
     if (token) {
       navigate(`/reset-password?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`, { replace: true });
+      return true;
+    } else {
+      // If no token found but still a recovery flow, redirect to reset password
+      navigate(`/reset-password?type=${encodeURIComponent(type)}`, { replace: true });
       return true;
     }
   }
