@@ -28,17 +28,27 @@ const ResetPassword = () => {
       setError(null);
       
       // Extract token from URL or hash
-      const token = searchParams.get('token');
+      let token = searchParams.get('token');
       const type = searchParams.get('type');
       const reset = searchParams.get('reset');
+      const fullUrl = window.location.href;
       
       console.log('Reset password page loaded with params:', { 
         token: token ? token.substring(0, 5) + '...' : 'null', 
         type, 
         reset,
         hash: window.location.hash ? window.location.hash.substring(0, 20) + '...' : 'none',
-        fullUrl: window.location.href
+        fullUrl
       });
+
+      // Check for token in old domain format path
+      if (!token && fullUrl.includes('/auth/v1/verify/')) {
+        const tokenMatch = fullUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
+        if (tokenMatch && tokenMatch[1]) {
+          token = tokenMatch[1];
+          console.log('Extracted token from URL path:', token.substring(0, 5) + '...');
+        }
+      }
 
       try {
         // First check if we have a hash from magic link

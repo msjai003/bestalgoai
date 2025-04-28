@@ -17,31 +17,37 @@ const AuthCallback = () => {
   useEffect(() => {
     const processCallback = async () => {
       try {
-        console.log('Processing auth callback with URL:', window.location.href);
+        const currentUrl = window.location.href;
+        console.log('Processing auth callback with URL:', currentUrl);
         
-        // Check if this is a password recovery/reset flow
-        if (isPasswordResetFlow(window.location.href)) {
-          console.log('Detected password reset flow, redirecting to reset password page');
+        // Extract any query parameters
+        const searchParams = new URLSearchParams(window.location.search);
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
+        
+        // Check URL for recovery tokens in various formats
+        if (isPasswordResetFlow(currentUrl)) {
+          console.log('Detected password reset flow');
           
-          // Get any token from the URL if present
-          const searchParams = new URLSearchParams(window.location.search);
-          const token = searchParams.get('token');
+          // Check if token is in URL path (from old domain redirect)
+          let resetToken = token;
+          
+          // Check for token in URL path format
+          const urlTokenMatch = currentUrl.match(/\/auth\/v1\/verify\/([^?&]+)/);
+          if (urlTokenMatch && urlTokenMatch[1]) {
+            resetToken = urlTokenMatch[1];
+            console.log('Extracted token from URL path');
+          }
           
           // Redirect to reset password with the token if available
-          navigate('/reset-password' + (token ? `?token=${token}` : ''), { replace: true });
+          navigate('/reset-password' + (resetToken ? `?token=${resetToken}` : ''), { replace: true });
           return;
         }
 
-        // Handle regular magic link authentication
+        // Handle regular magic link authentication via hash
         const hash = window.location.hash;
-        if (hash && hash.includes('type=recovery')) {
-          // This is a recovery magic link
-          console.log('Detected recovery magic link');
-          navigate('/reset-password', { replace: true });
-          return;
-        }
-
-        if (hash && hash.includes('access_token=')) {
+        if (hash && (hash.includes('type=recovery') || hash.includes('access_token='))) {
+          console.log('Processing magic link from hash');
           const handled = await handleMagicLinkAuth(hash.substring(1), navigate);
           if (handled) {
             return;

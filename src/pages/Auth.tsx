@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -81,6 +82,7 @@ const Auth = () => {
         return;
       }
 
+      // Generate callback URL dynamically from current origin
       const baseUrl = window.location.origin;
       const redirectUrl = `${baseUrl}/auth/callback`;
       
