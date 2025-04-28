@@ -15,24 +15,26 @@ const AuthVerifyHandler: React.FC = () => {
         const currentUrl = window.location.href;
         console.log('AuthVerifyHandler processing URL:', currentUrl);
         
-        // Parse URL parameters
+        // Parse URL parameters - handle both query params and hash fragments
         const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, '?'));
         
-        // Check if URL contains recovery token
+        // Look for type parameter in both places
         const type = urlParams.get('type') || hashParams.get('type');
+        const token = urlParams.get('token') || hashParams.get('access_token');
+        
+        console.log('Auth parameters detected:', { type, hasToken: !!token });
         
         if (type === 'recovery') {
           console.log('Password reset flow detected, redirecting to reset page');
           
-          // Ensure we have a session before redirecting
-          const { data } = await supabase.auth.getSession();
-          console.log('Current session state:', data.session ? 'Session exists' : 'No session');
-          
-          // Redirect to reset password page
-          navigate('/reset-password', { replace: true });
-        } else if (currentUrl.includes('access_token=')) {
-          console.log('Auth verification with access token detected');
+          // For recovery flow, immediately redirect to reset password page
+          // The token is automatically handled by Supabase client
+          setTimeout(() => {
+            navigate('/reset-password', { replace: true });
+          }, 100);
+        } else if (token || currentUrl.includes('access_token=')) {
+          console.log('Auth verification with token detected');
           navigate('/auth/callback', { replace: true });
         } else {
           console.log('Unrecognized auth URL, redirecting to auth page');

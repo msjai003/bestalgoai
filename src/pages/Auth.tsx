@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -75,6 +74,9 @@ const Auth = () => {
       }
 
       const appUrl = window.location.origin;
+      
+      console.log('Sending password reset to:', email, 'with redirect URL:', `${appUrl}/auth/v1/verify?type=recovery`);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${appUrl}/auth/v1/verify?type=recovery`,
       });

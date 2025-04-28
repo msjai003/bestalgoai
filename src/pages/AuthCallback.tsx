@@ -26,7 +26,7 @@ const AuthCallback = () => {
           // We need to wait a moment for Supabase to process the token before redirecting
           setTimeout(() => {
             navigate('/reset-password', { replace: true });
-          }, 500);
+          }, 1000);
           return;
         }
         
@@ -59,7 +59,7 @@ const AuthCallback = () => {
               toast.error('Invalid authentication link');
               navigate('/auth', { replace: true });
             }
-          } catch (err: any) {
+          } catch (err) {
             console.error('Error processing auth hash:', err);
             toast.error('Authentication process failed');
             navigate('/auth', { replace: true });
@@ -69,7 +69,7 @@ const AuthCallback = () => {
           toast.error('Authentication link may be invalid or expired');
           navigate('/auth', { replace: true });
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error in auth callback:', err);
         toast.error('An error occurred during authentication');
         navigate('/auth', { replace: true });

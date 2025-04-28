@@ -71,10 +71,11 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       
-      {/* Special route for Supabase auth verification - handle all auth/v1 paths */}
+      {/* Special routes for Supabase auth verification - handle ALL auth verification paths */}
       <Route path="/auth/v1/verify" element={<AuthVerifyHandler />} />
       <Route path="/auth/v1/callback" element={<AuthVerifyHandler />} />
       <Route path="/auth/v1/*" element={<AuthVerifyHandler />} />
+      <Route path="/verify" element={<AuthVerifyHandler />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={

@@ -13,15 +13,25 @@ const NotFound = () => {
       location.pathname
     );
     
-    // Check if this is an auth callback that is failing
-    if (location.pathname.includes('callback') || location.pathname.includes('auth/callback')) {
-      console.error("Auth callback 404 detected, redirecting to auth page");
+    // Check if this might be an auth URL that's failing
+    if (location.pathname.includes('auth/v1') || 
+        location.pathname.includes('verify') || 
+        location.pathname.includes('callback')) {
+      console.error("Auth link 404 detected, redirecting to auth handler");
+      
+      // For auth verification links, redirect to the AuthVerifyHandler
+      if (location.search && (location.search.includes('type=recovery') || location.search.includes('access_token'))) {
+        navigate('/auth/v1/verify' + location.search, { replace: true });
+        return;
+      }
+      
+      // For other auth URLs, just go to auth page
       setTimeout(() => {
         navigate('/auth', { replace: true });
-      }, 1000);
+      }, 500);
       return;
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, location.search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
@@ -41,7 +51,7 @@ const NotFound = () => {
         <div className="bg-charcoalPrimary/40 rounded-lg p-4 mb-6 text-left">
           <p className="text-sm text-gray-400">
             <span className="font-semibold text-gray-300">Current URL:</span>{" "}
-            <span className="break-all text-red-400">{location.pathname}</span>
+            <span className="break-all text-red-400">{location.pathname + location.search}</span>
           </p>
         </div>
         
@@ -63,7 +73,7 @@ const NotFound = () => {
           </button>
         </div>
         
-        {location.pathname.includes('callback') && (
+        {(location.pathname.includes('callback') || location.pathname.includes('verify')) && (
           <div className="mt-6">
             <Link 
               to="/auth" 

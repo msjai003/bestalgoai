@@ -15,26 +15,41 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSessionChecked, setIsSessionChecked] = useState(false);
+  const [hasAccessToken, setHasAccessToken] = useState(false);
   const navigate = useNavigate();
 
   // Check if user session is present when component loads
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        // Log session state for debugging
-        console.log('Current session state on reset password page:', data.session ? 'Session exists' : 'No session');
+        // First check if we have access token in URL - usually for first time navigating to page
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, '?'));
+        const access_token = urlParams.get('access_token') || hashParams.get('access_token');
         
-        setIsSessionChecked(true);
-        
-        // If there's no session at all, redirect back to auth page
-        if (!data.session) {
-          console.log('No session found on reset password page. Redirecting to auth page.');
-          toast.error('Your password reset link has expired. Please request a new one.');
-          setTimeout(() => {
-            navigate('/auth', { replace: true });
-          }, 2000);
+        if (access_token) {
+          console.log('Access token found in URL, session should be available');
+          setHasAccessToken(true);
         }
+        
+        // Wait a moment to allow Supabase to process the auth state
+        setTimeout(async () => {
+          const { data } = await supabase.auth.getSession();
+          
+          // Log session state for debugging
+          console.log('Current session state on reset password page:', data.session ? 'Session exists' : 'No session');
+          
+          setIsSessionChecked(true);
+          
+          // If there's no session at all and no access token, redirect back to auth page
+          if (!data.session && !hasAccessToken) {
+            console.log('No session found on reset password page. Redirecting to auth page.');
+            toast.error('Your password reset link has expired. Please request a new one.');
+            setTimeout(() => {
+              navigate('/auth', { replace: true });
+            }, 2000);
+          }
+        }, 1000);
       } catch (err) {
         console.error('Error checking session:', err);
         setIsSessionChecked(true);
@@ -42,7 +57,7 @@ const ResetPassword = () => {
     };
     
     checkSession();
-  }, [navigate]);
+  }, [navigate, hasAccessToken]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
