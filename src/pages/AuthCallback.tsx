@@ -19,7 +19,7 @@ const AuthCallback = () => {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
         
-        // Handle magic link authentication (simplified without password reset)
+        // Handle magic link authentication
         const hash = window.location.hash;
         if (hash && hash.includes('access_token=')) {
           console.log('Processing magic link from hash:', hash.substring(0, 20) + '...');
@@ -42,6 +42,13 @@ const AuthCallback = () => {
                 setErrorDetails(error.message);
                 setIsProcessing(false);
               } else if (data.session) {
+                // Check if this is a password reset flow
+                const type = hashParams.get('type');
+                if (type === 'recovery') {
+                  navigate('/reset-password', { replace: true });
+                  return;
+                }
+                
                 console.log('Authentication successful, redirecting to dashboard');
                 navigate('/dashboard', { replace: true });
                 return;
