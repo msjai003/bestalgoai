@@ -16,7 +16,6 @@ import About from "@/pages/About";
 import Blog from "@/pages/Blog";
 import Support from "@/pages/Support";
 import Auth from "@/pages/Auth";
-import AuthCallback from "@/pages/AuthCallback";
 import Registration from "@/pages/Registration";
 import Signup from "@/pages/Signup";
 import Terms from "@/pages/Terms";
