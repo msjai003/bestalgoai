@@ -27,6 +27,19 @@ const AuthCallback = () => {
           return;
         }
         
+        // Check for password reset flow first by looking for 'type=recovery' in the URL or hash
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const hashSearchParams = new URLSearchParams(window.location.hash.substring(1));
+        
+        // Check if this is a recovery/reset password flow
+        const type = urlSearchParams.get('type') || hashSearchParams.get('type');
+        
+        if (type === 'recovery') {
+          console.log('Detected password reset flow, redirecting to reset-password page');
+          navigate('/reset-password', { replace: true });
+          return;
+        }
+        
         // Handle magic link authentication
         const hash = window.location.hash;
         if (hash && hash.includes('access_token=')) {
@@ -50,14 +63,6 @@ const AuthCallback = () => {
                 setErrorDetails(error.message);
                 setIsProcessing(false);
               } else if (data.session) {
-                // Check if this is a password reset flow by looking for type=recovery in the URL
-                const type = hashParams.get('type');
-                if (type === 'recovery') {
-                  // If it's a password reset, redirect to reset password page
-                  navigate('/reset-password', { replace: true });
-                  return;
-                }
-                
                 // For normal sign-ins, redirect to dashboard
                 console.log('Authentication successful, redirecting to dashboard');
                 navigate('/dashboard', { replace: true });
