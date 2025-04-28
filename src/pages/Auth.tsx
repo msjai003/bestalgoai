@@ -76,7 +76,7 @@ const Auth = () => {
 
       const appUrl = window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appUrl}/auth/callback?type=recovery`,
+        redirectTo: `${appUrl}/auth/v1/verify?type=recovery`,
       });
       
       if (error) {

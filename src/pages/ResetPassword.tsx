@@ -14,18 +14,30 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
   const navigate = useNavigate();
 
   // Check if user session is present when component loads
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      // Log session state for debugging
-      console.log('Current session state:', data.session ? 'Session exists' : 'No session');
-      
-      // If there's no session at all, we might want to redirect back to login
-      if (!data.session) {
-        console.log('No session found on reset password page. User may need to use the link again.');
+      try {
+        const { data } = await supabase.auth.getSession();
+        // Log session state for debugging
+        console.log('Current session state on reset password page:', data.session ? 'Session exists' : 'No session');
+        
+        setIsSessionChecked(true);
+        
+        // If there's no session at all, redirect back to auth page
+        if (!data.session) {
+          console.log('No session found on reset password page. Redirecting to auth page.');
+          toast.error('Your password reset link has expired. Please request a new one.');
+          setTimeout(() => {
+            navigate('/auth', { replace: true });
+          }, 2000);
+        }
+      } catch (err) {
+        console.error('Error checking session:', err);
+        setIsSessionChecked(true);
       }
     };
     
@@ -73,6 +85,17 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  if (!isSessionChecked) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8 bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan mx-auto" />
+          <p className="text-white text-center">Verifying your reset link...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center p-4">

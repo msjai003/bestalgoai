@@ -23,7 +23,10 @@ const AuthCallback = () => {
         
         if (type === 'recovery') {
           console.log('Detected password reset flow, redirecting to reset-password page');
-          navigate('/reset-password', { replace: true });
+          // We need to wait a moment for Supabase to process the token before redirecting
+          setTimeout(() => {
+            navigate('/reset-password', { replace: true });
+          }, 500);
           return;
         }
         
