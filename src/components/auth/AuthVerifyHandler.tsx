@@ -13,17 +13,27 @@ const AuthVerifyHandler: React.FC = () => {
         const currentUrl = window.location.href;
         console.log('AuthVerifyHandler processing URL:', currentUrl);
         
+        // Extract tokens from both URL parameters and hash fragments
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, '?'));
         
         const token = urlParams.get('token') || hashParams.get('access_token');
         const type = urlParams.get('type') || hashParams.get('type');
         
+        console.log('Extracted token:', token ? 'Present' : 'Not found');
+        console.log('Extracted type:', type);
+        
         if (token && type === 'recovery') {
           // This is a password reset flow
-          console.log('Password reset flow detected');
-          navigate('/reset-password' + window.location.search + window.location.hash, { replace: true });
-          return;
+          console.log('Password reset flow detected - redirecting to reset password page');
+          
+          // Pass the entire hash and search parameters to preserve all tokens
+          const redirectPath = '/reset-password';
+          const fullRedirectPath = `${redirectPath}${window.location.search}${window.location.hash}`;
+          
+          console.log('Redirecting to:', fullRedirectPath);
+          navigate(fullRedirectPath, { replace: true });
+          
         } else if (token || currentUrl.includes('access_token=')) {
           // This is a magic link or other auth flow
           console.log('Auth verification with token detected');
