@@ -23,14 +23,26 @@ const AuthCallback = () => {
         if (isPasswordResetFlow(window.location.href)) {
           console.log('Detected password reset flow, redirecting to reset password page');
           
-          // Always redirect to reset password for any recovery flow
+          // Get any token from the URL if present
+          const searchParams = new URLSearchParams(window.location.search);
+          const token = searchParams.get('token');
+          
+          // Redirect to reset password with the token if available
+          navigate('/reset-password' + (token ? `?token=${token}` : ''), { replace: true });
+          return;
+        }
+
+        // Handle regular magic link authentication
+        const hash = window.location.hash;
+        if (hash && hash.includes('type=recovery')) {
+          // This is a recovery magic link
+          console.log('Detected recovery magic link');
           navigate('/reset-password', { replace: true });
           return;
         }
 
-        // Handle regular magic link authentication (for login, not recovery)
-        if (window.location.hash && window.location.hash.includes('access_token=')) {
-          const handled = await handleMagicLinkAuth(window.location.hash.substring(1), navigate);
+        if (hash && hash.includes('access_token=')) {
+          const handled = await handleMagicLinkAuth(hash.substring(1), navigate);
           if (handled) {
             return;
           }
