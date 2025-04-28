@@ -14,7 +14,7 @@ const NotFound = () => {
     );
     
     // Check if this is an auth callback that is failing
-    if (location.pathname.includes('callback')) {
+    if (location.pathname.includes('callback') || location.pathname.includes('auth/callback')) {
       console.error("Auth callback 404 detected, redirecting to auth page");
       setTimeout(() => {
         navigate('/auth', { replace: true });
