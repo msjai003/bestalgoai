@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -15,6 +15,22 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Check if user session is present when component loads
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      // Log session state for debugging
+      console.log('Current session state:', data.session ? 'Session exists' : 'No session');
+      
+      // If there's no session at all, we might want to redirect back to login
+      if (!data.session) {
+        console.log('No session found on reset password page. User may need to use the link again.');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +48,27 @@ const ResetPassword = () => {
 
     try {
       setIsLoading(true);
+      console.log('Attempting to update password...');
+      
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) {
-        setErrorMessage(error.message);
-        return;
+        console.error('Error updating password:', error);
+        setErrorMessage(error.message || 'Failed to update password');
+      } else {
+        console.log('Password updated successfully');
+        toast.success('Password updated successfully');
+        
+        // Short delay before redirecting
+        setTimeout(() => {
+          navigate('/auth', { replace: true });
+        }, 1500);
       }
-
-      toast.success('Password updated successfully');
-      navigate('/auth', { replace: true });
     } catch (error: any) {
-      setErrorMessage(error.message);
+      console.error('Exception during password update:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +124,14 @@ const ResetPassword = () => {
             className="w-full"
             variant="gradient"
           >
-            {isLoading ? 'Updating Password...' : 'Update Password'}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating Password...
+              </>
+            ) : (
+              'Update Password'
+            )}
           </Button>
         </form>
       </div>
