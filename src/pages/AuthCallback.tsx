@@ -17,20 +17,10 @@ const AuthCallback = () => {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
 
-        // Handle domain redirections first
-        const oldDomain = 'lovable.dev';
-        const newDomain = 'bestalgo.ai';
-        if (currentUrl.includes(oldDomain)) {
-          const redirectPath = currentUrl.replace(oldDomain, newDomain);
-          console.log('Redirecting to production domain:', redirectPath);
-          window.location.href = redirectPath;
-          return;
-        }
-        
-        // Check for password reset flow first by looking for 'type=recovery' in the URL or hash
+        // Parse URL parameters from both search and hash
         const urlSearchParams = new URLSearchParams(window.location.search);
         const hashSearchParams = new URLSearchParams(window.location.hash.substring(1));
-        
+
         // Check if this is a recovery/reset password flow
         const type = urlSearchParams.get('type') || hashSearchParams.get('type');
         
@@ -46,7 +36,6 @@ const AuthCallback = () => {
           console.log('Processing auth link from hash:', hash.substring(0, 20) + '...');
           
           try {
-            // Parse the hash to extract the tokens
             const hashParams = new URLSearchParams(hash.substring(1));
             const accessToken = hashParams.get('access_token');
             const refreshToken = hashParams.get('refresh_token');
@@ -59,58 +48,28 @@ const AuthCallback = () => {
               
               if (error) {
                 console.error('Error setting session:', error);
-                setError('Authentication failed.');
-                setErrorDetails(error.message);
-                setIsProcessing(false);
+                navigate('/auth', { replace: true });
               } else if (data.session) {
-                // For normal sign-ins, redirect to dashboard
                 console.log('Authentication successful, redirecting to dashboard');
                 navigate('/dashboard', { replace: true });
-                return;
               }
             }
           } catch (err: any) {
             console.error('Error processing auth hash:', err);
-            setError('Failed to process authentication link.');
-            setErrorDetails(err?.message || 'Please try logging in again.');
-            setIsProcessing(false);
+            navigate('/auth', { replace: true });
           }
+        } else {
+          // If no valid authentication data found, redirect to auth page
+          navigate('/auth', { replace: true });
         }
-
-        // If no valid authentication data found
-        console.error('No valid authentication data found. Redirecting to login page.');
-        setError('No valid authentication data found.');
-        setErrorDetails('Unable to process authentication. The link may have expired or is invalid.');
-        setIsProcessing(false);
-        
-        // Redirect to login page after error
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 3000);
       } catch (err: any) {
-        console.error('Error processing authentication:', err);
-        setError('An unexpected error occurred.');
-        setErrorDetails(err?.message || 'Please try logging in again.');
-        setIsProcessing(false);
-        
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 3000);
+        console.error('Error in auth callback:', err);
+        navigate('/auth', { replace: true });
       }
     };
 
     processCallback();
   }, [navigate]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center p-4">
-        <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
-          <ErrorState error={error} errorDetails={errorDetails} />
-        </div>
-      </div>
-    );
-  }
 
   return <LoadingState message="Processing authentication..." />;
 };
