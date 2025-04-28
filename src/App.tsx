@@ -56,30 +56,10 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   return (
     <Routes>
-      {/* Reset Password Routes - highest priority */}
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/auth/recovery" element={<Navigate to="/reset-password" replace />} />
-      <Route path="/recovery" element={<Navigate to="/reset-password" replace />} />
-      
-      {/* Auth callback routes */}
-      <Route path="/auth/v1/verify" element={<AuthCallback />} />
-      <Route path="/auth/v1/verify/:token" element={<AuthCallback />} />
-      <Route path="/auth/verify" element={<AuthCallback />} />
-      <Route path="/verify" element={<AuthCallback />} />
-      <Route path="/auth/v1/callback*" element={<AuthCallback />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/auth/callback/*" element={<AuthCallback />} />
-      
       {/* Standard routes */}
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/logout" element={<Logout />} />
-      
-      {/* Additional verification paths */}
-      <Route path="/verify/*" element={<AuthCallback />} />
-      <Route path="/auth/verify/*" element={<AuthCallback />} />
-      
       <Route path="/registration" element={<Registration />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/terms" element={<Terms />} />
@@ -88,6 +68,7 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       
+      {/* Protected routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />

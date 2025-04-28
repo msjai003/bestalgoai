@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -18,14 +16,9 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, resetPassword, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [isSendingReset, setIsSendingReset] = useState(false);
-  const [resetLinkSent, setResetLinkSent] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -71,45 +64,6 @@ const Auth = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSendingReset(true);
-
-    try {
-      if (!forgotPasswordEmail.trim()) {
-        toast.error('Please enter your email address');
-        setIsSendingReset(false);
-        return;
-      }
-
-      // First determine the current origin to create absolute URLs
-      const currentOrigin = window.location.origin;
-      
-      // Use reset-password page directly instead of auth/callback
-      const redirectUrl = `${currentOrigin}/reset-password`;
-      
-      console.log('Sending password reset with redirect to:', redirectUrl);
-      
-      // Send the reset password email with a direct link to reset-password
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: redirectUrl
-      });
-      
-      if (error) {
-        console.error('Error sending reset link:', error);
-        toast.error(error.message || 'Failed to send reset link');
-      } else {
-        setResetLinkSent(true);
-        toast.success('Password reset link has been sent to your email');
-      }
-    } catch (error: any) {
-      console.error('Exception sending reset link:', error);
-      toast.error('Failed to send reset link');
-    } finally {
-      setIsSendingReset(false);
-    }
-  };
-
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -128,9 +82,6 @@ const Auth = () => {
         setErrorMessage(error.message);
       } else {
         toast.success('Magic link sent! Check your email.');
-        if (showForgotPasswordDialog) {
-          setShowForgotPasswordDialog(false);
-        }
       }
     } catch (error: any) {
       console.error('Exception during magic link:', error);
@@ -197,16 +148,7 @@ const Auth = () => {
             </div>
             
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="password" className="text-gray-300">Password</Label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPasswordDialog(true)}
-                  className="text-cyan text-sm hover:underline"
-                >
-                  Forgot Password?
-                </button>
-              </div>
+              <Label htmlFor="password" className="text-gray-300">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -268,72 +210,6 @@ const Auth = () => {
             </Button>
           </div>
         </form>
-
-        <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
-          <DialogContent className="bg-charcoalSecondary border-cyan/30">
-            <DialogHeader>
-              <DialogTitle className="text-white">Reset Password</DialogTitle>
-              <DialogDescription className="text-gray-400">
-                {!resetLinkSent 
-                  ? 'Enter your email address to receive a password reset link.'
-                  : 'Check your email for the password reset link.'}
-              </DialogDescription>
-            </DialogHeader>
-
-            {!resetLinkSent ? (
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div>
-                  <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
-                  <Input
-                    id="reset-email"
-                    type="email"
-                    value={forgotPasswordEmail}
-                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="bg-charcoalPrimary/50 border-gray-700 text-white mt-2"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={isSendingReset}
-                  variant="gradient"
-                  className="w-full"
-                >
-                  {isSendingReset ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending Reset Link...
-                    </>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <Alert className="bg-cyan/10 border-cyan/30">
-                  <Info className="h-4 w-4 text-cyan" />
-                  <AlertDescription className="text-gray-200 ml-2">
-                    A password reset link has been sent to your email. Please check your inbox and spam folder.
-                  </AlertDescription>
-                </Alert>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setShowForgotPasswordDialog(false);
-                    setResetLinkSent(false);
-                    setForgotPasswordEmail('');
-                  }}
-                >
-                  Close
-                </Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
 
       {isLoading && (
