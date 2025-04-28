@@ -1,14 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LoadingState from '@/components/auth/LoadingState';
 import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
@@ -22,7 +20,7 @@ const AuthCallback = () => {
         // Handle magic link authentication
         const hash = window.location.hash;
         if (hash && hash.includes('access_token=')) {
-          console.log('Processing magic link from hash:', hash.substring(0, 20) + '...');
+          console.log('Processing auth link from hash:', hash.substring(0, 20) + '...');
           
           try {
             // Parse the hash to extract the tokens
@@ -42,19 +40,19 @@ const AuthCallback = () => {
                 setErrorDetails(error.message);
                 setIsProcessing(false);
               } else if (data.session) {
-                // Check if this is a password reset flow
+                // Check if this is a password reset flow by looking for type=recovery in the URL
                 const type = hashParams.get('type');
                 if (type === 'recovery') {
+                  // If it's a password reset, redirect to reset password page
                   navigate('/reset-password', { replace: true });
                   return;
                 }
                 
+                // For normal sign-ins, redirect to dashboard
                 console.log('Authentication successful, redirecting to dashboard');
                 navigate('/dashboard', { replace: true });
                 return;
               }
-            } else {
-              throw new Error('Invalid authentication data in URL');
             }
           } catch (err: any) {
             console.error('Error processing auth hash:', err);
@@ -62,16 +60,6 @@ const AuthCallback = () => {
             setErrorDetails(err?.message || 'Please try logging in again.');
             setIsProcessing(false);
           }
-        }
-
-        // If old domain redirect is needed, implement here
-        const oldDomain = 'bestalgo.ai';
-        const newDomain = 'bestalgoai.lovable.app';
-        if (currentUrl.includes(oldDomain)) {
-          const redirectPath = currentUrl.replace(oldDomain, newDomain);
-          console.log('Redirecting from old domain to:', redirectPath);
-          window.location.href = redirectPath;
-          return;
         }
 
         // If no valid authentication data found
@@ -90,7 +78,6 @@ const AuthCallback = () => {
         setErrorDetails(err?.message || 'Please try logging in again.');
         setIsProcessing(false);
         
-        // Redirect to login page after error
         setTimeout(() => {
           navigate('/auth', { replace: true });
         }, 3000);
@@ -98,7 +85,7 @@ const AuthCallback = () => {
     };
 
     processCallback();
-  }, [navigate, location]);
+  }, [navigate]);
 
   if (error) {
     return (
