@@ -25,19 +25,29 @@ const AuthCallback = () => {
           console.log('Processing magic link from hash:', hash.substring(0, 20) + '...');
           
           try {
-            // Extract the hash without the # symbol
-            const hashParams = hash.substring(1);
-            const { data, error } = await supabase.auth.setSession(hashParams);
+            // Parse the hash to extract the tokens
+            const hashParams = new URLSearchParams(hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
             
-            if (error) {
-              console.error('Error setting session:', error);
-              setError('Authentication failed.');
-              setErrorDetails(error.message);
-              setIsProcessing(false);
-            } else if (data.session) {
-              console.log('Authentication successful, redirecting to dashboard');
-              navigate('/dashboard', { replace: true });
-              return;
+            if (accessToken && refreshToken) {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+              
+              if (error) {
+                console.error('Error setting session:', error);
+                setError('Authentication failed.');
+                setErrorDetails(error.message);
+                setIsProcessing(false);
+              } else if (data.session) {
+                console.log('Authentication successful, redirecting to dashboard');
+                navigate('/dashboard', { replace: true });
+                return;
+              }
+            } else {
+              throw new Error('Invalid authentication data in URL');
             }
           } catch (err: any) {
             console.error('Error processing auth hash:', err);
