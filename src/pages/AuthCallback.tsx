@@ -16,6 +16,16 @@ const AuthCallback = () => {
       try {
         const currentUrl = window.location.href;
         console.log('Processing auth callback with URL:', currentUrl);
+
+        // Handle domain redirections first
+        const oldDomain = 'lovable.dev';
+        const newDomain = 'bestalgo.ai';
+        if (currentUrl.includes(oldDomain)) {
+          const redirectPath = currentUrl.replace(oldDomain, newDomain);
+          console.log('Redirecting to production domain:', redirectPath);
+          window.location.href = redirectPath;
+          return;
+        }
         
         // Handle magic link authentication
         const hash = window.location.hash;
