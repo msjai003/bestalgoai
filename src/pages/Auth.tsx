@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,14 +70,17 @@ const Auth = () => {
     try {
       if (!email.trim()) {
         setErrorMessage('Please enter your email address.');
+        setIsLoading(false);
         return;
       }
 
+      const appUrl = window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo: `${appUrl}/auth/callback?type=recovery`,
       });
       
       if (error) {
+        console.error('Reset password error:', error);
         setErrorMessage(error.message);
       } else {
         toast.success('Password reset link sent to your email');

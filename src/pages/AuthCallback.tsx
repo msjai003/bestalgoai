@@ -1,15 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '@/components/auth/LoadingState';
-import ErrorState from '@/components/auth/ErrorState';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
     const processCallback = async () => {
@@ -30,7 +27,7 @@ const AuthCallback = () => {
           return;
         }
         
-        // Handle magic link authentication
+        // Handle magic link or other authentication
         const hash = window.location.hash;
         if (hash && hash.includes('access_token=')) {
           console.log('Processing auth link from hash:', hash.substring(0, 20) + '...');
@@ -48,22 +45,30 @@ const AuthCallback = () => {
               
               if (error) {
                 console.error('Error setting session:', error);
+                toast.error('Authentication failed');
                 navigate('/auth', { replace: true });
               } else if (data.session) {
                 console.log('Authentication successful, redirecting to dashboard');
+                toast.success('Successfully signed in');
                 navigate('/dashboard', { replace: true });
               }
+            } else {
+              toast.error('Invalid authentication link');
+              navigate('/auth', { replace: true });
             }
           } catch (err: any) {
             console.error('Error processing auth hash:', err);
+            toast.error('Authentication process failed');
             navigate('/auth', { replace: true });
           }
         } else {
-          // If no valid authentication data found, redirect to auth page
+          console.log('No valid authentication data found in URL');
+          toast.error('Authentication link may be invalid or expired');
           navigate('/auth', { replace: true });
         }
       } catch (err: any) {
         console.error('Error in auth callback:', err);
+        toast.error('An error occurred during authentication');
         navigate('/auth', { replace: true });
       }
     };

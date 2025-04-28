@@ -50,6 +50,7 @@ import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
 import ResetPassword from '@/pages/ResetPassword';
+import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,10 @@ function AppRoutes() {
       <Route path="/education" element={<Education />} />
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
+      
+      {/* Special route for Supabase auth verification */}
+      <Route path="/auth/v1/verify" element={<AuthVerifyHandler />} />
+      <Route path="/auth/v1/*" element={<AuthVerifyHandler />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={
@@ -173,7 +178,7 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       <Route path="/broker-management" element={<BrokerManagement />} />
       
-      {/* Catch all route - redirect to auth instead of 404 */}
+      {/* Catch all route - redirect to auth */}
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>
   );
