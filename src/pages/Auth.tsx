@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,43 @@ const Auth = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  // Adding the missing handleMagicLink function
+  const handleMagicLink = async () => {
+    setErrorMessage(null);
+    setIsLoading(true);
+    
+    try {
+      if (!email.trim()) {
+        setErrorMessage('Please enter your email address.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Send magic link email using Supabase
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin + '/auth/v1/callback'
+        }
+      });
+      
+      if (error) {
+        setErrorMessage(error.message || 'Failed to send magic link');
+      } else {
+        toast({
+          title: "Magic link sent",
+          description: "Check your email for a login link",
+          duration: 5000,
+        });
+      }
+    } catch (error: any) {
+      console.error('Magic link error:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
