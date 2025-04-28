@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -49,7 +50,6 @@ import PriceAdminPage from "@/pages/PriceAdminPage";
 import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
-import ResetPassword from "@/pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
