@@ -1,3 +1,4 @@
+
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Home } from "lucide-react";
@@ -17,7 +18,8 @@ const NotFound = () => {
         location.pathname.includes('verify') || 
         location.pathname.includes('callback') ||
         location.pathname.includes('recovery') ||
-        location.search.includes('type=recovery')) {
+        location.search.includes('type=recovery') ||
+        location.pathname === '/reset-password') {
       console.error("Auth link 404 detected, redirecting to auth handler");
       
       // For auth verification links, redirect to the AuthVerifyHandler
