@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -17,7 +16,6 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [forgotPassword, setForgotPassword] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -57,41 +55,6 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Login error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setIsLoading(true);
-    
-    try {
-      if (!email.trim()) {
-        setErrorMessage('Please enter your email address.');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Send password reset email using Supabase
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/auth/v1/callback?type=recovery'
-      });
-      
-      if (error) {
-        setErrorMessage(error.message || 'Failed to send reset email');
-      } else {
-        toast({
-          title: "Reset link sent",
-          description: "Check your email for a password reset link",
-          duration: 5000,
-        });
-        setForgotPassword(false);
-      }
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -164,9 +127,7 @@ const Auth = () => {
         <Alert className="bg-cyan/10 border-cyan/30 mb-6" variant="info">
           <Info className="h-4 w-4 text-cyan" />
           <AlertDescription className="text-gray-200 ml-2">
-            {forgotPassword 
-              ? "Enter your email and we'll send you a reset link" 
-              : "Enter your email and password to login. New users can register from the sign up page."}
+            Enter your email and password to login. New users can register from the sign up page.
           </AlertDescription>
         </Alert>
 
@@ -179,12 +140,12 @@ const Auth = () => {
           </Alert>
         )}
 
-        {forgotPassword ? (
-          <form onSubmit={handlePasswordReset} className="space-y-6 premium-card p-6 border border-cyan/30 max-w-md mx-auto">
+        <form onSubmit={handleLogin} className="space-y-6 premium-card p-6 border border-cyan/30 max-w-md mx-auto">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="reset-email" className="text-gray-300 mb-2 block">Email Address</Label>
+              <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
               <Input
-                id="reset-email"
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -195,132 +156,76 @@ const Auth = () => {
                 className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 rounded-xl"
               />
             </div>
-
-            <div className="flex flex-col gap-4 mt-6">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                variant="gradient"
-                className="px-8 py-2.5 w-full rounded-xl shadow-lg text-base"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Reset Link...
-                  </>
-                ) : (
-                  'Send Reset Link'
-                )}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setForgotPassword(false)}
-                className="w-full"
-              >
-                Back to Login
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleLogin} className="space-y-6 premium-card p-6 border border-cyan/30 max-w-md mx-auto">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email" className="text-gray-300 mb-2 block">Email Address</Label>
+            
+            <div>
+              <Label htmlFor="password" className="text-gray-300">Password</Label>
+              <div className="relative">
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setPassword(e.target.value);
                     if (errorMessage) setErrorMessage(null);
                   }}
-                  placeholder="your@email.com"
-                  className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 rounded-xl"
+                  placeholder="••••••••"
+                  className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 pr-10 rounded-xl"
                 />
+                <button 
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
-              
-              <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-gray-300">Password</Label>
-                  <Button 
-                    type="button" 
-                    variant="link" 
-                    className="px-0 h-auto font-normal text-cyan text-sm"
-                    onClick={() => setForgotPassword(true)}
-                  >
-                    Forgot password?
-                  </Button>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errorMessage) setErrorMessage(null);
-                    }}
-                    placeholder="••••••••"
-                    className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 pr-10 rounded-xl"
-                  />
-                  <button 
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 mt-6">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="gradient"
+              className="px-8 py-2.5 w-full rounded-xl shadow-lg text-base"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-700"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-charcoalPrimary px-2 text-gray-400">Or continue with</span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 mt-6">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                variant="gradient"
-                className="px-8 py-2.5 w-full rounded-xl shadow-lg text-base"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-700"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-charcoalPrimary px-2 text-gray-400">Or continue with</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleMagicLink}
-                disabled={isLoading}
-                className="w-full"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Link...
-                  </>
-                ) : (
-                  'Sign in with Magic Link'
-                )}
-              </Button>
-            </div>
-          </form>
-        )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleMagicLink}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending Link...
+                </>
+              ) : (
+                'Sign in with Magic Link'
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
 
       {isLoading && (

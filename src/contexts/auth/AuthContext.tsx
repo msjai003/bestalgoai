@@ -19,9 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const {
     signIn,
     signUp,
-    signOut,
-    resetPassword,
-    updatePassword
+    signOut
   } = useAuthActions({
     setUser,
     setIsLoading,
@@ -32,8 +30,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signIn,
     signUp,
     signOut,
-    resetPassword,
-    updatePassword,
     isLoading,
     googleUserDetails,
     signInWithGoogle: async () => {

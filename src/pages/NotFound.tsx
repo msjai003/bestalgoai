@@ -15,11 +15,7 @@ const NotFound = () => {
     
     // Check if this might be an auth URL that's failing
     if (location.pathname.includes('auth/v1/callback') || 
-        location.pathname.includes('callback') ||
-        location.pathname.includes('recovery') ||
-        location.search.includes('type=recovery') ||
-        location.hash.includes('access_token') ||
-        location.pathname === '/reset-password') {
+        location.pathname.includes('callback')) {
       console.error("Auth link 404 detected, redirecting to auth handler");
       
       // For auth verification links, redirect to the AuthVerifyHandler
@@ -70,9 +66,7 @@ const NotFound = () => {
         </button>
       </div>
       
-      {(location.pathname.includes('callback') || 
-        location.pathname.includes('recovery') ||
-        location.search.includes('type=recovery')) && (
+      {location.pathname.includes('callback') && (
         <div className="mt-6">
           <Link 
             to="/auth" 

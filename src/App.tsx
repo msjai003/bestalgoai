@@ -49,7 +49,6 @@ import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
 import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
-import ResetPassword from "@/pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -67,7 +66,6 @@ function AppRoutes() {
       <Route path="/education" element={<Education />} />
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Special routes for Supabase auth verification - handled by AuthVerifyHandler */}
       <Route path="/auth/v1/callback" element={<AuthVerifyHandler />} />
@@ -84,95 +82,117 @@ function AppRoutes() {
           <Onboarding />
         </ProtectedRoute>
       } />
+      
       <Route path="/strategy-builder" element={
         <ProtectedRoute>
           <StrategyBuilder />
         </ProtectedRoute>
       } />
+      
       <Route path="/strategy-selection" element={
         <ProtectedRoute>
           <StrategySelection />
         </ProtectedRoute>
       } />
+      
       <Route path="/strategy-details/:id" element={
         <ProtectedRoute>
           <StrategyDetails />
         </ProtectedRoute>
       } />
+      
       <Route path="/strategy-management" element={
         <ProtectedRoute>
           <StrategyManagement />
         </ProtectedRoute>
       } />
+      
       <Route path="/backtest" element={
         <ProtectedRoute>
           <BacktestReport />
         </ProtectedRoute>
       } />
+      
       <Route path="/backtest-report" element={
         <ProtectedRoute>
           <BacktestReport />
         </ProtectedRoute>
       } />
+      
       <Route path="/zenflow-backtest" element={
         <ProtectedRoute>
           <ZenflowBacktest />
         </ProtectedRoute>
       } />
+      
       <Route path="/zenflow-backtest-report" element={
         <ProtectedRoute>
           <ZenflowBacktestReport />
         </ProtectedRoute>
       } />
+      
       <Route path="/live-trading" element={
         <ProtectedRoute>
           <LiveTrading />
         </ProtectedRoute>
       } />
+      
       <Route path="/alerts" element={
         <ProtectedRoute>
           <Alerts />
         </ProtectedRoute>
       } />
+      
       <Route path="/settings" element={
         <ProtectedRoute>
           <Settings />
         </ProtectedRoute>
       } />
+      
       <Route path="/notifications" element={
         <ProtectedRoute>
           <Notifications />
         </ProtectedRoute>
       } />
+      
       <Route path="/subscription" element={
         <ProtectedRoute>
           <Subscription />
         </ProtectedRoute>
       } />
+      
       <Route path="/community" element={
         <ProtectedRoute>
           <CommunityLearning />
         </ProtectedRoute>
       } />
+      
       <Route path="/risk-management" element={
         <ProtectedRoute>
           <RiskManagement />
         </ProtectedRoute>
       } />
+      
       <Route path="/broker-integration" element={
         <ProtectedRoute>
           <BrokerIntegration />
         </ProtectedRoute>
       } />
+      
       <Route path="/broker-credentials" element={
         <ProtectedRoute>
           <BrokerCredentials />
         </ProtectedRoute>
       } />
+      
       <Route path="/strategy-admin" element={<CustomStrategyAdmin />} />
+      
       <Route path="/config-admin" element={<StrategyConfigAdmin />} />
+      
       <Route path="/price-admin" element={<PriceAdminPage />} />
+      
       <Route path="/api-keys" element={<ApiKeys />} />
+      
       <Route path="/broker-management" element={<BrokerManagement />} />
       
       {/* Make sure all unmatched routes show NotFound */}

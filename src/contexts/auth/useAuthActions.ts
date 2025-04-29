@@ -26,38 +26,6 @@ const mapToAuthUser = (user: User | null): AuthUser | null => {
 
 export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) => {
   return {
-    resetPassword: async (email: string) => {
-      try {
-        setIsLoading(true);
-        
-        // Use the current window location to determine the redirect URL dynamically
-        // This ensures we don't hardcode any domains that might change
-        const baseUrl = window.location.origin;
-        const redirectUrl = `${baseUrl}/auth/callback`;
-        
-        console.log('Sending password reset with redirect to:', redirectUrl);
-        
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: redirectUrl,
-        });
-
-        if (error) {
-          console.error('Error during password reset:', error);
-          toast.error(error.message);
-          return { error };
-        }
-        
-        toast.success('Password reset instructions sent to your email');
-        return { error: null };
-      } catch (error: any) {
-        console.error('Error during password reset:', error);
-        toast.error('Error sending password reset instructions');
-        return { error: error as Error };
-      } finally {
-        setIsLoading(false);
-      }
-    },
-
     signIn: async (email: string, password: string) => {
       try {
         setIsLoading(true);
@@ -143,28 +111,6 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         setUser(null);
       } catch (error) {
         console.error('Error during sign out:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    
-    updatePassword: async (newPassword: string) => {
-      try {
-        setIsLoading(true);
-        
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
-        
-        if (error) {
-          console.error('Error updating password:', error);
-          return { error };
-        }
-        
-        return { error: null };
-      } catch (error: any) {
-        console.error('Error updating password:', error);
-        return { error: error as Error };
       } finally {
         setIsLoading(false);
       }
