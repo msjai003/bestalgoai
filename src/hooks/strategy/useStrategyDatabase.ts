@@ -208,12 +208,12 @@ export const fetchBrokerById = async (brokerId: string) => {
 
 export const fetchUserBrokers = async (userId: string) => {
   try {
-    // Only fetch brokers with status="connected"
+    // Updated to use is_connected field instead of checking status
     const { data: brokers, error } = await supabase
       .from('broker_credentials')
       .select('id, broker_name')
       .eq('user_id', userId)
-      .eq('status', 'connected');
+      .eq('is_connected', true);
 
     if (error) {
       console.error("Error fetching user brokers:", error);

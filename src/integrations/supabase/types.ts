@@ -272,6 +272,7 @@ export type Database = {
           broker_name: string
           created_at: string
           id: string
+          is_connected: boolean | null
           password: string
           product_type: string
           secret_key: string | null
@@ -289,6 +290,7 @@ export type Database = {
           broker_name: string
           created_at?: string
           id?: string
+          is_connected?: boolean | null
           password: string
           product_type?: string
           secret_key?: string | null
@@ -306,6 +308,7 @@ export type Database = {
           broker_name?: string
           created_at?: string
           id?: string
+          is_connected?: boolean | null
           password?: string
           product_type?: string
           secret_key?: string | null

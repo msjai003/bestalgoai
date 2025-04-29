@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +15,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
   const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
   const [targetMode, setTargetMode] = useState<"live trade" | "paper trade">("paper trade");
-  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
+  const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
   const [hasPremium, setHasPremium] = useState(false);
   const { user } = useAuth();
@@ -52,20 +53,22 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   };
 
-  const handleToggleWishlist = (strategyId: string) => {
+  // Fixed type signature to match expected types in PredefinedStrategyList
+  const handleToggleWishlist = (id: number, isWishlisted: boolean) => {
     setStrategies(prevStrategies =>
       prevStrategies.map(strategy =>
-        strategy.id === strategyId ? { ...strategy, isWishlisted: !strategy.isWishlisted } : strategy
+        strategy.id === id ? { ...strategy, isWishlisted: !strategy.isWishlisted } : strategy
       )
     );
   };
 
-  const handleToggleLiveMode = async (strategyId: string) => {
-    setSelectedStrategyId(strategyId);
-    const strategy = strategies.find(s => s.id === strategyId);
+  // Fixed type signature to match expected types in PredefinedStrategyList
+  const handleToggleLiveMode = async (id: number) => {
+    setSelectedStrategyId(id);
+    const strategy = strategies.find(s => s.id === id);
 
     if (!strategy) {
-      console.error(`Strategy with ID ${strategyId} not found`);
+      console.error(`Strategy with ID ${id} not found`);
       return;
     }
 
