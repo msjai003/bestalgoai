@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,13 +17,31 @@ const ResetPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { updatePassword } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Extract token from URL query params
+    const searchParams = new URLSearchParams(location.search);
+    const urlToken = searchParams.get('token');
+    
+    // Also check hash for tokens (for compatibility with various link formats)
+    if (!urlToken && location.hash) {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const hashToken = hashParams.get('access_token');
+      if (hashToken) {
+        setToken(hashToken);
+      }
+    } else if (urlToken) {
+      setToken(urlToken);
+    }
+  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     
     if (!token.trim()) {
-      setErrorMessage('Please enter the reset token from your email');
+      setErrorMessage('No reset token found. Please use the link from your email or paste the token manually.');
       return;
     }
     
@@ -90,17 +108,19 @@ const ResetPassword: React.FC = () => {
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="token" className="block text-gray-300 mb-2">Reset Token</label>
-            <Input
-              id="token"
-              type="text"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste your reset token here"
-              className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
-            />
-          </div>
+          {!token && (
+            <div>
+              <label htmlFor="token" className="block text-gray-300 mb-2">Reset Token</label>
+              <Input
+                id="token"
+                type="text"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Paste your reset token here"
+                className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
+              />
+            </div>
+          )}
           
           <div>
             <label htmlFor="password" className="block text-gray-300 mb-2">New Password</label>

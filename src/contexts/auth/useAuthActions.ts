@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -123,8 +124,13 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error: new Error('Please enter your email address') };
         }
         
-        // Send reset email without a callback URL
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        // Get the current window location to use as base for the reset URL
+        const baseUrl = window.location.origin;
+        
+        // Send reset email with a redirect to our reset-password page
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${baseUrl}/auth/v1/callback`
+        });
         
         if (error) {
           console.error('Error sending password reset email:', error);

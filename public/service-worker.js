@@ -1,4 +1,3 @@
-
 // Service worker for better cache control
 
 const CACHE_NAME = 'bestalgo-cache-v1';
@@ -42,6 +41,30 @@ self.addEventListener('fetch', (event) => {
 
   // Skip supabase API requests
   if (event.request.url.includes('supabase')) {
+    return;
+  }
+
+  // Special handling for URLs with hash fragments that might contain tokens
+  if (event.request.url.includes('#access_token=') || 
+      event.request.url.includes('type=recovery') ||
+      event.request.url.includes('auth/v1/callback')) {
+    
+    // Do not cache auth-related requests with tokens at all
+    event.respondWith(
+      fetch(event.request, { 
+        // Disable caching for auth requests
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        } 
+      })
+      .catch(() => {
+        // Return a fallback only if network request completely fails
+        return caches.match('/index.html');
+      })
+    );
     return;
   }
 

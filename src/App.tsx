@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -49,6 +50,7 @@ import ApiKeys from "@/pages/ApiKeys";
 import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
 import ResetPassword from "@/components/auth/ResetPassword";
+import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
 
 const queryClient = new QueryClient();
 
@@ -68,7 +70,9 @@ function AppRoutes() {
       <Route path="/smart-learn" element={<SmartLearn />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      {/* Special routes for Supabase auth verification have been removed */}
+      {/* Special route to handle auth verification including password reset links */}
+      <Route path="/auth/v1/callback" element={<AuthVerifyHandler />} />
+      <Route path="/#" element={<AuthVerifyHandler />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={

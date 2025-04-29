@@ -13,13 +13,19 @@
 /favicon.ico
   Cache-Control: public, max-age=86400
 
-# Add specific no-cache directives for auth paths
+# Special directives for authentication paths
 /auth/*
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
 
 /reset-password
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Special header for handling hash-based URLs with tokens
+/#
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
