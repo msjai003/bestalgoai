@@ -26,19 +26,25 @@ const AuthVerifyHandler: React.FC = () => {
         console.log('URL Search:', window.location.search);
         console.log('URL Hash:', window.location.hash);
         
-        // Handle recovery (password reset) flow
-        if (type === 'recovery') {
+        // Handle recovery (password reset) flow - This is the highest priority
+        if (type === 'recovery' || currentUrl.includes('type=recovery')) {
           console.log('Password reset flow detected');
           
-          // For password reset, we redirect to the reset password page with the token
           if (token) {
+            console.log('Redirecting to reset password with token');
             navigate('/reset-password#access_token=' + token, { replace: true });
             return;
           } else {
             // Check if the token is in the hash
             const accessToken = hashParams.get('access_token');
             if (accessToken) {
+              console.log('Redirecting to reset password with access token from hash');
               navigate('/reset-password#access_token=' + accessToken, { replace: true });
+              return;
+            } else {
+              console.log('No token found in recovery flow');
+              toast.error('Password reset link may be invalid or expired');
+              navigate('/auth', { replace: true });
               return;
             }
           }

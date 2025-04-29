@@ -128,7 +128,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         const currentHost = window.location.origin;
         console.log('Current host for password reset:', currentHost);
         
-        // Make sure the redirectTo URL includes the callback path with type=recovery parameter
+        // Make sure the redirectTo URL is properly formatted and includes the type=recovery parameter
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${currentHost}/auth/v1/callback?type=recovery`,
         });

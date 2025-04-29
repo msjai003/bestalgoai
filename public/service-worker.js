@@ -53,11 +53,19 @@ self.addEventListener('fetch', (event) => {
       event.request.url.includes('type=recovery')) {
     // Do not cache auth-related requests at all
     event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          // Return a fallback only if network request completely fails
-          return caches.match('/index.html');
-        })
+      fetch(event.request, { 
+        // Disable caching for auth requests
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        } 
+      })
+      .catch(() => {
+        // Return a fallback only if network request completely fails
+        return caches.match('/index.html');
+      })
     );
     return;
   }
