@@ -19,6 +19,7 @@ import {
 import { Loader } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserBrokers } from "@/hooks/strategy/useStrategyDatabase";
+import { toast } from "sonner";
 
 interface BrokerSelectionDialogProps {
   open: boolean;
@@ -53,19 +54,29 @@ export const BrokerSelectionDialog = ({
         if (userBrokers.length > 0) {
           setSelectedBrokerId(userBrokers[0].id);
           setSelectedBrokerName(userBrokers[0].broker_name);
+        } else {
+          // Reset selected values if no brokers
+          setSelectedBrokerId("");
+          setSelectedBrokerName("");
         }
       } catch (error) {
         console.error("Error loading brokers:", error);
+        toast.error("Failed to load your connected brokers");
       } finally {
         setLoading(false);
       }
     };
     
-    loadBrokers();
+    if (open) {
+      loadBrokers();
+    }
   }, [user, open]);
   
   const handleConfirm = () => {
-    if (!selectedBrokerId) return;
+    if (!selectedBrokerId) {
+      toast.error("Please select a broker");
+      return;
+    }
     onConfirm(selectedBrokerId, selectedBrokerName);
   };
   
