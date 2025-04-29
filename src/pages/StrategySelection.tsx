@@ -105,7 +105,7 @@ const StrategySelection = () => {
       <TradingModeConfirmationDialog 
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
-        targetMode={targetMode === "live trade" ? "live" : "paper"}
+        targetMode={targetMode}
         onConfirm={handleConfirmLiveMode}
         onCancel={handleCancelLiveMode}
       />

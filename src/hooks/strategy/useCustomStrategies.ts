@@ -39,16 +39,13 @@ export const useCustomStrategies = () => {
             avgProfit = perf.avgProfit ? String(perf.avgProfit) : "N/A";
             drawdown = perf.drawdown ? String(perf.drawdown) : "N/A";
           }
-
-          // Ensure isLive is properly set based on trade_type
-          const isLive = strategy.trade_type === "live trade";
           
           return {
             id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),
             name: strategy.name,
             description: strategy.description || "",
             isCustom: true,
-            isLive: isLive,
+            isLive: strategy.trade_type === "live trade",
             isWishlisted: true,
             quantity: strategy.quantity || 0,
             selectedBroker: strategy.selected_broker || "",
@@ -64,7 +61,6 @@ export const useCustomStrategies = () => {
           };
         });
 
-        console.log("Loaded custom strategies:", formattedStrategies);
         setCustomStrategies(formattedStrategies);
         setLoading(false);
       } catch (error) {
