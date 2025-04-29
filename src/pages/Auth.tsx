@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/auth/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client'; // Add the missing import
 
 const Auth = () => {
   const [email, setEmail] = useState('');

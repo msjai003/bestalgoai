@@ -39,6 +39,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Changed to match the expected return type (Promise<void>)
       console.log('Google sign-in functionality has been removed');
       // No return value (void)
+    },
+    resetPassword: async (email: string) => {
+      // Since we're removing password reset functionality, we'll just return an error
+      console.log('Password reset functionality has been removed');
+      return { error: new Error('Password reset functionality has been removed') };
+    },
+    updatePassword: async (newPassword: string) => {
+      // Since we're removing password update functionality, we'll just return an error
+      console.log('Password update functionality has been removed');
+      return { error: new Error('Password update functionality has been removed') };
     }
   };
 
