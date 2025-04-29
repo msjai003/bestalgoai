@@ -207,8 +207,9 @@ const Notifications = () => {
         
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 border-t border-gray-800 backdrop-blur-lg">
           <Button 
-            className="w-full bg-gradient-to-r from-cyan to-cyan/80 py-6 rounded-lg font-semibold hover:from-cyan/90 hover:to-cyan/70 transition-all"
+            className="w-full bg-gradient-to-r from-cyan to-cyan/80 py-6 font-semibold hover:from-cyan/90 hover:to-cyan/70 transition-all"
             onClick={handleSaveChanges}
+            variant="pill"
           >
             Save Changes
           </Button>

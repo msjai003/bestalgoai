@@ -22,6 +22,7 @@ const buttonVariants = cva(
         cyan: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg",
         gradient: "bg-gradient-to-r from-cyan to-cyan/90 text-charcoalPrimary shadow-md hover:shadow-cyan/20 hover:shadow-lg hover:from-cyan hover:to-cyan/80",
         logout: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg rounded-full",
+        pill: "bg-cyan text-charcoalPrimary shadow-md hover:bg-cyan/90 hover:shadow-cyan/20 hover:shadow-lg rounded-full", // Adding a rounded-full variant
       },
       size: {
         default: "h-10 px-4 py-2 [&_svg]:size-4",
