@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -69,6 +69,10 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/support" element={<Support />} />
       
       {/* Special route to handle auth verification including password reset links */}
       <Route path="/auth/v1/callback" element={<AuthVerifyHandler />} />

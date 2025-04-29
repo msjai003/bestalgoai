@@ -25,6 +25,13 @@ const NotFound = () => {
       }, 100);
       return;
     }
+    
+    // Check if the user is trying to access pricing page
+    if (location.pathname === "/pricing" || location.pathname.includes('pricing')) {
+      console.log("Pricing page access attempt detected, redirecting to pricing");
+      navigate('/pricing', { replace: true });
+      return;
+    }
   }, [location.pathname, location.search, location.hash, navigate]);
 
   return <div className="min-h-screen flex items-center justify-center bg-charcoalPrimary text-white">
