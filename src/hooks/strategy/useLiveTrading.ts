@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,8 +31,14 @@ export const useLiveTrading = () => {
       
       try {
         const userStrategies = await loadUserStrategies(user.id);
+        
+        // Filter out any strategies with "Evercrest" in their name
+        const filteredCustomStrategies = customStrategies.filter(
+          strategy => !strategy.name.includes("Evercrest")
+        );
+        
         setStrategies(prev => {
-          const combinedStrategies = [...userStrategies, ...customStrategies];
+          const combinedStrategies = [...userStrategies, ...filteredCustomStrategies];
           
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
@@ -80,8 +85,8 @@ export const useLiveTrading = () => {
     
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
     
-    if (strategy.isCustom && rowId) {
-      setCurrentCustomId(rowId);
+    if (strategy.isCustom && strategy.rowId) {
+      setCurrentCustomId(strategy.rowId);
     } else {
       setCurrentCustomId(null);
     }
