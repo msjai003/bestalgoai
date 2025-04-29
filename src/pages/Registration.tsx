@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -160,26 +161,29 @@ const Registration = () => {
         }
       }
 
+      // Show success message immediately before starting email process
+      toast.success('Account created successfully! Please check your email inbox or spam folder.');
+      
+      // Navigate to auth page right away
+      navigate('/auth');
+      
+      // Process welcome messages in the background without waiting
       try {
-        console.log("Starting welcome email process...");
-        await sendWelcomeMessages(
+        console.log("Starting welcome email process in background...");
+        sendWelcomeMessages(
           formData.email,
           formData.fullName,
           formData.mobile
-        );
+        ).catch(emailError => {
+          console.error("Error sending welcome email in background:", emailError);
+        });
       } catch (emailError: any) {
-        console.error("Error sending welcome email:", emailError);
+        console.error("Error initiating welcome email process:", emailError);
       }
-
-      toast.success('Account created successfully! Please check your email inbox or spam folder.');
-      
-      // Navigate to auth page after successful registration
-      navigate('/auth');
       
     } catch (error: any) {
       console.error('Error during registration:', error);
       setErrorMessage(error.message || 'An unexpected error occurred');
-    } finally {
       setIsLoading(false);
     }
   };
