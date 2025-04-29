@@ -120,8 +120,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <span className="text-sm text-gray-400">
               {strategy.isLive ? "Live" : "Paper"}
             </span>
-            <TooltipProvider delayDuration={50}>
-              <Tooltip>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button 
                     variant="outline"
@@ -136,11 +136,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 <TooltipContent 
                   side="top" 
                   align="center"
-                  sideOffset={10}
-                  className="font-medium bg-charcoalSecondary border border-white/20 shadow-lg"
+                  className="z-50 bg-charcoalSecondary border border-gray-700 text-white shadow-lg"
+                  sideOffset={5}
                 >
-                  <p className="whitespace-nowrap">
-                    {strategy.isLive ? "Switch to paper trading mode" : "Enable live trading mode"}
+                  <p className="whitespace-nowrap px-2 py-1">
+                    {strategy.isLive ? "Switch to paper trading" : "Enable live trading"}
                   </p>
                 </TooltipContent>
               </Tooltip>
