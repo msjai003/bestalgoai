@@ -184,10 +184,11 @@ const Registration = () => {
         );
       }
 
-      toast.success('Account created successfully! Please check your email inbox.');
-      setTimeout(() => {
-        navigate('/auth');
-      }, 2000);
+      toast.success('Account created successfully!');
+      
+      // Navigate to auth page after successful registration
+      navigate('/auth');
+      
     } catch (error: any) {
       console.error('Error during registration:', error);
       setErrorMessage(error.message || 'An unexpected error occurred');

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -198,10 +197,8 @@ export const useRegistration = () => {
       toast.success("Account created successfully!");
       setState(prev => ({ ...prev, isLoading: false }));
       
-      // Redirect after a short delay to allow the user to see the success message
-      setTimeout(() => {
-        navigate('/auth');
-      }, 2000);
+      // Navigate directly to the auth page
+      navigate('/auth');
       
     } catch (error: any) {
       console.error("Registration process error:", error);
