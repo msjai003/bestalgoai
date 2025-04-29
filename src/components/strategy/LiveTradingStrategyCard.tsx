@@ -120,15 +120,31 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <span className="text-sm text-gray-400">
               {strategy.isLive ? "Live" : "Paper"}
             </span>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={onToggleLiveMode}
-              className={`min-w-[90px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
-            >
-              <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
-              {buttonText}
-            </Button>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={onToggleLiveMode}
+                    className={`min-w-[90px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
+                  >
+                    <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
+                    {buttonText}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="top" 
+                  align="center"
+                  className="z-50 bg-charcoalSecondary border border-gray-700 text-white shadow-lg"
+                  sideOffset={5}
+                >
+                  <p className="whitespace-nowrap px-2 py-1">
+                    {strategy.isLive ? "Switch to paper trading" : "Enable live trading"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <Button
             variant="outline"
