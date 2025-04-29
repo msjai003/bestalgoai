@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -115,7 +114,6 @@ const Signup = () => {
       }
       
       console.log('✅ Signup successful:', data);
-      toast.success('Account created successfully!');
       
       // If signup was successful and we have a user ID, send welcome messages
       if (data?.user?.id) {
@@ -126,22 +124,17 @@ const Signup = () => {
           
           // Send welcome email using the SMTP function
           console.log('📧 Attempting to send welcome email...');
-          const emailSent = await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
-          
-          if (emailSent) {
-            console.log('✅ Welcome email sent successfully');
-            toast.success('Welcome email sent! Please check your inbox.');
-          } else {
-            console.error('❌ Failed to send welcome email');
-            toast.error('Could not send welcome email, but your account was created successfully.');
-          }
+          await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
           
           console.log('🎉 Welcome messages process completed');
         } catch (msgError: any) {
           console.error('❌ Error sending welcome messages:', msgError);
-          toast.error('Could not send welcome messages, but your account was created');
+          // Don't show error toast here, just log the error
         }
       }
+      
+      // Show success message with email instructions
+      toast.success("Account created successfully! Please check your email inbox or spam folder.");
       
       // Navigate immediately to auth page after successful signup
       navigate('/auth');
@@ -305,4 +298,3 @@ const Signup = () => {
 };
 
 export default Signup;
-

@@ -43,15 +43,7 @@ export const useWelcomeMessages = () => {
             
             if (attempt === maxEmailRetries) {
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
-              
-              // Show detailed error message based on error type
-              if (errorMsg.includes("configuration") || errorMsg.includes("SMTP")) {
-                toast.error("Email not sent: SMTP configuration error. Please check admin settings.");
-              } else if (errorMsg.includes("connect") || errorMsg.includes("network")) {
-                toast.error("Email not sent: Connection to SMTP server failed. Check network settings.");
-              } else {
-                toast.error("Could not send welcome email. Please try again later.");
-              }
+              // Don't show toast error messages about email failures
             }
             // Wait a bit longer between retries
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
@@ -62,14 +54,13 @@ export const useWelcomeMessages = () => {
             
             if (attempt === maxEmailRetries) {
               console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts: ${errorMessage}`);
-              toast.error(`Email error: ${errorMessage}`);
+              // Don't show toast error messages about email failures
             }
             // Wait before retry
             await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           } else {
             console.log('✅ EMAIL SUCCESS:', emailData);
-            // Show success toast only to the user who's currently registering
-            toast.success('Welcome to BestAlgo! Check your email for more information.');
+            // Don't show separate email success toast
             emailResult = { success: true, data: emailData };
             break;
           }
@@ -77,8 +68,7 @@ export const useWelcomeMessages = () => {
           console.error(`❌ EMAIL EXCEPTION (attempt ${attempt}):`, emailError);
           if (attempt === maxEmailRetries) {
             console.error(`❌ Failed to send welcome email after ${maxEmailRetries} attempts`);
-            // Show toast only to the user who's currently registering
-            toast.error("Could not send welcome email due to a server error.");
+            // Don't show toast error messages about email failures
           }
           // Exponential backoff
           await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
@@ -108,10 +98,7 @@ export const useWelcomeMessages = () => {
             console.error('❌ SMS ERROR:', smsError);
           } else {
             console.log('✅ SMS SUCCESS:', smsData);
-            if (smsData?.success) {
-              // Show SMS success toast only to the currently registering user
-              toast.success('Welcome SMS sent to your mobile number.');
-            }
+            // Don't show separate SMS success toast
           }
         } catch (smsException) {
           console.error('❌ SMS EXCEPTION:', smsException);
@@ -143,23 +130,19 @@ export const useWelcomeMessages = () => {
       
       if (error) {
         console.error('❌ SMTP TEST ERROR:', error);
-        toast.error(`SMTP test failed: ${error.message || "Unknown error"}`);
         return false;
       }
       
       if (!data || !data.success) {
         const errorMessage = data?.error || "Unknown configuration issue";
         console.error('❌ SMTP TEST FAILED:', errorMessage);
-        toast.error(`SMTP configuration issue: ${errorMessage}`);
         return false;
       }
       
       console.log('✅ SMTP TEST SUCCESS:', data);
-      toast.success('SMTP configuration is working correctly!');
       return true;
     } catch (error) {
       console.error('❌ SMTP TEST EXCEPTION:', error);
-      toast.error(`SMTP test error: ${error.message || "Unknown error"}`);
       return false;
     }
   };

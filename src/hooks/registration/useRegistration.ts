@@ -85,26 +85,19 @@ export const useRegistration = () => {
       
       // Send welcome messages
       console.log("Registration successful, sending welcome messages");
-      let welcomeMessageSent = false;
-      const maxRetries = 2;
-      
-      for (let attempt = 1; attempt <= maxRetries && !welcomeMessageSent; attempt++) {
-        try {
-          console.log(`Welcome message attempt ${attempt}`);
-          welcomeMessageSent = await sendWelcomeMessages(
-            state.formData.email,
-            state.formData.fullName,
-            state.formData.mobile
-          );
-        } catch (welcomeError) {
-          console.error(`Welcome message attempt ${attempt} failed:`, welcomeError);
-          if (attempt === maxRetries) {
-            toast.error("We could not send your welcome messages, but your account was created successfully.");
-          }
-        }
+      try {
+        await sendWelcomeMessages(
+          state.formData.email,
+          state.formData.fullName,
+          state.formData.mobile
+        );
+      } catch (welcomeError) {
+        console.error("Error sending welcome messages:", welcomeError);
+        // No toast for failure here - we'll just show the success message with email instructions
       }
       
-      toast.success("Account created successfully!");
+      // Show success message with email instructions
+      toast.success("Account created successfully! Please check your email inbox or spam folder.");
       setState(prev => ({ ...prev, isLoading: false }));
       
       // Navigate directly to the auth page
