@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -70,9 +69,8 @@ function AppRoutes() {
       <Route path="/smart-learn" element={<SmartLearn />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      {/* Special routes for Supabase auth verification - handle ALL auth verification paths */}
+      {/* Special routes for Supabase auth verification - handled by AuthVerifyHandler */}
       <Route path="/auth/v1/callback" element={<AuthVerifyHandler />} />
-      <Route path="/auth/v1/*" element={<AuthVerifyHandler />} />
       
       {/* Protected routes */}
       <Route path="/dashboard" element={

@@ -14,8 +14,7 @@ const NotFound = () => {
     );
     
     // Check if this might be an auth URL that's failing
-    if (location.pathname.includes('auth/v1') || 
-        location.pathname.includes('verify') || 
+    if (location.pathname.includes('auth/v1/callback') || 
         location.pathname.includes('callback') ||
         location.pathname.includes('recovery') ||
         location.search.includes('type=recovery') ||
@@ -72,7 +71,6 @@ const NotFound = () => {
       </div>
       
       {(location.pathname.includes('callback') || 
-        location.pathname.includes('verify') ||
         location.pathname.includes('recovery') ||
         location.search.includes('type=recovery')) && (
         <div className="mt-6">
