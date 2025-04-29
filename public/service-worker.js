@@ -46,11 +46,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // For auth-related paths and password reset, always go network-first and NEVER cache
-  if (event.request.url.includes('/auth/') || 
-      event.request.url.includes('/reset-password') ||
-      event.request.url.includes('/auth/v1/callback') ||
-      event.request.url.includes('access_token=') ||
-      event.request.url.includes('type=recovery')) {
+  if (event.request.url.includes('/reset-password')) {
     // Do not cache auth-related requests at all
     event.respondWith(
       fetch(event.request, { 

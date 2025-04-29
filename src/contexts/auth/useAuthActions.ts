@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -124,14 +123,8 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error: new Error('Please enter your email address') };
         }
         
-        // Get the current host - make sure we use the correct domain
-        const currentHost = window.location.origin;
-        console.log('Current host for password reset:', currentHost);
-        
-        // Make sure the redirectTo URL is properly formatted and includes the type=recovery parameter
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${currentHost}/auth/v1/callback?type=recovery`,
-        });
+        // Send reset email without a callback URL
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
         
         if (error) {
           console.error('Error sending password reset email:', error);

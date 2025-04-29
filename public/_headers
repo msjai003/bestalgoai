@@ -24,7 +24,3 @@
   Pragma: no-cache
   Expires: 0
 
-/auth/v1/callback
-  Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
-  Expires: 0

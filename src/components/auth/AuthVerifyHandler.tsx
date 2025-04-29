@@ -3,73 +3,18 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from './LoadingState';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 const AuthVerifyHandler: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const processVerification = async () => {
-      try {
-        const currentUrl = window.location.href;
-        console.log('AuthVerifyHandler processing URL:', currentUrl);
-        
-        // Extract tokens from both URL parameters and hash fragments
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-        
-        const token = urlParams.get('token') || hashParams.get('access_token');
-        const type = urlParams.get('type');
-        
-        console.log('Extracted token:', token ? 'Present' : 'Not found');
-        console.log('Auth type:', type);
-        console.log('URL Search:', window.location.search);
-        console.log('URL Hash:', window.location.hash);
-        
-        // Handle recovery (password reset) flow - This is the highest priority
-        if (type === 'recovery' || currentUrl.includes('type=recovery')) {
-          console.log('Password reset flow detected');
-          
-          if (token) {
-            console.log('Redirecting to reset password with token');
-            navigate('/reset-password#access_token=' + token, { replace: true });
-            return;
-          } else {
-            // Check if the token is in the hash
-            const accessToken = hashParams.get('access_token');
-            if (accessToken) {
-              console.log('Redirecting to reset password with access token from hash');
-              navigate('/reset-password#access_token=' + accessToken, { replace: true });
-              return;
-            } else {
-              console.log('No token found in recovery flow');
-              toast.error('Password reset link may be invalid or expired');
-              navigate('/auth', { replace: true });
-              return;
-            }
-          }
-        }
-        
-        // Handle other auth flows
-        if (token || currentUrl.includes('access_token=')) {
-          console.log('Auth verification with token detected');
-          navigate('/dashboard', { replace: true });
-        } else {
-          console.log('Unrecognized auth URL, redirecting to auth page');
-          toast.error('Authentication link may be invalid or expired');
-          navigate('/auth', { replace: true });
-        }
-      } catch (err) {
-        console.error('Error in AuthVerifyHandler:', err);
-        toast.error('Authentication process failed');
-        navigate('/auth', { replace: true });
-      }
-    };
-    
-    processVerification();
+    // Since we're removing the auth callback functionality,
+    // simply redirect users to the authentication page
+    toast.error('Authentication flow has been removed');
+    navigate('/auth', { replace: true });
   }, [navigate]);
 
-  return <LoadingState message="Processing authentication request..." />;
+  return <LoadingState message="Redirecting..." />;
 };
 
 export default AuthVerifyHandler;
