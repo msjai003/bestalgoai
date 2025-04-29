@@ -32,8 +32,18 @@ export const useLiveTrading = () => {
       
       try {
         const userStrategies = await loadUserStrategies(user.id);
+        
+        // Make sure the customStrategies are filtered to only include active ones
+        const activeCustomStrategies = customStrategies.filter(cs => 
+          cs.is_active && 
+          (cs.trade_type === 'live trade' || cs.trade_type === 'paper trade' || cs.quantity > 0)
+        );
+        
+        console.log("Active custom strategies:", activeCustomStrategies);
+        console.log("User strategies:", userStrategies);
+        
         setStrategies(prev => {
-          const combinedStrategies = [...userStrategies, ...customStrategies];
+          const combinedStrategies = [...userStrategies, ...activeCustomStrategies];
           
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 

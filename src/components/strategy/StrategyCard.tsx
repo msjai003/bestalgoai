@@ -53,7 +53,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           strategy_type: 'custom',
           legs: [], // You'll need to implement the legs copying logic based on your data structure
           performance: strategy.performance,
-          is_active: true
+          is_active: true,
+          // Add these fields to ensure the strategy appears in trading section
+          trade_type: 'paper trade',
+          quantity: 1
         })
         .select()
         .single();
@@ -64,6 +67,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         title: "Strategy Copied Successfully",
         description: "You can find the copied strategy in your custom strategies section",
       });
+      
+      // Redirect to the live trading page to see the copied strategy
+      setTimeout(() => {
+        navigate('/live-trading');
+      }, 1500);
       
     } catch (error) {
       console.error('Error copying strategy:', error);
