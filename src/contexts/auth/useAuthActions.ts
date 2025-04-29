@@ -16,7 +16,7 @@ const mapToAuthUser = (user: User | null): AuthUser | null => {
   
   return {
     id: user.id,
-    email: user.email || '', // Ensure email is always a string as required by AuthUser
+    email: user.email || '',
     app_metadata: user.app_metadata,
     user_metadata: user.user_metadata,
     aud: user.aud || "authenticated",
@@ -129,7 +129,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         console.log('Current host for password reset:', currentHost);
         
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${currentHost}/auth/v1/callback`,
+          redirectTo: `${currentHost}/auth/v1/callback?type=recovery`,
         });
         
         if (error) {
