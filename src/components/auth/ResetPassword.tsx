@@ -3,9 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { toast } from 'sonner';
 import LoadingState from './LoadingState';
@@ -15,8 +14,6 @@ import { supabase } from '@/integrations/supabase/client';
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
@@ -115,82 +112,62 @@ const ResetPassword: React.FC = () => {
     );
   }
 
+  // Updated UI to match the provided image
   return (
-    <div className="bg-charcoalPrimary min-h-screen flex flex-col p-4">
-      <div className="flex-1 flex items-center justify-center">
-        <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
-          <h1 className="text-xl font-bold text-white mb-2">Reset Your Password</h1>
-          <p className="text-gray-400 mb-6">Enter your new password below.</p>
+    <div className="bg-charcoalPrimary min-h-screen flex items-center justify-center">
+      <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
+        <h1 className="text-2xl font-bold text-white text-center mb-2">Reset Password</h1>
+        <p className="text-gray-400 text-center mb-8">Enter your new password below</p>
+        
+        {errorMessage && (
+          <Alert className="bg-charcoalDanger/10 border-charcoalDanger/30 mb-6" variant="destructive">
+            <AlertTriangle className="h-4 w-4 text-charcoalDanger" />
+            <AlertDescription className="text-red-200 ml-2">
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="password" className="block text-gray-300 mb-2">New Password</label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
+            />
+          </div>
           
-          {errorMessage && (
-            <Alert className="bg-charcoalDanger/10 border-charcoalDanger/30 mb-6" variant="destructive">
-              <AlertTriangle className="h-4 w-4 text-charcoalDanger" />
-              <AlertDescription className="text-red-200 ml-2">
-                {errorMessage}
-              </AlertDescription>
-            </Alert>
-          )}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-gray-300 mb-2">Confirm Password</label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
+            />
+          </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="password" className="text-gray-300 mb-2 block">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 pr-10 rounded-xl"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="confirmPassword" className="text-gray-300 mb-2 block">Confirm New Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-charcoalSecondary/50 border-gray-700 text-white h-11 pr-10 rounded-xl"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-            
-            <Button
-              type="submit"
-              disabled={isLoading}
-              variant="gradient"
-              className="px-8 py-2.5 w-full rounded-xl shadow-lg text-base mt-4"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Resetting Password...
-                </>
-              ) : (
-                'Reset Password'
-              )}
-            </Button>
-          </form>
-        </div>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-md"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating Password...
+              </>
+            ) : (
+              'Update Password'
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );
