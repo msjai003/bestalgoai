@@ -25,9 +25,10 @@ const AuthVerifyHandler: React.FC = () => {
         console.log('URL Search:', window.location.search);
         console.log('URL Hash:', window.location.hash);
         
-        if ((token && type === 'recovery') || 
-            (currentUrl.includes('type=recovery')) || 
-            (currentUrl.includes('access_token') && currentUrl.toLowerCase().includes('recovery'))) {
+        // Check for password reset flow first
+        if (type === 'recovery' || 
+            currentUrl.includes('type=recovery') || 
+            currentUrl.toLowerCase().includes('recovery')) {
           // This is a password reset flow
           console.log('Password reset flow detected - redirecting to reset password page');
           
