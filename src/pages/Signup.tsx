@@ -116,25 +116,25 @@ const Signup = () => {
       
       console.log('✅ Signup successful:', data);
       
-      // If signup was successful and we have a user ID, send welcome messages
+      // If signup was successful and we have a user ID, send welcome messages in background
       if (data?.user?.id) {
-        try {
-          // Send welcome SMS
-          console.log('📱 Attempting to send welcome SMS...');
-          await sendWelcomeSMS(data.user.id, name);
-          
-          // Send welcome email using the SMTP function
-          console.log('📧 Attempting to send welcome email...');
-          await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
-          
-          console.log('🎉 Welcome messages process completed');
-        } catch (msgError: any) {
-          console.error('❌ Error sending welcome messages:', msgError);
-          // Removed toast warning about welcome email processing
-        }
+        Promise.resolve().then(async () => {
+          try {
+            // Background task for sending welcome messages
+            console.log('📱 Attempting to send welcome SMS in background...');
+            await sendWelcomeSMS(data.user.id, name);
+            
+            console.log('📧 Attempting to send welcome email in background...');
+            await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
+            
+            console.log('🎉 Welcome messages process completed');
+          } catch (msgError: any) {
+            console.error('❌ Error sending welcome messages:', msgError);
+          }
+        });
       }
       
-      // Show success message with email instructions
+      // Show success message and navigate immediately
       toast.success("Account created successfully! Please check your email inbox or spam folder.");
       
       // Navigate immediately to auth page after successful signup
@@ -142,6 +142,7 @@ const Signup = () => {
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'Error creating account');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -280,7 +281,7 @@ const Signup = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg"
+          className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg cursor-pointer"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -160,16 +161,19 @@ const Registration = () => {
         }
       }
 
-      try {
-        console.log("Starting welcome email process...");
-        await sendWelcomeMessages(
-          formData.email,
-          formData.fullName,
-          formData.mobile
-        );
-      } catch (emailError: any) {
-        console.error("Error sending welcome email:", emailError);
-      }
+      // Background task for sending welcome messages
+      Promise.resolve().then(async () => {
+        try {
+          console.log("Starting welcome email process in background...");
+          await sendWelcomeMessages(
+            formData.email,
+            formData.fullName,
+            formData.mobile
+          );
+        } catch (emailError: any) {
+          console.error("Error sending welcome email:", emailError);
+        }
+      });
 
       toast.success('Account created successfully! Please check your email inbox or spam folder.');
       
@@ -288,7 +292,7 @@ const Registration = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-cyan to-purple-600 text-white py-6 rounded-xl shadow-lg"
+          className="w-full bg-gradient-to-r from-cyan to-purple-600 text-white py-6 rounded-xl shadow-lg cursor-pointer"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>

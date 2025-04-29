@@ -66,6 +66,7 @@ export const useRegistration = () => {
       const isConnected = await testConnection();
       if (!isConnected) {
         toast.error("Connection error. Please try again later.");
+        setState(prev => ({ ...prev, isLoading: false }));
         return;
       }
       
@@ -80,21 +81,23 @@ export const useRegistration = () => {
         
         toast.error(errorMessage);
         setConnectionError(errorMessage);
+        setState(prev => ({ ...prev, isLoading: false }));
         return;
       }
       
-      // Send welcome messages without showing any processing toast
-      console.log("Registration successful, sending welcome messages");
-      try {
-        await sendWelcomeMessages(
-          state.formData.email,
-          state.formData.fullName,
-          state.formData.mobile
-        );
-      } catch (welcomeError) {
-        console.error("Error sending welcome messages:", welcomeError);
-        // No toast for failure here
-      }
+      // Send welcome messages in background without blocking the UI
+      Promise.resolve().then(async () => {
+        console.log("Registration successful, sending welcome messages in background");
+        try {
+          await sendWelcomeMessages(
+            state.formData.email,
+            state.formData.fullName,
+            state.formData.mobile
+          );
+        } catch (welcomeError) {
+          console.error("Error sending welcome messages:", welcomeError);
+        }
+      });
       
       // Show success message with email instructions
       toast.success("Account created successfully! Please check your email inbox or spam folder.");
