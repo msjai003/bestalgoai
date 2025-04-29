@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -124,7 +125,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         }
         
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `https://bestalgoai.lovable.app/reset-password`,
         });
         
         if (error) {

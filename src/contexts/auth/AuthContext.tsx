@@ -4,6 +4,7 @@ import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
 import { AuthContextType } from './types';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
