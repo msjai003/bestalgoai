@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const {
     signIn,
     signUp,
-    signOut
+    signOut,
+    resetPassword
   } = useAuthActions({
     setUser,
     setIsLoading,
@@ -40,15 +41,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Google sign-in functionality has been removed');
       // No return value (void)
     },
-    resetPassword: async (email: string) => {
-      // Since we're removing password reset functionality, we'll just return an error
-      console.log('Password reset functionality has been removed');
-      return { error: new Error('Password reset functionality has been removed') };
-    },
+    resetPassword,
     updatePassword: async (newPassword: string) => {
-      // Since we're removing password update functionality, we'll just return an error
-      console.log('Password update functionality has been removed');
-      return { error: new Error('Password update functionality has been removed') };
+      try {
+        setIsLoading(true);
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        
+        if (error) {
+          console.error('Error updating password:', error);
+          return { error };
+        }
+        
+        toast.success('Password updated successfully');
+        return { error: null };
+      } catch (error: any) {
+        console.error('Error updating password:', error);
+        return { error };
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -111,6 +110,33 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         setUser(null);
       } catch (error) {
         console.error('Error during sign out:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    
+    resetPassword: async (email: string) => {
+      try {
+        setIsLoading(true);
+        
+        if (!email.trim()) {
+          return { error: new Error('Please enter your email address') };
+        }
+        
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        
+        if (error) {
+          console.error('Error sending password reset email:', error);
+          return { error };
+        }
+        
+        toast.success('Password reset email sent. Please check your inbox.');
+        return { error: null };
+      } catch (error: any) {
+        console.error('Error sending password reset email:', error);
+        return { error };
       } finally {
         setIsLoading(false);
       }

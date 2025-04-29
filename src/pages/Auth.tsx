@@ -9,7 +9,8 @@ import { useAuth } from '@/contexts/auth/AuthContext';
 import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client'; // Add the missing import
+import { supabase } from '@/integrations/supabase/client';
+import ForgotPassword from '@/components/auth/ForgotPassword';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +18,7 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -65,7 +67,6 @@ const Auth = () => {
     setShowPassword(!showPassword);
   };
 
-  // Adding the missing handleMagicLink function
   const handleMagicLink = async () => {
     setErrorMessage(null);
     setIsLoading(true);
@@ -101,6 +102,33 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return (
+      <div className="bg-charcoalPrimary min-h-screen flex flex-col">
+        <div className="pt-4 px-4">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="text-gray-400">
+                <ChevronLeft className="h-5 w-5" />
+              </Link>
+              <Link to="/" className="flex items-center">
+                <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
+                <span className="text-white text-xl ml-2">BestAlgo.ai</span>
+              </Link>
+            </div>
+            <Link to="/" className="text-gray-400">
+              <X className="h-5 w-5" />
+            </Link>
+          </div>
+
+          <div className="premium-card p-6 border border-cyan/30 max-w-md mx-auto">
+            <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
@@ -178,6 +206,15 @@ const Auth = () => {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              <div className="flex justify-end mt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-cyan hover:underline"
+                >
+                  Forgot Password?
                 </button>
               </div>
             </div>
