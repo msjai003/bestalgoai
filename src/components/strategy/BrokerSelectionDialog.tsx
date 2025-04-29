@@ -36,7 +36,7 @@ export const BrokerSelectionDialog = ({
 }: BrokerSelectionDialogProps) => {
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>("");
   const [selectedBrokerName, setSelectedBrokerName] = useState<string>("");
-  const [brokers, setBrokers] = useState<{ id: string; broker_name: string }[]>([]);
+  const [brokers, setBrokers] = useState<{ id: string; broker_name: string; username: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { user } = useAuth();
 
@@ -98,7 +98,7 @@ export const BrokerSelectionDialog = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white">
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white z-50">
         <DialogHeader>
           <DialogTitle className="text-xl">Select Broker</DialogTitle>
           <DialogDescription className="text-gray-400">
@@ -123,7 +123,7 @@ export const BrokerSelectionDialog = ({
                     value={broker.id}
                     className="text-white hover:bg-gray-700 cursor-pointer"
                   >
-                    {broker.broker_name}
+                    {broker.broker_name} ({broker.username})
                   </SelectItem>
                 ))}
               </SelectContent>

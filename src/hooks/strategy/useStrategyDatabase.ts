@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -208,10 +207,10 @@ export const fetchBrokerById = async (brokerId: string) => {
 
 export const fetchUserBrokers = async (userId: string) => {
   try {
-    // Updated to use is_connected field instead of checking status
+    // Updated to use is_connected field and include username
     const { data: brokers, error } = await supabase
       .from('broker_credentials')
-      .select('id, broker_name')
+      .select('id, broker_name, username')
       .eq('user_id', userId)
       .eq('is_connected', true);
 
