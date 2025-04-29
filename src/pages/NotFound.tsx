@@ -19,12 +19,14 @@ const NotFound = () => {
         location.pathname.includes('callback') ||
         location.pathname.includes('recovery') ||
         location.search.includes('type=recovery') ||
+        location.hash.includes('access_token') ||
         location.pathname === '/reset-password') {
       console.error("Auth link 404 detected, redirecting to auth handler");
       
       // For auth verification links, redirect to the AuthVerifyHandler
+      // Include all query params and hash to preserve tokens
       setTimeout(() => {
-        navigate('/auth/v1/verify' + location.search + location.hash, { replace: true });
+        navigate('/auth/v1/callback' + location.search + location.hash, { replace: true });
       }, 100);
       return;
     }
