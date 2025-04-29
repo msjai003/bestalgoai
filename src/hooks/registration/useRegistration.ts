@@ -83,7 +83,7 @@ export const useRegistration = () => {
         return;
       }
       
-      // Send welcome messages
+      // Send welcome messages without showing any processing toast
       console.log("Registration successful, sending welcome messages");
       try {
         await sendWelcomeMessages(
@@ -93,7 +93,7 @@ export const useRegistration = () => {
         );
       } catch (welcomeError) {
         console.error("Error sending welcome messages:", welcomeError);
-        // No toast for failure here - we'll just show the success message with email instructions
+        // No toast for failure here
       }
       
       // Show success message with email instructions
