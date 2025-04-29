@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -129,7 +130,7 @@ const Signup = () => {
           console.log('🎉 Welcome messages process completed');
         } catch (msgError: any) {
           console.error('❌ Error sending welcome messages:', msgError);
-          // Don't show error toast here, just log the error
+          // Removed toast warning about welcome email processing
         }
       }
       

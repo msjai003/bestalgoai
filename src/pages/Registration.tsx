@@ -160,31 +160,18 @@ const Registration = () => {
         }
       }
 
-      let welcomeResult = false;
       try {
         console.log("Starting welcome email process...");
-        welcomeResult = await sendWelcomeMessages(
+        await sendWelcomeMessages(
           formData.email,
           formData.fullName,
           formData.mobile
         );
-        
-        if (welcomeResult) {
-          console.log("Welcome email sent successfully.");
-        } else {
-          console.warn("Failed to send welcome email.");
-          toast.warning(
-            "We're processing your welcome email. You should receive it shortly."
-          );
-        }
       } catch (emailError: any) {
         console.error("Error sending welcome email:", emailError);
-        toast.warning(
-          "Account created, but we could not send your welcome email. Please check your email address or contact support if needed."
-        );
       }
 
-      toast.success('Account created successfully!');
+      toast.success('Account created successfully! Please check your email inbox or spam folder.');
       
       // Navigate to auth page after successful registration
       navigate('/auth');
