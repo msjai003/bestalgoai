@@ -46,6 +46,7 @@ export const BrokerSelectionDialog = ({
       setLoading(true);
       try {
         const userBrokers = await fetchUserBrokers(user.id);
+        console.log("Loaded user brokers:", userBrokers);
         setBrokers(userBrokers);
         
         // Set default selection if brokers exist
@@ -75,6 +76,8 @@ export const BrokerSelectionDialog = ({
       setSelectedBrokerName(broker.broker_name);
     }
   };
+
+  console.log("BrokerSelectionDialog state:", { open, brokers, loading, selectedBrokerId });
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,7 +99,7 @@ export const BrokerSelectionDialog = ({
               <SelectTrigger className="w-full bg-charcoalPrimary/70 border-gray-600 text-white">
                 <SelectValue placeholder="Select a broker" />
               </SelectTrigger>
-              <SelectContent className="bg-charcoalSecondary border-gray-700 text-white">
+              <SelectContent className="bg-charcoalSecondary border-gray-700 text-white z-50">
                 {brokers.map((broker) => (
                   <SelectItem 
                     key={broker.id} 

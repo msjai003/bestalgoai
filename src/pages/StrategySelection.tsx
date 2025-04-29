@@ -47,6 +47,13 @@ const StrategySelection = () => {
     navigate("/backtest");
   };
 
+  console.log("Strategy selection dialogs:", {
+    confirmDialogOpen,
+    quantityDialogOpen,
+    brokerDialogOpen,
+    targetMode
+  });
+
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
       <Header />
