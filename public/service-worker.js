@@ -45,16 +45,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For auth-related paths and password reset, always go network-first
+  // For auth-related paths and password reset, always go network-first and NEVER cache
   if (event.request.url.includes('/auth/') || 
       event.request.url.includes('/reset-password') ||
       event.request.url.includes('/auth/v1/callback') ||
       event.request.url.includes('access_token=') ||
       event.request.url.includes('type=recovery')) {
+    // Do not cache auth-related requests at all
     event.respondWith(
       fetch(event.request)
         .catch(() => {
-          return caches.match(event.request);
+          // Return a fallback only if network request completely fails
+          return caches.match('/index.html');
         })
     );
     return;

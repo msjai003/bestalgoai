@@ -34,6 +34,13 @@ const AuthVerifyHandler: React.FC = () => {
           if (token) {
             navigate('/reset-password#access_token=' + token, { replace: true });
             return;
+          } else {
+            // Check if the token is in the hash
+            const accessToken = hashParams.get('access_token');
+            if (accessToken) {
+              navigate('/reset-password#access_token=' + accessToken, { replace: true });
+              return;
+            }
           }
         }
         
