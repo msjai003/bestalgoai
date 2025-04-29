@@ -107,9 +107,8 @@ export const useRegistration = () => {
       toast.success("Account created successfully!");
       setState(prev => ({ ...prev, isLoading: false }));
       
-      setTimeout(() => {
-        navigate('/auth');
-      }, 2000);
+      // Navigate directly to the auth page
+      navigate('/auth');
       
     } catch (error: any) {
       console.error("Registration process error:", error);

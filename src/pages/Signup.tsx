@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -142,7 +143,8 @@ const Signup = () => {
         }
       }
       
-      navigate('/dashboard');
+      // Navigate immediately to auth page after successful signup
+      navigate('/auth');
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'Error creating account');
@@ -303,3 +305,4 @@ const Signup = () => {
 };
 
 export default Signup;
+
