@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
-import { AlertTriangle, ChevronLeft, X, Info, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -235,6 +235,17 @@ const Auth = () => {
               ) : (
                 'Sign In'
               )}
+            </Button>
+
+            {/* Create Account Button */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full gap-2 bg-charcoalSecondary/50 border-cyan hover:bg-charcoalSecondary text-white"
+              onClick={() => navigate('/registration')}
+            >
+              <UserPlus className="h-4 w-4" />
+              Create Account
             </Button>
 
             <div className="relative">
