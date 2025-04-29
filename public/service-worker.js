@@ -48,6 +48,7 @@ self.addEventListener('fetch', (event) => {
   // For auth-related paths and password reset, always go network-first
   if (event.request.url.includes('/auth/') || 
       event.request.url.includes('/reset-password') ||
+      event.request.url.includes('/auth/v1/callback') ||
       event.request.url.includes('access_token=') ||
       event.request.url.includes('type=recovery')) {
     event.respondWith(

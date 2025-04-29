@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from './LoadingState';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 const AuthVerifyHandler: React.FC = () => {
   const navigate = useNavigate();

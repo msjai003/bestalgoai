@@ -124,8 +124,12 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error: new Error('Please enter your email address') };
         }
         
+        // Get the current host
+        const currentHost = window.location.origin;
+        console.log('Current host for password reset:', currentHost);
+        
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `https://bestalgoai.lovable.app/reset-password`,
+          redirectTo: `${currentHost}/auth/v1/callback`,
         });
         
         if (error) {
