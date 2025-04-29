@@ -116,34 +116,29 @@ const Signup = () => {
       
       console.log('✅ Signup successful:', data);
       
-      // Show success message immediately
-      toast.success("Account created successfully! Please check your email inbox or spam folder.");
-      
-      // Navigate immediately to auth page
-      navigate('/auth');
-      
-      // Send welcome messages in background
+      // If signup was successful and we have a user ID, send welcome messages
       if (data?.user?.id) {
         try {
-          console.log('📱 Starting background welcome message process...');
-          // Use Promise.all to start both processes at once without awaiting them
-          Promise.all([
-            // Send welcome SMS
-            sendWelcomeSMS(data.user.id, name).catch(err => 
-              console.error('📱 Error sending welcome SMS in background:', err)
-            ),
-            
-            // Send welcome email
-            sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`).catch(err =>
-              console.error('📧 Error sending welcome email in background:', err)
-            )
-          ]);
+          // Send welcome SMS
+          console.log('📱 Attempting to send welcome SMS...');
+          await sendWelcomeSMS(data.user.id, name);
           
-          console.log('🎉 Welcome message processes initiated in background');
+          // Send welcome email using the SMTP function
+          console.log('📧 Attempting to send welcome email...');
+          await sendWelcomeEmail(email, name, `Welcome to BestAlgo.ai, ${name}! We're excited to have you on board.`);
+          
+          console.log('🎉 Welcome messages process completed');
         } catch (msgError: any) {
-          console.error('❌ Error initiating welcome messages:', msgError);
+          console.error('❌ Error sending welcome messages:', msgError);
+          // Removed toast warning about welcome email processing
         }
       }
+      
+      // Show success message with email instructions
+      toast.success("Account created successfully! Please check your email inbox or spam folder.");
+      
+      // Navigate immediately to auth page after successful signup
+      navigate('/auth');
     } catch (error: any) {
       console.error('Signup error:', error);
       setErrorMessage(error.message || 'Error creating account');

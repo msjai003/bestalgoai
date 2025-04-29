@@ -83,26 +83,25 @@ export const useRegistration = () => {
         return;
       }
       
-      // Show success message immediately
-      toast.success("Account created successfully! Please check your email inbox or spam folder.");
-      
-      // Navigate directly to the auth page
-      navigate('/auth');
-      
-      // Send welcome messages in the background without waiting
-      console.log("Registration successful, sending welcome messages in background");
-      setTimeout(() => {
-        sendWelcomeMessages(
+      // Send welcome messages without showing any processing toast
+      console.log("Registration successful, sending welcome messages");
+      try {
+        await sendWelcomeMessages(
           state.formData.email,
           state.formData.fullName,
           state.formData.mobile
-        ).catch(welcomeError => {
-          console.error("Error sending welcome messages in background:", welcomeError);
-        });
-      }, 100);
+        );
+      } catch (welcomeError) {
+        console.error("Error sending welcome messages:", welcomeError);
+        // No toast for failure here
+      }
       
-      // Update loading state
+      // Show success message with email instructions
+      toast.success("Account created successfully! Please check your email inbox or spam folder.");
       setState(prev => ({ ...prev, isLoading: false }));
+      
+      // Navigate directly to the auth page
+      navigate('/auth');
       
     } catch (error: any) {
       console.error("Registration process error:", error);
