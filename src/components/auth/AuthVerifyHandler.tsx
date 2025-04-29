@@ -40,7 +40,7 @@ const AuthVerifyHandler: React.FC = () => {
         // Handle other auth flows
         if (token || currentUrl.includes('access_token=')) {
           console.log('Auth verification with token detected');
-          navigate('/auth', { replace: true });
+          navigate('/dashboard', { replace: true });
         } else {
           console.log('Unrecognized auth URL, redirecting to auth page');
           toast.error('Authentication link may be invalid or expired');
