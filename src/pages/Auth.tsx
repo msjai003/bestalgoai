@@ -67,42 +67,6 @@ const Auth = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleMagicLink = async () => {
-    setErrorMessage(null);
-    setIsLoading(true);
-    
-    try {
-      if (!email.trim()) {
-        setErrorMessage('Please enter your email address.');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Send magic link email using Supabase
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin + '/auth/v1/callback'
-        }
-      });
-      
-      if (error) {
-        setErrorMessage(error.message || 'Failed to send magic link');
-      } else {
-        toast({
-          title: "Magic link sent",
-          description: "Check your email for a login link",
-          duration: 5000,
-        });
-      }
-    } catch (error: any) {
-      console.error('Magic link error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   if (showForgotPassword) {
     return (
       <div className="bg-charcoalPrimary min-h-screen flex flex-col">
@@ -246,32 +210,6 @@ const Auth = () => {
             >
               <UserPlus className="h-4 w-4" />
               Create Account
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-700"></span>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-charcoalPrimary px-2 text-gray-400">Or continue with</span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleMagicLink}
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending Link...
-                </>
-              ) : (
-                'Sign in with Magic Link'
-              )}
             </Button>
           </div>
         </form>
