@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
