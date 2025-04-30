@@ -22,11 +22,27 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if user is already authenticated
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      console.log("User detected, redirecting to dashboard:", user);
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
+  
+  // Check for hash fragments in URL that might indicate an OAuth callback
+  useEffect(() => {
+    const handleHashParams = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        console.log("Auth token detected in URL, will redirect after auth state update");
+        // The redirection will happen automatically through the useEffect above
+        // once the auth state updates due to the token in the URL
+      }
+    };
+    
+    handleHashParams();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,18 +80,19 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
-    setIsLoading(true);
+    console.log("Starting Google sign-in process...");
     try {
       const { error } = await signInWithGoogle();
       if (error) {
         console.error('Google sign-in error:', error);
         setErrorMessage(error.message || 'An error occurred during Google sign-in');
+      } else {
+        console.log("Google sign-in initiated successfully");
+        // No need to navigate here - the OAuth flow will redirect
       }
     } catch (error: any) {
-      console.error('Google sign-in error:', error);
+      console.error('Google sign-in exception:', error);
       setErrorMessage(error.message || 'An unexpected error occurred with Google sign-in.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
