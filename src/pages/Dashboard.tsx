@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -9,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
-import OrdersView from "@/components/dashboard/OrdersView";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
@@ -89,7 +87,6 @@ const Dashboard = () => {
           performanceData={mockPerformanceData} 
           currentValue={currentValue} 
         />
-        <OrdersView />
         <QuickAccessSection />
       </main>
       <BottomNav />
