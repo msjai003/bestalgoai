@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import { useAuth } from '@/contexts/auth/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import ForgotPassword from '@/components/auth/ForgotPassword';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,20 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check for existing session on component mount
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/dashboard');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   useEffect(() => {
     if (user) {
@@ -70,11 +83,11 @@ const Auth = () => {
       if (error) {
         console.error('Google sign-in error:', error);
         setErrorMessage(error.message || 'An error occurred during Google sign-in');
+        setIsLoading(false);
       }
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       setErrorMessage(error.message || 'An unexpected error occurred with Google sign-in.');
-    } finally {
       setIsLoading(false);
     }
   };
