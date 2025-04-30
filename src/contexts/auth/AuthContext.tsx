@@ -27,35 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading,
   });
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/v1/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-      
-      if (error) {
-        console.error('Error signing in with Google:', error);
-        toast.error('Failed to sign in with Google');
-        return { error };
-      }
-      
-      return { data, error: null };
-    } catch (error: any) {
-      console.error('Exception during Google sign-in:', error);
-      return { error };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const fetchGoogleUserDetails = async () => {
     if (!user) return;
     
@@ -82,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     isLoading,
     googleUserDetails,
-    signInWithGoogle,
     fetchGoogleUserDetails,
     resetPassword,
     updatePassword: async (newPassword: string) => {
