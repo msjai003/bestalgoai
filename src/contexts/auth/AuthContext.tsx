@@ -27,6 +27,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading,
   });
 
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/v1/callback`
+        }
+      });
+      
+      if (error) {
+        console.error('Error signing in with Google:', error);
+        toast.error('Failed to sign in with Google');
+        return { error };
+      }
+      
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Exception during Google sign-in:', error);
+      return { error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchGoogleUserDetails = async () => {
+    if (!user) return;
+    
+    try {
+      const { id } = user;
+      const { data, error } = await supabase
+        .from('google_user_details')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching Google user details:', error);
+      }
+    } catch (error) {
+      console.error('Exception fetching Google user details:', error);
+    }
+  };
+
   const contextValue: AuthContextType = {
     user,
     signIn,
@@ -34,14 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     isLoading,
     googleUserDetails,
-    signInWithGoogle: async () => {
-      return { error: new Error('Google sign-in has been removed'), data: null };
-    },
-    fetchGoogleUserDetails: async () => {
-      // Changed to match the expected return type (Promise<void>)
-      console.log('Google sign-in functionality has been removed');
-      // No return value (void)
-    },
+    signInWithGoogle,
+    fetchGoogleUserDetails,
     resetPassword,
     updatePassword: async (newPassword: string) => {
       try {
