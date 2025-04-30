@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Shield, ChevronLeft, ChevronRight, Lock, Bell, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Lock, Bell, Eye, EyeOff } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -123,25 +124,34 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
     onOpenChange(false);
   };
 
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-charcoalPrimary/95 backdrop-blur-xl border border-gray-700 text-charcoalTextPrimary p-4 sm:p-6 rounded-xl w-[95%] max-w-md mx-auto shadow-xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-cyan" />
+        <DialogHeader className="flex items-center relative">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleClose}
+            className="absolute left-0 text-cyan hover:text-cyan/80 hover:bg-charcoalSecondary p-2 h-8 w-8 rounded-full"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
+          </Button>
+          <DialogTitle className="text-xl sm:text-2xl font-semibold flex items-center gap-2 w-full justify-center text-cyan">
             Security Settings {currentPage > 1 && `(${currentPage}/${totalPages})`}
           </DialogTitle>
-          <DialogDescription className="text-charcoalTextSecondary">
-            Manage your account security preferences
-          </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="h-[60vh] pr-4 mt-2">
+        <ScrollArea className="h-[60vh] pr-4 mt-4">
           {currentPage === 1 && (
             <div className="space-y-4">
               {/* Password Management Section */}
               <div className="space-y-4">
-                <h2 className="text-lg font-semibold">Password Management</h2>
+                <h2 className="text-lg font-semibold text-cyan">Password Management</h2>
                 
                 <form onSubmit={handlePasswordUpdate} className="space-y-4">
                   <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
@@ -242,7 +252,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
               {/* Two-Factor Authentication Section */}
               <div className="bg-charcoalSecondary/50 rounded-xl p-3 sm:p-4 backdrop-blur-xl border border-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
+                  <h2 className="text-lg font-semibold text-cyan">Two-Factor Authentication</h2>
                   <Switch 
                     checked={twoFactorEnabled} 
                     onCheckedChange={handleTwoFactorToggle}
@@ -278,7 +288,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
             onClick={goToPrevPage} 
             disabled={currentPage === 1}
             variant="ghost" 
-            className={`px-3 ${currentPage === 1 ? 'invisible' : ''}`}
+            className={`px-3 ${currentPage === 1 ? 'invisible' : ''} text-cyan hover:text-cyan/80 hover:bg-charcoalSecondary/50`}
           >
             <ChevronLeft className="h-4 w-4 mr-1" /> Previous
           </Button>
@@ -296,7 +306,7 @@ export function SecuritySettingsDialog({ open, onOpenChange }: SecuritySettingsD
             onClick={goToNextPage} 
             disabled={currentPage === totalPages}
             variant="ghost" 
-            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''}`}
+            className={`px-3 ${currentPage === totalPages ? 'invisible' : ''} text-cyan hover:text-cyan/80 hover:bg-charcoalSecondary/50`}
           >
             Next <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
