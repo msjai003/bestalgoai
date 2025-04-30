@@ -149,7 +149,8 @@ const ResetPassword: React.FC = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-md"
+            variant="pill"
+            className="w-full bg-white hover:bg-gray-100 text-gray-900 rounded-full py-2.5 font-medium shadow-md transition-all duration-200"
           >
             {isLoading ? (
               <>
