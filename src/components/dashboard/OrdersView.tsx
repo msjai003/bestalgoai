@@ -76,7 +76,20 @@ const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
             setError('Failed to load orders. Please try again later.');
           } else if (data) {
             console.log('Orders fetched successfully:', data);
-            setOrders(data);
+            // Map the database data to match our Order type
+            const formattedOrders: Order[] = data.map(order => ({
+              id: order.id,
+              symbol: order.symbol,
+              type: order.type,
+              quantity: order.quantity,
+              price: order.price,
+              // Cast the status to our union type, ensuring it's one of the accepted values
+              status: (order.status === 'completed' || order.status === 'pending' || order.status === 'canceled') 
+                ? (order.status as 'completed' | 'pending' | 'canceled')
+                : 'pending', // Default to 'pending' if it's an unexpected status
+              date: order.date
+            }));
+            setOrders(formattedOrders);
           }
         } catch (err) {
           console.error('Exception fetching orders:', err);
