@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BookOpen, BarChart, BookText, Workflow, TrendingUp, Heart, School } from 'lucide-react';
+import { BookOpen, BarChart, BookText, Workflow, TrendingUp, Heart, School, Briefcase } from 'lucide-react';
 import QuickAccessItem from './QuickAccessItem';
 
 export const QuickAccessSection = () => {
@@ -54,6 +54,13 @@ export const QuickAccessSection = () => {
           icon={BookText}
           text="Brokers"
           route="/broker-integration"
+          className=""
+        />
+        
+        <QuickAccessItem
+          icon={Briefcase}
+          text="Orders"
+          route="/orders"
           className=""
         />
       </div>
