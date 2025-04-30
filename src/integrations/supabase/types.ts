@@ -921,42 +921,6 @@ export type Database = {
         }
         Relationships: []
       }
-      orders: {
-        Row: {
-          created_at: string
-          date: string
-          id: string
-          price: number
-          quantity: number
-          status: string
-          symbol: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          date?: string
-          id?: string
-          price: number
-          quantity: number
-          status?: string
-          symbol: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          id?: string
-          price?: number
-          quantity?: number
-          status?: string
-          symbol?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       plan_details: {
         Row: {
           id: string
@@ -1475,6 +1439,39 @@ export type Database = {
           side?: string | null
           status?: string | null
           symbol?: string | null
+        }
+        Relationships: []
+      }
+      trade_results: {
+        Row: {
+          action: string | null
+          capital: number | null
+          id: number
+          price: number | null
+          profit_loss: number | null
+          rsi: number | null
+          shares: number | null
+          time: string | null
+        }
+        Insert: {
+          action?: string | null
+          capital?: number | null
+          id?: number
+          price?: number | null
+          profit_loss?: number | null
+          rsi?: number | null
+          shares?: number | null
+          time?: string | null
+        }
+        Update: {
+          action?: string | null
+          capital?: number | null
+          id?: number
+          price?: number | null
+          profit_loss?: number | null
+          rsi?: number | null
+          shares?: number | null
+          time?: string | null
         }
         Relationships: []
       }

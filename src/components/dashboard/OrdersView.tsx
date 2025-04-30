@@ -7,47 +7,51 @@ import {
   TooltipProvider,
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { Check, AlertCircle, Loader } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Loader } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface Order {
-  id: string;
-  symbol: string;
-  type: string;
-  quantity: number;
+interface TradeResult {
+  id: number;
+  time: string;
   price: number;
-  status: 'completed' | 'pending' | 'canceled';
-  date: string;
+  rsi: number;
+  action: string;
+  shares: number;
+  capital: number;
+  profit_loss: number;
 }
 
-const mockOrders: Order[] = [
+const mockTradeResults: TradeResult[] = [
   {
-    id: "ORD001",
-    symbol: "NIFTY 50",
-    type: "BUY",
-    quantity: 100,
+    id: 1,
+    time: "2025-04-29T10:30:00",
     price: 22560.75,
-    status: 'completed',
-    date: "2025-04-29"
+    rsi: 70.5,
+    action: "BUY",
+    shares: 100,
+    capital: 2256075,
+    profit_loss: 0
   },
   {
-    id: "ORD002",
-    symbol: "RELIANCE",
-    type: "SELL",
-    quantity: 25,
-    price: 2950.50,
-    status: 'completed',
-    date: "2025-04-28"
+    id: 2,
+    time: "2025-04-29T11:45:00",
+    price: 22580.50,
+    rsi: 65.2,
+    action: "SELL",
+    shares: 100,
+    capital: 2258050,
+    profit_loss: 1975
   },
   {
-    id: "ORD003",
-    symbol: "INFY",
-    type: "BUY",
-    quantity: 50,
-    price: 1475.25,
-    status: 'pending',
-    date: "2025-04-30"
+    id: 3,
+    time: "2025-04-30T09:15:00",
+    price: 22475.25,
+    rsi: 30.1,
+    action: "BUY",
+    shares: 50,
+    capital: 1123762.5,
+    profit_loss: 0
   }
 ];
 
@@ -57,65 +61,52 @@ interface OrdersViewProps {
 
 const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [tradeResults, setTradeResults] = useState<TradeResult[]>(mockTradeResults);
   const [loading, setLoading] = useState(useRealData);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (useRealData && user) {
-      const fetchOrders = async () => {
+      const fetchTradeResults = async () => {
         try {
           setLoading(true);
           const { data, error } = await supabase
-            .from('orders')
+            .from('trade_results')
             .select('*')
-            .order('date', { ascending: false });
+            .order('time', { ascending: false });
 
           if (error) {
-            console.error('Error fetching orders:', error);
-            setError('Failed to load orders. Please try again later.');
+            console.error('Error fetching trade results:', error);
+            setError('Failed to load trade results. Please try again later.');
           } else if (data) {
-            console.log('Orders fetched successfully:', data);
-            // Map the database data to match our Order type
-            const formattedOrders: Order[] = data.map(order => ({
-              id: order.id,
-              symbol: order.symbol,
-              type: order.type,
-              quantity: order.quantity,
-              price: order.price,
-              // Cast the status to our union type, ensuring it's one of the accepted values
-              status: (order.status === 'completed' || order.status === 'pending' || order.status === 'canceled') 
-                ? (order.status as 'completed' | 'pending' | 'canceled')
-                : 'pending', // Default to 'pending' if it's an unexpected status
-              date: order.date
-            }));
-            setOrders(formattedOrders);
+            console.log('Trade results fetched successfully:', data);
+            setTradeResults(data);
           }
         } catch (err) {
-          console.error('Exception fetching orders:', err);
+          console.error('Exception fetching trade results:', err);
           setError('An unexpected error occurred.');
         } finally {
           setLoading(false);
         }
       };
 
-      fetchOrders();
+      fetchTradeResults();
     }
   }, [user, useRealData]);
 
-  const getStatusIcon = (status: Order['status']) => {
-    switch (status) {
-      case 'completed':
-        return <Check className="h-4 w-4 text-emerald-500" />;
-      case 'pending':
-        return <AlertCircle className="h-4 w-4 text-amber-500" />;
-      case 'canceled':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+  const getActionIcon = (action: string) => {
+    switch (action?.toUpperCase()) {
+      case 'BUY':
+        return <ArrowUpCircle className="h-4 w-4 text-emerald-500" />;
+      case 'SELL':
+        return <ArrowDownCircle className="h-4 w-4 text-rose-500" />;
+      default:
+        return null;
     }
   };
 
-  const getTypeStyle = (type: string) => {
-    return type === 'BUY' 
+  const getActionStyle = (action: string) => {
+    return action?.toUpperCase() === 'BUY' 
       ? 'text-emerald-400'
       : 'text-rose-400';
   };
@@ -128,13 +119,32 @@ const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
     }).format(price);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDateTime = (dateTimeString: string) => {
+    if (!dateTimeString) return "N/A";
+    
+    const date = new Date(dateTimeString);
     return date.toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
+  };
+
+  const formatProfitLoss = (value: number) => {
+    if (value === 0) return '-';
+    
+    const formatted = new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR',
+      minimumFractionDigits: 2 
+    }).format(Math.abs(value));
+    
+    const colorClass = value > 0 ? 'text-emerald-400' : 'text-rose-400';
+    const prefix = value > 0 ? '+' : '-';
+    
+    return <span className={colorClass}>{prefix}{formatted}</span>;
   };
 
   if (loading) {
@@ -156,50 +166,51 @@ const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
   return (
     <section id="orders-view" className="mt-6">
       <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
-        <h2 className="text-xl font-semibold text-white mb-4">Recent Orders</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">Trade Results</h2>
         
-        {orders.length === 0 ? (
-          <p className="text-center text-gray-400 py-6">No orders found.</p>
+        {tradeResults.length === 0 ? (
+          <p className="text-center text-gray-400 py-6">No trade results found.</p>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4">
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-gray-700/50">
-                  <TableHead className="text-gray-400 font-medium">Symbol</TableHead>
-                  <TableHead className="text-gray-400 font-medium">Type</TableHead>
-                  <TableHead className="text-gray-400 font-medium text-right">Quantity</TableHead>
+                  <TableHead className="text-gray-400 font-medium">Time</TableHead>
+                  <TableHead className="text-gray-400 font-medium">Action</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">Shares</TableHead>
                   <TableHead className="text-gray-400 font-medium text-right">Price</TableHead>
-                  <TableHead className="text-gray-400 font-medium text-center">Status</TableHead>
-                  <TableHead className="text-gray-400 font-medium text-right">Date</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">RSI</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">Capital</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">P/L</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order) => (
+                {tradeResults.map((result) => (
                   <TableRow 
-                    key={order.id} 
+                    key={result.id} 
                     className="border-b border-gray-700/30 hover:bg-charcoalPrimary/40"
                   >
-                    <TableCell className="font-medium text-white">{order.symbol}</TableCell>
-                    <TableCell className={getTypeStyle(order.type)}>{order.type}</TableCell>
-                    <TableCell className="text-right text-white">{order.quantity}</TableCell>
-                    <TableCell className="text-right text-white">{formatPrice(order.price)}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="font-medium text-white">{formatDateTime(result.time)}</TableCell>
+                    <TableCell>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="inline-flex items-center">
-                              {getStatusIcon(order.status)}
+                            <span className={`inline-flex items-center ${getActionStyle(result.action)}`}>
+                              {getActionIcon(result.action)}
+                              <span className="ml-1">{result.action}</span>
                             </span>
                           </TooltipTrigger>
                           <TooltipContent className="bg-white text-black border border-gray-200">
-                            <p>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
+                            <p>{result.action === 'BUY' ? 'Buy Order' : 'Sell Order'}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </TableCell>
-                    <TableCell className="text-right text-gray-300">
-                      {formatDate(order.date)}
-                    </TableCell>
+                    <TableCell className="text-right text-white">{result.shares}</TableCell>
+                    <TableCell className="text-right text-white">{formatPrice(result.price)}</TableCell>
+                    <TableCell className="text-right text-white">{result.rsi?.toFixed(2) || 'N/A'}</TableCell>
+                    <TableCell className="text-right text-white">{formatPrice(result.capital)}</TableCell>
+                    <TableCell className="text-right">{formatProfitLoss(result.profit_loss)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

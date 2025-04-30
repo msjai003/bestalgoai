@@ -20,10 +20,10 @@ const Orders = () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData.session) {
-          console.log('No active session found on orders page, redirecting to auth');
+          console.log('No active session found on trade results page, redirecting to auth');
           toast({
             title: "Authentication Required",
-            description: "Please log in to access your orders.",
+            description: "Please log in to access your trade results.",
             variant: "destructive",
           });
           navigate('/auth');
@@ -44,7 +44,7 @@ const Orders = () => {
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
-          <p className="text-gray-300">Loading orders...</p>
+          <p className="text-gray-300">Loading trade results...</p>
         </div>
       </div>
     );
@@ -54,7 +54,7 @@ const Orders = () => {
     <div className="bg-charcoalPrimary min-h-screen">
       <Header />
       <main className="pt-16 pb-20 px-4">
-        <h1 className="text-2xl font-bold text-white mb-6">Your Orders</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Trade Results</h1>
         <OrdersView useRealData={true} />
       </main>
       <BottomNav />
