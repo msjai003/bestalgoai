@@ -61,38 +61,38 @@ interface OrdersViewProps {
 
 const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
   const { user } = useAuth();
-  const [tradeResults, setTradeResults] = useState<TradeResult[]>(mockTradeResults);
-  const [loading, setLoading] = useState(useRealData);
+  const [tradeResults, setTradeResults] = useState<TradeResult[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (useRealData && user) {
-      const fetchTradeResults = async () => {
-        try {
-          setLoading(true);
-          const { data, error } = await supabase
-            .from('trade_results')
-            .select('*')
-            .order('time', { ascending: false });
+    const fetchTradeResults = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('trade_results')
+          .select('*')
+          .order('time', { ascending: false });
 
-          if (error) {
-            console.error('Error fetching trade results:', error);
-            setError('Failed to load trade results. Please try again later.');
-          } else if (data) {
-            console.log('Trade results fetched successfully:', data);
-            setTradeResults(data);
-          }
-        } catch (err) {
-          console.error('Exception fetching trade results:', err);
-          setError('An unexpected error occurred.');
-        } finally {
-          setLoading(false);
+        if (error) {
+          console.error('Error fetching trade results:', error);
+          setError('Failed to load trade results. Please try again later.');
+          setTradeResults(useRealData ? [] : mockTradeResults);
+        } else if (data) {
+          console.log('Trade results fetched successfully:', data);
+          setTradeResults(data.length > 0 ? data : (useRealData ? [] : mockTradeResults));
         }
-      };
+      } catch (err) {
+        console.error('Exception fetching trade results:', err);
+        setError('An unexpected error occurred.');
+        setTradeResults(useRealData ? [] : mockTradeResults);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchTradeResults();
-    }
-  }, [user, useRealData]);
+    fetchTradeResults();
+  }, [useRealData]);
 
   const getActionIcon = (action: string) => {
     switch (action?.toUpperCase()) {

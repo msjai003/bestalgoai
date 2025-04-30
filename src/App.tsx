@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
@@ -51,6 +50,7 @@ import NotFound from "@/pages/NotFound";
 import BrokerManagement from "@/pages/BrokerManagement";
 import ResetPassword from "@/components/auth/ResetPassword";
 import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
+import Orders from "@/pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +82,12 @@ function AppRoutes() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/orders" element={
+        <ProtectedRoute>
+          <Orders />
         </ProtectedRoute>
       } />
       

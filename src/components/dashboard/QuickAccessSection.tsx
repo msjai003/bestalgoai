@@ -59,7 +59,7 @@ export const QuickAccessSection = () => {
         
         <QuickAccessItem
           icon={Briefcase}
-          text="Orders"
+          text="Results"
           route="/orders"
           className=""
         />
