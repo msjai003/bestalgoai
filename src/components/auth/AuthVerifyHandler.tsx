@@ -11,20 +11,21 @@ const AuthVerifyHandler: React.FC = () => {
 
   useEffect(() => {
     const handleAuthRedirect = async () => {
-      // First check if this is a recovery (password reset) flow
-      const searchParams = new URLSearchParams(location.hash.substring(1));
-      const accessToken = searchParams.get('access_token');
-      const type = searchParams.get('type');
-      
-      if (accessToken && type === 'recovery') {
-        // If we have a recovery token, redirect to reset password
-        navigate(`/reset-password?token=${accessToken}`, { replace: true });
-        return;
-      }
-
-      // Check if this is an OAuth callback (like Google sign-in)
       try {
-        // Getting the session will automatically process the OAuth callback
+        // First check if this is a recovery (password reset) flow
+        if (location.hash) {
+          const searchParams = new URLSearchParams(location.hash.substring(1));
+          const accessToken = searchParams.get('access_token');
+          const type = searchParams.get('type');
+          
+          if (accessToken && type === 'recovery') {
+            // If we have a recovery token, redirect to reset password
+            navigate(`/reset-password?token=${accessToken}`, { replace: true });
+            return;
+          }
+        }
+
+        // Check if this is an OAuth callback or if we have a session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -40,14 +41,16 @@ const AuthVerifyHandler: React.FC = () => {
           toast.success('Signed in successfully');
           navigate('/dashboard', { replace: true });
           return;
+        } else {
+          // No session but also no error - likely not an auth redirect
+          console.log('No active session found');
+          navigate('/auth', { replace: true });
         }
       } catch (error) {
         console.error('Error during auth verification:', error);
+        toast.error('An error occurred during authentication');
+        navigate('/auth', { replace: true });
       }
-
-      // If we get here, something went wrong or it's not an auth flow we recognize
-      toast.error('Authentication flow has been removed or is invalid');
-      navigate('/auth', { replace: true });
     };
 
     handleAuthRedirect();
