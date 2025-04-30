@@ -2,8 +2,16 @@
 import React from 'react';
 import { BookOpen, BarChart, BookText, Workflow, TrendingUp, Heart, School, Briefcase } from 'lucide-react';
 import QuickAccessItem from './QuickAccessItem';
+import { useNavigate } from 'react-router-dom';
 
 export const QuickAccessSection = () => {
+  const navigate = useNavigate();
+
+  // Handler to navigate to orders page
+  const handleNavigateToOrders = () => {
+    navigate('/orders');
+  };
+
   return (
     <section className="mt-8">
       <h2 className="text-xl font-semibold text-white mb-4">Quick Access</h2>
@@ -61,6 +69,7 @@ export const QuickAccessSection = () => {
           icon={Briefcase}
           text="Results"
           route="/orders"
+          onClick={handleNavigateToOrders}
           className=""
         />
       </div>
