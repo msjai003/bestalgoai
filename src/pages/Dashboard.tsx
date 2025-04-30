@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
-import OrdersView from "@/components/dashboard/OrdersView";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 
 const Dashboard = () => {
@@ -90,7 +89,6 @@ const Dashboard = () => {
           currentValue={currentValue} 
         />
         <QuickAccessSection />
-        <OrdersView />
       </main>
       <BottomNav />
     </div>
