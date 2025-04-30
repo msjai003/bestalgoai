@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { 
   Tooltip,
@@ -7,7 +7,9 @@ import {
   TooltipProvider,
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, Loader } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Order {
   id: string;
@@ -49,7 +51,45 @@ const mockOrders: Order[] = [
   }
 ];
 
-const OrdersView = () => {
+interface OrdersViewProps {
+  useRealData?: boolean;
+}
+
+const OrdersView = ({ useRealData = false }: OrdersViewProps) => {
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [loading, setLoading] = useState(useRealData);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (useRealData && user) {
+      const fetchOrders = async () => {
+        try {
+          setLoading(true);
+          const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .order('date', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching orders:', error);
+            setError('Failed to load orders. Please try again later.');
+          } else if (data) {
+            console.log('Orders fetched successfully:', data);
+            setOrders(data);
+          }
+        } catch (err) {
+          console.error('Exception fetching orders:', err);
+          setError('An unexpected error occurred.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchOrders();
+    }
+  }, [user, useRealData]);
+
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
       case 'completed':
@@ -75,51 +115,84 @@ const OrdersView = () => {
     }).format(price);
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg flex items-center justify-center" style={{ minHeight: "200px" }}>
+        <Loader className="h-8 w-8 animate-spin text-cyan mx-auto" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
+        <p className="text-red-400 text-center">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <section id="orders-view" className="mt-6">
       <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
         <h2 className="text-xl font-semibold text-white mb-4">Recent Orders</h2>
         
-        <div className="overflow-x-auto -mx-4 px-4">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-gray-700/50">
-                <TableHead className="text-gray-400 font-medium">Symbol</TableHead>
-                <TableHead className="text-gray-400 font-medium">Type</TableHead>
-                <TableHead className="text-gray-400 font-medium text-right">Quantity</TableHead>
-                <TableHead className="text-gray-400 font-medium text-right">Price</TableHead>
-                <TableHead className="text-gray-400 font-medium text-center">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockOrders.map((order) => (
-                <TableRow 
-                  key={order.id} 
-                  className="border-b border-gray-700/30 hover:bg-charcoalPrimary/40"
-                >
-                  <TableCell className="font-medium text-white">{order.symbol}</TableCell>
-                  <TableCell className={getTypeStyle(order.type)}>{order.type}</TableCell>
-                  <TableCell className="text-right text-white">{order.quantity}</TableCell>
-                  <TableCell className="text-right text-white">{formatPrice(order.price)}</TableCell>
-                  <TableCell className="text-center">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex items-center">
-                            {getStatusIcon(order.status)}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-white text-black border border-gray-200">
-                          <p>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
+        {orders.length === 0 ? (
+          <p className="text-center text-gray-400 py-6">No orders found.</p>
+        ) : (
+          <div className="overflow-x-auto -mx-4 px-4">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-gray-700/50">
+                  <TableHead className="text-gray-400 font-medium">Symbol</TableHead>
+                  <TableHead className="text-gray-400 font-medium">Type</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">Quantity</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">Price</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-center">Status</TableHead>
+                  <TableHead className="text-gray-400 font-medium text-right">Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow 
+                    key={order.id} 
+                    className="border-b border-gray-700/30 hover:bg-charcoalPrimary/40"
+                  >
+                    <TableCell className="font-medium text-white">{order.symbol}</TableCell>
+                    <TableCell className={getTypeStyle(order.type)}>{order.type}</TableCell>
+                    <TableCell className="text-right text-white">{order.quantity}</TableCell>
+                    <TableCell className="text-right text-white">{formatPrice(order.price)}</TableCell>
+                    <TableCell className="text-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center">
+                              {getStatusIcon(order.status)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white text-black border border-gray-200">
+                            <p>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </TableCell>
+                    <TableCell className="text-right text-gray-300">
+                      {formatDate(order.date)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </section>
   );
