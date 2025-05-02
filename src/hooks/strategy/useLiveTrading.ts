@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -234,6 +235,17 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(null);
     setCurrentCustomId(null);
     setCurrentStrategyName("");
+  };
+  
+  const handleCancelQuantity = () => {
+    setShowQuantityDialog(false);
+    setCurrentStrategyId(null);
+    setCurrentCustomId(null);
+    setCurrentStrategyName("");
+    
+    if (targetMode === "live") {
+      setTargetMode(null);
+    }
   };
   
   const handleBrokerSubmit = async (brokerId: string, accountName: string) => {
