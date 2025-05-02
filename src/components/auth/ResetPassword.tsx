@@ -20,20 +20,42 @@ const ResetPassword: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Extract token from URL query params
-    const searchParams = new URLSearchParams(location.search);
-    const urlToken = searchParams.get('token');
-    
-    // Also check hash for tokens (for compatibility with various link formats)
-    if (!urlToken && location.hash) {
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const hashToken = hashParams.get('access_token');
-      if (hashToken) {
-        setToken(hashToken);
+    // Extract token from URL query params and hash
+    const extractTokenFromUrl = () => {
+      const searchParams = new URLSearchParams(location.search);
+      const urlToken = searchParams.get('token');
+      
+      if (urlToken) {
+        console.log("Found token in query params");
+        setToken(urlToken);
+        return;
       }
-    } else if (urlToken) {
-      setToken(urlToken);
-    }
+      
+      // Check hash for tokens (for compatibility with various link formats)
+      if (location.hash) {
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const hashToken = hashParams.get('access_token');
+        
+        if (hashToken) {
+          console.log("Found token in hash fragment");
+          setToken(hashToken);
+          return;
+        }
+        
+        // Some Supabase tokens might be after the # without params
+        const potentialToken = location.hash.substring(1);
+        if (potentialToken && potentialToken.length > 30) {
+          console.log("Found potential token in hash");
+          setToken(potentialToken);
+          return;
+        }
+      }
+      
+      // If no token found in URL
+      console.log("No token found in URL");
+    };
+    
+    extractTokenFromUrl();
   }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,29 +85,36 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // First set the session with the token
-      const { error: sessionError } = await supabase.auth.setSession({
+      console.log("Setting session with token:", token.substring(0, 10) + "...");
+      
+      // First attempt to set the session with the token
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
         access_token: token,
         refresh_token: '',
       });
       
       if (sessionError) {
-        setErrorMessage(sessionError.message || 'Invalid or expired token');
+        console.error('Error setting session:', sessionError);
+        setErrorMessage(`Invalid or expired token: ${sessionError.message}`);
         setIsLoading(false);
         return;
       }
+      
+      console.log("Session set successfully, updating password");
       
       // Then update the password
       const { error } = await updatePassword(password);
       
       if (error) {
-        setErrorMessage(error.message || 'Failed to update password');
+        console.error('Error updating password:', error);
+        setErrorMessage(`Failed to update password: ${error.message}`);
       } else {
         toast.success('Password has been reset successfully!');
         navigate('/auth');
       }
     } catch (error: any) {
-      setErrorMessage(error.message || 'An unexpected error occurred');
+      console.error('Exception during password reset:', error);
+      setErrorMessage(`An unexpected error occurred: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +178,7 @@ const ResetPassword: React.FC = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-md"
+            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-full" 
           >
             {isLoading ? (
               <>
