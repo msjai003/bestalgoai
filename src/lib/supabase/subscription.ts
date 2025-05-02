@@ -10,6 +10,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
   try {
     if (!userId) return false;
     
+    // Fix: Properly chain the select and filter methods
     const { data, error } = await supabase
       .from('plan_details')
       .select('*')
