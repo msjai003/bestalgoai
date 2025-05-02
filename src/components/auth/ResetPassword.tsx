@@ -20,78 +20,117 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Extract token from URL query params and hash
-    const extractTokenFromUrl = () => {
-      const searchParams = new URLSearchParams(location.search);
-      const urlToken = searchParams.get('token');
+  // Function to directly use a token we find
+  const tryToUseToken = async (tokenValue: string) => {
+    console.log("Attempting to use token:", tokenValue.substring(0, 10) + "...");
+    
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenValue,
+        type: 'recovery'
+      });
       
-      if (urlToken) {
+      if (error) {
+        console.error("Error verifying OTP:", error);
+        setErrorMessage(`Error verifying token: ${error.message}`);
+        return false;
+      }
+      
+      console.log("OTP verification successful:", data);
+      setSessionEstablished(true);
+      toast.success("Token verified successfully");
+      return true;
+    } catch (err) {
+      console.error("Exception during OTP verification:", err);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    // Extract token from URL query params, hash, and pathname
+    const extractTokenFromUrl = () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      
+      console.log("Current location:", location);
+      
+      // Try to extract from hash
+      if (location.hash) {
+        console.log("Checking hash:", location.hash);
+        
+        // Check if hash contains an access_token parameter
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (accessToken) {
+          console.log("Found access_token in hash");
+          setToken(accessToken);
+          handleTokenAuthentication(accessToken);
+          return;
+        }
+        
+        // If hash doesn't have params but looks like a token itself
+        const rawHash = location.hash.substring(1);
+        if (rawHash && rawHash.length > 20) {
+          console.log("Using raw hash as token");
+          setToken(rawHash);
+          handleTokenAuthentication(rawHash);
+          return;
+        }
+      }
+      
+      // Try to extract from query params
+      const searchParams = new URLSearchParams(location.search);
+      const queryToken = searchParams.get('token');
+      
+      if (queryToken) {
         console.log("Found token in query params");
-        setToken(urlToken);
-        setupSessionWithToken(urlToken);
+        setToken(queryToken);
+        handleTokenAuthentication(queryToken);
         return;
       }
-      
-      // Check hash for tokens (for compatibility with various link formats)
-      if (location.hash) {
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const hashToken = hashParams.get('access_token');
-        
-        if (hashToken) {
-          console.log("Found token in hash fragment");
-          setToken(hashToken);
-          setupSessionWithToken(hashToken);
-          return;
-        }
-        
-        // Some Supabase tokens might be after the # without params
-        const potentialToken = location.hash.substring(1);
-        if (potentialToken && potentialToken.length > 30) {
-          console.log("Found potential token in hash");
-          setToken(potentialToken);
-          setupSessionWithToken(potentialToken);
-          return;
-        }
-      }
-      
-      // If no token found in URL
+
+      // No token found in URL
       console.log("No token found in URL");
+      setIsLoading(false);
     };
     
     extractTokenFromUrl();
   }, [location]);
 
-  // Setup session with token immediately when component loads or token changes
-  const setupSessionWithToken = async (tokenToUse: string) => {
-    if (!tokenToUse) {
-      console.log("No token provided to setupSessionWithToken");
-      return;
-    }
-
+  const handleTokenAuthentication = async (tokenValue: string) => {
     setIsLoading(true);
-    setErrorMessage(null);
+    console.log("Attempting authentication with token");
     
     try {
-      console.log("Attempting to set session with token:", tokenToUse.substring(0, 10) + "...");
+      // First try with recovery OTP verification
+      const otpSuccess = await tryToUseToken(tokenValue);
       
-      // First attempt to set the session with the token
+      if (otpSuccess) {
+        console.log("OTP verification succeeded");
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("OTP verification failed, trying session approach");
+      
+      // If OTP fails, try with access token
       const { data, error } = await supabase.auth.setSession({
-        access_token: tokenToUse,
+        access_token: tokenValue,
         refresh_token: '',
       });
       
       if (error) {
-        console.error('Error setting session:', error);
-        setErrorMessage(`Invalid or expired token: ${error.message}`);
+        console.error("Error setting session:", error);
+        setErrorMessage(`Unable to verify token: ${error.message}`);
         setSessionEstablished(false);
       } else {
-        console.log("Session established successfully:", data);
+        console.log("Session established:", data);
         setSessionEstablished(true);
-        toast.success('Ready to update your password');
+        toast.success("Ready to update your password");
       }
     } catch (error: any) {
-      console.error('Exception during session setup:', error);
+      console.error("Exception during token authentication:", error);
       setErrorMessage(`An unexpected error occurred: ${error.message}`);
       setSessionEstablished(false);
     } finally {
@@ -122,36 +161,34 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // If session isn't established yet, try to establish it now
-      if (!sessionEstablished && token) {
-        console.log("Session not yet established, attempting to set it now");
-        
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: token,
-          refresh_token: '',
-        });
-        
-        if (sessionError) {
-          console.error('Error setting session during password update:', sessionError);
-          setErrorMessage(`Cannot update password: ${sessionError.message}. Please try the password reset process again.`);
-          setIsLoading(false);
-          return;
-        }
-        
-        console.log("Session set successfully before password update");
-      }
-      
-      // Verify we have a valid session before updating password
+      // First check if we have a valid session
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (!sessionData.session) {
-        console.error('No active session found before password update');
-        setErrorMessage('No active session found. Please restart the password reset process.');
-        setIsLoading(false);
-        return;
+        console.error('No active session found - trying one more time with token');
+        
+        if (token) {
+          // Try one more time with the token
+          const { data, error } = await supabase.auth.setSession({
+            access_token: token,
+            refresh_token: '',
+          });
+          
+          if (error || !data.session) {
+            setErrorMessage('No active session. Please restart the password reset process.');
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("Last-minute session recovery succeeded");
+        } else {
+          setErrorMessage('No active session or token. Please restart the password reset process.');
+          setIsLoading(false);
+          return;
+        }
       }
       
-      console.log("Valid session confirmed, updating password");
+      console.log("Updating password");
       
       // Now update the password
       const { error } = await updatePassword(password);
@@ -171,7 +208,6 @@ const ResetPassword: React.FC = () => {
     }
   };
 
-  // Updated UI to match the provided image
   return (
     <div className="bg-charcoalPrimary min-h-screen flex items-center justify-center">
       <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
@@ -199,7 +235,7 @@ const ResetPassword: React.FC = () => {
                   const newToken = e.target.value;
                   setToken(newToken);
                   if (newToken.trim().length > 30) {
-                    setupSessionWithToken(newToken);
+                    handleTokenAuthentication(newToken);
                   }
                 }}
                 placeholder="Paste your reset token here"
@@ -234,18 +270,13 @@ const ResetPassword: React.FC = () => {
           
           <Button
             type="submit"
-            disabled={isLoading || (!sessionEstablished && !!token)}
-            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-full" 
+            disabled={isLoading}
+            className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-full"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Updating Password...
-              </>
-            ) : !sessionEstablished && token ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying Token...
               </>
             ) : (
               'Update Password'
