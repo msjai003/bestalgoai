@@ -87,7 +87,7 @@ export const useLiveTrading = () => {
     }
     
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
-    setCurrentStrategyName(strategy.name);
+    setCurrentStrategyName(strategy.name || `Strategy ${id}`);
     setCurrentBrokerName(strategy.selectedBroker || null);
     
     if (strategy.isCustom && strategy.rowId) {
@@ -154,7 +154,7 @@ export const useLiveTrading = () => {
         
         toast({
           title: "Paper Trading Enabled",
-          description: `${currentStrategyName} is now in paper trading mode`,
+          description: `${currentStrategyName || 'Strategy'} is now in paper trading mode`,
           duration: 3000,
         });
         
@@ -218,7 +218,7 @@ export const useLiveTrading = () => {
       
       toast({
         title: "Quantity Updated",
-        description: `${currentStrategyName} quantity set to ${quantity}`,
+        description: `${currentStrategyName || 'Strategy'} quantity set to ${quantity}`,
         duration: 3000,
       });
       
@@ -257,7 +257,6 @@ export const useLiveTrading = () => {
         .from('broker_credentials')
         .select('broker_name, username')
         .eq('id', brokerId)
-        .eq('user_id', user.id)
         .single();
       
       if (brokerError) {
@@ -277,8 +276,8 @@ export const useLiveTrading = () => {
               .update({
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
-                selected_broker: brokerName, // Use actual broker name instead of ID
-                broker_username: username    // Use actual username
+                selected_broker: brokerName,
+                broker_username: username
               })
               .eq('id', currentCustomId)
               .eq('user_id', user.id);
@@ -290,8 +289,8 @@ export const useLiveTrading = () => {
               .update({
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
-                selected_broker: brokerName, // Use actual broker name instead of ID
-                broker_username: username    // Use actual username
+                selected_broker: brokerName,
+                broker_username: username
               })
               .eq('strategy_id', currentStrategyId)
               .eq('user_id', user.id);
@@ -306,8 +305,8 @@ export const useLiveTrading = () => {
                   ...strategy,
                   isLive: true,
                   quantity: pendingQuantity,
-                  selectedBroker: brokerName, // Use actual broker name
-                  brokerUsername: username,   // Use actual username
+                  selectedBroker: brokerName,
+                  brokerUsername: username,
                   tradeType: 'live trade'
                 };
               }
@@ -317,7 +316,7 @@ export const useLiveTrading = () => {
           
           toast({
             title: "Live Trading Enabled",
-            description: `${currentStrategyName} is now live with broker ${brokerName} and quantity ${pendingQuantity}`,
+            description: `${currentStrategyName || 'Strategy'} is now live with broker ${brokerName} and quantity ${pendingQuantity}`,
             duration: 3000,
           });
         } catch (error) {
@@ -346,8 +345,8 @@ export const useLiveTrading = () => {
             const { error } = await supabase
               .from('custom_strategies')
               .update({
-                selected_broker: brokerName, // Use broker name
-                broker_username: username    // Use actual username
+                selected_broker: brokerName,
+                broker_username: username
               })
               .eq('id', strategy.rowId)
               .eq('user_id', user.id);
@@ -358,8 +357,8 @@ export const useLiveTrading = () => {
               user.id,
               currentStrategyId,
               strategy.quantity || 0,
-              brokerName, // Use broker name
-              username,   // Use actual username
+              brokerName,
+              username,
               strategy.isLive ? "live trade" : "paper trade"
             );
           }
@@ -369,8 +368,8 @@ export const useLiveTrading = () => {
               if (s.id === currentStrategyId) {
                 return { 
                   ...s, 
-                  selectedBroker: brokerName, // Use broker name
-                  brokerUsername: username    // Use actual username
+                  selectedBroker: brokerName,
+                  brokerUsername: username
                 };
               }
               return s;
@@ -379,7 +378,7 @@ export const useLiveTrading = () => {
           
           toast({
             title: "Broker Settings Updated",
-            description: `${currentStrategyName} broker set to ${brokerName}`,
+            description: `${currentStrategyName || 'Strategy'} broker set to ${brokerName}`,
             duration: 3000,
           });
           
