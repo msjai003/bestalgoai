@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,6 +14,8 @@ const ResetPassword: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionEstablished, setSessionEstablished] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { updatePassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -191,6 +192,14 @@ const ResetPassword: React.FC = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   return (
     <div className="bg-charcoalPrimary min-h-screen flex items-center justify-center">
       <div className="bg-charcoalSecondary p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
@@ -209,26 +218,52 @@ const ResetPassword: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="password" className="block text-gray-300 mb-2">New Password</label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your new password"
-              className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your new password"
+                className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
           
           <div>
             <label htmlFor="confirmPassword" className="block text-gray-300 mb-2">Confirm Password</label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Enter your confirm password"
-              className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Enter your confirm password"
+                className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={toggleConfirmPasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
           
           <Button
