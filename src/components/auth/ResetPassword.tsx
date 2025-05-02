@@ -20,11 +20,13 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Function to directly use a token we find
-  const tryToUseToken = async (tokenValue: string) => {
-    console.log("Attempting to use token:", tokenValue.substring(0, 10) + "...");
+  // Function to directly authenticate with a token
+  const authenticateWithToken = async (tokenValue: string) => {
+    console.log("Authenticating with token:", tokenValue.substring(0, 10) + "...");
+    setIsLoading(true);
     
     try {
+      // First try with recovery OTP verification
       const { data, error } = await supabase.auth.verifyOtp({
         token_hash: tokenValue,
         type: 'recovery'
@@ -32,29 +34,52 @@ const ResetPassword: React.FC = () => {
       
       if (error) {
         console.error("Error verifying OTP:", error);
-        setErrorMessage(`Error verifying token: ${error.message}`);
-        return false;
+        
+        // If OTP verification fails, try setting session with token
+        const sessionResult = await supabase.auth.setSession({
+          access_token: tokenValue,
+          refresh_token: '',
+        });
+        
+        if (sessionResult.error) {
+          console.error("Error setting session:", sessionResult.error);
+          setErrorMessage(`Unable to verify reset token. Please try the password reset process again.`);
+          setSessionEstablished(false);
+          setIsLoading(false);
+          return false;
+        } else {
+          console.log("Session established successfully");
+          setSessionEstablished(true);
+          setIsLoading(false);
+          toast.success("Ready to update your password");
+          return true;
+        }
+      } else {
+        console.log("OTP verification successful:", data);
+        setSessionEstablished(true);
+        setIsLoading(false);
+        toast.success("Token verified successfully");
+        return true;
       }
-      
-      console.log("OTP verification successful:", data);
-      setSessionEstablished(true);
-      toast.success("Token verified successfully");
-      return true;
     } catch (err) {
-      console.error("Exception during OTP verification:", err);
+      console.error("Exception during authentication:", err);
+      setErrorMessage(`An unexpected error occurred. Please try again.`);
+      setIsLoading(false);
       return false;
     }
   };
 
+  // Extract token from URL on component mount
   useEffect(() => {
-    // Extract token from URL query params, hash, and pathname
-    const extractTokenFromUrl = () => {
+    const extractAndUseToken = () => {
       setIsLoading(true);
       setErrorMessage(null);
       
-      console.log("Current location:", location);
+      console.log("Analyzing current URL:", location);
       
-      // Try to extract from hash
+      let foundToken = '';
+      
+      // Try to extract from hash fragment (#)
       if (location.hash) {
         console.log("Checking hash:", location.hash);
         
@@ -63,79 +88,46 @@ const ResetPassword: React.FC = () => {
         const accessToken = hashParams.get('access_token');
         
         if (accessToken) {
-          console.log("Found access_token in hash");
-          setToken(accessToken);
-          handleTokenAuthentication(accessToken);
-          return;
+          console.log("Found access_token in hash parameters");
+          foundToken = accessToken;
+        } else {
+          // If hash doesn't have params but looks like a token itself
+          const rawHash = location.hash.substring(1);
+          if (rawHash && rawHash.length > 20) {
+            console.log("Using raw hash as token");
+            foundToken = rawHash;
+          }
         }
+      }
+      
+      // If no token in hash, try search params (?)
+      if (!foundToken) {
+        const searchParams = new URLSearchParams(location.search);
+        const queryToken = searchParams.get('token');
         
-        // If hash doesn't have params but looks like a token itself
-        const rawHash = location.hash.substring(1);
-        if (rawHash && rawHash.length > 20) {
-          console.log("Using raw hash as token");
-          setToken(rawHash);
-          handleTokenAuthentication(rawHash);
-          return;
+        if (queryToken) {
+          console.log("Found token in query parameters");
+          foundToken = queryToken;
         }
       }
       
-      // Try to extract from query params
-      const searchParams = new URLSearchParams(location.search);
-      const queryToken = searchParams.get('token');
-      
-      if (queryToken) {
-        console.log("Found token in query params");
-        setToken(queryToken);
-        handleTokenAuthentication(queryToken);
-        return;
+      // If token found, authenticate with it
+      if (foundToken) {
+        setToken(foundToken);
+        authenticateWithToken(foundToken);
+      } else {
+        console.log("No token found in URL");
+        setIsLoading(false);
       }
-
-      // No token found in URL
-      console.log("No token found in URL");
-      setIsLoading(false);
     };
     
-    extractTokenFromUrl();
+    extractAndUseToken();
   }, [location]);
 
-  const handleTokenAuthentication = async (tokenValue: string) => {
-    setIsLoading(true);
-    console.log("Attempting authentication with token");
-    
-    try {
-      // First try with recovery OTP verification
-      const otpSuccess = await tryToUseToken(tokenValue);
-      
-      if (otpSuccess) {
-        console.log("OTP verification succeeded");
-        setIsLoading(false);
-        return;
-      }
-      
-      console.log("OTP verification failed, trying session approach");
-      
-      // If OTP fails, try with access token
-      const { data, error } = await supabase.auth.setSession({
-        access_token: tokenValue,
-        refresh_token: '',
-      });
-      
-      if (error) {
-        console.error("Error setting session:", error);
-        setErrorMessage(`Unable to verify token: ${error.message}`);
-        setSessionEstablished(false);
-      } else {
-        console.log("Session established:", data);
-        setSessionEstablished(true);
-        toast.success("Ready to update your password");
-      }
-    } catch (error: any) {
-      console.error("Exception during token authentication:", error);
-      setErrorMessage(`An unexpected error occurred: ${error.message}`);
-      setSessionEstablished(false);
-    } finally {
-      setIsLoading(false);
-    }
+  // Verify session before updating password
+  const verifySessionBeforeUpdate = async () => {
+    const { data } = await supabase.auth.getSession();
+    return !!data.session;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,33 +154,27 @@ const ResetPassword: React.FC = () => {
     
     try {
       // First check if we have a valid session
-      const { data: sessionData } = await supabase.auth.getSession();
+      const hasSession = await verifySessionBeforeUpdate();
       
-      if (!sessionData.session) {
-        console.error('No active session found - trying one more time with token');
+      if (!hasSession) {
+        console.log('No active session found - attempting to recover session with token');
         
-        if (token) {
-          // Try one more time with the token
-          const { data, error } = await supabase.auth.setSession({
-            access_token: token,
-            refresh_token: '',
-          });
-          
-          if (error || !data.session) {
-            setErrorMessage('No active session. Please restart the password reset process.');
-            setIsLoading(false);
-            return;
-          }
-          
-          console.log("Last-minute session recovery succeeded");
-        } else {
-          setErrorMessage('No active session or token. Please restart the password reset process.');
+        if (token && !await authenticateWithToken(token)) {
+          setErrorMessage('Authentication failed. Please restart the password reset process.');
           setIsLoading(false);
           return;
         }
       }
       
-      console.log("Updating password");
+      // Double-check session after recovery attempt
+      const sessionCheck = await verifySessionBeforeUpdate();
+      if (!sessionCheck) {
+        setErrorMessage('Unable to establish a valid session. Please restart the password reset process.');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Session verified. Updating password now");
       
       // Now update the password
       const { error } = await updatePassword(password);
@@ -198,7 +184,8 @@ const ResetPassword: React.FC = () => {
         setErrorMessage(`Failed to update password: ${error.message}`);
       } else {
         toast.success('Password has been reset successfully!');
-        navigate('/auth');
+        // Short delay before navigating to allow toast to be seen
+        setTimeout(() => navigate('/auth'), 1500);
       }
     } catch (error: any) {
       console.error('Exception during password reset:', error);
@@ -235,7 +222,7 @@ const ResetPassword: React.FC = () => {
                   const newToken = e.target.value;
                   setToken(newToken);
                   if (newToken.trim().length > 30) {
-                    handleTokenAuthentication(newToken);
+                    authenticateWithToken(newToken);
                   }
                 }}
                 placeholder="Paste your reset token here"
@@ -251,7 +238,7 @@ const ResetPassword: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your new password"
               className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
             />
           </div>
@@ -263,7 +250,7 @@ const ResetPassword: React.FC = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your confirm password"
               className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
             />
           </div>
