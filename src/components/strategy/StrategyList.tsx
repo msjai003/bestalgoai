@@ -20,7 +20,7 @@ export const StrategyList: React.FC<StrategyListProps> = ({
     <section className="space-y-4 mb-6">
       {strategies.map(strategy => (
         <StrategyCard 
-          key={strategy.rowId || strategy.uniqueId || `strategy-${strategy.id}-${strategy.selectedBroker || ''}-${Date.now()}-${Math.random()}`}
+          key={strategy.rowId || strategy.uniqueId || `strategy-${strategy.id}-${strategy.selectedBroker || ''}-${Date.now()}`}
           strategy={strategy}
           onToggleLiveMode={() => onToggleLiveMode(
             strategy.id, 
