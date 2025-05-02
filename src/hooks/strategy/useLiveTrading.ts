@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -75,7 +74,7 @@ export const useLiveTrading = () => {
     });
   };
   
-  const handleToggleLiveMode = async (id: number, uniqueId?: string, rowId?: string) => {
+  const handleToggleLiveMode = async (id: number, uniqueId?: string, rowId?: string, broker?: string) => {
     const strategy = strategies.find(s => {
       if (s.id === id) return true;
       return (uniqueId && s.uniqueId === uniqueId) || (rowId && s.rowId === rowId);
@@ -237,17 +236,6 @@ export const useLiveTrading = () => {
     setCurrentStrategyName("");
   };
   
-  const handleCancelQuantity = () => {
-    setShowQuantityDialog(false);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentStrategyName("");
-    
-    if (targetMode === "live") {
-      setTargetMode(null);
-    }
-  };
-  
   const handleBrokerSubmit = async (brokerId: string, accountName: string) => {
     if (!user) return;
     
@@ -284,6 +272,8 @@ export const useLiveTrading = () => {
               
             if (error) throw error;
           } else if (currentStrategyId !== null) {
+            // This part is critical - it saves the data to strategy_selections table
+            // with strategy name, description, quantity, broker info
             const { error } = await supabase
               .from('strategy_selections')
               .update({
