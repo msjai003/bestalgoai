@@ -20,6 +20,7 @@ export interface Strategy {
   isPremium?: boolean; // Whether this is a premium strategy
   isPaid?: boolean; // Whether the user has paid for this strategy
   isCustom?: boolean; // Whether this is a custom strategy or predefined
+  paid_status?: string; // Add this property to match what's coming from the database
 }
 
 export interface StrategySelection {

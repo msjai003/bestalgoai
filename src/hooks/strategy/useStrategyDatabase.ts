@@ -25,6 +25,7 @@ export const loadUserStrategies = async (userId: string) => {
       tradeType: selection.trade_type,
       uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
       rowId: selection.id,
+      paid_status: selection.paid_status, // Make sure we're including this field
       // Add default performance object since it's required by the Strategy type
       performance: {
         winRate: "N/A",

@@ -45,6 +45,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
           // If user has a strategy with paid_status='paid', mark it as accessible
+          // We need to check if the property exists before accessing it
           if (userStrategy && userStrategy.paid_status === 'paid') {
             return { 
               ...predefinedStrategy, 
