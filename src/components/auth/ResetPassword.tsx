@@ -215,7 +215,7 @@ const ResetPassword: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your new password"
-              className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
+              className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full"
             />
           </div>
           
@@ -227,7 +227,7 @@ const ResetPassword: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Enter your confirm password"
-              className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
+              className="bg-[#F1F0FB] text-gray-900 h-11 rounded-xl border border-[#D6BCFA]/50 focus:border-[#9b87f5] focus:ring-2 focus:ring-[#9b87f5]/30 shadow-sm w-full"
             />
           </div>
           
