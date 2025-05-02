@@ -8,7 +8,7 @@ import { supabase } from './client';
  */
 export const checkUserPremiumStatus = async (userId: string): Promise<boolean> => {
   try {
-    // Fixed query chain order to ensure proper method chaining
+    // Correctly chain the query methods
     const { data, error } = await supabase
       .from('plan_details')
       .select('*')
