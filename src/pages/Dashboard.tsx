@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
+import { syncPremiumAccess } from "@/lib/supabase/subscription";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [isSyncingPremium, setIsSyncingPremium] = useState(false);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
@@ -58,8 +60,19 @@ const Dashboard = () => {
           .limit(1)
           .maybeSingle();
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.is_paid === true)) {
           setHasPremium(true);
+          
+          // If the user has premium, sync their access to unlock strategies
+          if (!isSyncingPremium && data.is_paid === true) {
+            setIsSyncingPremium(true);
+            const synced = await syncPremiumAccess(user.id);
+            setIsSyncingPremium(false);
+            
+            if (synced) {
+              console.log("Premium access synced successfully");
+            }
+          }
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
@@ -67,7 +80,7 @@ const Dashboard = () => {
     };
     
     checkPremium();
-  }, [user]);
+  }, [user, isSyncingPremium]);
 
   if (isVerifyingAuth || user === null) {
     return (

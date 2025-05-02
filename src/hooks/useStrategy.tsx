@@ -7,6 +7,7 @@ import {
   updateStrategyLiveConfig,
   updateStrategyTradeType
 } from "@/hooks/strategy/useStrategyDatabase";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -23,24 +24,35 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     if (user) {
       loadStrategies();
+      checkPremiumStatus(user.id);
     }
   }, [user]);
 
-  useEffect(() => {
-    // Mock premium status check
-    const premiumStatus = Math.random() < 0.8;
-    setHasPremium(premiumStatus);
-  }, []);
+  const checkPremiumStatus = async (userId: string) => {
+    const isPremium = await checkUserPremiumStatus(userId);
+    setHasPremium(isPremium);
+  };
 
   const loadStrategies = async () => {
     if (!user) return;
     setIsLoading(true);
     try {
       const userStrategies = await loadUserStrategies(user.id);
+      
       setStrategies(prevStrategies => {
         // Merge predefined strategies with user-specific configurations
         const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
+          
+          // If user has a strategy with paid_status='paid', mark it as accessible
+          if (userStrategy && userStrategy.paid_status === 'paid') {
+            return { 
+              ...predefinedStrategy, 
+              ...userStrategy,
+              isPaid: true  // Mark as paid/unlocked
+            };
+          }
+          
           return userStrategy ? { ...predefinedStrategy, ...userStrategy } : predefinedStrategy;
         });
         return mergedStrategies;

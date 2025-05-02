@@ -9,17 +9,24 @@ interface StrategyItemProps {
     name: string;
     description: string;
     isPremium: boolean;
+    isPaid?: boolean;
   };
   hasPremium: boolean;
   onPremiumClick: () => void;
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
+  // A strategy is accessible if:
+  // - it's not premium, OR
+  // - the user has premium access (hasPremium), OR
+  // - this specific strategy has been paid for (isPaid)
+  const isAccessible = !strategy.isPremium || hasPremium || strategy.isPaid;
+  
   return (
     <Link 
       to={`/strategy-details/${strategy.id}`}
       className="block mb-3"
-      onClick={strategy.isPremium && !hasPremium ? (e) => {
+      onClick={!isAccessible ? (e) => {
         e.preventDefault();
         onPremiumClick();
       } : undefined}
@@ -27,7 +34,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
       <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-medium text-white">{strategy.name}</h3>
-          {strategy.isPremium && !hasPremium && (
+          {strategy.isPremium && !isAccessible && (
             <span className="bg-amber-900/30 border border-amber-500/30 text-amber-500 text-xs px-2 py-1 rounded-md flex items-center">
               <Lock className="h-3 w-3 mr-1" /> Premium
             </span>
