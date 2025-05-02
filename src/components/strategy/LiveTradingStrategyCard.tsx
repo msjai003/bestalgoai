@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-white font-medium">{strategy.name || `Strategy ${strategy.id}`}</h3>
+            <h3 className="text-white font-medium">{strategy.name}</h3>
             {strategy.description && (
               <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
             )}
