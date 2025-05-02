@@ -17,6 +17,8 @@ interface TradingModeConfirmationDialogProps {
   targetMode: "live" | "paper" | null;
   onConfirm: () => void;
   onCancel: () => void;
+  strategyName?: string;
+  brokerName?: string;
 }
 
 export const TradingModeConfirmationDialog = ({
@@ -25,6 +27,8 @@ export const TradingModeConfirmationDialog = ({
   targetMode,
   onConfirm,
   onCancel,
+  strategyName = "this strategy",
+  brokerName,
 }: TradingModeConfirmationDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,12 +50,13 @@ export const TradingModeConfirmationDialog = ({
           <DialogDescription className="text-gray-400">
             {targetMode === "live" ? (
               <>
-                Are you sure you want to enable <span className="font-semibold text-green-400">live trading</span> for this strategy? 
+                Are you sure you want to enable <span className="font-semibold text-green-400">live trading</span> for <span className="font-semibold text-cyan">{strategyName}</span>
+                {brokerName && <span> with broker <span className="font-semibold text-cyan">{brokerName}</span></span>}? 
                 Real funds will be used for trades based on this strategy.
               </>
             ) : (
               <>
-                Are you sure you want to switch to <span className="font-semibold text-cyan">paper trading</span> mode? 
+                Are you sure you want to switch <span className="font-semibold text-cyan">{strategyName}</span> to <span className="font-semibold text-cyan">paper trading</span> mode? 
                 No real funds will be used, but the strategy will continue to generate signals.
               </>
             )}

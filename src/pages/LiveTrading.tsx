@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
@@ -32,7 +33,9 @@ const LiveTrading = () => {
     handleBrokerSubmit,
     handleCancelBroker,
     navigate,
-    setCurrentStrategyId
+    setCurrentStrategyId,
+    currentStrategyName,
+    currentBrokerName
   } = useLiveTrading();
 
   return (
@@ -87,6 +90,8 @@ const LiveTrading = () => {
         targetMode={targetMode}
         onConfirm={confirmModeChange}
         onCancel={() => setShowConfirmationDialog(false)}
+        strategyName={currentStrategyName}
+        brokerName={currentBrokerName}
       />
       
       <QuantityInputDialog
