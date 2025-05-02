@@ -207,26 +207,6 @@ const ResetPassword: React.FC = () => {
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!token && (
-            <div>
-              <label htmlFor="token" className="block text-gray-300 mb-2">Reset Token</label>
-              <Input
-                id="token"
-                type="text"
-                value={token}
-                onChange={(e) => {
-                  const newToken = e.target.value;
-                  setToken(newToken);
-                  if (newToken.trim().length > 30) {
-                    authenticateWithToken(newToken);
-                  }
-                }}
-                placeholder="Paste your reset token here"
-                className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
-              />
-            </div>
-          )}
-          
           <div>
             <label htmlFor="password" className="block text-gray-300 mb-2">New Password</label>
             <Input
