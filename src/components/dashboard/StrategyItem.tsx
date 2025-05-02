@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface StrategyItemProps {
   strategy: {
@@ -35,9 +36,18 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-medium text-white">{strategy.name}</h3>
           {strategy.isPremium && !isAccessible && (
-            <span className="bg-amber-900/30 border border-amber-500/30 text-amber-500 text-xs px-2 py-1 rounded-md flex items-center">
-              <Lock className="h-3 w-3 mr-1" /> Premium
-            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 rounded-full px-3 py-1 text-xs shadow-sm hover:shadow-yellow-500/20 transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPremiumClick();
+              }}
+            >
+              <Lock className="h-3 w-3 mr-1" /> Unlock
+            </Button>
           )}
         </div>
         <p className="text-gray-400 text-sm">{strategy.description}</p>
