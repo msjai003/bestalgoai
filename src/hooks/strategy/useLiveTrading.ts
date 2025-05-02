@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +23,7 @@ export const useLiveTrading = () => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [currentBroker, setCurrentBroker] = useState<string | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
+  const [currentStrategyName, setCurrentStrategyName] = useState<string>("");
   
   const { customStrategies } = useCustomStrategies();
   
@@ -84,6 +86,7 @@ export const useLiveTrading = () => {
     }
     
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
+    setCurrentStrategyName(strategy.name || "Strategy"); // Store the strategy name
     
     if (strategy.isCustom && strategy.rowId) {
       setCurrentCustomId(strategy.rowId);
@@ -149,13 +152,14 @@ export const useLiveTrading = () => {
         
         toast({
           title: "Paper Trading Enabled",
-          description: "Strategy is now in paper trading mode",
+          description: `${currentStrategyName} is now in paper trading mode`,
           duration: 3000,
         });
         
         setShowConfirmationDialog(false);
         setCurrentStrategyId(null);
         setCurrentCustomId(null);
+        setCurrentStrategyName("");
         setTargetMode(null);
       }
     } catch (error) {
@@ -307,7 +311,7 @@ export const useLiveTrading = () => {
           
           toast({
             title: "Live Trading Enabled",
-            description: `Strategy is now live with quantity ${pendingQuantity}`,
+            description: `${currentStrategyName} is now live with quantity ${pendingQuantity}`,
             duration: 3000,
           });
         } catch (error) {
@@ -323,6 +327,7 @@ export const useLiveTrading = () => {
         setPendingQuantity(0);
         setCurrentStrategyId(null);
         setCurrentCustomId(null);
+        setCurrentStrategyName("");
         setTargetMode(null);
         return;
       }
@@ -400,6 +405,7 @@ export const useLiveTrading = () => {
     setShowBrokerDialog(false);
     setCurrentStrategyId(null);
     setCurrentCustomId(null);
+    setCurrentStrategyName("");
     setTargetMode(null);
     setPendingQuantity(0);
   };
@@ -417,6 +423,7 @@ export const useLiveTrading = () => {
     targetMode,
     currentBroker,
     currentStrategyId,
+    currentStrategyName,
     setCurrentStrategyId,
     handleTradingToggle,
     handleModeChange,

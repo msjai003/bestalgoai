@@ -31,6 +31,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
         e.preventDefault();
         onPremiumClick();
       } : undefined}
+      data-strategy-name={strategy.name} // Add data attribute to preserve strategy name
     >
       <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
         <div className="flex justify-between items-center mb-2">
