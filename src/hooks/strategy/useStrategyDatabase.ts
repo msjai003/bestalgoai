@@ -13,26 +13,50 @@ export const loadUserStrategies = async (userId: string) => {
       return [];
     }
 
-    return strategySelections.map(selection => ({
-      id: selection.strategy_id,
-      name: selection.strategy_name,
-      description: selection.strategy_description,
-      isWishlisted: false, // This value is not stored in the strategy_selections table
-      isLive: selection.trade_type === "live trade",
-      quantity: selection.quantity,
-      selectedBroker: selection.selected_broker,
-      brokerUsername: selection.broker_username,
-      tradeType: selection.trade_type,
-      uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
-      rowId: selection.id,
-      paid_status: selection.paid_status, // Make sure we're including this field
-      // Add default performance object since it's required by the Strategy type
-      performance: {
-        winRate: "N/A",
-        avgProfit: "N/A",
-        drawdown: "N/A"
-      }
-    }));
+    // Load all broker usernames for this user to display them correctly
+    const { data: brokerCredentials, error: brokerError } = await supabase
+      .from('broker_credentials')
+      .select('id, broker_name, username, broker_id')
+      .eq('user_id', userId);
+
+    if (brokerError) {
+      console.error("Error fetching broker credentials:", brokerError);
+    }
+
+    // Create a map of broker IDs to broker usernames for easy lookup
+    const brokerUsernameMap = {};
+    if (brokerCredentials) {
+      brokerCredentials.forEach(cred => {
+        brokerUsernameMap[cred.id] = cred.username;
+      });
+    }
+
+    return strategySelections.map(selection => {
+      // Get the broker username from our map based on the selected_broker UUID 
+      // If not found, fallback to the stored broker_username
+      const brokerUsername = brokerUsernameMap[selection.selected_broker] || selection.broker_username;
+
+      return {
+        id: selection.strategy_id,
+        name: selection.strategy_name,
+        description: selection.strategy_description,
+        isWishlisted: false, // This value is not stored in the strategy_selections table
+        isLive: selection.trade_type === "live trade",
+        quantity: selection.quantity,
+        selectedBroker: selection.selected_broker,
+        brokerUsername: brokerUsername,
+        tradeType: selection.trade_type,
+        uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${brokerUsername}`,
+        rowId: selection.id,
+        paid_status: selection.paid_status,
+        // Add default performance object since it's required by the Strategy type
+        performance: {
+          winRate: "N/A",
+          avgProfit: "N/A",
+          drawdown: "N/A"
+        }
+      };
+    });
   } catch (error) {
     console.error("Error loading user strategies:", error);
     return [];
@@ -51,6 +75,24 @@ export const updateStrategyLiveConfig = async (
 ) => {
   try {
     console.log("Updating strategy with trade type:", tradeType);
+    
+    // Get broker details to ensure we have the correct username
+    const { data: brokerData, error: brokerError } = await supabase
+      .from('broker_credentials')
+      .select('id, username, broker_name')
+      .eq('id', selectedBroker)
+      .maybeSingle();
+    
+    if (brokerError) {
+      console.error("Error fetching broker details:", brokerError);
+    }
+    
+    // Use the username from broker_credentials if available
+    const correctBrokerUsername = brokerData?.username || brokerUsername;
+    const brokerDisplayName = brokerData?.broker_name || 'Unknown Broker';
+    
+    console.log("Using broker username:", correctBrokerUsername);
+    console.log("Using broker display name:", brokerDisplayName);
     
     // If strategyName is empty, try to fetch it from predefined_strategies table
     if (!strategyName || !strategyDescription) {
@@ -95,8 +137,7 @@ export const updateStrategyLiveConfig = async (
       .select('id')
       .eq('user_id', userId)
       .eq('strategy_id', strategyId)
-      .eq('selected_broker', selectedBroker)
-      .eq('broker_username', brokerUsername);
+      .eq('selected_broker', selectedBroker);
 
     if (checkError) {
       console.error("Error checking for existing records:", checkError);
@@ -115,13 +156,14 @@ export const updateStrategyLiveConfig = async (
           quantity: quantity,
           trade_type: tradeType,
           strategy_name: strategyName,
-          strategy_description: strategyDescription
+          strategy_description: strategyDescription,
+          broker_username: correctBrokerUsername
         })
         .eq('id', existingRecords[0].id)
         .select();
     } else {
       // Insert new record for this strategy-broker combination if none exists
-      console.log("Creating new strategy-broker selection record for strategyId:", strategyId, "broker:", selectedBroker);
+      console.log("Creating new strategy-broker selection record for strategyId:", strategyId, "broker:", brokerDisplayName);
       result = await supabase
         .from('strategy_selections')
         .insert({
@@ -129,7 +171,7 @@ export const updateStrategyLiveConfig = async (
           strategy_id: strategyId,
           quantity: quantity,
           selected_broker: selectedBroker,
-          broker_username: brokerUsername,
+          broker_username: correctBrokerUsername,
           trade_type: tradeType,
           strategy_name: strategyName,
           strategy_description: strategyDescription
@@ -208,7 +250,7 @@ export const fetchBrokerById = async (brokerId: string) => {
   try {
     const { data: broker, error } = await supabase
       .from('broker_credentials')
-      .select('*')
+      .select('id, broker_name, username')
       .eq('id', brokerId)
       .single();
 
@@ -229,7 +271,7 @@ export const fetchUserBrokers = async (userId: string) => {
     // Updated to use is_connected field instead of checking status
     const { data: brokers, error } = await supabase
       .from('broker_credentials')
-      .select('id, broker_name')
+      .select('id, broker_name, username')
       .eq('user_id', userId)
       .eq('is_connected', true);
 
@@ -238,6 +280,7 @@ export const fetchUserBrokers = async (userId: string) => {
       throw error;
     }
 
+    console.log("Fetched brokers with usernames:", brokers);
     return brokers;
   } catch (error) {
     console.error("Exception fetching user brokers:", error);
