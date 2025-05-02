@@ -122,13 +122,25 @@ export const useLiveTrading = () => {
             
           if (error) throw error;
         } else if (currentStrategyId !== null) {
+          // Fetch the current strategy name and description before updating
+          const { data: stratData } = await supabase
+            .from('predefined_strategies')
+            .select('name, description')
+            .eq('id', currentStrategyId)
+            .single();
+            
+          const strategyName = stratData?.name || currentStrategyName;
+          const strategyDescription = stratData?.description || "";
+            
           const { error } = await supabase
             .from('strategy_selections')
             .update({
               trade_type: 'paper trade',
               quantity: 0,
               selected_broker: null,
-              broker_username: null
+              broker_username: null,
+              strategy_name: strategyName,
+              strategy_description: strategyDescription
             })
             .eq('strategy_id', currentStrategyId)
             .eq('user_id', user.id);
@@ -197,13 +209,23 @@ export const useLiveTrading = () => {
           
         if (error) throw error;
       } else if (strategy && currentStrategyId !== null) {
+        // Fetch the strategy name and description from predefined_strategies
+        const { data: stratData } = await supabase
+          .from('predefined_strategies')
+          .select('name, description')
+          .eq('id', currentStrategyId)
+          .single();
+          
+        // Use the actual strategy name and description from predefined_strategies
         await updateStrategyLiveConfig(
           user.id,
           currentStrategyId,
           quantity,
           strategy.selectedBroker || "",
           strategy.brokerUsername || "",
-          strategy.isLive ? "live trade" : "paper trade"
+          strategy.isLive ? "live trade" : "paper trade",
+          stratData?.name || strategy.name,
+          stratData?.description || strategy.description || ""
         );
       }
       
@@ -284,6 +306,16 @@ export const useLiveTrading = () => {
               
             if (error) throw error;
           } else if (currentStrategyId !== null) {
+            // Fetch the actual strategy name and description from predefined_strategies
+            const { data: stratData } = await supabase
+              .from('predefined_strategies')
+              .select('name, description')
+              .eq('id', currentStrategyId)
+              .single();
+              
+            const strategyName = stratData?.name || "";
+            const strategyDescription = stratData?.description || "";
+            
             // This part is critical - it saves the data to strategy_selections table
             // with strategy name, description, quantity, broker info
             const { error } = await supabase
@@ -292,7 +324,9 @@ export const useLiveTrading = () => {
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
                 selected_broker: brokerName,
-                broker_username: username
+                broker_username: username,
+                strategy_name: strategyName,
+                strategy_description: strategyDescription
               })
               .eq('strategy_id', currentStrategyId)
               .eq('user_id', user.id);
@@ -343,6 +377,16 @@ export const useLiveTrading = () => {
         try {
           const strategy = strategies.find(s => s.id === currentStrategyId);
           
+          // Fetch the actual strategy name and description from predefined_strategies
+          const { data: stratData } = await supabase
+            .from('predefined_strategies')
+            .select('name, description')
+            .eq('id', currentStrategyId)
+            .single();
+            
+          const strategyName = stratData?.name || "";
+          const strategyDescription = stratData?.description || "";
+          
           if (strategy?.isCustom && strategy.rowId) {
             const { error } = await supabase
               .from('custom_strategies')
@@ -361,7 +405,9 @@ export const useLiveTrading = () => {
               strategy.quantity || 0,
               brokerName,
               username,
-              strategy.isLive ? "live trade" : "paper trade"
+              strategy.isLive ? "live trade" : "paper trade",
+              strategyName,
+              strategyDescription
             );
           }
           

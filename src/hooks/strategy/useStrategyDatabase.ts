@@ -52,18 +52,32 @@ export const updateStrategyLiveConfig = async (
   try {
     console.log("Updating strategy with trade type:", tradeType);
     
-    // If strategyName is empty, try to fetch it from existing record
+    // If strategyName is empty, try to fetch it from predefined_strategies table
     if (!strategyName || !strategyDescription) {
-      const { data: existingStrategy, error: fetchError } = await supabase
-        .from('strategy_selections')
-        .select('strategy_name, strategy_description')
-        .eq('user_id', userId)
-        .eq('strategy_id', strategyId)
+      const { data: predefinedStrategy, error: predefinedError } = await supabase
+        .from('predefined_strategies')
+        .select('name, description')
+        .eq('id', strategyId)
         .maybeSingle();
+        
+      if (!predefinedError && predefinedStrategy) {
+        strategyName = strategyName || predefinedStrategy.name;
+        strategyDescription = strategyDescription || predefinedStrategy.description || "";
+      }
+      
+      // If still not found, try to fetch from existing record
+      if (!strategyName) {
+        const { data: existingStrategy, error: fetchError } = await supabase
+          .from('strategy_selections')
+          .select('strategy_name, strategy_description')
+          .eq('user_id', userId)
+          .eq('strategy_id', strategyId)
+          .maybeSingle();
 
-      if (!fetchError && existingStrategy) {
-        strategyName = strategyName || existingStrategy.strategy_name;
-        strategyDescription = strategyDescription || existingStrategy.strategy_description || "";
+        if (!fetchError && existingStrategy) {
+          strategyName = strategyName || existingStrategy.strategy_name;
+          strategyDescription = strategyDescription || existingStrategy.strategy_description || "";
+        }
       }
     }
 
@@ -71,6 +85,9 @@ export const updateStrategyLiveConfig = async (
     if (!strategyName) {
       strategyName = `Strategy ${strategyId}`;
     }
+
+    console.log("Using strategy name:", strategyName);
+    console.log("Using strategy description:", strategyDescription);
 
     // Check if record exists for this specific strategy + broker combination
     const { data: existingRecords, error: checkError } = await supabase
