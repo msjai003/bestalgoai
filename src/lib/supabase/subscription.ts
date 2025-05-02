@@ -10,7 +10,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
   try {
     if (!userId) return false;
     
-    // Fix: Properly chain the select and filter methods
+    // Fix: The query chain should start with from(), then use select() followed by filters
     const { data, error } = await supabase
       .from('plan_details')
       .select('*')
