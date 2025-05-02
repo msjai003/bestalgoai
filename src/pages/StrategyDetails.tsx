@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -178,7 +177,7 @@ const StrategyDetails = () => {
                 {isPremium && !canAccess && (
                   <Button 
                     variant="outline"
-                    className="bg-gradient-to-r from-yellow-500/30 to-yellow-600/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 rounded-full px-4 py-2 shadow-md transition-all duration-300 hover:shadow-yellow-500/20 hover:shadow-lg"
+                    className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-4 py-2 shadow-md transition-all duration-300 hover:shadow-cyan/20 hover:shadow-lg"
                     onClick={handleUpgrade}
                   >
                     <Lock className="h-4 w-4 mr-2" />
@@ -315,7 +314,7 @@ const StrategyDetails = () => {
               </>
             ) : (
               <div className="text-center py-12 bg-charcoalSecondary/40 rounded-xl border border-gray-700/50">
-                <Lock className="h-16 w-16 mx-auto mb-4 text-yellow-500/70 animate-pulse" />
+                <Lock className="h-16 w-16 mx-auto mb-4 text-cyan/70 animate-pulse" />
                 <h3 className="text-xl font-semibold mb-2 text-white">Premium Strategy</h3>
                 <p className="text-gray-400 mb-8 max-w-md mx-auto">
                   <span className="font-medium text-cyan">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.

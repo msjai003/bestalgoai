@@ -8,15 +8,20 @@ import { supabase } from './client';
  */
 export const checkUserPremiumStatus = async (userId: string): Promise<boolean> => {
   try {
-    // Correctly chain the query methods
-    const { data, error } = await supabase
+    // First perform the selection
+    const query = supabase
       .from('plan_details')
-      .select('*')
+      .select('*');
+    
+    // Then chain the filters and ordering
+    const filteredQuery = query
       .eq('user_id', userId)
       .eq('is_paid', true)
       .order('selected_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+      
+    // Finally execute the query  
+    const { data, error } = await filteredQuery.maybeSingle();
       
     if (error) {
       console.error('Error checking premium status:', error);

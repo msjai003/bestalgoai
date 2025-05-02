@@ -39,7 +39,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
             <Button
               variant="outline"
               size="sm"
-              className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 rounded-full px-3 py-1 text-xs shadow-sm hover:shadow-yellow-500/20 transition-all"
+              className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-3 py-1 text-xs shadow-sm hover:shadow-cyan/20 transition-all"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
