@@ -15,6 +15,7 @@ const ResetPassword: React.FC = () => {
   const [token, setToken] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionEstablished, setSessionEstablished] = useState(false);
   const { updatePassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,6 +29,7 @@ const ResetPassword: React.FC = () => {
       if (urlToken) {
         console.log("Found token in query params");
         setToken(urlToken);
+        setupSessionWithToken(urlToken);
         return;
       }
       
@@ -39,6 +41,7 @@ const ResetPassword: React.FC = () => {
         if (hashToken) {
           console.log("Found token in hash fragment");
           setToken(hashToken);
+          setupSessionWithToken(hashToken);
           return;
         }
         
@@ -47,6 +50,7 @@ const ResetPassword: React.FC = () => {
         if (potentialToken && potentialToken.length > 30) {
           console.log("Found potential token in hash");
           setToken(potentialToken);
+          setupSessionWithToken(potentialToken);
           return;
         }
       }
@@ -58,15 +62,48 @@ const ResetPassword: React.FC = () => {
     extractTokenFromUrl();
   }, [location]);
 
+  // Setup session with token immediately when component loads or token changes
+  const setupSessionWithToken = async (tokenToUse: string) => {
+    if (!tokenToUse) {
+      console.log("No token provided to setupSessionWithToken");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    
+    try {
+      console.log("Attempting to set session with token:", tokenToUse.substring(0, 10) + "...");
+      
+      // First attempt to set the session with the token
+      const { data, error } = await supabase.auth.setSession({
+        access_token: tokenToUse,
+        refresh_token: '',
+      });
+      
+      if (error) {
+        console.error('Error setting session:', error);
+        setErrorMessage(`Invalid or expired token: ${error.message}`);
+        setSessionEstablished(false);
+      } else {
+        console.log("Session established successfully:", data);
+        setSessionEstablished(true);
+        toast.success('Ready to update your password');
+      }
+    } catch (error: any) {
+      console.error('Exception during session setup:', error);
+      setErrorMessage(`An unexpected error occurred: ${error.message}`);
+      setSessionEstablished(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     
-    if (!token.trim()) {
-      setErrorMessage('No reset token found. Please use the link from your email or paste the token manually.');
-      return;
-    }
-    
+    // Validate password fields
     if (!password.trim() || !confirmPassword.trim()) {
       setErrorMessage('Please fill in both password fields');
       return;
@@ -85,24 +122,38 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
     
     try {
-      console.log("Setting session with token:", token.substring(0, 10) + "...");
+      // If session isn't established yet, try to establish it now
+      if (!sessionEstablished && token) {
+        console.log("Session not yet established, attempting to set it now");
+        
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: token,
+          refresh_token: '',
+        });
+        
+        if (sessionError) {
+          console.error('Error setting session during password update:', sessionError);
+          setErrorMessage(`Cannot update password: ${sessionError.message}. Please try the password reset process again.`);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Session set successfully before password update");
+      }
       
-      // First attempt to set the session with the token
-      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-        access_token: token,
-        refresh_token: '',
-      });
+      // Verify we have a valid session before updating password
+      const { data: sessionData } = await supabase.auth.getSession();
       
-      if (sessionError) {
-        console.error('Error setting session:', sessionError);
-        setErrorMessage(`Invalid or expired token: ${sessionError.message}`);
+      if (!sessionData.session) {
+        console.error('No active session found before password update');
+        setErrorMessage('No active session found. Please restart the password reset process.');
         setIsLoading(false);
         return;
       }
       
-      console.log("Session set successfully, updating password");
+      console.log("Valid session confirmed, updating password");
       
-      // Then update the password
+      // Now update the password
       const { error } = await updatePassword(password);
       
       if (error) {
@@ -144,7 +195,13 @@ const ResetPassword: React.FC = () => {
                 id="token"
                 type="text"
                 value={token}
-                onChange={(e) => setToken(e.target.value)}
+                onChange={(e) => {
+                  const newToken = e.target.value;
+                  setToken(newToken);
+                  if (newToken.trim().length > 30) {
+                    setupSessionWithToken(newToken);
+                  }
+                }}
                 placeholder="Paste your reset token here"
                 className="bg-gray-100 text-gray-900 h-11 rounded-md w-full"
               />
@@ -177,13 +234,18 @@ const ResetPassword: React.FC = () => {
           
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || (!sessionEstablished && !!token)}
             className="w-full bg-cyan hover:bg-cyan/90 text-white py-2 rounded-full" 
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Updating Password...
+              </>
+            ) : !sessionEstablished && token ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verifying Token...
               </>
             ) : (
               'Update Password'
