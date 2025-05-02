@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const ResetPassword: React.FC = () => {
@@ -51,14 +50,12 @@ const ResetPassword: React.FC = () => {
           console.log("Session established successfully");
           setSessionEstablished(true);
           setIsLoading(false);
-          toast.success("Ready to update your password");
           return true;
         }
       } else {
         console.log("OTP verification successful:", data);
         setSessionEstablished(true);
         setIsLoading(false);
-        toast.success("Token verified successfully");
         return true;
       }
     } catch (err) {
@@ -176,16 +173,15 @@ const ResetPassword: React.FC = () => {
       
       console.log("Session verified. Updating password now");
       
-      // Now update the password
+      // Now update the password - we removed the toast notification here
       const { error } = await updatePassword(password);
       
       if (error) {
         console.error('Error updating password:', error);
         setErrorMessage(`Failed to update password: ${error.message}`);
       } else {
-        toast.success('Password has been reset successfully!');
-        // Short delay before navigating to allow toast to be seen
-        setTimeout(() => navigate('/auth'), 1500);
+        // Navigate to auth page without showing a toast notification
+        setTimeout(() => navigate('/auth'), 1000);
       }
     } catch (error: any) {
       console.error('Exception during password reset:', error);
