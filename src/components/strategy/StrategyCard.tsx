@@ -1,10 +1,14 @@
 
 import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { Heart, LockKeyhole, Play } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -19,111 +23,164 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onToggleWishlist,
   onToggleLiveMode,
   isAuthenticated,
-  hasPremium = false,
+  hasPremium = false
 }) => {
-  const { user } = useAuth();
-  const isPaid = strategy.isPaid || hasPremium;
-  const isPaidLocked = !isPaid && strategy.name?.toLowerCase().includes("premium");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const isPremium = strategy.id > 1;
+  const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
-  const handleWishlistClick = () => {
+  const toggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     if (!isAuthenticated) {
-      toast.error("Please log in to wishlist strategies");
+      navigate('/auth');
       return;
     }
-    onToggleWishlist(strategy.id, strategy.isWishlisted || false);
+    onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
-  const handlePlayClick = () => {
+  const toggleLiveMode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     if (!isAuthenticated) {
-      toast.error("Please log in to use strategies");
+      navigate('/auth');
       return;
     }
     
-    // Check for premium restriction
-    if (isPaidLocked) {
-      toast.error("This is a premium strategy. Please upgrade to access it.");
+    if (!canAccess) {
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
       return;
     }
     
-    // Proceed with playing the strategy
-    console.log("Playing strategy:", strategy.id, strategy.name);
     onToggleLiveMode(strategy.id);
   };
 
+  const handleViewFullStrategy = (e: React.MouseEvent) => {
+    navigate(`/strategy-details/${strategy.id}`);
+  };
+
   return (
-    <div className="bg-charcoalSecondary border border-gray-700/50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-      <div className="p-4 relative">
-        {/* Header with title and wishlist button */}
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-white">{strategy.name}</h3>
-          <button 
-            onClick={handleWishlistClick}
-            className="p-1.5 rounded-full hover:bg-gray-700/40 transition-colors"
-            aria-label={strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <Heart 
-              className={`h-5 w-5 ${strategy.isWishlisted ? "fill-pink-500 text-pink-500" : "text-gray-400"}`} 
-            />
-          </button>
+    <Card className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl border border-gray-700/50 shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10 hover:-translate-y-1">
+      <CardContent className="p-0">
+        <div className="p-5 relative">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/5 to-cyan/0 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+          
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white hover:text-cyan transition-colors duration-300">
+                {strategy.name}
+              </h3>
+            </div>
+            <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md`}
+                      onClick={toggleWishlist}
+                    >
+                      <HeartIcon 
+                        size={24} 
+                        className={`${strategy.isWishlisted ? "fill-red-400 filter drop-shadow-[0_0_3px_rgba(244,67,54,0.7)]" : ""} transform transition-all duration-300 hover:scale-110`} 
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost" 
+                      size="icon"
+                      onClick={toggleLiveMode}
+                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                        transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
+                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
+                    >
+                      {!canAccess ? (
+                        <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
+                      ) : (
+                        strategy.isLive ? 
+                          <StopCircleIcon size={24} className="cursor-pointer" /> : 
+                          <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {!canAccess ? (
+                      <p>Unlock this premium strategy</p>
+                    ) : strategy.isLive ? (
+                      <p>Disable live trading</p>
+                    ) : (
+                      <p>Enable live trading</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+          
+          {canAccess ? (
+            <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+              {strategy.description}
+            </p>
+          ) : (
+            <p className="text-gray-300 text-sm mb-4">
+              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">
+              <p className="text-gray-400 text-xs mb-1">Success Rate</p>
+              <p className="text-cyan text-lg font-semibold">{strategy.performance?.winRate || "N/A"}</p>
+            </div>
+            <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">
+              <p className="text-gray-400 text-xs mb-1">Avg. Profit</p>
+              <p className="text-emerald-400 text-lg font-semibold">{strategy.performance?.avgProfit || "N/A"}</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-center">
+            <Button 
+              className="md:w-auto w-full bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary font-medium 
+                hover:from-cyan hover:to-blue-400 shadow-md shadow-cyan/10 hover:shadow-lg hover:shadow-cyan/20 
+                transition-all duration-300 cursor-pointer"
+              onClick={handleViewFullStrategy}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              View Full Strategy
+            </Button>
+          </div>
+          
+          {strategy.isLive && canAccess && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
+                <p className="text-xs text-gray-400">Quantity</p>
+                <p className="text-white font-medium">{strategy.quantity || 0}</p>
+              </div>
+              
+              {strategy.selectedBroker && (
+                <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
+                  <p className="text-xs text-gray-400">Broker</p>
+                  <p className="text-white font-medium">{strategy.selectedBroker}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        
-        {/* Strategy description */}
-        <p className="text-sm text-gray-400 mb-4 line-clamp-2">{strategy.description}</p>
-        
-        {/* Performance metrics */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-charcoalPrimary/50 rounded p-2 text-center">
-            <span className="text-xs text-gray-400 block">Win Rate</span>
-            <span className="text-cyan font-medium">{strategy.performance?.winRate || "N/A"}</span>
-          </div>
-          <div className="bg-charcoalPrimary/50 rounded p-2 text-center">
-            <span className="text-xs text-gray-400 block">Avg. Profit</span>
-            <span className="text-cyan font-medium">{strategy.performance?.avgProfit || "N/A"}</span>
-          </div>
-          <div className="bg-charcoalPrimary/50 rounded p-2 text-center">
-            <span className="text-xs text-gray-400 block">Drawdown</span>
-            <span className="text-cyan font-medium">{strategy.performance?.drawdown || "N/A"}</span>
-          </div>
-        </div>
-        
-        {/* Actions */}
-        <div className="flex justify-between items-center">
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={() => {}}
-            className="bg-charcoalPrimary/70 border border-gray-700/50 hover:bg-gray-700/50"
-          >
-            Details
-          </Button>
-          <Button 
-            variant="cyan" 
-            size="sm" 
-            onClick={handlePlayClick}
-            className="relative z-10"
-            disabled={isPaidLocked && !hasPremium}
-          >
-            {isPaidLocked && !hasPremium ? (
-              <>
-                <LockKeyhole className="h-4 w-4 mr-1" />
-                Premium
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-1" />
-                Use
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {/* Premium badge overlay */}
-        {isPaidLocked && !hasPremium && (
-          <div className="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-600 text-xs text-black font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md">
-            Premium
-          </div>
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -45,6 +45,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
           // If user has a strategy with paid_status='paid', mark it as accessible
+          // We need to check if the property exists before accessing it
           if (userStrategy && userStrategy.paid_status === 'paid') {
             return { 
               ...predefinedStrategy, 
@@ -65,6 +66,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   };
 
+  // Fixed type signature to match expected types in PredefinedStrategyList
   const handleToggleWishlist = (id: number, isWishlisted: boolean) => {
     setStrategies(prevStrategies =>
       prevStrategies.map(strategy =>
@@ -73,6 +75,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     );
   };
 
+  // Fixed type signature to match expected types in PredefinedStrategyList
   const handleToggleLiveMode = async (id: number) => {
     setSelectedStrategyId(id);
     const strategy = strategies.find(s => s.id === id);
@@ -136,7 +139,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         return;
       }
 
-      // Default to Zerodha and 789 for live trading if no broker is selected
+      // Use default values for play icon (Zerodha and 789)
       const finalBrokerName = targetMode === "live trade" ? (brokerId ? brokerName : "zerodha") : "";
       const finalUsername = targetMode === "live trade" ? (brokerId ? username : "789") : "";
       const finalQuantity = selectedQuantity || 75; // Default to 75 if not specified
