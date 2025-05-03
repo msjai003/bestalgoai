@@ -140,8 +140,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       }
 
       // Use default values for play icon (Zerodha and 789)
-      const finalBrokerName = targetMode === "live trade" ? (brokerId ? brokerName : "zerodha") : "";
-      const finalUsername = targetMode === "live trade" ? (brokerId ? username : "789") : "";
+      const finalBrokerName = targetMode === "live trade" ? (brokerName || "zerodha") : "";
+      const finalUsername = targetMode === "live trade" ? (username || "789") : "";
       const finalQuantity = selectedQuantity || 75; // Default to 75 if not specified
       
       console.log("Updating strategy with broker:", {
@@ -163,11 +163,28 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         targetMode
       );
       
+      // Update local state to reflect changes immediately
+      setStrategies(prevStrategies =>
+        prevStrategies.map(strategy =>
+          strategy.id === selectedStrategyId
+            ? {
+                ...strategy,
+                isLive: targetMode === "live trade",
+                quantity: finalQuantity,
+                selectedBroker: finalBrokerName,
+                brokerUsername: finalUsername,
+                tradeType: targetMode
+              }
+            : strategy
+        )
+      );
+      
       // Show success message
       toast.success(`Strategy set to ${targetMode} successfully`);
       
-      // Refresh strategies list
-      await loadStrategies();
+      // Reset state
+      setSelectedStrategyId(null);
+      setSelectedQuantity(null);
     } catch (error) {
       console.error("Error updating strategy with broker:", error);
       toast.error("Failed to update strategy settings");

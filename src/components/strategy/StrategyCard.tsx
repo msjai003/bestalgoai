@@ -59,6 +59,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   };
 
   const handleViewFullStrategy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigate(`/strategy-details/${strategy.id}`);
   };
 
@@ -74,7 +75,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                 {strategy.name}
               </h3>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 z-10 relative">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -105,7 +106,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       onClick={toggleLiveMode}
                       className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
-                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20`}
+                        flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20 z-10`}
+                      style={{ zIndex: 10 }}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Disable live trading" : "Enable live trading"}
                     >
                       {!canAccess ? (
