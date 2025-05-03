@@ -70,7 +70,7 @@ export const BrokerSelectionDialog = ({
       }
     };
     
-    // Every time the dialog opens, reload brokers
+    // Every time the dialog opens, reload brokers and reset selections
     if (open) {
       loadBrokers();
       // Reset selected values when opening dialog
@@ -81,7 +81,7 @@ export const BrokerSelectionDialog = ({
   }, [user, open]);
   
   const handleConfirm = () => {
-    if (!selectedBrokerId) {
+    if (!selectedBrokerId && brokers.length > 0) {
       toast.error("Please select a broker");
       return;
     }
@@ -159,7 +159,7 @@ export const BrokerSelectionDialog = ({
           <Button 
             variant="cyan"
             onClick={handleConfirm}
-            disabled={brokers.length === 0 || !selectedBrokerId}
+            disabled={brokers.length === 0}
           >
             Confirm Selection
           </Button>
