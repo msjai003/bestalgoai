@@ -95,7 +95,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
   const handleConfirmLiveMode = async () => {
     setConfirmDialogOpen(false);
-    setQuantityDialogOpen(true);
+    
+    // If user is playing a strategy and targetMode is "live trade"
+    if (targetMode === "live trade") {
+      setQuantityDialogOpen(true);
+    } else {
+      // Default values for paper trading - no broker needed
+      await handleBrokerSubmit("", "", "");
+    }
   };
 
   const handleCancelLiveMode = () => {
@@ -109,32 +116,40 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Store the quantity for later use with broker selection
     setSelectedQuantity(quantity);
     
-    // Open the broker selection dialog
-    setBrokerDialogOpen(true);
+    // Open the broker selection dialog if needed
+    if (targetMode === "live trade") {
+      setBrokerDialogOpen(true);
+    } else {
+      // For paper trading, use default values
+      handleBrokerSubmit("", "", "");
+    }
   };
 
-  const handleBrokerSubmit = async (brokerId: string, brokerName: string) => {
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string, username: string) => {
     try {
       // Close the broker dialog
       setBrokerDialogOpen(false);
       
-      if (!user || !selectedStrategyId || !brokerId || !selectedQuantity) {
+      if (!user || !selectedStrategyId) {
         console.error("Missing required data for broker submission", {
           userId: user?.id,
-          strategyId: selectedStrategyId,
-          brokerId,
-          quantity: selectedQuantity
+          strategyId: selectedStrategyId
         });
         toast.error("Missing required information");
         return;
       }
+
+      // Use default values for play icon (Zerodha and 789)
+      const finalBrokerName = targetMode === "live trade" ? (brokerId ? brokerName : "zerodha") : "";
+      const finalUsername = targetMode === "live trade" ? (brokerId ? username : "789") : "";
+      const finalQuantity = selectedQuantity || 75; // Default to 75 if not specified
       
       console.log("Updating strategy with broker:", {
         userId: user.id,
         strategyId: selectedStrategyId,
-        quantity: selectedQuantity,
-        brokerId,
-        brokerName,
+        quantity: finalQuantity,
+        brokerName: finalBrokerName,
+        username: finalUsername,
         mode: targetMode
       });
       
@@ -142,9 +157,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       await updateStrategyLiveConfig(
         user.id,
         Number(selectedStrategyId),
-        selectedQuantity,
-        brokerId,
-        brokerName,
+        finalQuantity,
+        finalBrokerName,
+        finalUsername,
         targetMode
       );
       

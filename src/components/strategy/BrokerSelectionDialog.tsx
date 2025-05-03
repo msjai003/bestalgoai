@@ -24,7 +24,7 @@ import { toast } from "sonner";
 interface BrokerSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (brokerId: string, brokerName: string) => void;
+  onConfirm: (brokerId: string, brokerName: string, username: string) => void;
   onCancel: () => void;
 }
 
@@ -36,7 +36,8 @@ export const BrokerSelectionDialog = ({
 }: BrokerSelectionDialogProps) => {
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>("");
   const [selectedBrokerName, setSelectedBrokerName] = useState<string>("");
-  const [brokers, setBrokers] = useState<{ id: string; broker_name: string }[]>([]);
+  const [selectedUsername, setSelectedUsername] = useState<string>("");
+  const [brokers, setBrokers] = useState<{ id: string; broker_name: string; username: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { user } = useAuth();
 
@@ -54,10 +55,12 @@ export const BrokerSelectionDialog = ({
         if (userBrokers.length > 0) {
           setSelectedBrokerId(userBrokers[0].id);
           setSelectedBrokerName(userBrokers[0].broker_name);
+          setSelectedUsername(userBrokers[0].username || "");
         } else {
           // Reset selected values if no brokers
           setSelectedBrokerId("");
           setSelectedBrokerName("");
+          setSelectedUsername("");
         }
       } catch (error) {
         console.error("Error loading brokers:", error);
@@ -77,7 +80,7 @@ export const BrokerSelectionDialog = ({
       toast.error("Please select a broker");
       return;
     }
-    onConfirm(selectedBrokerId, selectedBrokerName);
+    onConfirm(selectedBrokerId, selectedBrokerName, selectedUsername);
   };
   
   const handleSelectChange = (value: string) => {
@@ -85,6 +88,7 @@ export const BrokerSelectionDialog = ({
     const broker = brokers.find(b => b.id === value);
     if (broker) {
       setSelectedBrokerName(broker.broker_name);
+      setSelectedUsername(broker.username || "");
     }
   };
 
@@ -123,7 +127,7 @@ export const BrokerSelectionDialog = ({
                     value={broker.id}
                     className="text-white hover:bg-gray-700 cursor-pointer"
                   >
-                    {broker.broker_name}
+                    {broker.broker_name} ({broker.username || 'No username'})
                   </SelectItem>
                 ))}
               </SelectContent>
