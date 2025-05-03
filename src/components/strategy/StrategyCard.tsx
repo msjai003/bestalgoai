@@ -165,22 +165,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               View Full Strategy
             </Button>
           </div>
-          
-          {strategy.isLive && canAccess && (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
-                <p className="text-xs text-gray-400">Quantity</p>
-                <p className="text-white font-medium">{strategy.quantity || 0}</p>
-              </div>
-              
-              {strategy.selectedBroker && (
-                <div className="bg-charcoalPrimary/80 border border-gray-700/50 rounded-lg p-2">
-                  <p className="text-xs text-gray-400">Broker</p>
-                  <p className="text-white font-medium">{strategy.selectedBroker}</p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
