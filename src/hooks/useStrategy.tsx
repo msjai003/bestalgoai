@@ -85,18 +85,16 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       return;
     }
 
-    // Determine the target mode based on the current state
-    const isCurrentlyLive = strategy.isLive === true;
-    setTargetMode(isCurrentlyLive ? "paper trade" : "live trade");
-
-    // Open confirmation dialog
+    // Always open the dialog to choose mode, regardless of current state
+    // This allows users to switch between brokers
+    setTargetMode("live trade");
     setConfirmDialogOpen(true);
   };
 
   const handleConfirmLiveMode = async () => {
     setConfirmDialogOpen(false);
     
-    // If user is playing a strategy and targetMode is "live trade"
+    // For live trade mode, we need quantity and broker info
     if (targetMode === "live trade") {
       setQuantityDialogOpen(true);
     } else {
@@ -107,6 +105,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
   const handleCancelLiveMode = () => {
     setConfirmDialogOpen(false);
+    resetDialogState();
   };
 
   const handleQuantitySubmit = (quantity: number) => {
@@ -116,13 +115,16 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Store the quantity for later use with broker selection
     setSelectedQuantity(quantity);
     
-    // Open the broker selection dialog if needed
-    if (targetMode === "live trade") {
-      setBrokerDialogOpen(true);
-    } else {
-      // For paper trading, use default values
-      handleBrokerSubmit("", "", "");
-    }
+    // Open the broker selection dialog
+    setBrokerDialogOpen(true);
+  };
+
+  const resetDialogState = () => {
+    setSelectedStrategyId(null);
+    setSelectedQuantity(null);
+    setConfirmDialogOpen(false);
+    setQuantityDialogOpen(false);
+    setBrokerDialogOpen(false);
   };
 
   const handleBrokerSubmit = async (brokerId: string, brokerName: string, username: string) => {
@@ -139,7 +141,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         return;
       }
 
-      // Use default values for play icon (Zerodha and 789)
+      // Use default values for play icon (Zerodha and 789) only if no broker is selected
       const finalBrokerName = targetMode === "live trade" ? (brokerName || "zerodha") : "";
       const finalUsername = targetMode === "live trade" ? (username || "789") : "";
       const finalQuantity = selectedQuantity || 75; // Default to 75 if not specified
@@ -180,11 +182,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       );
       
       // Show success message
-      toast.success(`Strategy set to ${targetMode} successfully`);
+      toast.success(`Strategy set to ${targetMode} with broker ${finalBrokerName} successfully`);
       
-      // Reset state
-      setSelectedStrategyId(null);
-      setSelectedQuantity(null);
+      // Reset all dialog state
+      resetDialogState();
     } catch (error) {
       console.error("Error updating strategy with broker:", error);
       toast.error("Failed to update strategy settings");
@@ -193,10 +194,12 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
   const handleCancelQuantity = () => {
     setQuantityDialogOpen(false);
+    resetDialogState();
   };
 
   const handleCancelBroker = () => {
     setBrokerDialogOpen(false);
+    resetDialogState();
   };
 
   return {

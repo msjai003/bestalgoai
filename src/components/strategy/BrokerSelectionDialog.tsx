@@ -70,8 +70,13 @@ export const BrokerSelectionDialog = ({
       }
     };
     
+    // Every time the dialog opens, reload brokers
     if (open) {
       loadBrokers();
+      // Reset selected values when opening dialog
+      setSelectedBrokerId("");
+      setSelectedBrokerName("");
+      setSelectedUsername("");
     }
   }, [user, open]);
   
@@ -97,6 +102,7 @@ export const BrokerSelectionDialog = ({
     brokers, 
     loading, 
     selectedBrokerId,
+    selectedBrokerName,
     brokersCount: brokers.length 
   });
   
