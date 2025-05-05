@@ -10,18 +10,19 @@ import { useAuth } from "@/contexts/auth/AuthContext";
 import { Loader } from "lucide-react";
 
 interface FileItem {
-  id: number; // Changed from string to number
+  id: number;
   file_name: string;
   file_size: string;
   file_path: string;
   added_at: string;
   file_type: string;
+  download_count?: number;
 }
 
 const Files = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [downloadingId, setDownloadingId] = useState<number | null>(null); // Changed from string to number
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -76,10 +77,11 @@ const Files = () => {
       link.click();
       document.body.removeChild(link);
       
-      // Increment download count
+      // Increment download count - FIX: Properly chain the Supabase query methods
+      const downloadCount = (file.download_count || 0) + 1;
       const { error } = await supabase
         .from('downloadable_files')
-        .update({ download_count: (file as any).download_count + 1 })
+        .update({ download_count: downloadCount })
         .eq('id', file.id);
       
       if (error) {
