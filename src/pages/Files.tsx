@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, ExternalLink, FileWarning, File } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, ExternalLink, FileWarning, File, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +56,12 @@ const Files = () => {
     fileType: ""
   });
 
+  // New state for zip file error dialog
+  const [zipErrorDialogOpen, setZipErrorDialogOpen] = useState(false);
+  const [zipFileDetails, setZipFileDetails] = useState({
+    fileName: ""
+  });
+
   useEffect(() => {
     const fetchFiles = async () => {
       try {
@@ -96,11 +102,17 @@ const Files = () => {
       if (file.file_path.startsWith('http')) {
         fileUrl = file.file_path;
       } else {
-        // For Word documents, show pre-download warning 
+        // Show specific pre-download warnings based on file type
         if (file.file_type === 'docx' || file.file_name.toLowerCase().endsWith('.docx')) {
           toast({
             title: "Downloading Word Document",
             description: "Microsoft Word document is being downloaded. Make sure you have Microsoft Word or a compatible app installed.",
+            duration: 5000,
+          });
+        } else if (file.file_name.toLowerCase().endsWith('.zip')) {
+          toast({
+            title: "Downloading ZIP File",
+            description: "ZIP archive is being downloaded. You'll need an extraction tool like WinRAR, 7-Zip or the built-in extractor.",
             duration: 5000,
           });
         }
@@ -142,7 +154,7 @@ const Files = () => {
         }, 2000);
       } else if (file.file_name.toLowerCase().endsWith('.zip')) {
         toast({
-          title: "Download started",
+          title: "ZIP Archive Downloaded",
           description: `${file.file_name} is being downloaded. If you have trouble opening the file, check the File Troubleshooting section.`,
           duration: 5000,
         });
@@ -173,6 +185,11 @@ const Files = () => {
         fileType: 'docx'
       });
       setCorruptionAlertOpen(true);
+    } else if (fileExtension === 'zip') {
+      setZipFileDetails({
+        fileName
+      });
+      setZipErrorDialogOpen(true);
     } else {
       setErrorDetails({
         fileName,
@@ -189,7 +206,7 @@ const Files = () => {
     if (extension === 'docx' || extension === 'doc') {
       return <File className="h-5 w-5 text-blue-500" />;
     } else if (extension === 'zip') {
-      return <FileArchive className="h-5 w-5 text-cyan" />;
+      return <Archive className="h-5 w-5 text-purple-500" />;
     } else if (extension === 'pdf') {
       return <File className="h-5 w-5 text-red-500" />;
     }
@@ -406,6 +423,57 @@ const Files = () => {
             <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3 mt-4">
               <p className="text-blue-300 font-medium text-sm">Need more help?</p>
               <p className="text-blue-100 text-xs">Contact our support team and mention you're having trouble with Word document activation or file corruption.</p>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-charcoalPrimary text-white border-gray-700 hover:bg-gray-700">Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* ZIP file specific alert dialog */}
+      <AlertDialog open={zipErrorDialogOpen} onOpenChange={setZipErrorDialogOpen}>
+        <AlertDialogContent className="bg-charcoalSecondary border-gray-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <FileArchive className="h-5 w-5 text-purple-400 mr-2" />
+              ZIP Archive Troubleshooting
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              Issues with opening or extracting {zipFileDetails.fileName}? Here's how to fix common problems:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Common ZIP extraction errors:</h4>
+              <ul className="list-disc pl-5 space-y-1 text-gray-300 text-sm">
+                <li>"CRC failed in file..." - The ZIP file may be damaged</li>
+                <li>"Unable to open file as archive" - The file might be incomplete</li>
+                <li>"Unexpected end of data" - Download was interrupted</li>
+                <li>"The archive is either in unknown format or damaged"</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Solutions:</h4>
+              <ol className="list-decimal pl-5 space-y-2 text-gray-300 text-sm">
+                <li><span className="font-medium">Try different extraction software:</span> WinRAR, 7-Zip, and Windows built-in extraction each handle ZIP files differently</li>
+                <li><span className="font-medium">Download again:</span> The file may have been corrupted during the initial download</li>
+                <li><span className="font-medium">Use 'Save as' instead of direct download:</span> Right-click the download button and select "Save link as..." for better download integrity</li>
+                <li><span className="font-medium">Check your antivirus:</span> Security software might be blocking extraction or quarantining the file</li>
+                <li><span className="font-medium">Try repair tools:</span> Software like Advanced ZIP Repair or Zip Repair Pro can fix corrupted archives</li>
+              </ol>
+            </div>
+            
+            <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3 mt-4">
+              <p className="text-blue-300 font-medium text-sm">Recommended extraction tools:</p>
+              <ul className="list-disc pl-5 space-y-1 text-blue-100 text-xs">
+                <li>7-Zip (free, lightweight): www.7-zip.org</li>
+                <li>WinRAR (trial, powerful): www.rarlab.com</li>
+                <li>Windows built-in extractor (right-click > Extract All)</li>
+              </ul>
             </div>
           </div>
           
