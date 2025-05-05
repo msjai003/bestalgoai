@@ -46,22 +46,21 @@ export async function checkUserPremiumStatus(userId: string): Promise<boolean> {
   }
 
   try {
-    // Get the most recent plan for the user
+    // Fixed the query chain to properly use maybeSingle()
     const { data, error } = await supabase
       .from('plan_details')
       .select('*')
       .eq('user_id', userId)
       .order('selected_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .single();
 
     if (error) {
       console.error('Error checking premium status:', error);
       return false;
     }
 
-    // Check if we have data and if the first item indicates premium status
-    return data && data.length > 0 && 
-      (data[0].plan_name === 'Pro' || data[0].plan_name === 'Elite' || data[0].is_paid === true);
+    return data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.is_paid === true);
   } catch (error) {
     console.error('Exception checking premium status:', error);
     return false;
