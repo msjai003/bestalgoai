@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,19 +71,35 @@ const Files = () => {
     setDownloadingId(file.id);
     
     try {
-      // Create a download link and trigger download
-      const link = document.createElement('a');
+      // Determine if this is a local reference or remote URL
+      let fileUrl;
       
       // If this is a full URL, use it directly
       if (file.file_path.startsWith('http')) {
-        link.href = file.file_path;
+        fileUrl = file.file_path;
       } else {
-        // For relative paths, construct URL (using public folder)
-        link.href = file.file_path.startsWith('/') 
+        // For Word documents, we might need to display them differently
+        if (file.file_type === 'docx' || file.file_name.toLowerCase().endsWith('.docx')) {
+          // For Word docs, we should handle them based on where they're stored
+          if (file.file_path.startsWith('/documents/')) {
+            // If these are stored in a public folder or accessible URL
+            toast({
+              title: "Microsoft Word Document",
+              description: "Depending on your browser, Word documents may open in a viewer or download directly.",
+              duration: 5000,
+            });
+          }
+        }
+        
+        // Construct URL (using public folder or any accessible location)
+        fileUrl = file.file_path.startsWith('/') 
           ? file.file_path 
           : `/${file.file_path}`;
       }
       
+      // Create a download link and trigger download
+      const link = document.createElement('a');
+      link.href = fileUrl;
       link.download = file.file_name;
       document.body.appendChild(link);
       link.click();
@@ -100,8 +116,14 @@ const Files = () => {
         console.error("Error updating download count:", error);
       }
       
-      // For ZIP files, show a helpful message about potential corruption
-      if (file.file_name.toLowerCase().endsWith('.zip')) {
+      // Show appropriate message for Word documents
+      if (file.file_name.toLowerCase().endsWith('.docx')) {
+        toast({
+          title: "Download started",
+          description: `${file.file_name} is being downloaded. This is a Microsoft Word document.`,
+          duration: 5000,
+        });
+      } else if (file.file_name.toLowerCase().endsWith('.zip')) {
         toast({
           title: "Download started",
           description: `${file.file_name} is being downloaded. If you have trouble opening the file, check the File Troubleshooting section.`,
@@ -128,9 +150,20 @@ const Files = () => {
   const handleFileIssue = (fileName: string) => {
     setErrorDetails({
       fileName,
-      errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 'general',
+      errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 
+                 fileName.toLowerCase().endsWith('.docx') ? 'docx' : 'general',
     });
     setErrorDialogOpen(true);
+  };
+
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    
+    if (extension === 'docx' || extension === 'doc') {
+      return <ExternalLink className="h-5 w-5 text-blue-500" />;
+    }
+    
+    return <FileArchive className="h-5 w-5 text-cyan" />;
   };
 
   if (isLoading) {
@@ -171,7 +204,7 @@ const Files = () => {
                   File Troubleshooting
                 </h3>
                 <p className="text-sm text-amber-100/80">
-                  Having trouble opening ZIP files? Click the help icon next to any file for troubleshooting tips.
+                  Having trouble opening files? Click the help icon next to any file for troubleshooting tips.
                 </p>
               </div>
               
@@ -182,7 +215,7 @@ const Files = () => {
                 >
                   <div className="flex items-center">
                     <div className="bg-charcoalPrimary/60 p-2 rounded-lg mr-3">
-                      <FileArchive className="h-5 w-5 text-cyan" />
+                      {getFileIcon(file.file_name)}
                     </div>
                     <div>
                       <h3 className="text-white font-medium">{file.file_name}</h3>
@@ -260,6 +293,32 @@ const Files = () => {
                 <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3">
                   <p className="text-blue-300 font-medium">Need more help?</p>
                   <p className="text-blue-100 text-xs">Contact support and mention you're having trouble with ZIP files.</p>
+                </div>
+              </>
+            ) : errorDetails.errorType === 'docx' ? (
+              <>
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium">Common Word document issues:</h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Document opens in unformatted view</li>
+                    <li>Unable to open the file</li>
+                    <li>File appears corrupted</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium">Solutions:</h4>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Make sure Microsoft Word or compatible software is installed</li>
+                    <li>Try opening with Google Docs or Office Online if available</li>
+                    <li>Try downloading the file again</li>
+                    <li>Check if your browser has a built-in document viewer that might be interfering</li>
+                  </ol>
+                </div>
+                
+                <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3">
+                  <p className="text-blue-300 font-medium">Alternative solutions:</p>
+                  <p className="text-blue-100 text-xs">If you continue to have issues, try requesting the document in a different format like PDF.</p>
                 </div>
               </>
             ) : (
