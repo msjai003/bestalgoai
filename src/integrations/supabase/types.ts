@@ -461,7 +461,7 @@ export type Database = {
           file_path: string
           file_size: string
           file_type: string
-          id: string
+          id: number
           is_active: boolean | null
         }
         Insert: {
@@ -471,7 +471,7 @@ export type Database = {
           file_path: string
           file_size: string
           file_type: string
-          id?: string
+          id?: number
           is_active?: boolean | null
         }
         Update: {
@@ -481,7 +481,7 @@ export type Database = {
           file_path?: string
           file_size?: string
           file_type?: string
-          id?: string
+          id?: number
           is_active?: boolean | null
         }
         Relationships: []

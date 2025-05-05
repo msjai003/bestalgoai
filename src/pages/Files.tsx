@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/auth/AuthContext";
 import { Loader } from "lucide-react";
 
 interface FileItem {
-  id: string;
+  id: number; // Changed from string to number
   file_name: string;
   file_size: string;
   file_path: string;
@@ -21,7 +21,7 @@ interface FileItem {
 const Files = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null); // Changed from string to number
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
