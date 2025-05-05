@@ -51,6 +51,7 @@ import BrokerManagement from "@/pages/BrokerManagement";
 import ResetPassword from "@/components/auth/ResetPassword";
 import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
 import Orders from "@/pages/Orders";
+import Files from "@/pages/Files";
 
 const queryClient = new QueryClient();
 
@@ -208,6 +209,12 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ApiKeys />} />
       
       <Route path="/broker-management" element={<BrokerManagement />} />
+      
+      <Route path="/files" element={
+        <ProtectedRoute>
+          <Files />
+        </ProtectedRoute>
+      } />
       
       {/* Make sure all unmatched routes show NotFound */}
       <Route path="*" element={<NotFound />} />
