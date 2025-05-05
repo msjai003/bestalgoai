@@ -67,8 +67,7 @@ export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
             currentPlan.plan_name === 'Elite',
           updated_at: new Date().toISOString()
         }, { 
-          onConflict: 'user_id',  // This replaces the upsert functionality
-          ignoreDuplicates: false
+          onConflict: 'user_id'  // This replaces the upsert functionality
         });
 
       if (strategyError) {
