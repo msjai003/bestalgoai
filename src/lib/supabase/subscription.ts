@@ -46,13 +46,14 @@ export async function checkUserPremiumStatus(userId: string): Promise<boolean> {
   }
 
   try {
+    // Fixed the query chain to properly use maybeSingle()
     const { data, error } = await supabase
       .from('plan_details')
       .select('*')
       .eq('user_id', userId)
       .order('selected_at', { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .single();
 
     if (error) {
       console.error('Error checking premium status:', error);
