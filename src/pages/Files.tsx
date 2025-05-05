@@ -100,15 +100,17 @@ const Files = () => {
       link.click();
       document.body.removeChild(link);
       
-      // Increment download count
+      // Increment download count - FIX HERE
       const { error } = await supabase
         .from('downloadable_files')
         .update({ download_count: (file.download_count || 0) + 1 })
-        .eq('id', file.id);
-      
-      if (error) {
-        console.error("Error updating download count:", error);
-      }
+        .eq('id', file.id)
+        .then(response => {
+          if (response.error) {
+            console.error("Error updating download count:", response.error);
+          }
+          return response;
+        });
       
       toast({
         title: "Download started",
