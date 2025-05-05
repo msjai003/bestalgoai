@@ -1,84 +1,72 @@
 
 import { supabase } from './client';
 
-export type PlanDetails = {
-  id: string;
-  user_id: string;
-  plan_name: string;
-  order_id?: string;
-  payment_id?: string;
-  is_paid?: boolean;
-  selected_at: string;
-}
-
-// Add the missing function that useStrategy.tsx is trying to import
+/**
+ * Check if a user has an active subscription
+ * @param userId The user's ID
+ * @returns A boolean indicating if the user has an active subscription
+ */
 export const checkUserPremiumStatus = async (userId: string): Promise<boolean> => {
   try {
     if (!userId) return false;
-
-    const { data: planData, error: planError } = await supabase
+    
+    const { data, error } = await supabase
       .from('plan_details')
       .select('*')
       .eq('user_id', userId)
-      .order('selected_at', { ascending: false })
-      .limit(1);
+      .eq('is_paid', true)
+      .maybeSingle();
     
-    if (planError) {
-      console.error("Error checking premium status:", planError);
+    if (error) {
+      console.error("Error checking premium status:", error);
       return false;
     }
-
-    return !!(planData && planData.length > 0 && 
-      (planData[0].is_paid || 
-       planData[0].plan_name === 'Pro' || 
-       planData[0].plan_name === 'Elite'));
+    
+    return !!data;
   } catch (error) {
     console.error("Error in checkUserPremiumStatus:", error);
     return false;
   }
 };
 
+/**
+ * Sync premium access for a user by marking their selected strategies as paid
+ * @param userId The user's ID
+ * @returns A boolean indicating if the sync was successful
+ */
 export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
   try {
     if (!userId) return false;
 
-    const { data: planData, error: planError } = await supabase
-      .from('plan_details')
-      .select('*')
-      .eq('user_id', userId)
-      .order('selected_at', { ascending: false })
-      .limit(1);
+    // Get predefined strategies to mark as paid
+    const { data: predefinedStrategies, error: fetchError } = await supabase
+      .from('predefined_strategies')
+      .select('id, name, description');
     
-    if (planError) {
-      console.error("Error fetching plan details:", planError);
+    if (fetchError) {
+      console.error("Error fetching predefined strategies:", fetchError);
       return false;
     }
 
-    if (planData && planData.length > 0) {
-      const currentPlan = planData[0];
+    // For each strategy, make sure it's marked as paid for this premium user
+    for (const strategy of predefinedStrategies || []) {
+      // Use the force_strategy_paid_status RPC function or directly upsert
+      const { error } = await supabase.rpc(
+        'force_strategy_paid_status', 
+        { 
+          p_user_id: userId, 
+          p_strategy_id: strategy.id,
+          p_strategy_name: strategy.name,
+          p_strategy_description: strategy.description || ''
+        }
+      );
       
-      // Fix the upsert issue - using insert with onConflict instead
-      const { error: strategyError } = await supabase
-        .from('strategy_access')
-        .insert({
-          user_id: userId,
-          has_premium_access: currentPlan.is_paid || 
-            currentPlan.plan_name === 'Pro' || 
-            currentPlan.plan_name === 'Elite',
-          updated_at: new Date().toISOString()
-        }, { 
-          onConflict: 'user_id'  // This replaces the upsert functionality
-        });
-
-      if (strategyError) {
-        console.error("Error syncing premium access:", strategyError);
-        return false;
+      if (error) {
+        console.error(`Error marking strategy ${strategy.id} as paid:`, error);
       }
-      
-      return true;
     }
 
-    return false;
+    return true;
   } catch (error) {
     console.error("Error in syncPremiumAccess:", error);
     return false;

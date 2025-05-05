@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -8,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
-import FilesSection from "@/components/dashboard/FilesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 import { syncPremiumAccess } from "@/lib/supabase/subscription";
 
@@ -102,7 +102,6 @@ const Dashboard = () => {
           currentValue={currentValue} 
         />
         <QuickAccessSection />
-        <FilesSection />
       </main>
       <BottomNav />
     </div>
