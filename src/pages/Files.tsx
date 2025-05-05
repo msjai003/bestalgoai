@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,16 +74,21 @@ const Files = () => {
       // Create a download link and trigger download
       const link = document.createElement('a');
       
-      // If this is a full URL, use it directly
+      // Enhanced path handling
+      let downloadUrl = '';
+      
+      // Check if this is a full URL
       if (file.file_path.startsWith('http')) {
-        link.href = file.file_path;
+        downloadUrl = file.file_path;
       } else {
-        // For relative paths, construct URL (using public folder)
-        link.href = file.file_path.startsWith('/') 
+        // For relative paths, ensure they start with a slash
+        downloadUrl = file.file_path.startsWith('/') 
           ? file.file_path 
           : `/${file.file_path}`;
       }
       
+      console.log(`Attempting to download file from: ${downloadUrl}`);
+      link.href = downloadUrl;
       link.download = file.file_name;
       document.body.appendChild(link);
       link.click();
@@ -171,7 +176,7 @@ const Files = () => {
                   File Troubleshooting
                 </h3>
                 <p className="text-sm text-amber-100/80">
-                  Having trouble opening ZIP files? Click the help icon next to any file for troubleshooting tips.
+                  Having trouble opening files? Click the help icon next to any file for troubleshooting tips.
                 </p>
               </div>
               
@@ -189,6 +194,12 @@ const Files = () => {
                       <div className="flex space-x-3 text-xs text-gray-400">
                         <span>{file.file_size}</span>
                         <span>Added: {new Date(file.added_at).toLocaleDateString()}</span>
+                        {file.file_path && (
+                          <span className="text-gray-500 italic truncate max-w-[150px]" title={file.file_path}>
+                            Path: {file.file_path.substring(0, 20)}
+                            {file.file_path.length > 20 ? '...' : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -198,7 +209,7 @@ const Files = () => {
                       className="mr-2 text-gray-400 hover:text-amber-300"
                       aria-label="File help"
                     >
-                      <AlertTriangle className="h-4 w-4" />
+                      <FileQuestion className="h-4 w-4" />
                     </button>
                     <Button
                       onClick={() => handleDownload(file)}
@@ -265,12 +276,29 @@ const Files = () => {
             ) : (
               <>
                 <div className="space-y-2">
-                  <h4 className="text-white font-medium">General file troubleshooting:</h4>
+                  <h4 className="text-white font-medium">Common file issues:</h4>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>Ensure you have the right software to open this file type</li>
-                    <li>Try downloading the file again</li>
-                    <li>Check if your antivirus quarantined the file</li>
+                    <li>File path or URL is incorrect</li>
+                    <li>File was partially downloaded</li>
+                    <li>File may be corrupted</li>
                   </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium">Solutions:</h4>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Try downloading the file again</li>
+                    <li>Ensure you have the appropriate software to open this file type</li>
+                    <li>Check if your browser is blocking downloads from this site</li>
+                    <li>Try using a different browser</li>
+                  </ol>
+                </div>
+                
+                <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3">
+                  <p className="text-blue-300 font-medium">Path information:</p>
+                  <p className="text-blue-100 text-xs break-all">
+                    {files.find(f => f.file_name === errorDetails.fileName)?.file_path || "Path information not available"}
+                  </p>
                 </div>
               </>
             )}
