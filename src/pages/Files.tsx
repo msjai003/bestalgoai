@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, ExternalLink } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, ExternalLink, FileWarning, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface FileItem {
   id: number;
@@ -36,6 +47,13 @@ const Files = () => {
   const [errorDetails, setErrorDetails] = useState({
     fileName: "",
     errorType: "",
+  });
+  
+  // New state for file corruption alert dialog
+  const [corruptionAlertOpen, setCorruptionAlertOpen] = useState(false);
+  const [corruptFileDetails, setCorruptFileDetails] = useState({
+    fileName: "",
+    fileType: ""
   });
 
   useEffect(() => {
@@ -78,17 +96,13 @@ const Files = () => {
       if (file.file_path.startsWith('http')) {
         fileUrl = file.file_path;
       } else {
-        // For Word documents, we might need to display them differently
+        // For Word documents, show pre-download warning 
         if (file.file_type === 'docx' || file.file_name.toLowerCase().endsWith('.docx')) {
-          // For Word docs, we should handle them based on where they're stored
-          if (file.file_path.startsWith('/documents/')) {
-            // If these are stored in a public folder or accessible URL
-            toast({
-              title: "Microsoft Word Document",
-              description: "Depending on your browser, Word documents may open in a viewer or download directly.",
-              duration: 5000,
-            });
-          }
+          toast({
+            title: "Downloading Word Document",
+            description: "Microsoft Word document is being downloaded. Make sure you have Microsoft Word or a compatible app installed.",
+            duration: 5000,
+          });
         }
         
         // Construct URL (using public folder or any accessible location)
@@ -116,13 +130,16 @@ const Files = () => {
         console.error("Error updating download count:", error);
       }
       
-      // Show appropriate message for Word documents
+      // Show appropriate message based on file type
       if (file.file_name.toLowerCase().endsWith('.docx')) {
-        toast({
-          title: "Download started",
-          description: `${file.file_name} is being downloaded. This is a Microsoft Word document.`,
-          duration: 5000,
-        });
+        // Add a slight delay before showing this notification so it doesn't compete with the download toast
+        setTimeout(() => {
+          toast({
+            title: "Word Document Downloaded",
+            description: "If the document shows corruption errors, please click the help icon for troubleshooting steps.",
+            duration: 7000,
+          });
+        }, 2000);
       } else if (file.file_name.toLowerCase().endsWith('.zip')) {
         toast({
           title: "Download started",
@@ -148,22 +165,36 @@ const Files = () => {
   };
 
   const handleFileIssue = (fileName: string) => {
-    setErrorDetails({
-      fileName,
-      errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 
-                 fileName.toLowerCase().endsWith('.docx') ? 'docx' : 'general',
-    });
-    setErrorDialogOpen(true);
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    
+    if (fileExtension === 'docx') {
+      setCorruptFileDetails({
+        fileName,
+        fileType: 'docx'
+      });
+      setCorruptionAlertOpen(true);
+    } else {
+      setErrorDetails({
+        fileName,
+        errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 
+                  fileName.toLowerCase().endsWith('.docx') ? 'docx' : 'general',
+      });
+      setErrorDialogOpen(true);
+    }
   };
 
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     
     if (extension === 'docx' || extension === 'doc') {
-      return <ExternalLink className="h-5 w-5 text-blue-500" />;
+      return <File className="h-5 w-5 text-blue-500" />;
+    } else if (extension === 'zip') {
+      return <FileArchive className="h-5 w-5 text-cyan" />;
+    } else if (extension === 'pdf') {
+      return <File className="h-5 w-5 text-red-500" />;
     }
     
-    return <FileArchive className="h-5 w-5 text-cyan" />;
+    return <File className="h-5 w-5 text-cyan" />;
   };
 
   if (isLoading) {
@@ -260,6 +291,7 @@ const Files = () => {
         </div>
       </main>
       
+      {/* Regular troubleshooting dialog */}
       <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
         <DialogContent className="bg-charcoalSecondary border-gray-700 text-white sm:max-w-md">
           <DialogHeader>
@@ -336,6 +368,52 @@ const Files = () => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Word document corruption alert dialog */}
+      <AlertDialog open={corruptionAlertOpen} onOpenChange={setCorruptionAlertOpen}>
+        <AlertDialogContent className="bg-charcoalSecondary border-gray-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <FileWarning className="h-5 w-5 text-amber-400 mr-2" />
+              Microsoft Word Document Issues
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You may encounter "file is corrupt and cannot be opened" errors when opening {corruptFileDetails.fileName}. This could be due to:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Common causes:</h4>
+              <ul className="list-disc pl-5 space-y-1 text-gray-300 text-sm">
+                <li>Microsoft Word product activation issues</li>
+                <li>Incompatible Word version</li>
+                <li>Browser download handling problems</li>
+                <li>Missing Office components</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Solutions:</h4>
+              <ol className="list-decimal pl-5 space-y-2 text-gray-300 text-sm">
+                <li>Try a different application like Google Docs, LibreOffice or WPS Office</li>
+                <li>Save the file with a right-click and "Save link as..." instead of direct download</li>
+                <li>Verify your Microsoft Office installation and activation status</li>
+                <li>Request the document in a different format (like PDF) by contacting support</li>
+              </ol>
+            </div>
+            
+            <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3 mt-4">
+              <p className="text-blue-300 font-medium text-sm">Need more help?</p>
+              <p className="text-blue-100 text-xs">Contact our support team and mention you're having trouble with Word document activation or file corruption.</p>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-charcoalPrimary text-white border-gray-700 hover:bg-gray-700">Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <BottomNav />
     </div>
