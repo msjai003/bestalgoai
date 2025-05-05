@@ -45,20 +45,22 @@ export async function checkUserPremiumStatus(userId: string) {
     return false;
   }
   
+  // First get all user's plan details ordered by selection date
   const { data, error } = await supabase
     .from('plan_details')
     .select('*')
     .eq('user_id', userId)
     .order('selected_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
   
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     console.error('Error checking premium status:', error);
     return false;
   }
   
-  return data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.is_paid === true;
+  // Use the most recent plan (first item in the array)
+  const latestPlan = data[0];
+  return latestPlan.plan_name === 'Pro' || latestPlan.plan_name === 'Elite' || latestPlan.is_paid === true;
 }
 
 /**
