@@ -58,8 +58,23 @@ const Files = () => {
     setDownloadingId(file.id);
     
     try {
-      // In a real implementation, this would fetch the file from storage
-      // For now, we'll just update the download count and show a toast
+      // Create a download link and trigger download
+      const link = document.createElement('a');
+      
+      // If this is a full URL, use it directly
+      if (file.file_path.startsWith('http')) {
+        link.href = file.file_path;
+      } else {
+        // For relative paths, construct URL (using public folder)
+        link.href = file.file_path.startsWith('/') 
+          ? file.file_path 
+          : `/${file.file_path}`;
+      }
+      
+      link.download = file.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       // Increment download count
       const { error } = await supabase
@@ -71,22 +86,19 @@ const Files = () => {
         console.error("Error updating download count:", error);
       }
       
-      // Simulate download delay
-      setTimeout(() => {
-        setDownloadingId(null);
-        toast({
-          title: "Download complete",
-          description: `${file.file_name} has been downloaded successfully.`,
-        });
-      }, 1500);
+      toast({
+        title: "Download started",
+        description: `${file.file_name} is being downloaded.`,
+      });
     } catch (error) {
       console.error("Error during download:", error);
-      setDownloadingId(null);
       toast({
         title: "Download failed",
         description: "Could not download the file. Please try again later.",
         variant: "destructive",
       });
+    } finally {
+      setDownloadingId(null);
     }
   };
 
