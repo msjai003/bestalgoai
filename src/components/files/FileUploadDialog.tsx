@@ -74,6 +74,7 @@ const FileUploadDialog = ({
         return;
       }
 
+      console.log("Attempting to upload to bucket:", bucketId);
       const { data, error } = await uploadFile(selectedFile, bucketId);
 
       if (error) {
@@ -171,6 +172,13 @@ const FileUploadDialog = ({
                     <ul className="list-disc pl-5 mt-2 text-xs space-y-1">
                       <li>Try using a different filename</li>
                       <li>Add a version number or date to the filename</li>
+                    </ul>
+                  )}
+                  
+                  {uploadError.includes("Bucket not found") && (
+                    <ul className="list-disc pl-5 mt-2 text-xs space-y-1">
+                      <li>There might be a configuration issue with the storage buckets</li>
+                      <li>Try refreshing the page or contacting support</li>
                     </ul>
                   )}
                 </div>
