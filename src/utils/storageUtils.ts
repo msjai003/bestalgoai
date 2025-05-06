@@ -3,7 +3,7 @@
  * Utility functions for interacting with Supabase storage buckets
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export const STORAGE_BUCKETS = {
   APP_FILES: 'app-files',
@@ -22,6 +22,8 @@ export const uploadFile = async (file: File, bucketName: string, path?: string) 
   const filePath = path || file.name;
   
   try {
+    console.log(`Attempting to upload ${file.name} to ${bucketName} bucket`);
+    
     const { data, error } = await supabase
       .storage
       .from(bucketName)
@@ -29,6 +31,12 @@ export const uploadFile = async (file: File, bucketName: string, path?: string) 
         cacheControl: '3600',
         upsert: false
       });
+    
+    if (error) {
+      console.error(`Storage upload error: ${error.message}`);
+    } else {
+      console.log(`Upload successful: ${data?.path}`);
+    }
     
     return { data, error };
   } catch (error: any) {
@@ -45,10 +53,18 @@ export const uploadFile = async (file: File, bucketName: string, path?: string) 
  */
 export const listFiles = async (bucketName: string) => {
   try {
+    console.log(`Listing files from ${bucketName} bucket`);
+    
     const { data, error } = await supabase
       .storage
       .from(bucketName)
       .list();
+    
+    if (error) {
+      console.error(`Storage list error: ${error.message}`);
+    } else {
+      console.log(`Found ${data?.length || 0} files in ${bucketName}`);
+    }
     
     return { data, error };
   } catch (error: any) {

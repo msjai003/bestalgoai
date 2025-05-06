@@ -6,10 +6,24 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://fzvrozrjtvflksumiqsk.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnJvenJqdHZmbGtzdW1pcXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjExOTAsImV4cCI6MjA1Njg5NzE5MH0.MSib8YmoljwsG2IgjoR5BB22d6UCSw3Qlag35QIu2kI";
 
+// Storage credentials
+const STORAGE_ACCESS_KEY = "5638775071c0690fd0949b66f828a86";
+const STORAGE_SECRET_KEY = "d30ade96f258048bc38bb236a0dcac80da898def97a1a5c15708062a43eda327";
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    persistSession: true,
+  },
+  global: {
+    headers: {
+      'x-storage-access-key': STORAGE_ACCESS_KEY,
+      'x-storage-secret-key': STORAGE_SECRET_KEY,
+    },
+  },
+});
 
 // Get the current site URL for redirects
 export const getSiteUrl = () => {
@@ -19,8 +33,86 @@ export const getSiteUrl = () => {
   return 'http://localhost:3000';
 };
 
-// Create a fallback client function
+// Create a fallback client function with storage support
 export const createFallbackClient = () => {
-  console.log('Creating mock Supabase client');
-  return supabase;
+  console.log('Creating mock Supabase client with storage support');
+  
+  // Mock implementation for storage buckets
+  const storageBuckets = {
+    'app-files': { id: 'app-files', name: 'App Files', public: true },
+    'app-exe-files': { id: 'app-exe-files', name: 'App Executable Files', public: true }
+  };
+  
+  // Create a simplified mock client for testing
+  const mockClient = {
+    storage: {
+      from: (bucketName: string) => {
+        // Check if the requested bucket exists in our mock
+        if (!storageBuckets[bucketName]) {
+          console.warn(`Bucket not found: ${bucketName}`);
+        }
+        
+        return {
+          upload: (filePath: string, fileData: File) => {
+            // Simulate successful upload
+            console.log(`Uploading file to ${bucketName}/${filePath}`);
+            
+            if (!storageBuckets[bucketName]) {
+              return { 
+                data: null, 
+                error: { message: `Bucket not found: ${bucketName}`, status: 404 } 
+              };
+            }
+            
+            // Basic file validation
+            if (fileData.size > 50 * 1024 * 1024) { // 50MB max
+              return { 
+                data: null, 
+                error: { message: 'File size exceeded the maximum allowed (50MB)', status: 400 } 
+              };
+            }
+            
+            // Simulate storage operations with the provided credentials
+            console.log(`Access Key: ${STORAGE_ACCESS_KEY}`);
+            console.log(`Secret Key: ${STORAGE_SECRET_KEY.substring(0, 5)}...`); // Log only part of secret for security
+            
+            return { 
+              data: { path: `${bucketName}/${filePath}` }, 
+              error: null 
+            };
+          },
+          list: () => {
+            if (!storageBuckets[bucketName]) {
+              return { 
+                data: null, 
+                error: { message: `Bucket not found: ${bucketName}`, status: 404 } 
+              };
+            }
+            
+            // Return mock file list based on bucket
+            const mockFiles = bucketName === 'app-files' 
+              ? [
+                  { id: '1', name: 'document.pdf', created_at: '2024-05-01T10:00:00Z', metadata: { size: 1024000 } },
+                  { id: '2', name: 'spreadsheet.xlsx', created_at: '2024-05-01T11:00:00Z', metadata: { size: 512000 } },
+                  { id: '3', name: 'archive.zip', created_at: '2024-05-02T09:30:00Z', metadata: { size: 2048000 } }
+                ]
+              : [
+                  { id: '4', name: 'setup.exe', created_at: '2024-05-03T14:20:00Z', metadata: { size: 5120000 } },
+                  { id: '5', name: 'installer.msi', created_at: '2024-05-03T15:45:00Z', metadata: { size: 4096000 } }
+                ];
+                
+            return { data: mockFiles, error: null };
+          },
+          getPublicUrl: (fileName: string) => {
+            return { 
+              data: { publicUrl: `https://mock-storage.example.com/${bucketName}/${fileName}` } 
+            };
+          }
+        };
+      }
+    }
+  };
+  
+  return mockClient;
 };
+
