@@ -8,17 +8,37 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
 import { v4 as uuidv4 } from "uuid";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 interface FileItem {
   id: string;
   name: string;
-  size: number;
+  size: string; // Changed from number to string since we're storing the formatted size
   created_at: string;
   type: string;
   url: string;
+  bucket: string;
 }
 
-const BUCKET_NAME = 'app-files';
+const BUCKET_NAMES = {
+  APP_FILES: 'app-files',
+  EXE_FILES: 'exe-files'
+};
 
 const Files = () => {
   const { toast } = useToast();
@@ -46,9 +66,12 @@ const Files = () => {
     fileName: ""
   });
 
+  // State for bucket selection
+  const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
+
   useEffect(() => {
     fetchFiles();
-  }, []);
+  }, [selectedBucket]);
 
   const fetchFiles = async () => {
     try {
@@ -56,7 +79,7 @@ const Files = () => {
       
       const { data, error } = await supabase
         .storage
-        .from(BUCKET_NAME)
+        .from(selectedBucket)
         .list();
       
       if (error) {
@@ -76,17 +99,19 @@ const Files = () => {
       const filesWithUrls = await Promise.all(actualFiles.map(async (file) => {
         const { data: urlData } = supabase
           .storage
-          .from(BUCKET_NAME)
+          .from(selectedBucket)
           .getPublicUrl(file.name);
           
         // Get file type
         let fileType = 'unknown';
         const extension = file.name.split('.').pop()?.toLowerCase();
+        
         if (extension === 'pdf') fileType = 'pdf';
         else if (['doc', 'docx'].includes(extension || '')) fileType = 'docx';
         else if (['zip', 'rar', '7z'].includes(extension || '')) fileType = 'zip';
         else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) fileType = 'image';
-
+        else if (['exe'].includes(extension || '')) fileType = 'exe';
+        
         // Format size
         const formattedSize = formatFileSize(file.metadata?.size || 0);
         
@@ -96,7 +121,8 @@ const Files = () => {
           size: formattedSize,
           created_at: file.created_at,
           type: fileType,
-          url: urlData.publicUrl
+          url: urlData.publicUrl,
+          bucket: selectedBucket
         };
       }));
       
@@ -137,7 +163,7 @@ const Files = () => {
         // Upload file
         const { error } = await supabase
           .storage
-          .from(BUCKET_NAME)
+          .from(selectedBucket)
           .upload(file.name, file, {
             cacheControl: '3600',
             upsert: true
@@ -175,11 +201,11 @@ const Files = () => {
     }
   };
 
-  const handleDelete = async (fileName: string) => {
+  const handleDelete = async (fileName: string, bucket: string) => {
     try {
       const { error } = await supabase
         .storage
-        .from(BUCKET_NAME)
+        .from(bucket)
         .remove([fileName]);
         
       if (error) {
@@ -226,6 +252,12 @@ const Files = () => {
           description: "ZIP archive is being downloaded. You'll need an extraction tool like WinRAR, 7-Zip or the built-in extractor.",
           duration: 5000,
         });
+      } else if (file.type === 'exe') {
+        toast({
+          title: "Downloading Executable File",
+          description: "Executable file is being downloaded. Make sure to scan it with antivirus software before running.",
+          duration: 5000,
+        });
       }
       
       // Create a download link and trigger download
@@ -250,6 +282,12 @@ const Files = () => {
         toast({
           title: "ZIP Archive Downloaded",
           description: `${file.name} is being downloaded. If you have trouble opening the file, check the File Troubleshooting section.`,
+          duration: 5000,
+        });
+      } else if (file.type === 'exe') {
+        toast({
+          title: "Executable Downloaded",
+          description: "Remember to verify the source of this file before executing it.",
           duration: 5000,
         });
       } else {
@@ -288,7 +326,8 @@ const Files = () => {
       setErrorDetails({
         fileName,
         errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 
-                  fileName.toLowerCase().endsWith('.docx') ? 'docx' : 'general',
+                  fileName.toLowerCase().endsWith('.docx') ? 'docx' : 
+                  fileName.toLowerCase().endsWith('.exe') ? 'exe' : 'general',
       });
       setErrorDialogOpen(true);
     }
@@ -304,8 +343,21 @@ const Files = () => {
         return <File className="h-5 w-5 text-red-500" />;
       case 'image':
         return <File className="h-5 w-5 text-green-500" />;
+      case 'exe':
+        return <File className="h-5 w-5 text-orange-500" />;
       default:
         return <File className="h-5 w-5 text-cyan" />;
+    }
+  };
+
+  const getBucketDisplayName = (bucketId: string) => {
+    switch (bucketId) {
+      case BUCKET_NAMES.APP_FILES:
+        return "Regular Files";
+      case BUCKET_NAMES.EXE_FILES:
+        return "Executable Files";
+      default:
+        return bucketId;
     }
   };
 
@@ -331,6 +383,26 @@ const Files = () => {
         <div className="mt-4 mb-6">
           <h1 className="text-2xl font-semibold text-white">Files</h1>
           <p className="text-gray-400 mt-1">Upload and download trading resources and templates</p>
+        </div>
+
+        {/* Bucket Selector */}
+        <div className="bg-charcoalSecondary rounded-lg p-4 mb-4">
+          <h2 className="text-white font-medium mb-2">Select Storage</h2>
+          <div className="flex flex-wrap gap-2">
+            {Object.values(BUCKET_NAMES).map((bucket) => (
+              <Button
+                key={bucket}
+                variant={selectedBucket === bucket ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedBucket(bucket)}
+                className={selectedBucket === bucket 
+                  ? "bg-cyan text-charcoalPrimary hover:bg-cyan/80" 
+                  : "text-cyan border-cyan hover:bg-cyan/20"}
+              >
+                {getBucketDisplayName(bucket)}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <div className="bg-charcoalSecondary rounded-lg p-4 mb-4">
@@ -365,11 +437,17 @@ const Files = () => {
             </label>
           </div>
           <p className="text-xs text-gray-400 mt-2">
-            Upload ZIP files, documents, or other trading resources to share.
+            {selectedBucket === BUCKET_NAMES.APP_FILES 
+              ? "Upload ZIP files, documents, or other trading resources to share."
+              : "Upload executable files that can be downloaded and run."}
           </p>
         </div>
 
         <div className="bg-charcoalSecondary rounded-lg p-4">
+          <h2 className="text-lg text-white font-medium mb-3">
+            {getBucketDisplayName(selectedBucket)}
+          </h2>
+          
           {files.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <FileArchive className="h-10 w-10 mx-auto mb-2 text-gray-500" />
@@ -413,7 +491,7 @@ const Files = () => {
                       <AlertTriangle className="h-4 w-4" />
                     </button>
                     <Button
-                      onClick={() => handleDelete(file.name)}
+                      onClick={() => handleDelete(file.name, file.bucket)}
                       variant="ghost"
                       size="sm"
                       className="text-red-400 hover:text-red-300 hover:bg-red-900/20 mr-2"
@@ -508,6 +586,32 @@ const Files = () => {
                 <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3">
                   <p className="text-blue-300 font-medium">Alternative solutions:</p>
                   <p className="text-blue-100 text-xs">If you continue to have issues, try requesting the document in a different format like PDF.</p>
+                </div>
+              </>
+            ) : errorDetails.errorType === 'exe' ? (
+              <>
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium">Common executable file issues:</h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>File blocked by security software</li>
+                    <li>"Windows protected your PC" warning</li>
+                    <li>Application fails to run</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium">Solutions:</h4>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Verify the source is trustworthy before running</li>
+                    <li>Scan with antivirus software before executing</li>
+                    <li>Right-click and select "Run as administrator" if needed</li>
+                    <li>Check if you need to bypass SmartScreen (only for trusted applications)</li>
+                  </ol>
+                </div>
+                
+                <div className="bg-amber-900/30 border border-amber-700/40 rounded p-3">
+                  <p className="text-amber-300 font-medium">Security Warning:</p>
+                  <p className="text-amber-100 text-xs">Only run executable files from sources you trust. Always scan with antivirus software before running.</p>
                 </div>
               </>
             ) : (
