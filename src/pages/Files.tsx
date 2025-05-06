@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, Upload, FileWarning, File, Archive, Trash2, Loader } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, FileWarning, File, Archive, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
-import { v4 as uuidv4 } from "uuid";
 import { 
   Dialog, 
   DialogContent, 
@@ -39,14 +38,11 @@ const BUCKET_NAMES = {
   EXE_FILES: 'exe-files'
 };
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
-
 const Files = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorDetails, setErrorDetails] = useState({
@@ -67,11 +63,8 @@ const Files = () => {
     fileName: ""
   });
 
-  // State for bucket selection
+  // State for bucket selection - Now using a default bucket
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
-  
-  // State for upload error
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFiles();
@@ -150,152 +143,6 @@ const Files = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     
     return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const validateFile = (file: File, bucket: string): { valid: boolean, reason?: string } => {
-    // Check file size (50MB limit)
-    if (file.size > MAX_FILE_SIZE) {
-      return {
-        valid: false,
-        reason: `File size exceeds 50MB limit (${formatFileSize(file.size)})`
-      };
-    }
-    
-    // Check file extensions based on bucket
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    
-    if (bucket === BUCKET_NAMES.EXE_FILES) {
-      // For exe-files bucket, only allow .exe files
-      if (extension !== 'exe') {
-        return {
-          valid: false,
-          reason: `Only .exe files are allowed in the Executable Files bucket.`
-        };
-      }
-    } else if (bucket === BUCKET_NAMES.APP_FILES) {
-      // For app-files bucket, restrict .exe files
-      if (extension === 'exe') {
-        return {
-          valid: false,
-          reason: `Executable (.exe) files must be uploaded to the Executable Files bucket.`
-        };
-      }
-    }
-    
-    // All other validations passed
-    return { valid: true };
-  };
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    setUploadError(null);
-    setIsUploading(true);
-    
-    try {
-      const totalFiles = files.length;
-      let successCount = 0;
-      let errorCount = 0;
-      
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Validate the file before uploading
-        const validation = validateFile(file, selectedBucket);
-        if (!validation.valid) {
-          toast({
-            title: "File validation failed",
-            description: `${file.name}: ${validation.reason}`,
-            variant: "destructive",
-          });
-          errorCount++;
-          continue;
-        }
-        
-        // Upload file with original filename (not UUID)
-        const { error } = await supabase
-          .storage
-          .from(selectedBucket)
-          .upload(file.name, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
-          
-        if (error) {
-          console.error("Error uploading file:", error);
-          toast({
-            title: "Upload failed",
-            description: `Failed to upload ${file.name}. ${error.message}`,
-            variant: "destructive",
-          });
-          errorCount++;
-          continue;
-        }
-        
-        successCount++;
-      }
-      
-      // Show summary toast
-      if (successCount > 0) {
-        toast({
-          title: "Upload complete",
-          description: `Successfully uploaded ${successCount} of ${totalFiles} files.`,
-        });
-      }
-      
-      if (errorCount > 0) {
-        setUploadError(`Failed to upload ${errorCount} files. Please check file type and size restrictions.`);
-      }
-      
-      // Refresh file list
-      fetchFiles();
-    } catch (error) {
-      console.error("Exception during upload:", error);
-      toast({
-        title: "Upload error",
-        description: "An unexpected error occurred during upload.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-      // Reset file input
-      e.target.value = '';
-    }
-  };
-
-  const handleDelete = async (fileName: string, bucket: string) => {
-    try {
-      const { error } = await supabase
-        .storage
-        .from(bucket)
-        .remove([fileName]);
-        
-      if (error) {
-        console.error("Error deleting file:", error);
-        toast({
-          title: "Delete failed",
-          description: `Failed to delete ${fileName}.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      toast({
-        title: "File deleted",
-        description: `${fileName} has been successfully deleted.`,
-      });
-      
-      // Refresh file list
-      fetchFiles();
-    } catch (error) {
-      console.error("Exception during delete:", error);
-      toast({
-        title: "Delete error",
-        description: "An unexpected error occurred while deleting the file.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleDownload = async (file: FileItem) => {
@@ -445,91 +292,7 @@ const Files = () => {
       <main className="pt-16 pb-20 px-4">
         <div className="mt-4 mb-6">
           <h1 className="text-2xl font-semibold text-white">Files</h1>
-          <p className="text-gray-400 mt-1">Upload and download trading resources and templates</p>
-        </div>
-
-        {/* Bucket Selector */}
-        <div className="bg-charcoalSecondary rounded-lg p-4 mb-4">
-          <h2 className="text-white font-medium mb-2">Select Storage</h2>
-          <div className="flex flex-wrap gap-2">
-            {Object.values(BUCKET_NAMES).map((bucket) => (
-              <Button
-                key={bucket}
-                variant={selectedBucket === bucket ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedBucket(bucket)}
-                className={selectedBucket === bucket 
-                  ? "bg-cyan text-charcoalPrimary hover:bg-cyan/80" 
-                  : "text-cyan border-cyan hover:bg-cyan/20"}
-              >
-                {getBucketDisplayName(bucket)}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-charcoalSecondary rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-white font-medium">Upload Files</h2>
-            <label className="cursor-pointer">
-              <input 
-                type="file" 
-                className="hidden" 
-                onChange={handleUpload}
-                multiple
-                disabled={isUploading}
-              />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <div className="flex items-center">
-                    <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
-                    <span>Uploading...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Upload className="h-4 w-4 mr-1" />
-                    <span>Upload</span>
-                  </div>
-                )}
-              </Button>
-            </label>
-          </div>
-          
-          {uploadError && (
-            <div className="mt-3 p-2 bg-red-900/30 border border-red-700/30 rounded text-sm text-red-200">
-              <div className="flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-red-400" />
-                <span>{uploadError}</span>
-              </div>
-            </div>
-          )}
-          
-          <p className="text-xs text-gray-400 mt-2">
-            {selectedBucket === BUCKET_NAMES.APP_FILES 
-              ? "Upload ZIP files, documents, or other trading resources to share. Max size: 50MB."
-              : "Upload executable files that can be downloaded and run. Max size: 50MB."}
-          </p>
-          
-          {selectedBucket === BUCKET_NAMES.EXE_FILES && (
-            <div className="mt-2 p-2 bg-amber-900/20 border border-amber-700/20 rounded-md">
-              <p className="text-xs text-amber-200">
-                <span className="font-medium">Note:</span> Only .exe files are allowed in this bucket. For other file types, use Regular Files.
-              </p>
-            </div>
-          )}
-          
-          {selectedBucket === BUCKET_NAMES.APP_FILES && (
-            <div className="mt-2 p-2 bg-blue-900/20 border border-blue-700/20 rounded-md">
-              <p className="text-xs text-blue-200">
-                <span className="font-medium">Note:</span> For .exe files, please use the Executable Files bucket instead.
-              </p>
-            </div>
-          )}
+          <p className="text-gray-400 mt-1">Download trading resources and templates</p>
         </div>
 
         <div className="bg-charcoalSecondary rounded-lg p-4">
@@ -540,7 +303,7 @@ const Files = () => {
           {files.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <FileArchive className="h-10 w-10 mx-auto mb-2 text-gray-500" />
-              <p>No files available. Upload a file to get started.</p>
+              <p>No files available.</p>
             </div>
           ) : (
             <>
@@ -579,15 +342,6 @@ const Files = () => {
                     >
                       <AlertTriangle className="h-4 w-4" />
                     </button>
-                    <Button
-                      onClick={() => handleDelete(file.name, file.bucket)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 mr-2"
-                      aria-label="Delete file"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                     <Button
                       onClick={() => handleDownload(file)}
                       variant="outline"
@@ -655,7 +409,6 @@ const Files = () => {
                 </div>
               </>
             ) : errorDetails.errorType === 'docx' ? (
-              // ... keep existing code (docx troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">Common Word document issues:</h4>
@@ -682,7 +435,6 @@ const Files = () => {
                 </div>
               </>
             ) : errorDetails.errorType === 'exe' ? (
-              // ... keep existing code (exe troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">Common executable file issues:</h4>
@@ -709,7 +461,6 @@ const Files = () => {
                 </div>
               </>
             ) : (
-              // ... keep existing code (general troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">General file troubleshooting:</h4>
