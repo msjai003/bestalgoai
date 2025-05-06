@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, FileWarning, File, Archive, Loader } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, FileWarning, File, Archive, Loader, FileCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,12 @@ import {
   AlertDialogTitle,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
 
 interface FileItem {
   id: string;
@@ -35,7 +42,7 @@ interface FileItem {
 
 const BUCKET_NAMES = {
   APP_FILES: 'app-files',
-  EXE_FILES: 'exe-files'
+  EXE_FILES: 'app-exe-files'
 };
 
 const Files = () => {
@@ -63,7 +70,7 @@ const Files = () => {
     fileName: ""
   });
 
-  // State for bucket selection - Now using a default bucket
+  // State for bucket selection - Using tabs to switch between buckets
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
 
   useEffect(() => {
@@ -254,7 +261,7 @@ const Files = () => {
       case 'image':
         return <File className="h-5 w-5 text-green-500" />;
       case 'exe':
-        return <File className="h-5 w-5 text-orange-500" />;
+        return <FileCog className="h-5 w-5 text-orange-500" />;
       default:
         return <File className="h-5 w-5 text-cyan" />;
     }
@@ -263,7 +270,7 @@ const Files = () => {
   const getBucketDisplayName = (bucketId: string) => {
     switch (bucketId) {
       case BUCKET_NAMES.APP_FILES:
-        return "Regular Files";
+        return "Document Files";
       case BUCKET_NAMES.EXE_FILES:
         return "Executable Files";
       default:
@@ -295,78 +302,103 @@ const Files = () => {
           <p className="text-gray-400 mt-1">Download trading resources and templates</p>
         </div>
 
-        <div className="bg-charcoalSecondary rounded-lg p-4">
-          <h2 className="text-lg text-white font-medium mb-3">
-            {getBucketDisplayName(selectedBucket)}
-          </h2>
-          
-          {files.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <FileArchive className="h-10 w-10 mx-auto mb-2 text-gray-500" />
-              <p>No files available.</p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-4 p-3 bg-amber-900/30 border border-amber-600/30 rounded-md">
-                <h3 className="flex items-center text-amber-300 font-medium mb-1">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  File Troubleshooting
-                </h3>
-                <p className="text-sm text-amber-100/80">
-                  Having trouble opening files? Click the help icon next to any file for troubleshooting tips.
-                </p>
-              </div>
-              
-              {files.map((file) => (
-                <div 
-                  key={file.id} 
-                  className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0"
-                >
-                  <div className="flex items-center">
-                    <div className="bg-charcoalPrimary/60 p-2 rounded-lg mr-3">
-                      {getFileIcon(file.type)}
+        <Tabs 
+          defaultValue={BUCKET_NAMES.APP_FILES}
+          value={selectedBucket}
+          onValueChange={setSelectedBucket}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value={BUCKET_NAMES.APP_FILES} className="data-[state=active]:text-cyan">
+              <File className="h-4 w-4 mr-2" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value={BUCKET_NAMES.EXE_FILES} className="data-[state=active]:text-cyan">
+              <FileCog className="h-4 w-4 mr-2" />
+              Applications
+            </TabsTrigger>
+          </TabsList>
+
+          {[BUCKET_NAMES.APP_FILES, BUCKET_NAMES.EXE_FILES].map((bucketId) => (
+            <TabsContent key={bucketId} value={bucketId} className="mt-0">
+              <div className="bg-charcoalSecondary rounded-lg p-4">
+                <h2 className="text-lg text-white font-medium mb-3">
+                  {getBucketDisplayName(bucketId)} 
+                </h2>
+
+                {files.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <FileArchive className="h-10 w-10 mx-auto mb-2 text-gray-500" />
+                    <p>No files available in this section.</p>
+                    {bucketId === BUCKET_NAMES.EXE_FILES && (
+                      <p className="text-sm mt-2 text-gray-500">Trading applications will appear here when they become available.</p>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 p-3 bg-amber-900/30 border border-amber-600/30 rounded-md">
+                      <h3 className="flex items-center text-amber-300 font-medium mb-1">
+                        <AlertTriangle className="h-4 w-4 mr-2" />
+                        File Troubleshooting
+                      </h3>
+                      <p className="text-sm text-amber-100/80">
+                        Having trouble opening files? Click the help icon next to any file for troubleshooting tips.
+                      </p>
                     </div>
-                    <div>
-                      <h3 className="text-white font-medium">{file.name}</h3>
-                      <div className="flex space-x-3 text-xs text-gray-400">
-                        <span>{file.size}</span>
-                        <span>Added: {new Date(file.created_at).toLocaleDateString()}</span>
+                    
+                    {files.map((file) => (
+                      <div 
+                        key={file.id} 
+                        className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0"
+                      >
+                        <div className="flex items-center">
+                          <div className="bg-charcoalPrimary/60 p-2 rounded-lg mr-3">
+                            {getFileIcon(file.type)}
+                          </div>
+                          <div>
+                            <h3 className="text-white font-medium">{file.name}</h3>
+                            <div className="flex space-x-3 text-xs text-gray-400">
+                              <span>{file.size}</span>
+                              <span>Added: {new Date(file.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <button 
+                            onClick={() => handleFileIssue(file.name)}
+                            className="mr-2 text-gray-400 hover:text-amber-300"
+                            aria-label="File help"
+                          >
+                            <AlertTriangle className="h-4 w-4" />
+                          </button>
+                          <Button
+                            onClick={() => handleDownload(file)}
+                            variant="outline"
+                            size="sm"
+                            className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
+                            disabled={downloadingId === file.id}
+                          >
+                            {downloadingId === file.id ? (
+                              <div className="flex items-center">
+                                <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
+                                <span>Downloading...</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center">
+                                <Download className="h-4 w-4 mr-1" />
+                                <span>Download</span>
+                              </div>
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <button 
-                      onClick={() => handleFileIssue(file.name)}
-                      className="mr-2 text-gray-400 hover:text-amber-300"
-                      aria-label="File help"
-                    >
-                      <AlertTriangle className="h-4 w-4" />
-                    </button>
-                    <Button
-                      onClick={() => handleDownload(file)}
-                      variant="outline"
-                      size="sm"
-                      className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
-                      disabled={downloadingId === file.id}
-                    >
-                      {downloadingId === file.id ? (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
-                          <span>Downloading...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center">
-                          <Download className="h-4 w-4 mr-1" />
-                          <span>Download</span>
-                        </div>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </main>
       
       {/* Regular troubleshooting dialog */}

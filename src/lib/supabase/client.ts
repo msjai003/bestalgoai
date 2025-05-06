@@ -11,10 +11,15 @@ export const supabase = {
     signOut: async () => ({ error: null }),
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    resetPasswordForEmail: async () => ({ data: null, error: null }),
+    verifyOtp: async () => ({ data: null, error: null }),
+    updateUser: async () => ({ data: null, error: null }),
+    setSession: async () => ({ data: null, error: null }),
   },
   from: (tableName) => ({
     select: (query = '*') => ({
       eq: (column, value) => ({
+        single: () => ({ data: null, error: null }),
         maybeSingle: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
           limit: (limit) => ({
@@ -25,7 +30,9 @@ export const supabase = {
           error: null
         }),
         data: [],
-        error: null
+        error: null,
+        ilike: (column, value) => ({ data: [], error: null }),
+        select: (query) => ({ data: [], error: null }),
       }),
       order: (column, { ascending } = { ascending: false }) => ({
         limit: (limit) => ({
@@ -33,21 +40,66 @@ export const supabase = {
           error: null
         }),
         data: [],
-        error: null
+        error: null,
+        eq: (column, value) => ({ data: [], error: null }),
       }),
       count: () => ({ data: 0, error: null }),
       data: [],
-      error: null
+      error: null,
+      eq: (column, value) => ({
+        maybeSingle: () => ({ data: null, error: null }),
+        single: () => ({ data: null, error: null }),
+        order: (column, { ascending } = { ascending: false }) => ({
+          limit: (limit) => ({ data: [], error: null }),
+          data: [],
+          error: null
+        }),
+        data: [],
+        error: null,
+        select: (query) => ({ data: [], error: null }),
+      }),
+      ilike: (column, value) => ({
+        data: [],
+        error: null,
+        maybeSingle: () => ({ data: null, error: null }),
+        single: () => ({ data: null, error: null }),
+      }),
+      single: () => ({ data: null, error: null }),
+      maybeSingle: () => ({ data: null, error: null }),
+      in: (column, values) => ({ data: [], error: null }),
     }),
     insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ data: [], error: null }),
-    delete: () => ({ data: [], error: null }),
+    update: (data) => ({
+      eq: (column, value) => ({ data: [], error: null }),
+      match: (criteria) => ({ data: [], error: null }),
+      data: [], 
+      error: null
+    }),
+    delete: () => ({ 
+      eq: (column, value) => ({ data: [], error: null }),
+      match: (criteria) => ({ data: [], error: null }),
+      data: [], 
+      error: null
+    }),
+    upsert: (data) => ({ data: [], error: null }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
     from: (bucketName) => ({
-      upload: async () => ({ data: null, error: null }),
-      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      upload: async (path, file) => ({ data: { path }, error: null }),
+      remove: async (paths) => ({ data: null, error: null }),
+      getPublicUrl: (path) => ({ data: { publicUrl: `https://example.com/${bucketName}/${path}` } }),
+      list: async (prefix, options) => ({ 
+        data: [
+          {
+            id: '1', 
+            name: 'test-file.pdf',
+            metadata: { size: 12345 },
+            created_at: new Date().toISOString()
+          }
+        ], 
+        error: null 
+      }),
     }),
   },
   rpc: (functionName, params = {}) => {
