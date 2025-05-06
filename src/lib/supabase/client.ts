@@ -85,7 +85,25 @@ export const supabase = {
   }),
   storage: {
     from: (bucketName) => ({
-      upload: async (path, file) => ({ data: { path }, error: null }),
+      upload: async (path, file) => {
+        // Simulate some common upload issues
+        if (!file) {
+          return { data: null, error: { message: "No file provided", status: 400 } };
+        }
+        
+        // Check file size (mock limit of 50MB)
+        if (file.size && file.size > 50 * 1024 * 1024) {
+          return { data: null, error: { message: "File too large (max 50MB allowed)", status: 413 } };
+        }
+        
+        // Check file name for invalid characters (simplified check)
+        if (path.includes('#') || path.includes('?') || path.includes('%')) {
+          return { data: null, error: { message: "File name contains invalid characters", status: 400 } };
+        }
+        
+        // Success case
+        return { data: { path }, error: null };
+      },
       remove: async (paths) => ({ data: null, error: null }),
       getPublicUrl: (path) => ({ data: { publicUrl: `https://example.com/${bucketName}/${path}` } }),
       list: async (prefix, options) => ({ 

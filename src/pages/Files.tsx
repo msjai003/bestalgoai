@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, FileWarning, File, Archive, Loader, FileCog } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, FileWarning, File, Archive, Loader, FileCog, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogDescription 
+  DialogDescription,
+  DialogFooter
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogCancel,
+  AlertDialogAction
 } from "@/components/ui/alert-dialog";
 import {
   Tabs,
@@ -69,6 +70,12 @@ const Files = () => {
   const [zipFileDetails, setZipFileDetails] = useState({
     fileName: ""
   });
+
+  // State for file upload dialog
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // State for bucket selection - Using tabs to switch between buckets
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
@@ -278,6 +285,77 @@ const Files = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+      setUploadError(null); // Clear any previous errors
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setUploadError("Please select a file to upload");
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      // Check file size (max 50MB)
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        setUploadError("File is too large. Maximum size is 50MB.");
+        setUploading(false);
+        return;
+      }
+
+      // Check filename for special characters
+      const fileName = selectedFile.name;
+      if (/[#%&{}\<>*?/$!'":@+`|=]/g.test(fileName)) {
+        setUploadError("Filename contains special characters. Please rename your file before uploading.");
+        setUploading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .storage
+        .from(selectedBucket)
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error("Upload error:", error);
+        
+        // Provide more descriptive errors based on the error message
+        if (error.message.includes("already exists")) {
+          setUploadError("A file with this name already exists. Please rename your file or use a different name.");
+        } else if (error.message.includes("size exceeded")) {
+          setUploadError("File size exceeded the allowed limit (max 50MB).");
+        } else {
+          setUploadError(`Upload failed: ${error.message}`);
+        }
+        return;
+      }
+
+      toast({
+        title: "Upload successful",
+        description: `${fileName} has been uploaded successfully.`,
+        variant: "default",
+      });
+
+      setUploadDialogOpen(false);
+      setSelectedFile(null);
+      fetchFiles(); // Refresh file list
+    } catch (error: any) {
+      console.error("Exception during upload:", error);
+      setUploadError(`An unexpected error occurred: ${error.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-charcoalPrimary min-h-screen">
@@ -322,9 +400,20 @@ const Files = () => {
           {[BUCKET_NAMES.APP_FILES, BUCKET_NAMES.EXE_FILES].map((bucketId) => (
             <TabsContent key={bucketId} value={bucketId} className="mt-0">
               <div className="bg-charcoalSecondary rounded-lg p-4">
-                <h2 className="text-lg text-white font-medium mb-3">
-                  {getBucketDisplayName(bucketId)} 
-                </h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg text-white font-medium">
+                    {getBucketDisplayName(bucketId)} 
+                  </h2>
+                  <Button 
+                    onClick={() => setUploadDialogOpen(true)}
+                    size="sm" 
+                    className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
+                    variant="outline"
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Upload
+                  </Button>
+                </div>
 
                 {files.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
@@ -400,6 +489,114 @@ const Files = () => {
           ))}
         </Tabs>
       </main>
+      
+      {/* File Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="bg-charcoalSecondary border-gray-700 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload File</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Upload a file to the {getBucketDisplayName(selectedBucket)} bucket.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <label htmlFor="file" className="text-sm text-white">
+                Select File
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="file"
+                  type="file"
+                  className="flex h-10 w-full rounded-md border border-gray-700 bg-charcoalPrimary px-3 py-2 text-sm text-white file:border-0 file:bg-transparent file:text-cyan file:text-sm file:font-medium"
+                  onChange={handleFileChange}
+                />
+                {selectedFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedFile(null)}
+                    className="h-7 w-7 rounded-full p-0 text-gray-400 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Clear</span>
+                  </Button>
+                )}
+              </div>
+              {selectedFile && (
+                <p className="text-xs text-gray-400">
+                  {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                </p>
+              )}
+            </div>
+            
+            {uploadError && (
+              <div className="bg-red-900/30 border border-red-700/30 text-red-200 text-sm rounded-md p-3">
+                <div className="flex items-start">
+                  <AlertTriangle className="h-5 w-5 text-red-400 mr-2 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-red-300">Upload Failed</p>
+                    <p>{uploadError}</p>
+                    
+                    {/* Show specific help based on the error */}
+                    {uploadError.includes("special characters") && (
+                      <ul className="list-disc pl-5 mt-2 text-xs space-y-1">
+                        <li>Remove special characters like #, %, &, {}, etc. from the filename</li>
+                        <li>Use only letters, numbers, dashes, underscores, and periods</li>
+                      </ul>
+                    )}
+                    
+                    {uploadError.includes("already exists") && (
+                      <ul className="list-disc pl-5 mt-2 text-xs space-y-1">
+                        <li>Try using a different filename</li>
+                        <li>Add a version number or date to the filename</li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-blue-900/30 border border-blue-700/30 rounded p-3 text-sm">
+              <h4 className="text-blue-300 font-medium">Upload Tips</h4>
+              <ul className="list-disc pl-5 mt-1 text-xs space-y-1 text-blue-100">
+                <li>Maximum file size: 50MB</li>
+                <li>Avoid special characters in filenames (no #, %, &, {}, etc.)</li>
+                <li>Use only letters, numbers, dashes, underscores, and periods</li>
+                <li>Supported file types: PDF, Word, Excel, ZIP, images, etc.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setUploadDialogOpen(false)}
+              className="bg-transparent text-white hover:bg-gray-700"
+              disabled={uploading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleUpload}
+              disabled={!selectedFile || uploading}
+              className="bg-cyan text-charcoalPrimary hover:bg-cyan/90"
+            >
+              {uploading ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
+                  Uploading...
+                </>
+              ) : (
+                <>Upload</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Regular troubleshooting dialog */}
       <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
@@ -604,28 +801,3 @@ const Files = () => {
                 <li><span className="font-medium">Try different extraction software:</span> WinRAR, 7-Zip, and Windows built-in extraction each handle ZIP files differently</li>
                 <li><span className="font-medium">Download again:</span> The file may have been corrupted during the initial download</li>
                 <li><span className="font-medium">Use 'Save as' instead of direct download:</span> Right-click the download button and select "Save link as..." for better download integrity</li>
-              </ol>
-            </div>
-            
-            <div className="bg-blue-900/30 border border-blue-700/40 rounded p-3 mt-4">
-              <p className="text-blue-300 font-medium text-sm">Recommended extraction tools:</p>
-              <ul className="list-disc pl-5 space-y-1 text-blue-100 text-xs">
-                <li>7-Zip (free, lightweight): www.7-zip.org</li>
-                <li>WinRAR (trial, powerful): www.rarlab.com</li>
-                <li>Windows built-in extractor (right-click &gt; Extract All)</li>
-              </ul>
-            </div>
-          </div>
-          
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-charcoalPrimary text-white border-gray-700 hover:bg-gray-700">Close</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      <BottomNav />
-    </div>
-  );
-};
-
-export default Files;
