@@ -1,4 +1,3 @@
-
 export interface Broker {
   id: number;
   name: string;
@@ -132,6 +131,7 @@ export interface SaveBrokerFunctionParams {
   p_image_url?: string;
 }
 
+// Add the ExecuteSqlParams type if it doesn't already exist
 export interface ExecuteSqlParams {
   query: string;
 }

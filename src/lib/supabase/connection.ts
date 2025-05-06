@@ -1,12 +1,12 @@
 
 import { supabase } from './client';
+import { ExecuteSqlParams } from '@/types/broker';
 
 export async function testTableAccess() {
   try {
     // Use from().select() instead of direct rpc for mock client compatibility
-    const { data: queryResult, error } = await supabase.rpc('execute_sql', {
-      query: 'SELECT * FROM signup LIMIT 5'
-    });
+    const params: ExecuteSqlParams = { query: 'SELECT * FROM signup LIMIT 5' };
+    const { data: queryResult, error } = await supabase.rpc('execute_sql', params);
     
     if (error) {
       console.error('Error accessing Supabase table:', error);

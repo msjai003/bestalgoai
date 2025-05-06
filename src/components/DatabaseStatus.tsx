@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from './ui/button';
@@ -5,6 +6,7 @@ import { Card } from './ui/card';
 import { Separator } from './ui/separator';
 import { RefreshCw, Database, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ExecuteSqlParams } from '@/types/broker';
 
 interface TableInfo {
   name: string;
@@ -26,10 +28,9 @@ const DatabaseStatus: React.FC = () => {
     setError(null);
     
     try {
-      // Test Supabase connection
-      const { data, error } = await supabase
-        .from('_supabase_schema_information')
-        .select();
+      // Test Supabase connection using RPC instead of direct table access
+      const params: ExecuteSqlParams = { query: 'SELECT * FROM information_schema.tables LIMIT 1' };
+      const { data, error } = await supabase.rpc('execute_sql', params);
       
       if (error) {
         throw error;
@@ -62,10 +63,20 @@ const DatabaseStatus: React.FC = () => {
     
     for (const tableName of expectedTables) {
       try {
-        // First check if the table exists
-        const { data, error } = await supabase
-          .from(tableName)
-          .select();
+        // First check if the table exists using RPC
+        const params: ExecuteSqlParams = {
+          query: `SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = '${tableName}'
+          ) as exists, (
+            SELECT count(*) FROM information_schema.columns
+            WHERE table_schema = 'public' 
+            AND table_name = '${tableName}'
+          ) as row_count`
+        };
+        
+        const { data, error } = await supabase.rpc('execute_sql', params);
         
         if (error) {
           console.error(`Error checking table ${tableName}:`, error);
@@ -77,12 +88,14 @@ const DatabaseStatus: React.FC = () => {
           continue;
         }
         
-        const rowCount = typeof data === 'number' ? data : (data ? data.length : 0);
+        // Process the result
+        const exists = data && Array.isArray(data) && data.length > 0 && data[0].exists === true;
+        const rowCount = data && Array.isArray(data) && data.length > 0 ? parseInt(data[0].row_count || '0') : 0;
         
         tableResults.push({
           name: tableName,
           rowCount,
-          exists: true
+          exists
         });
         
       } catch (err) {
@@ -100,9 +113,8 @@ const DatabaseStatus: React.FC = () => {
 
   const runSampleQuery = async (tableName: string) => {
     try {
-      const { data, error } = await supabase
-        .from(tableName)
-        .select();
+      const params: ExecuteSqlParams = { query: `SELECT * FROM ${tableName} LIMIT 10` };
+      const { data, error } = await supabase.rpc('execute_sql', params);
       
       if (error) {
         throw error;
@@ -112,7 +124,7 @@ const DatabaseStatus: React.FC = () => {
       
       toast({
         title: `Query successful`,
-        description: `Found ${data.length} records in ${tableName}. Check console for details.`,
+        description: `Found ${Array.isArray(data) ? data.length : 0} records in ${tableName}. Check console for details.`,
       });
     } catch (err: any) {
       toast({

@@ -2,6 +2,7 @@
 // This file contains utilities for managing subscription-related functionality
 
 import { supabase } from './client';
+import { ExecuteSqlParams } from '@/types/broker';
 
 /**
  * Retrieves subscription details for a specific user
@@ -13,13 +14,14 @@ export async function getUserSubscription(userId: string) {
     return { data: null, error: new Error('User ID is required') };
   }
 
-  const { data, error } = await supabase
-    .from('plan_details')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const params: ExecuteSqlParams = { 
+    query: `SELECT * FROM plan_details WHERE user_id = '${userId}'` 
+  };
+  const { data, error } = await supabase.rpc('execute_sql', params);
 
-  return { data, error };
+  // Convert the result to match the expected return format
+  const subscription = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
+  return { data: subscription, error };
 }
 
 /**
@@ -27,10 +29,10 @@ export async function getUserSubscription(userId: string) {
  * @returns Promise with pricing plans data or error
  */
 export async function getPricingPlans() {
-  const { data, error } = await supabase
-    .from('price_admin')
-    .select('*')
-    .order('sort_order', { ascending: true });
+  const params: ExecuteSqlParams = { 
+    query: `SELECT * FROM price_admin ORDER BY sort_order ASC` 
+  };
+  const { data, error } = await supabase.rpc('execute_sql', params);
 
   return { data, error };
 }
@@ -47,12 +49,13 @@ export async function checkUserPremiumStatus(userId: string): Promise<boolean> {
 
   try {
     // Get the most recent plan for the user
-    const { data, error } = await supabase
-      .from('plan_details')
-      .select('*')
-      .eq('user_id', userId)
-      .order('selected_at', { ascending: false })
-      .limit(1);
+    const params: ExecuteSqlParams = { 
+      query: `SELECT * FROM plan_details 
+              WHERE user_id = '${userId}'
+              ORDER BY selected_at DESC
+              LIMIT 1` 
+    };
+    const { data, error } = await supabase.rpc('execute_sql', params);
 
     if (error) {
       console.error('Error checking premium status:', error);
@@ -60,8 +63,9 @@ export async function checkUserPremiumStatus(userId: string): Promise<boolean> {
     }
 
     // Check if we have data and if the first item indicates premium status
-    return data && data.length > 0 && 
-      (data[0].plan_name === 'Pro' || data[0].plan_name === 'Elite' || data[0].is_paid === true);
+    const plan = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
+    return plan && 
+      (plan.plan_name === 'Pro' || plan.plan_name === 'Elite' || plan.is_paid === true);
   } catch (error) {
     console.error('Exception checking premium status:', error);
     return false;
@@ -88,9 +92,6 @@ export async function syncPremiumAccess(userId: string): Promise<boolean> {
     
     // Here we would typically sync the premium status with other parts of the application
     // For example, unlocking premium strategies
-    
-    // This is a placeholder for any specific premium sync logic
-    // You can implement additional functionality here as needed
     
     // For now, we'll just update any strategies the user has to mark them as paid if they have premium
     const { error } = await supabase.rpc('force_strategy_paid_status', {

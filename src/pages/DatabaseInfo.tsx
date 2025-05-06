@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Info, RefreshCw } from 'lucide-react';
+import { ExecuteSqlParams } from '@/types/broker';
 
 const DatabaseInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,20 +17,24 @@ const DatabaseInfo = () => {
     
     try {
       // Add sample signup using execute_sql
-      const { data: insertResult, error: insertError } = await supabase.rpc('execute_sql', {
+      const insertParams: ExecuteSqlParams = {
         query: `INSERT INTO signup (name, email, message) 
                 VALUES ('Sample User', 'sample@example.com', 'I am interested in algorithmic trading!') 
                 RETURNING *`
-      });
+      };
+      
+      const { data: insertResult, error: insertError } = await supabase.rpc('execute_sql', insertParams);
 
       if (insertError) {
         throw new Error(`Error adding sample signup: ${insertError.message}`);
       }
 
       // Get the latest signup records
-      const { data: signupsResult, error: fetchError } = await supabase.rpc('execute_sql', {
+      const fetchParams: ExecuteSqlParams = {
         query: `SELECT * FROM signup ORDER BY created_at DESC LIMIT 5`
-      });
+      };
+      
+      const { data: signupsResult, error: fetchError } = await supabase.rpc('execute_sql', fetchParams);
 
       if (fetchError) {
         throw new Error(`Error fetching signup data: ${fetchError.message}`);

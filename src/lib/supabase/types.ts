@@ -10,13 +10,94 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      // Define your tables here if needed
+      plan_details: {
+        Row: {
+          id: string
+          user_id: string
+          plan_name: string
+          plan_price: string
+          selected_at: string
+          is_paid: boolean | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_name: string
+          plan_price: string
+          selected_at?: string
+          is_paid?: boolean | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_name?: string
+          plan_price?: string
+          selected_at?: string
+          is_paid?: boolean | null
+        }
+      }
+      price_admin: {
+        Row: {
+          id: string
+          plan_id: string
+          plan_name: string
+          plan_description: string | null
+          plan_price: string
+          plan_period: string | null
+          features: Json | null
+          is_popular: boolean | null
+          sort_order: number | null
+          is_active: boolean | null
+          created_at: string
+          updated_at: string
+        }
+      }
+      user_profiles: {
+        Row: {
+          id: string
+          full_name: string
+          email: string
+          mobile_number: string | null
+          trading_experience: string | null
+          profile_picture: string | null
+          is_research_analyst: boolean | null
+          approved: boolean | null
+          can_create_strategies: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          license_number: string | null
+        }
+      }
+      signup: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          message: string
+          created_at: string
+        }
+      }
+      // Add other tables as needed
     }
     Views: {
       // Define your views here if needed
     }
     Functions: {
-      // Define your functions here if needed
+      execute_sql: {
+        Args: {
+          query: string
+        }
+        Returns: Json
+      }
+      force_strategy_paid_status: {
+        Args: {
+          p_user_id: string
+          p_strategy_id: number
+          p_strategy_name: string
+          p_strategy_description: string
+        }
+        Returns: void
+      }
     }
     Enums: {
       // Define your enums here if needed

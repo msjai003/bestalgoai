@@ -1,4 +1,6 @@
+
 import { supabase } from './client';
+import { ExecuteSqlParams } from '@/types/broker';
 
 // Test a direct sign-up with extra data
 export const directSignUp = async (email: string, password: string, userData: any) => {
@@ -52,9 +54,9 @@ export const offlineSignup = async (email: string, password: string, userData: a
 // Test fetching user profiles
 export const testFetchUserProfiles = async () => {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select();
+    // Use RPC instead of direct table access
+    const params: ExecuteSqlParams = { query: 'SELECT * FROM user_profiles LIMIT 5' };
+    const { data, error } = await supabase.rpc('execute_sql', params);
 
     if (error) {
       console.error("Error fetching user profiles:", error);
