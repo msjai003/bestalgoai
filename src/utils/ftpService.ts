@@ -77,10 +77,13 @@ export const downloadFtpFile = async (
   config: FtpConnectionConfig, 
   filePath: string, 
   progressCallback?: (percent: number) => void
-): Promise<{ success: boolean; message?: string; }> => {
-  console.log(`Downloading file: ${filePath}`);
+): Promise<{ success: boolean; message?: string; blob?: Blob }> => {
+  console.log(`Downloading file: ${filePath} from FTP server ${config.host}`);
   
   try {
+    // In a real implementation, this would connect to the FTP server and download the file
+    // For this demo, we'll simulate the download process
+    
     // Simulate download progress
     for (let i = 0; i <= 100; i += 10) {
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -89,10 +92,26 @@ export const downloadFtpFile = async (
       }
     }
     
-    // In production, after file is downloaded server-side, you would return a URL to access it
+    // After download completes, we'd normally have a real file blob
+    // For the demo, we'll create a placeholder binary content 
+    // that represents the executable file
+    const dummyContent = new ArrayBuffer(1024); // 1KB of binary data
+    const blob = new Blob([dummyContent], { type: 'application/octet-stream' });
+
+    // In a real implementation, you would save this to IndexedDB or offer download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filePath.split('/').pop() || 'file';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
     return {
       success: true,
-      message: "File downloaded successfully!"
+      message: "File downloaded successfully!",
+      blob: blob
     };
   } catch (error) {
     console.error('Download failed:', error);

@@ -69,7 +69,7 @@ const FtpFilesList: React.FC<FtpFilesListProps> = ({ config, onFileDownloaded })
     
     toast({
       title: "Download started",
-      description: `Downloading ${file.name}...`,
+      description: `Downloading ${file.name} from FTP server...`,
       variant: "default",
     });
 
@@ -84,7 +84,7 @@ const FtpFilesList: React.FC<FtpFilesListProps> = ({ config, onFileDownloaded })
       if (result.success) {
         toast({
           title: "Download complete",
-          description: `${file.name} has been downloaded.`,
+          description: `${file.name} has been downloaded from FTP server.`,
           variant: "default",
         });
         
