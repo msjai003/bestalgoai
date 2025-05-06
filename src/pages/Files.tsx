@@ -2,47 +2,31 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Download, AlertTriangle, ExternalLink, FileWarning, File, Archive } from "lucide-react";
+import { FileArchive, Download, AlertTriangle, Upload, FileWarning, File, Archive, Trash2, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
-import { Loader } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { v4 as uuidv4 } from "uuid";
 
 interface FileItem {
-  id: number;
-  file_name: string;
-  file_size: string;
-  file_path: string;
-  added_at: string;
-  file_type: string;
-  download_count?: number;
+  id: string;
+  name: string;
+  size: number;
+  created_at: string;
+  type: string;
+  url: string;
 }
+
+const BUCKET_NAME = 'app-files';
 
 const Files = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorDetails, setErrorDetails] = useState({
     fileName: "",
@@ -63,87 +47,197 @@ const Files = () => {
   });
 
   useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from('downloadable_files')
-          .select('*')
-          .order('added_at', { ascending: false });
+    fetchFiles();
+  }, []);
+
+  const fetchFiles = async () => {
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .storage
+        .from(BUCKET_NAME)
+        .list();
+      
+      if (error) {
+        console.error("Error fetching files:", error);
+        toast({
+          title: "Error fetching files",
+          description: "Could not load file list. Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Filter out folders (.emptyFolders)
+      const actualFiles = data?.filter(item => !item.id.includes('.emptyFolders')) || [];
+      
+      // Get URLs for each file
+      const filesWithUrls = await Promise.all(actualFiles.map(async (file) => {
+        const { data: urlData } = supabase
+          .storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(file.name);
+          
+        // Get file type
+        let fileType = 'unknown';
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        if (extension === 'pdf') fileType = 'pdf';
+        else if (['doc', 'docx'].includes(extension || '')) fileType = 'docx';
+        else if (['zip', 'rar', '7z'].includes(extension || '')) fileType = 'zip';
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) fileType = 'image';
+
+        // Format size
+        const formattedSize = formatFileSize(file.metadata?.size || 0);
         
+        return {
+          id: file.id,
+          name: file.name,
+          size: formattedSize,
+          created_at: file.created_at,
+          type: fileType,
+          url: urlData.publicUrl
+        };
+      }));
+      
+      setFiles(filesWithUrls);
+    } catch (error) {
+      console.error("Exception fetching files:", error);
+      toast({
+        title: "Error fetching files",
+        description: "Could not load file list. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    
+    return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setIsUploading(true);
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        
+        // Upload file
+        const { error } = await supabase
+          .storage
+          .from(BUCKET_NAME)
+          .upload(file.name, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+          
         if (error) {
-          console.error("Error fetching files:", error);
+          console.error("Error uploading file:", error);
           toast({
-            title: "Error fetching files",
-            description: "Could not load file list. Please try again later.",
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}. ${error.message}`,
             variant: "destructive",
           });
-        } else {
-          setFiles(data || []);
+          continue;
         }
-      } catch (error) {
-        console.error("Exception fetching files:", error);
-      } finally {
-        setIsLoading(false);
+        
+        toast({
+          title: "File uploaded",
+          description: `${file.name} has been successfully uploaded.`,
+        });
       }
-    };
+      
+      // Refresh file list
+      fetchFiles();
+    } catch (error) {
+      console.error("Exception during upload:", error);
+      toast({
+        title: "Upload error",
+        description: "An unexpected error occurred during upload.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
 
-    fetchFiles();
-  }, [toast]);
+  const handleDelete = async (fileName: string) => {
+    try {
+      const { error } = await supabase
+        .storage
+        .from(BUCKET_NAME)
+        .remove([fileName]);
+        
+      if (error) {
+        console.error("Error deleting file:", error);
+        toast({
+          title: "Delete failed",
+          description: `Failed to delete ${fileName}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "File deleted",
+        description: `${fileName} has been successfully deleted.`,
+      });
+      
+      // Refresh file list
+      fetchFiles();
+    } catch (error) {
+      console.error("Exception during delete:", error);
+      toast({
+        title: "Delete error",
+        description: "An unexpected error occurred while deleting the file.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDownload = async (file: FileItem) => {
     setDownloadingId(file.id);
     
     try {
-      // Determine if this is a local reference or remote URL
-      let fileUrl;
-      
-      // If this is a full URL, use it directly
-      if (file.file_path.startsWith('http')) {
-        fileUrl = file.file_path;
-      } else {
-        // Show specific pre-download warnings based on file type
-        if (file.file_type === 'docx' || file.file_name.toLowerCase().endsWith('.docx')) {
-          toast({
-            title: "Downloading Word Document",
-            description: "Microsoft Word document is being downloaded. Make sure you have Microsoft Word or a compatible app installed.",
-            duration: 5000,
-          });
-        } else if (file.file_name.toLowerCase().endsWith('.zip')) {
-          toast({
-            title: "Downloading ZIP File",
-            description: "ZIP archive is being downloaded. You'll need an extraction tool like WinRAR, 7-Zip or the built-in extractor.",
-            duration: 5000,
-          });
-        }
-        
-        // Construct URL (using public folder or any accessible location)
-        fileUrl = file.file_path.startsWith('/') 
-          ? file.file_path 
-          : `/${file.file_path}`;
+      // Show specific pre-download warnings based on file type
+      if (file.type === 'docx') {
+        toast({
+          title: "Downloading Word Document",
+          description: "Microsoft Word document is being downloaded. Make sure you have Microsoft Word or a compatible app installed.",
+          duration: 5000,
+        });
+      } else if (file.type === 'zip') {
+        toast({
+          title: "Downloading ZIP File",
+          description: "ZIP archive is being downloaded. You'll need an extraction tool like WinRAR, 7-Zip or the built-in extractor.",
+          duration: 5000,
+        });
       }
       
       // Create a download link and trigger download
       const link = document.createElement('a');
-      link.href = fileUrl;
-      link.download = file.file_name;
+      link.href = file.url;
+      link.download = file.name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Increment download count 
-      const downloadCount = (file.download_count || 0) + 1;
-      const { error } = await supabase
-        .from('downloadable_files')
-        .update({ download_count: downloadCount })
-        .eq('id', file.id);
-      
-      if (error) {
-        console.error("Error updating download count:", error);
-      }
-      
       // Show appropriate message based on file type
-      if (file.file_name.toLowerCase().endsWith('.docx')) {
+      if (file.type === 'docx') {
         // Add a slight delay before showing this notification so it doesn't compete with the download toast
         setTimeout(() => {
           toast({
@@ -152,16 +246,16 @@ const Files = () => {
             duration: 7000,
           });
         }, 2000);
-      } else if (file.file_name.toLowerCase().endsWith('.zip')) {
+      } else if (file.type === 'zip') {
         toast({
           title: "ZIP Archive Downloaded",
-          description: `${file.file_name} is being downloaded. If you have trouble opening the file, check the File Troubleshooting section.`,
+          description: `${file.name} is being downloaded. If you have trouble opening the file, check the File Troubleshooting section.`,
           duration: 5000,
         });
       } else {
         toast({
           title: "Download started",
-          description: `${file.file_name} is being downloaded.`,
+          description: `${file.name} is being downloaded.`,
         });
       }
     } catch (error) {
@@ -200,18 +294,19 @@ const Files = () => {
     }
   };
 
-  const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    
-    if (extension === 'docx' || extension === 'doc') {
-      return <File className="h-5 w-5 text-blue-500" />;
-    } else if (extension === 'zip') {
-      return <Archive className="h-5 w-5 text-purple-500" />;
-    } else if (extension === 'pdf') {
-      return <File className="h-5 w-5 text-red-500" />;
+  const getFileIcon = (fileType: string) => {
+    switch (fileType) {
+      case 'docx':
+        return <File className="h-5 w-5 text-blue-500" />;
+      case 'zip':
+        return <Archive className="h-5 w-5 text-purple-500" />;
+      case 'pdf':
+        return <File className="h-5 w-5 text-red-500" />;
+      case 'image':
+        return <File className="h-5 w-5 text-green-500" />;
+      default:
+        return <File className="h-5 w-5 text-cyan" />;
     }
-    
-    return <File className="h-5 w-5 text-cyan" />;
   };
 
   if (isLoading) {
@@ -235,14 +330,50 @@ const Files = () => {
       <main className="pt-16 pb-20 px-4">
         <div className="mt-4 mb-6">
           <h1 className="text-2xl font-semibold text-white">Files</h1>
-          <p className="text-gray-400 mt-1">Download trading resources and templates</p>
+          <p className="text-gray-400 mt-1">Upload and download trading resources and templates</p>
+        </div>
+
+        <div className="bg-charcoalSecondary rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-white font-medium">Upload Files</h2>
+            <label className="cursor-pointer">
+              <input 
+                type="file" 
+                className="hidden" 
+                onChange={handleUpload}
+                multiple
+                disabled={isUploading}
+              />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <div className="flex items-center">
+                    <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
+                    <span>Uploading...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <Upload className="h-4 w-4 mr-1" />
+                    <span>Upload</span>
+                  </div>
+                )}
+              </Button>
+            </label>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            Upload ZIP files, documents, or other trading resources to share.
+          </p>
         </div>
 
         <div className="bg-charcoalSecondary rounded-lg p-4">
           {files.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <FileArchive className="h-10 w-10 mx-auto mb-2 text-gray-500" />
-              <p>No files available for download</p>
+              <p>No files available. Upload a file to get started.</p>
             </div>
           ) : (
             <>
@@ -263,24 +394,33 @@ const Files = () => {
                 >
                   <div className="flex items-center">
                     <div className="bg-charcoalPrimary/60 p-2 rounded-lg mr-3">
-                      {getFileIcon(file.file_name)}
+                      {getFileIcon(file.type)}
                     </div>
                     <div>
-                      <h3 className="text-white font-medium">{file.file_name}</h3>
+                      <h3 className="text-white font-medium">{file.name}</h3>
                       <div className="flex space-x-3 text-xs text-gray-400">
-                        <span>{file.file_size}</span>
-                        <span>Added: {new Date(file.added_at).toLocaleDateString()}</span>
+                        <span>{file.size}</span>
+                        <span>Added: {new Date(file.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <button 
-                      onClick={() => handleFileIssue(file.file_name)}
+                      onClick={() => handleFileIssue(file.name)}
                       className="mr-2 text-gray-400 hover:text-amber-300"
                       aria-label="File help"
                     >
                       <AlertTriangle className="h-4 w-4" />
                     </button>
+                    <Button
+                      onClick={() => handleDelete(file.name)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 mr-2"
+                      aria-label="Delete file"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <Button
                       onClick={() => handleDownload(file)}
                       variant="outline"

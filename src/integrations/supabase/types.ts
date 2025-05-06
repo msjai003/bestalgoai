@@ -453,39 +453,6 @@ export type Database = {
         }
         Relationships: []
       }
-      downloadable_files: {
-        Row: {
-          added_at: string | null
-          download_count: number | null
-          file_name: string
-          file_path: string
-          file_size: string
-          file_type: string
-          id: number
-          is_active: boolean | null
-        }
-        Insert: {
-          added_at?: string | null
-          download_count?: number | null
-          file_name: string
-          file_path: string
-          file_size: string
-          file_type: string
-          id?: number
-          is_active?: boolean | null
-        }
-        Update: {
-          added_at?: string | null
-          download_count?: number | null
-          file_name?: string
-          file_path?: string
-          file_size?: string
-          file_type?: string
-          id?: number
-          is_active?: boolean | null
-        }
-        Relationships: []
-      }
       education_badges: {
         Row: {
           badge_id: string
