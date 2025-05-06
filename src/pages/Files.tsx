@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -28,7 +27,7 @@ import {
 interface FileItem {
   id: string;
   name: string;
-  size: string; // Changed from number to string since we're storing the formatted size
+  size: string;
   created_at: string;
   type: string;
   url: string;
@@ -39,6 +38,8 @@ const BUCKET_NAMES = {
   APP_FILES: 'app-files',
   EXE_FILES: 'exe-files'
 };
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
 const Files = () => {
   const { toast } = useToast();
@@ -68,6 +69,9 @@ const Files = () => {
 
   // State for bucket selection
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
+  
+  // State for upload error
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFiles();
@@ -148,19 +152,68 @@ const Files = () => {
     return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const validateFile = (file: File, bucket: string): { valid: boolean, reason?: string } => {
+    // Check file size (50MB limit)
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        reason: `File size exceeds 50MB limit (${formatFileSize(file.size)})`
+      };
+    }
+    
+    // Check file extensions based on bucket
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    
+    if (bucket === BUCKET_NAMES.EXE_FILES) {
+      // For exe-files bucket, only allow .exe files
+      if (extension !== 'exe') {
+        return {
+          valid: false,
+          reason: `Only .exe files are allowed in the Executable Files bucket.`
+        };
+      }
+    } else if (bucket === BUCKET_NAMES.APP_FILES) {
+      // For app-files bucket, restrict .exe files
+      if (extension === 'exe') {
+        return {
+          valid: false,
+          reason: `Executable (.exe) files must be uploaded to the Executable Files bucket.`
+        };
+      }
+    }
+    
+    // All other validations passed
+    return { valid: true };
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
+    setUploadError(null);
     setIsUploading(true);
     
     try {
+      const totalFiles = files.length;
+      let successCount = 0;
+      let errorCount = 0;
+      
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
         
-        // Upload file
+        // Validate the file before uploading
+        const validation = validateFile(file, selectedBucket);
+        if (!validation.valid) {
+          toast({
+            title: "File validation failed",
+            description: `${file.name}: ${validation.reason}`,
+            variant: "destructive",
+          });
+          errorCount++;
+          continue;
+        }
+        
+        // Upload file with original filename (not UUID)
         const { error } = await supabase
           .storage
           .from(selectedBucket)
@@ -176,13 +229,23 @@ const Files = () => {
             description: `Failed to upload ${file.name}. ${error.message}`,
             variant: "destructive",
           });
+          errorCount++;
           continue;
         }
         
+        successCount++;
+      }
+      
+      // Show summary toast
+      if (successCount > 0) {
         toast({
-          title: "File uploaded",
-          description: `${file.name} has been successfully uploaded.`,
+          title: "Upload complete",
+          description: `Successfully uploaded ${successCount} of ${totalFiles} files.`,
         });
+      }
+      
+      if (errorCount > 0) {
+        setUploadError(`Failed to upload ${errorCount} files. Please check file type and size restrictions.`);
       }
       
       // Refresh file list
@@ -325,9 +388,9 @@ const Files = () => {
     } else {
       setErrorDetails({
         fileName,
-        errorType: fileName.toLowerCase().endsWith('.zip') ? 'zip' : 
-                  fileName.toLowerCase().endsWith('.docx') ? 'docx' : 
-                  fileName.toLowerCase().endsWith('.exe') ? 'exe' : 'general',
+        errorType: fileExtension === 'zip' ? 'zip' : 
+                   fileExtension === 'docx' ? 'docx' : 
+                   fileExtension === 'exe' ? 'exe' : 'general',
       });
       setErrorDialogOpen(true);
     }
@@ -436,11 +499,37 @@ const Files = () => {
               </Button>
             </label>
           </div>
+          
+          {uploadError && (
+            <div className="mt-3 p-2 bg-red-900/30 border border-red-700/30 rounded text-sm text-red-200">
+              <div className="flex items-center">
+                <AlertTriangle className="h-4 w-4 mr-2 text-red-400" />
+                <span>{uploadError}</span>
+              </div>
+            </div>
+          )}
+          
           <p className="text-xs text-gray-400 mt-2">
             {selectedBucket === BUCKET_NAMES.APP_FILES 
-              ? "Upload ZIP files, documents, or other trading resources to share."
-              : "Upload executable files that can be downloaded and run."}
+              ? "Upload ZIP files, documents, or other trading resources to share. Max size: 50MB."
+              : "Upload executable files that can be downloaded and run. Max size: 50MB."}
           </p>
+          
+          {selectedBucket === BUCKET_NAMES.EXE_FILES && (
+            <div className="mt-2 p-2 bg-amber-900/20 border border-amber-700/20 rounded-md">
+              <p className="text-xs text-amber-200">
+                <span className="font-medium">Note:</span> Only .exe files are allowed in this bucket. For other file types, use Regular Files.
+              </p>
+            </div>
+          )}
+          
+          {selectedBucket === BUCKET_NAMES.APP_FILES && (
+            <div className="mt-2 p-2 bg-blue-900/20 border border-blue-700/20 rounded-md">
+              <p className="text-xs text-blue-200">
+                <span className="font-medium">Note:</span> For .exe files, please use the Executable Files bucket instead.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="bg-charcoalSecondary rounded-lg p-4">
@@ -544,16 +633,19 @@ const Files = () => {
                     <li>"The archive is either in unknown format or damaged"</li>
                     <li>"No archives found"</li>
                     <li>"CRC failed"</li>
+                    <li>"Failed to upload 1 file!"</li>
                   </ul>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">Solutions:</h4>
                   <ol className="list-decimal pl-5 space-y-2">
-                    <li>Try extracting with a different program (WinRAR, 7-Zip, Windows built-in extractor)</li>
-                    <li>Try downloading the file again - sometimes downloads get corrupted</li>
-                    <li>Check if your antivirus is blocking the extraction</li>
-                    <li>Try using file repair tools like Advanced ZIP Repair</li>
+                    <li>Make sure your ZIP file is not corrupted</li>
+                    <li>Try uploading a smaller file (under 50MB)</li>
+                    <li>Try a different web browser</li>
+                    <li>Try using the "Save As" feature to rename the file before uploading</li>
+                    <li>If downloading: Try extracting with a different program (WinRAR, 7-Zip, Windows built-in extractor)</li>
+                    <li>Check if your antivirus is blocking the upload or extraction</li>
                   </ol>
                 </div>
                 
@@ -563,6 +655,7 @@ const Files = () => {
                 </div>
               </>
             ) : errorDetails.errorType === 'docx' ? (
+              // ... keep existing code (docx troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">Common Word document issues:</h4>
@@ -589,6 +682,7 @@ const Files = () => {
                 </div>
               </>
             ) : errorDetails.errorType === 'exe' ? (
+              // ... keep existing code (exe troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">Common executable file issues:</h4>
@@ -615,6 +709,7 @@ const Files = () => {
                 </div>
               </>
             ) : (
+              // ... keep existing code (general troubleshooting section)
               <>
                 <div className="space-y-2">
                   <h4 className="text-white font-medium">General file troubleshooting:</h4>
@@ -685,13 +780,33 @@ const Files = () => {
               ZIP Archive Troubleshooting
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300">
-              Issues with opening or extracting {zipFileDetails.fileName}? Here's how to fix common problems:
+              Issues with uploading or opening {zipFileDetails.fileName}? Here's how to fix common problems:
             </AlertDialogDescription>
           </AlertDialogHeader>
           
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <h4 className="text-white font-medium">Common ZIP extraction errors:</h4>
+              <h4 className="text-white font-medium">Common upload errors:</h4>
+              <ul className="list-disc pl-5 space-y-1 text-gray-300 text-sm">
+                <li>"Failed to upload 1 file!" - Server may have rejected the file</li>
+                <li>Upload seems to complete but file doesn't appear</li>
+                <li>Upload starts but never completes</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Upload solutions:</h4>
+              <ol className="list-decimal pl-5 space-y-2 text-gray-300 text-sm">
+                <li><span className="font-medium">Check file size:</span> Make sure your file is under 50MB</li>
+                <li><span className="font-medium">Rename your file:</span> Try a simpler filename with no special characters</li>
+                <li><span className="font-medium">Try a different browser:</span> Some browsers handle file uploads better than others</li>
+                <li><span className="font-medium">Try smaller files:</span> Break large ZIPs into smaller archives</li>
+                <li><span className="font-medium">Check network connection:</span> Ensure stable internet during upload</li>
+              </ol>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Common extraction errors:</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-300 text-sm">
                 <li>"CRC failed in file..." - The ZIP file may be damaged</li>
                 <li>"Unable to open file as archive" - The file might be incomplete</li>
@@ -701,13 +816,11 @@ const Files = () => {
             </div>
             
             <div className="space-y-2">
-              <h4 className="text-white font-medium">Solutions:</h4>
+              <h4 className="text-white font-medium">Extraction solutions:</h4>
               <ol className="list-decimal pl-5 space-y-2 text-gray-300 text-sm">
                 <li><span className="font-medium">Try different extraction software:</span> WinRAR, 7-Zip, and Windows built-in extraction each handle ZIP files differently</li>
                 <li><span className="font-medium">Download again:</span> The file may have been corrupted during the initial download</li>
                 <li><span className="font-medium">Use 'Save as' instead of direct download:</span> Right-click the download button and select "Save link as..." for better download integrity</li>
-                <li><span className="font-medium">Check your antivirus:</span> Security software might be blocking extraction or quarantining the file</li>
-                <li><span className="font-medium">Try repair tools:</span> Software like Advanced ZIP Repair or Zip Repair Pro can fix corrupted archives</li>
               </ol>
             </div>
             
