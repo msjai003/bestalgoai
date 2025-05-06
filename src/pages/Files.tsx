@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
+import { getStorageClient } from "@/lib/supabase/storage-client";
 import { 
   Dialog, 
   DialogContent, 
@@ -66,6 +67,9 @@ const Files = () => {
   // State for bucket selection - Now using a default bucket
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
 
+  // Storage client for authenticated downloads
+  const storageClient = getStorageClient();
+
   useEffect(() => {
     fetchFiles();
   }, [selectedBucket]);
@@ -93,11 +97,9 @@ const Files = () => {
       const actualFiles = data?.filter(item => !item.id.includes('.emptyFolders')) || [];
       
       // Get URLs for each file
-      const filesWithUrls = await Promise.all(actualFiles.map(async (file) => {
-        const { data: urlData } = supabase
-          .storage
-          .from(selectedBucket)
-          .getPublicUrl(file.name);
+      const filesWithUrls = await Promise.all((data?.filter(item => !item.id.includes('.emptyFolders')) || []).map(async (file) => {
+        // Use the storage client to get authenticated URL
+        const authenticatedUrl = storageClient.getAuthenticatedUrl(selectedBucket, file.name);
           
         // Get file type
         let fileType = 'unknown';
@@ -118,7 +120,7 @@ const Files = () => {
           size: formattedSize,
           created_at: file.created_at,
           type: fileType,
-          url: urlData.publicUrl,
+          url: authenticatedUrl,
           bucket: selectedBucket
         };
       }));
@@ -170,13 +172,24 @@ const Files = () => {
         });
       }
       
-      // Create a download link and trigger download
-      const link = document.createElement('a');
-      link.href = file.url;
-      link.download = file.name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Use authenticated download from storage client
+      const { data, error } = await storageClient.downloadFile(file.bucket, file.name);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Create a blob URL and trigger download
+      if (data) {
+        const blobUrl = URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }
       
       // Show appropriate message based on file type
       if (file.type === 'docx') {
