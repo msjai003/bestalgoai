@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -801,3 +802,17 @@ const Files = () => {
                 <li><span className="font-medium">Try different extraction software:</span> WinRAR, 7-Zip, and Windows built-in extraction each handle ZIP files differently</li>
                 <li><span className="font-medium">Download again:</span> The file may have been corrupted during the initial download</li>
                 <li><span className="font-medium">Use 'Save as' instead of direct download:</span> Right-click the download button and select "Save link as..." for better download integrity</li>
+              </ol>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-charcoalPrimary text-white border-gray-700 hover:bg-gray-700">Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default Files;

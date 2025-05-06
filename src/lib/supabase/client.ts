@@ -1,3 +1,4 @@
+
 // Mock Supabase client for frontend-only operation
 export const supabaseUrl = 'mock-url';
 export const supabaseAnonKey = 'mock-key';
@@ -97,8 +98,17 @@ export const supabase = {
         }
         
         // Check file name for invalid characters (simplified check)
-        if (path.includes('#') || path.includes('?') || path.includes('%')) {
+        if (path.includes('#') || path.includes('?') || path.includes('%') || 
+            path.includes('&') || path.includes('{') || path.includes('}') || 
+            path.includes('<') || path.includes('>') || path.includes('*')) {
           return { data: null, error: { message: "File name contains invalid characters", status: 400 } };
+        }
+        
+        // Special handling for ZIP files - make them succeed
+        const extension = path.split('.').pop()?.toLowerCase();
+        if (extension === 'zip' || extension === 'rar' || extension === '7z') {
+          // ZIP files work fine in our mock
+          return { data: { path }, error: null };
         }
         
         // Success case
