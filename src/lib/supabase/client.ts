@@ -111,6 +111,11 @@ export const supabase = {
           return { data: { path }, error: null };
         }
         
+        // Check if the bucket exists in our mock system
+        if (bucketName !== 'app-files' && bucketName !== 'app-exe-files') {
+          return { data: null, error: { message: "Bucket not found", status: 404 } };
+        }
+        
         // Success case
         return { data: { path }, error: null };
       },
