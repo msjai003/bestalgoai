@@ -49,14 +49,14 @@ const Files = () => {
     errorType: "",
   });
   
-  // New state for file corruption alert dialog
+  // State for file corruption alert dialog
   const [corruptionAlertOpen, setCorruptionAlertOpen] = useState(false);
   const [corruptFileDetails, setCorruptFileDetails] = useState({
     fileName: "",
     fileType: ""
   });
 
-  // New state for zip file error dialog
+  // State for zip file error dialog
   const [zipErrorDialogOpen, setZipErrorDialogOpen] = useState(false);
   const [zipFileDetails, setZipFileDetails] = useState({
     fileName: ""
@@ -472,7 +472,7 @@ const Files = () => {
               <ul className="list-disc pl-5 space-y-1 text-blue-100 text-xs">
                 <li>7-Zip (free, lightweight): www.7-zip.org</li>
                 <li>WinRAR (trial, powerful): www.rarlab.com</li>
-                <li>Windows built-in extractor (right-click > Extract All)</li>
+                <li>Windows built-in extractor (right-click &gt; Extract All)</li>
               </ul>
             </div>
           </div>
