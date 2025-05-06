@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
+import FtpFilesList from "@/components/FtpFilesList";
 import { 
   Dialog, 
   DialogContent, 
@@ -45,6 +45,14 @@ const BUCKET_NAMES = {
   EXE_FILES: 'app-exe-files'
 };
 
+// FTP configuration - in a real app, this would come from environment variables or user input
+const FTP_CONFIG = {
+  host: '166.62.28.113',
+  username: 'my_algo_trade.exe',
+  password: '&Z,9ZKJrz=it',
+  port: 21
+};
+
 const Files = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -72,10 +80,14 @@ const Files = () => {
 
   // State for bucket selection - Using tabs to switch between buckets
   const [selectedBucket, setSelectedBucket] = useState(BUCKET_NAMES.APP_FILES);
+  
+  // State for showing FTP section
+  const [showFtpSection, setShowFtpSection] = useState(true);
+  const [refreshFilesFlag, setRefreshFilesFlag] = useState(0);
 
   useEffect(() => {
     fetchFiles();
-  }, [selectedBucket]);
+  }, [selectedBucket, refreshFilesFlag]);
 
   const fetchFiles = async () => {
     try {
@@ -278,6 +290,11 @@ const Files = () => {
     }
   };
 
+  const handleFtpFileDownloaded = () => {
+    // Refresh files list after downloading from FTP
+    setRefreshFilesFlag(prev => prev + 1);
+  };
+
   if (isLoading) {
     return (
       <div className="bg-charcoalPrimary min-h-screen">
@@ -301,6 +318,14 @@ const Files = () => {
           <h1 className="text-2xl font-semibold text-white">Files</h1>
           <p className="text-gray-400 mt-1">Download trading resources and templates</p>
         </div>
+
+        {/* FTP Files Section */}
+        {showFtpSection && (
+          <FtpFilesList 
+            config={FTP_CONFIG} 
+            onFileDownloaded={handleFtpFileDownloaded}
+          />
+        )}
 
         <Tabs 
           defaultValue={BUCKET_NAMES.APP_FILES}
