@@ -1,4 +1,3 @@
-
 // Mock Supabase client for frontend-only operation
 export const supabaseUrl = 'mock-url';
 export const supabaseAnonKey = 'mock-key';
@@ -670,6 +669,15 @@ export const supabase = {
       error: null
     };
   },
+  functions: {
+    invoke: async (functionName, { body = {} } = {}) => {
+      console.log(`Mock edge function ${functionName} invoked with body:`, body);
+      return {
+        data: null,
+        error: null
+      };
+    }
+  }
 };
 
 // Get the current site URL for redirects
