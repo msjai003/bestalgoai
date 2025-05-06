@@ -1,3 +1,4 @@
+
 // Mock Supabase client for frontend-only operation
 export const supabaseUrl = 'mock-url';
 export const supabaseAnonKey = 'mock-key';
@@ -5,20 +6,15 @@ export const supabaseAnonKey = 'mock-key';
 // Create a mock client to maintain API compatibility
 export const supabase = {
   auth: {
-    signUp: async ({ email, password, options } = { email: '', password: '', options: undefined }) => ({ data: { user: null }, error: null }),
-    signInWithPassword: async () => ({ data: { user: { id: 'mock-id', email: 'mock@email.com', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() } }, error: null }),
+    signUp: async ({ email, password, options } = { email: '', password: '', options: undefined }) => ({ data: null, error: null }),
+    signInWithPassword: async () => ({ data: { user: { id: 'mock-id', email: 'mock@email.com' } }, error: null }),
     signOut: async () => ({ error: null }),
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-    verifyOtp: async () => ({ data: {}, error: null }),
-    setSession: async () => ({ data: {}, error: null }),
-    resetPasswordForEmail: async () => ({ data: {}, error: null }),
-    updateUser: async () => ({ data: {}, error: null }),
   },
   from: (tableName) => ({
     select: (query = '*') => ({
       eq: (column, value) => ({
-        single: () => ({ data: null, error: null }),
         maybeSingle: () => ({ data: null, error: null }),
         order: (column, { ascending } = { ascending: false }) => ({
           limit: (limit) => ({
@@ -28,8 +24,6 @@ export const supabase = {
           data: [],
           error: null
         }),
-        eq: (column, value) => ({ data: [], error: null }),
-        ilike: (column, value) => ({ data: [], error: null }),
         data: [],
         error: null
       }),
@@ -41,37 +35,20 @@ export const supabase = {
         data: [],
         error: null
       }),
-      single: () => ({ data: null, error: null }),
-      maybeSingle: () => ({ data: null, error: null }),
-      ilike: (column, value) => ({ data: [], error: null }),
       count: () => ({ data: 0, error: null }),
       data: [],
       error: null
     }),
     insert: (data) => ({ data: [], error: null }),
-    update: (data) => ({ 
-      eq: (column, value) => ({ data: [], error: null }),
-      data: [], 
-      error: null 
-    }),
-    upsert: (data, options = {}) => ({ data: [], error: null }),
-    delete: () => ({ 
-      eq: (column, value) => ({ data: [], error: null }),
-      data: [],
-      error: null 
-    }),
+    update: (data) => ({ data: [], error: null }),
+    delete: () => ({ data: [], error: null }),
     count: () => ({ data: 0, error: null }),
   }),
   storage: {
     from: (bucketName) => ({
-      upload: async (path, file, options = {}) => ({ data: { path: path }, error: null }),
-      download: async (path, options = {}) => ({ data: new Blob(), error: null }),
-      getPublicUrl: (path) => ({ data: { publicUrl: `https://example.com/${bucketName}/${path}` } }),
-      list: async (options = {}) => ({ data: [], error: null }),
+      upload: async () => ({ data: null, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
     }),
-  },
-  functions: {
-    invoke: async (functionName, options = {}) => ({ data: null, error: null }),
   },
   rpc: (functionName, params = {}) => {
     // Type-safe handling of params based on function name
