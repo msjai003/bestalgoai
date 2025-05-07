@@ -153,15 +153,10 @@ const Files = () => {
           {[STORAGE_BUCKETS.APP_FILES, STORAGE_BUCKETS.EXE_FILES].map((bucketId) => (
             <TabsContent key={bucketId} value={bucketId} className="mt-0">
               <div className="bg-charcoalSecondary rounded-lg p-4">
-                <h2 className="text-lg text-white font-medium mb-3">
-                  {getBucketDisplayName(bucketId)} 
-                </h2>
-
                 {files.length === 0 ? (
                   <div className="text-center py-8 flex flex-col items-center justify-center">
                     <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
                     <p className="text-gray-400">Check back later for available files</p>
-                    <p className="text-gray-500 text-sm mt-1">Files will appear here when they're ready</p>
                   </div>
                 ) : (
                   <div className="space-y-1">

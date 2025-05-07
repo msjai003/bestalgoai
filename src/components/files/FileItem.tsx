@@ -56,31 +56,18 @@ const FileItem = ({
 
   return (
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
-      <div className="flex items-center overflow-hidden">
-        <div className="truncate">
-          <h3 className="text-white font-medium truncate">{name}</h3>
-          <div className="text-xs text-gray-400">
-            <span>{size}</span>
-          </div>
-        </div>
-      </div>
+      <div className="flex-1 truncate text-white font-medium">{name}</div>
       <Button
         onClick={handleDownload}
-        variant="outline"
+        variant="ghost"
         size="sm"
-        className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary min-w-[110px] whitespace-nowrap"
+        className="text-cyan hover:bg-transparent"
         disabled={downloadingId === id}
       >
         {downloadingId === id ? (
-          <div className="flex items-center">
-            <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
-            <span>Downloading...</span>
-          </div>
+          <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
         ) : (
-          <>
-            <Download className="h-4 w-4 mr-1" />
-            <span>Download</span>
-          </>
+          <Download className="h-5 w-5" />
         )}
       </Button>
     </div>
