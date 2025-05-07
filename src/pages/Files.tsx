@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -7,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import FileItem from "@/components/files/FileItem";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { useAuth } from "@/contexts/AuthContext";
+import PaymentDialog from "@/components/subscription/PaymentDialog";
 
 interface FileItem {
   id: number;
@@ -24,20 +26,29 @@ const Files = () => {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPremium, setHasPremium] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [showSuccessImage, setShowSuccessImage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
 
   useEffect(() => {
     const checkPremium = async () => {
       if (user) {
         const isPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(isPremium);
+        return isPremium;
       }
+      return false;
     };
     
-    checkPremium();
-    fetchFiles();
+    const loadData = async () => {
+      const isPremium = await checkPremium();
+      await fetchFiles(isPremium);
+    };
+    
+    loadData();
   }, [user]);
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (isPremium = false) => {
     try {
       setIsLoading(true);
       
@@ -86,6 +97,16 @@ const Files = () => {
         });
       
       setFiles(formattedFiles);
+      
+      // Check if there are any ZIP files and user doesn't have premium
+      // If yes, show payment dialog immediately
+      if (!isPremium) {
+        const zipFiles = formattedFiles.filter(file => file.type === 'zip');
+        if (zipFiles.length > 0) {
+          setSelectedFile(zipFiles[0]);
+          setPaymentDialogOpen(true);
+        }
+      }
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({
@@ -96,6 +117,20 @@ const Files = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const handlePaymentSuccess = () => {
+    setPaymentDialogOpen(false);
+    setShowSuccessImage(true);
+    
+    // Hide success image after 5 seconds
+    setTimeout(() => {
+      setShowSuccessImage(false);
+      // Refresh premium status
+      checkUserPremiumStatus(user?.id || '').then(isPremium => {
+        setHasPremium(isPremium);
+      });
+    }, 5000);
   };
 
   if (isLoading) {
@@ -149,6 +184,45 @@ const Files = () => {
           )}
         </div>
       </main>
+      
+      {showSuccessImage && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-charcoalSecondary rounded-lg p-4 max-w-md w-full text-center relative">
+            <button 
+              onClick={() => setShowSuccessImage(false)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-white"
+            >
+              ×
+            </button>
+            <h3 className="text-xl font-bold text-white mb-4">Payment Successful!</h3>
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/public/lovable-uploads/08728724-393e-42b7-bd7b-de74eb6bae04.png" 
+                alt="Trading interface" 
+                className="rounded-lg w-full max-w-sm"
+              />
+            </div>
+            <p className="text-green-400 mb-4">All ZIP files are now unlocked!</p>
+            <Button
+              onClick={() => setShowSuccessImage(false)}
+              className="bg-cyan hover:bg-cyan/80"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {paymentDialogOpen && selectedFile && (
+        <PaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          planName="Pro"
+          planPrice="₹999"
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
+      
       <BottomNav />
     </div>
   );

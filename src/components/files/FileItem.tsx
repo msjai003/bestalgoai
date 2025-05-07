@@ -34,7 +34,8 @@ const FileItem = ({
   const [showSuccessImage, setShowSuccessImage] = useState(false);
 
   const handleDownload = async () => {
-    // Check if this is a zip file and user doesn't have premium
+    // For ZIP files, we handle them at the page level with immediate payment dialog
+    // Only non-ZIP files or users with premium can download directly
     if (type === 'zip' && !hasPremium) {
       setPaymentDialogOpen(true);
       return;
