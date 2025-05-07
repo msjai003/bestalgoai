@@ -4,11 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-
-export const STORAGE_BUCKETS = {
-  APP_FILES: 'app-files',
-  EXE_FILES: 'app-exe-files'
-};
+import { STORAGE_BUCKETS } from '@/lib/supabase/connection';
 
 /**
  * Upload a file to a specific storage bucket
@@ -22,18 +18,47 @@ export const uploadFile = async (file: File, bucketName: string, path?: string) 
   const filePath = path || file.name;
   
   try {
-    console.log(`Attempting to upload ${file.name} to ${bucketName} bucket`);
+    console.log(`Attempting to upload ${file.name} (${file.size} bytes, type: ${file.type}) to ${bucketName} bucket`);
+    
+    // Sanitize the filename - remove special characters that could cause issues
+    const sanitizedFileName = filePath.replace(/[#%&{}\<>*?/$!'":@+`|=]/g, '_');
+    
+    // For ZIP files, ensure we're sending the correct content type
+    const options: {
+      cacheControl: string;
+      upsert: boolean;
+      contentType?: string;
+    } = {
+      cacheControl: '3600',
+      upsert: false
+    };
+    
+    // Explicitly set content type for zip files to ensure proper handling
+    if (file.name.toLowerCase().endsWith('.zip')) {
+      options.contentType = 'application/zip';
+      console.log('Setting content type to application/zip for ZIP file upload');
+    }
     
     const { data, error } = await supabase
       .storage
       .from(bucketName)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+      .upload(sanitizedFileName !== filePath ? sanitizedFileName : filePath, file, options);
     
     if (error) {
-      console.error(`Storage upload error: ${error.message}`);
+      console.error(`Storage upload error: ${error.message}`, error);
+      
+      // Check for common error messages and provide more specific feedback
+      if (error.message.includes('The resource already exists')) {
+        return { 
+          data: null, 
+          error: { 
+            message: `A file with the name "${file.name}" already exists. Please rename your file or use a different name.`, 
+            status: 409 
+          } 
+        };
+      }
+      
+      return { data: null, error };
     } else {
       console.log(`Upload successful: ${data?.path}`);
     }
@@ -103,3 +128,6 @@ export const formatFileSize = (bytes: number): string => {
   
   return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+// Re-export storage bucket constants for convenience
+export { STORAGE_BUCKETS };

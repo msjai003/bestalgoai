@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { X, AlertTriangle, Upload } from "lucide-react";
+import { X, AlertTriangle, Upload, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { STORAGE_BUCKETS, formatFileSize, uploadFile } from "@/utils/storageUtils";
 import { useToast } from "@/hooks/use-toast";
+import { testStorageAccess } from "@/lib/supabase/connection";
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ const FileUploadDialog = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [checkingBuckets, setCheckingBuckets] = useState(false);
 
   const getBucketDisplayName = (bucket: string) => {
     switch (bucket) {
@@ -44,8 +46,38 @@ const FileUploadDialog = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
       setUploadError(null); // Clear any previous errors
+      
+      // Check for potential issues with the file
+      if (file.size > 50 * 1024 * 1024) {
+        setUploadError("File is too large. Maximum size is 50MB.");
+        return;
+      }
+      
+      // Check filename for special characters
+      if (/[#%&{}\<>*?/$!'":@+`|=]/g.test(file.name)) {
+        setUploadError("Filename contains special characters which may cause upload issues. Consider renaming your file before uploading.");
+      }
+    }
+  };
+
+  const checkStorageAccess = async () => {
+    setCheckingBuckets(true);
+    try {
+      const result = await testStorageAccess();
+      if (!result.success) {
+        setUploadError(`Storage access check failed: ${result.message}`);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error checking storage access:", error);
+      setUploadError("Could not verify storage access. Please try again later.");
+      return false;
+    } finally {
+      setCheckingBuckets(false);
     }
   };
 
@@ -59,6 +91,13 @@ const FileUploadDialog = ({
     setUploadError(null);
 
     try {
+      // First check if storage is accessible
+      const storageAccessible = await checkStorageAccess();
+      if (!storageAccessible) {
+        setUploading(false);
+        return;
+      }
+
       // Check file size (max 50MB)
       if (selectedFile.size > 50 * 1024 * 1024) {
         setUploadError("File is too large. Maximum size is 50MB.");
@@ -66,15 +105,17 @@ const FileUploadDialog = ({
         return;
       }
 
-      // Check filename for special characters
-      const fileName = selectedFile.name;
-      if (/[#%&{}\<>*?/$!'":@+`|=]/g.test(fileName)) {
-        setUploadError("Filename contains special characters. Please rename your file before uploading.");
-        setUploading(false);
-        return;
+      console.log(`Uploading ${selectedFile.name} (${selectedFile.type}) to bucket: ${bucketId}`);
+      
+      // For ZIP files, we include some additional logging to help diagnose issues
+      if (selectedFile.name.toLowerCase().endsWith('.zip')) {
+        console.log("Uploading a ZIP file with the following properties:");
+        console.log("- Name:", selectedFile.name);
+        console.log("- Size:", formatFileSize(selectedFile.size));
+        console.log("- Type:", selectedFile.type);
+        console.log("- Last modified:", new Date(selectedFile.lastModified).toISOString());
       }
 
-      console.log("Attempting to upload to bucket:", bucketId);
       const { data, error } = await uploadFile(selectedFile, bucketId);
 
       if (error) {
@@ -86,7 +127,7 @@ const FileUploadDialog = ({
         } else if (error.message.includes("size exceeded")) {
           setUploadError("File size exceeded the allowed limit (max 50MB).");
         } else if (error.message.includes("Bucket not found")) {
-          setUploadError("Upload failed: The selected storage bucket was not found.");
+          setUploadError("Upload failed: The selected storage bucket was not found. Please contact support.");
         } else {
           setUploadError(`Upload failed: ${error.message}`);
         }
@@ -95,7 +136,7 @@ const FileUploadDialog = ({
 
       toast({
         title: "Upload successful",
-        description: `${fileName} has been uploaded successfully.`,
+        description: `${selectedFile.name} has been uploaded successfully.`,
         variant: "default",
       });
 
@@ -148,6 +189,9 @@ const FileUploadDialog = ({
             {selectedFile && (
               <p className="text-xs text-gray-400">
                 {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                {selectedFile.name.toLowerCase().endsWith('.zip') && (
+                  <span className="ml-2 text-cyan-400">ZIP file detected</span>
+                )}
               </p>
             )}
           </div>
@@ -186,6 +230,23 @@ const FileUploadDialog = ({
             </div>
           )}
 
+          {selectedFile && selectedFile.name.toLowerCase().endsWith('.zip') && (
+            <div className="bg-blue-900/30 border border-blue-700/30 rounded p-3 text-sm">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-blue-400 mr-2 mt-0.5" />
+                <div>
+                  <h4 className="text-blue-300 font-medium">ZIP File Upload Tips</h4>
+                  <ul className="list-disc pl-5 mt-1 text-xs space-y-1 text-blue-100">
+                    <li>Ensure your ZIP file is not password protected</li>
+                    <li>Avoid deeply nested folder structures within the ZIP</li>
+                    <li>If upload fails, try using a different ZIP compression tool</li>
+                    <li>For large files, check that your internet connection is stable</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-blue-900/30 border border-blue-700/30 rounded p-3 text-sm">
             <h4 className="text-blue-300 font-medium">Upload Tips</h4>
             <ul className="list-disc pl-5 mt-1 text-xs space-y-1 text-blue-100">
@@ -207,16 +268,21 @@ const FileUploadDialog = ({
             variant="ghost"
             onClick={() => onOpenChange(false)}
             className="bg-transparent text-white hover:bg-gray-700"
-            disabled={uploading}
+            disabled={uploading || checkingBuckets}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleUpload}
-            disabled={!selectedFile || uploading}
+            disabled={!selectedFile || uploading || checkingBuckets}
             className="bg-cyan text-charcoalPrimary hover:bg-cyan/90"
           >
-            {uploading ? (
+            {checkingBuckets ? (
+              <>
+                <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
+                Checking storage...
+              </>
+            ) : uploading ? (
               <>
                 <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin mr-2"></div>
                 Uploading...
