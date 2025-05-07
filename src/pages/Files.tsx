@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface FileItem {
-  id: number; // Changed from string to number
+  id: number;
   name: string;
   size: string;
   created_at: string;
@@ -46,6 +46,8 @@ const Files = () => {
     try {
       setIsLoading(true);
       
+      console.log("Fetching files for bucket type:", selectedBucket);
+      
       const { data, error } = await supabase
         .from('file_links')
         .select('*')
@@ -62,6 +64,8 @@ const Files = () => {
         return;
       }
       
+      console.log("Files data received:", data);
+      
       // Format the data to match the FileItem interface
       const filesWithFormat = data.map(file => {
         // Get file type
@@ -76,7 +80,7 @@ const Files = () => {
         else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
         
         return {
-          id: file.id, // Now returning a number
+          id: file.id,
           name: file.name,
           size: file.size_display || 'Unknown size',
           created_at: file.created_at,
@@ -86,6 +90,7 @@ const Files = () => {
         };
       });
       
+      console.log("Formatted files:", filesWithFormat);
       setFiles(filesWithFormat);
     } catch (error) {
       console.error("Exception fetching files:", error);
