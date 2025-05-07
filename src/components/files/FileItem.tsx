@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
@@ -29,13 +29,15 @@ const FileItem = ({
   const { toast } = useToast();
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [hasJustPaid, setHasJustPaid] = useState(false);
 
   const isPremiumFile = type === 'zip';
+  const canDownload = hasJustPaid || hasPremium || !isPremiumFile;
 
   const handleDownload = async () => {
-    // For ZIP files, always check premium status
-    if (isPremiumFile && !hasPremium) {
-      // Always show payment dialog for ZIP files if user doesn't have premium
+    // For ZIP files, check premium status
+    if (isPremiumFile && !hasPremium && !hasJustPaid) {
+      // Show payment dialog for ZIP files if user doesn't have premium and hasn't just paid
       setPaymentDialogOpen(true);
       return;
     }
@@ -64,30 +66,13 @@ const FileItem = ({
 
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
+    setHasJustPaid(true);
     
-    // After successful payment, start the download
-    setTimeout(() => {
-      setDownloadingId(id);
-      
-      try {
-        // Open Google Drive link in a new tab
-        window.open(url, '_blank');
-        
-        toast({
-          title: "Download link opened",
-          description: `${name} is being downloaded from Google Drive.`,
-        });
-      } catch (error) {
-        console.error("Error during download:", error);
-        toast({
-          title: "Download failed",
-          description: "Could not open the download link. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setDownloadingId(null);
-      }
-    }, 1000); // Small delay before starting download
+    toast({
+      title: "Payment Successful",
+      description: `${name} is now available for download.`,
+      variant: "default",
+    });
   };
 
   return (
@@ -96,10 +81,15 @@ const FileItem = ({
         <div className="flex flex-col">
           <div className="flex items-center">
             <span className="font-medium text-white">{name}</span>
-            {isPremiumFile && !hasPremium && (
+            {isPremiumFile && !canDownload && (
               <span className="ml-2 px-2 py-0.5 bg-purple-900/50 text-purple-200 text-xs rounded-full flex items-center">
                 <Lock className="h-3 w-3 mr-1" />
                 Premium
+              </span>
+            )}
+            {isPremiumFile && hasJustPaid && (
+              <span className="ml-2 px-2 py-0.5 bg-green-900/50 text-green-200 text-xs rounded-full flex items-center">
+                Paid
               </span>
             )}
           </div>
@@ -109,14 +99,18 @@ const FileItem = ({
           onClick={handleDownload}
           variant="ghost"
           size="sm"
-          className={`${isPremiumFile && !hasPremium ? 'text-purple-400 hover:text-purple-300 hover:bg-transparent' : 'text-cyan hover:text-cyan hover:bg-transparent'}`}
+          className={`${!canDownload ? 'text-purple-400 hover:text-purple-300 hover:bg-transparent' : 'text-cyan hover:text-cyan hover:bg-transparent'}`}
           disabled={downloadingId === id}
         >
           {downloadingId === id ? (
             <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
           ) : (
-            isPremiumFile && !hasPremium ? (
-              <Lock className="h-5 w-5" />
+            !canDownload ? (
+              <div className="flex items-center">
+                <IndianRupee className="h-3 w-3 mr-1" />
+                <span>1</span>
+                <Lock className="h-4 w-4 ml-1" />
+              </div>
             ) : (
               <Download className="h-5 w-5" />
             )
@@ -128,8 +122,8 @@ const FileItem = ({
         <PaymentDialog
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
-          planName="Pro"
-          planPrice="₹999"
+          planName="File Access"
+          planPrice="₹1"
           onSuccess={handlePaymentSuccess}
         />
       )}
