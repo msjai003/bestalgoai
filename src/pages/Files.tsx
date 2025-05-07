@@ -2,25 +2,10 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Loader, Download } from "lucide-react";
+import { FileArchive, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
-import { STORAGE_BUCKETS } from "@/utils/storageUtils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import FileItem from "@/components/files/FileItem";
 
 interface FileItem {
   id: number;
@@ -36,101 +21,59 @@ const Files = () => {
   const { toast } = useToast();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedBucket, setSelectedBucket] = useState(STORAGE_BUCKETS.APP_FILES);
 
   useEffect(() => {
     fetchFiles();
-  }, [selectedBucket]);
+  }, []);
 
   const fetchFiles = async () => {
     try {
       setIsLoading(true);
       
-      console.log("Fetching files for bucket type:", selectedBucket);
+      // Fetch executable files from exe_files table
+      const { data: exeFiles, error: exeError } = await supabase
+        .from('exe_files')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      if (selectedBucket === STORAGE_BUCKETS.APP_FILES) {
-        // Fetch documents from file_links table
-        const { data, error } = await supabase
-          .from('file_links')
-          .select('*')
-          .eq('bucket_type', selectedBucket)
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error("Error fetching document files:", error);
-          toast({
-            title: "Error fetching files",
-            description: "Could not load document files. Please try again later.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-        
-        console.log("Document files data received:", data);
-        
-        // Format the data to match the FileItem interface
-        const filesWithFormat = data.map(file => {
-          // Get file type
-          let fileType = 'unknown';
-          const extension = file.file_type.toLowerCase();
-          
-          if (extension === 'pdf') fileType = 'pdf';
-          else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
-          else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
-          else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
-          else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
-          else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
-          
-          return {
-            id: file.id,
-            name: file.name,
-            size: file.size_display || 'Unknown size',
-            created_at: file.created_at,
-            type: fileType,
-            url: file.google_drive_url,
-            bucket: file.bucket_type
-          };
+      if (exeError) {
+        console.error("Error fetching executable files:", exeError);
+        toast({
+          title: "Error fetching files",
+          description: "Could not load files. Please try again later.",
+          variant: "destructive",
         });
-        
-        console.log("Formatted document files:", filesWithFormat);
-        setFiles(filesWithFormat);
-      } else if (selectedBucket === STORAGE_BUCKETS.EXE_FILES) {
-        // Fetch executable files from exe_files table
-        const { data, error } = await supabase
-          .from('exe_files')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error("Error fetching executable files:", error);
-          toast({
-            title: "Error fetching files",
-            description: "Could not load executable files. Please try again later.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-        
-        console.log("Executable files data received:", data);
-        
-        // Format the data to match the FileItem interface
-        const filesWithFormat = data.map(file => {
-          return {
-            id: file.id,
-            name: file.name,
-            size: file.size || 'Unknown size',
-            created_at: file.created_at,
-            type: file.type.toLowerCase(),
-            url: file.driveurl,
-            bucket: STORAGE_BUCKETS.EXE_FILES
-          };
-        });
-        
-        console.log("Formatted executable files:", filesWithFormat);
-        setFiles(filesWithFormat);
+        setIsLoading(false);
+        return;
       }
+      
+      console.log("Files data received:", exeFiles);
+      
+      // Format the data to match the FileItem interface
+      const formattedFiles = exeFiles.map(file => {
+        // Get file type
+        let fileType = 'unknown';
+        const extension = file.type.toLowerCase();
+        
+        if (extension === 'pdf') fileType = 'pdf';
+        else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
+        else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
+        else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
+        else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
+        
+        return {
+          id: file.id,
+          name: file.name,
+          size: file.size || 'Unknown size',
+          created_at: file.created_at,
+          type: fileType,
+          url: file.driveurl,
+          bucket: "trading_files"
+        };
+      });
+      
+      setFiles(formattedFiles);
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({
@@ -140,25 +83,6 @@ const Files = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDownload = (file: FileItem) => {
-    try {
-      // Open Google Drive link in a new tab
-      window.open(file.url, '_blank');
-      
-      toast({
-        title: "Download started",
-        description: `${file.name} is being downloaded from Google Drive.`,
-      });
-    } catch (error) {
-      console.error("Error during download:", error);
-      toast({
-        title: "Download failed",
-        description: "Could not open the download link. Please try again later.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -186,71 +110,31 @@ const Files = () => {
           <p className="text-gray-400 mt-1">Download trading resources and templates</p>
         </div>
 
-        <Tabs 
-          defaultValue={STORAGE_BUCKETS.APP_FILES}
-          value={selectedBucket}
-          onValueChange={setSelectedBucket}
-          className="w-full"
-        >
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value={STORAGE_BUCKETS.APP_FILES} className="data-[state=active]:text-cyan">
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value={STORAGE_BUCKETS.EXE_FILES} className="data-[state=active]:text-cyan">
-              Applications
-            </TabsTrigger>
-          </TabsList>
+        <div className="bg-charcoalSecondary rounded-lg p-4">
+          <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
-          {[STORAGE_BUCKETS.APP_FILES, STORAGE_BUCKETS.EXE_FILES].map((bucketId) => (
-            <TabsContent key={bucketId} value={bucketId} className="mt-0">
-              <div className="bg-charcoalSecondary rounded-lg p-4">
-                {files.length === 0 ? (
-                  <div className="text-center py-8 flex flex-col items-center justify-center">
-                    <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
-                    <p className="text-gray-400">Check back later for available files</p>
-                  </div>
-                ) : (
-                  <div className="w-full overflow-auto">
-                    <Table className="w-full">
-                      <TableHeader className="bg-charcoalPrimary">
-                        <TableRow>
-                          <TableHead className="text-gray-300">Name</TableHead>
-                          <TableHead className="text-gray-300">Size</TableHead>
-                          <TableHead className="text-gray-300 text-right">Download</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {files.map((file) => (
-                          <TableRow 
-                            key={file.id}
-                            className="border-b border-gray-800 hover:bg-charcoalPrimary/30"
-                          >
-                            <TableCell className="font-medium text-white">
-                              {file.name}
-                            </TableCell>
-                            <TableCell className="text-gray-400">
-                              {file.size}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                onClick={() => handleDownload(file)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-cyan hover:bg-transparent"
-                              >
-                                <Download className="h-5 w-5" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+          {files.length === 0 ? (
+            <div className="text-center py-8 flex flex-col items-center justify-center">
+              <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
+              <p className="text-gray-400">Check back later for available files</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {files.map((file) => (
+                <FileItem
+                  key={file.id}
+                  id={file.id}
+                  name={file.name}
+                  size={file.size}
+                  type={file.type}
+                  url={file.url}
+                  created_at={file.created_at}
+                  bucket={file.bucket}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
       <BottomNav />
     </div>
