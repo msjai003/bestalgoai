@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FileItemProps {
   id: number;
@@ -12,6 +13,7 @@ interface FileItemProps {
   url: string;
   created_at: string;
   bucket: string;
+  hasPremium: boolean;
 }
 
 const FileItem = ({
@@ -22,11 +24,23 @@ const FileItem = ({
   url,
   created_at,
   bucket,
+  hasPremium,
 }: FileItemProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
   const handleDownload = async () => {
+    // Check if this is a zip file and user doesn't have premium
+    if (type === 'zip' && !hasPremium) {
+      toast({
+        title: "Premium content",
+        description: "This file requires a premium subscription",
+      });
+      navigate('/pricing');
+      return;
+    }
+    
     setDownloadingId(id);
     
     try {

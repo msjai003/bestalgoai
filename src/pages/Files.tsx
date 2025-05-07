@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -39,6 +38,7 @@ const Files = () => {
   }, [user]);
 
   const fetchFiles = async () => {
+    
     try {
       setIsLoading(true);
       
@@ -84,15 +84,6 @@ const Files = () => {
             url: file.driveurl,
             bucket: "trading_files"
           };
-        })
-        // Filter out zip files for non-premium users
-        .filter(file => {
-          // If zip file, only show to premium users
-          if (file.type === 'zip') {
-            return hasPremium;
-          }
-          // Show all other files to all users
-          return true;
         });
       
       setFiles(formattedFiles);
@@ -109,6 +100,7 @@ const Files = () => {
   };
 
   if (isLoading) {
+    
     return (
       <div className="bg-charcoalPrimary min-h-screen">
         <Header />
@@ -152,6 +144,7 @@ const Files = () => {
                   url={file.url}
                   created_at={file.created_at}
                   bucket={file.bucket}
+                  hasPremium={hasPremium}
                 />
               ))}
             </div>
