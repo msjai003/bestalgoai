@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
 
 interface FileItemProps {
@@ -28,10 +27,8 @@ const FileItem = ({
   hasPremium,
 }: FileItemProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [showSuccessImage, setShowSuccessImage] = useState(false);
 
   const isPremiumFile = type === 'zip';
 
@@ -66,7 +63,6 @@ const FileItem = ({
 
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
-    setShowSuccessImage(true);
     
     // After successful payment, start the download
     setTimeout(() => {
@@ -89,10 +85,6 @@ const FileItem = ({
         });
       } finally {
         setDownloadingId(null);
-        // Hide success image after 5 seconds
-        setTimeout(() => {
-          setShowSuccessImage(false);
-        }, 5000);
       }
     }, 1000); // Small delay before starting download
   };
@@ -130,34 +122,6 @@ const FileItem = ({
           )}
         </Button>
       </div>
-      
-      {showSuccessImage && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-charcoalSecondary rounded-lg p-4 max-w-md w-full text-center relative">
-            <button 
-              onClick={() => setShowSuccessImage(false)}
-              className="absolute top-2 right-2 text-gray-400 hover:text-white"
-            >
-              ×
-            </button>
-            <h3 className="text-xl font-bold text-white mb-4">Payment Successful!</h3>
-            <div className="flex justify-center mb-4">
-              <img 
-                src="/public/lovable-uploads/08728724-393e-42b7-bd7b-de74eb6bae04.png" 
-                alt="Trading interface" 
-                className="rounded-lg w-full max-w-sm"
-              />
-            </div>
-            <p className="text-green-400 mb-4">Your file download will begin shortly...</p>
-            <Button
-              onClick={() => setShowSuccessImage(false)}
-              className="bg-cyan hover:bg-cyan/80"
-            >
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
       
       {paymentDialogOpen && (
         <PaymentDialog

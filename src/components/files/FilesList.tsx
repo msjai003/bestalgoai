@@ -1,0 +1,40 @@
+
+import React from "react";
+import FileItem from "@/components/files/FileItem";
+
+interface FileData {
+  id: number;
+  name: string;
+  size: string;
+  created_at: string;
+  type: string;
+  url: string;
+  bucket: string;
+}
+
+interface FilesListProps {
+  files: FileData[];
+  hasPremium: boolean;
+}
+
+const FilesList: React.FC<FilesListProps> = ({ files, hasPremium }) => {
+  return (
+    <div className="space-y-1">
+      {files.map((file) => (
+        <FileItem
+          key={file.id}
+          id={file.id}
+          name={file.name}
+          size={file.size}
+          type={file.type}
+          url={file.url}
+          created_at={file.created_at}
+          bucket={file.bucket}
+          hasPremium={hasPremium}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default FilesList;
