@@ -55,8 +55,7 @@ const FileItem = ({
   };
 
   return (
-    <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
-      <div className="flex-1 truncate text-white font-medium">{name}</div>
+    <div className="flex items-center justify-center py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <Button
         onClick={handleDownload}
         variant="ghost"

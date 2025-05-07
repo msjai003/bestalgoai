@@ -148,7 +148,7 @@ const Files = () => {
                     <p className="text-gray-400">Check back later for available files</p>
                   </div>
                 ) : (
-                  <div className="space-y-1">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
                     {files.map((file) => (
                       <FileItem 
                         key={file.id}
