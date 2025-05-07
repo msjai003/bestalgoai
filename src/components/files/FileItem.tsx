@@ -30,23 +30,18 @@ const FileItem = ({
     setDownloadingId(id);
     
     try {
-      // Create a download link and trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Open Google Drive link in a new tab
+      window.open(url, '_blank');
       
       toast({
-        title: "Download started",
-        description: `${name} is being downloaded.`,
+        title: "Download link opened",
+        description: `${name} is being downloaded from Google Drive.`,
       });
     } catch (error) {
       console.error("Error during download:", error);
       toast({
         title: "Download failed",
-        description: "Could not download the file. Please try again later.",
+        description: "Could not open the download link. Please try again later.",
         variant: "destructive",
       });
     } finally {

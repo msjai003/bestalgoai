@@ -11,7 +11,7 @@ import {
   TabsList,
   TabsTrigger
 } from "@/components/ui/tabs";
-import { STORAGE_BUCKETS, formatFileSize } from "@/utils/storageUtils";
+import { STORAGE_BUCKETS } from "@/utils/storageUtils";
 import FileItem from "@/components/files/FileItem";
 
 interface FileItem {
@@ -39,9 +39,10 @@ const Files = () => {
       setIsLoading(true);
       
       const { data, error } = await supabase
-        .storage
-        .from(selectedBucket)
-        .list();
+        .from('file_links')
+        .select('*')
+        .eq('bucket_type', selectedBucket)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error("Error fetching files:", error);
@@ -53,41 +54,31 @@ const Files = () => {
         return;
       }
       
-      // Filter out folders (.emptyFolders)
-      const actualFiles = data?.filter(item => !item.id.includes('.emptyFolders')) || [];
-      
-      // Get URLs for each file
-      const filesWithUrls = await Promise.all(actualFiles.map(async (file) => {
-        const { data: urlData } = supabase
-          .storage
-          .from(selectedBucket)
-          .getPublicUrl(file.name);
-          
+      // Format the data to match the FileItem interface
+      const filesWithFormat = data.map(file => {
         // Get file type
         let fileType = 'unknown';
-        const extension = file.name.split('.').pop()?.toLowerCase();
+        const extension = file.file_type.toLowerCase();
         
         if (extension === 'pdf') fileType = 'pdf';
-        else if (['doc', 'docx'].includes(extension || '')) fileType = 'docx';
-        else if (['zip', 'rar', '7z'].includes(extension || '')) fileType = 'zip';
-        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) fileType = 'image';
-        else if (['exe', 'msi'].includes(extension || '')) fileType = 'exe';
-        
-        // Format size
-        const formattedSize = formatFileSize(file.metadata?.size || 0);
+        else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
+        else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
+        else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
+        else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
         
         return {
           id: file.id,
           name: file.name,
-          size: formattedSize,
+          size: file.size_display || 'Unknown size',
           created_at: file.created_at,
           type: fileType,
-          url: urlData.publicUrl,
-          bucket: selectedBucket
+          url: file.google_drive_url,
+          bucket: file.bucket_type
         };
-      }));
+      });
       
-      setFiles(filesWithUrls);
+      setFiles(filesWithFormat);
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({

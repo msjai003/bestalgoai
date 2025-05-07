@@ -657,6 +657,42 @@ export type Database = {
         }
         Relationships: []
       }
+      file_links: {
+        Row: {
+          bucket_type: string
+          created_at: string
+          description: string | null
+          file_type: string
+          google_drive_url: string
+          id: string
+          name: string
+          size_display: string | null
+          updated_at: string
+        }
+        Insert: {
+          bucket_type: string
+          created_at?: string
+          description?: string | null
+          file_type: string
+          google_drive_url: string
+          id?: string
+          name: string
+          size_display?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bucket_type?: string
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          google_drive_url?: string
+          id?: string
+          name?: string
+          size_display?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       google_user_details: {
         Row: {
           created_at: string | null
