@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -33,10 +33,11 @@ const FileItem = ({
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [showSuccessImage, setShowSuccessImage] = useState(false);
 
+  const isPremiumFile = type === 'zip';
+
   const handleDownload = async () => {
-    // For ZIP files, we handle them at the page level with immediate payment dialog
-    // Only non-ZIP files or users with premium can download directly
-    if (type === 'zip' && !hasPremium) {
+    // For ZIP files, always check premium status
+    if (isPremiumFile && !hasPremium) {
       setPaymentDialogOpen(true);
       return;
     }
@@ -100,14 +101,22 @@ const FileItem = ({
     <>
       <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
         <div className="flex flex-col">
-          <span className="font-medium text-white">{name}</span>
+          <div className="flex items-center">
+            <span className="font-medium text-white">{name}</span>
+            {isPremiumFile && !hasPremium && (
+              <span className="ml-2 px-2 py-0.5 bg-purple-900/50 text-purple-200 text-xs rounded-full flex items-center">
+                <Lock className="h-3 w-3 mr-1" />
+                Premium
+              </span>
+            )}
+          </div>
           <span className="text-sm text-gray-400">{size}</span>
         </div>
         <Button
           onClick={handleDownload}
           variant="ghost"
           size="sm"
-          className="text-cyan hover:bg-transparent"
+          className={`${isPremiumFile && !hasPremium ? 'text-purple-400 hover:text-purple-300' : 'text-cyan hover:bg-transparent'}`}
           disabled={downloadingId === id}
         >
           {downloadingId === id ? (

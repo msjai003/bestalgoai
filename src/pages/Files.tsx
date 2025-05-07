@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Loader } from "lucide-react";
+import { FileArchive, Loader, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import FileItem from "@/components/files/FileItem";
@@ -98,14 +99,11 @@ const Files = () => {
       
       setFiles(formattedFiles);
       
-      // Check if there are any ZIP files and user doesn't have premium
-      // If yes, show payment dialog immediately
-      if (!isPremium) {
-        const zipFiles = formattedFiles.filter(file => file.type === 'zip');
-        if (zipFiles.length > 0) {
-          setSelectedFile(zipFiles[0]);
-          setPaymentDialogOpen(true);
-        }
+      // Find if there are any ZIP files at all
+      const zipFiles = formattedFiles.filter(file => file.type === 'zip');
+      if (zipFiles.length > 0 && !isPremium) {
+        setSelectedFile(zipFiles[0]);
+        setPaymentDialogOpen(true);
       }
     } catch (error) {
       console.error("Exception fetching files:", error);
@@ -132,6 +130,14 @@ const Files = () => {
       });
     }, 5000);
   };
+
+  // Filter out ZIP files for non-premium users
+  const displayFiles = files.filter(file => 
+    hasPremium ? true : file.type !== 'zip'
+  );
+
+  // Check if there are ZIP files that are hidden
+  const hasHiddenZipFiles = files.length > displayFiles.length;
 
   if (isLoading) {
     return (
@@ -160,14 +166,14 @@ const Files = () => {
         <div className="bg-charcoalSecondary rounded-lg p-4">
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
-          {files.length === 0 ? (
+          {displayFiles.length === 0 ? (
             <div className="text-center py-8 flex flex-col items-center justify-center">
               <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
               <p className="text-gray-400">Check back later for available files</p>
             </div>
           ) : (
             <div className="space-y-1">
-              {files.map((file) => (
+              {displayFiles.map((file) => (
                 <FileItem
                   key={file.id}
                   id={file.id}
@@ -180,6 +186,25 @@ const Files = () => {
                   hasPremium={hasPremium}
                 />
               ))}
+            </div>
+          )}
+          
+          {/* Premium files notice */}
+          {hasHiddenZipFiles && !hasPremium && (
+            <div className="mt-6 border-t border-gray-700 pt-4">
+              <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-lg flex flex-col items-center">
+                <Lock className="h-8 w-8 text-cyan mb-2" />
+                <h3 className="text-lg font-medium text-white">Premium ZIP Files Available</h3>
+                <p className="text-gray-300 text-center mb-3">
+                  {files.length - displayFiles.length} ZIP file(s) are available with a premium subscription
+                </p>
+                <Button 
+                  onClick={() => setPaymentDialogOpen(true)} 
+                  className="bg-cyan hover:bg-cyan/80"
+                >
+                  Upgrade to Pro
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -213,7 +238,7 @@ const Files = () => {
         </div>
       )}
       
-      {paymentDialogOpen && selectedFile && (
+      {paymentDialogOpen && (
         <PaymentDialog
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
