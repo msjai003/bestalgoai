@@ -6,6 +6,8 @@ import { FileArchive, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import FileItem from "@/components/files/FileItem";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FileItem {
   id: number;
@@ -19,12 +21,22 @@ interface FileItem {
 
 const Files = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasPremium, setHasPremium] = useState(false);
 
   useEffect(() => {
+    const checkPremium = async () => {
+      if (user) {
+        const isPremium = await checkUserPremiumStatus(user.id);
+        setHasPremium(isPremium);
+      }
+    };
+    
+    checkPremium();
     fetchFiles();
-  }, []);
+  }, [user]);
 
   const fetchFiles = async () => {
     try {
@@ -50,28 +62,38 @@ const Files = () => {
       console.log("Files data received:", exeFiles);
       
       // Format the data to match the FileItem interface
-      const formattedFiles = exeFiles.map(file => {
-        // Get file type
-        let fileType = 'unknown';
-        const extension = file.type.toLowerCase();
-        
-        if (extension === 'pdf') fileType = 'pdf';
-        else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
-        else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
-        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
-        else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
-        else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
-        
-        return {
-          id: file.id,
-          name: file.name,
-          size: file.size || 'Unknown size',
-          created_at: file.created_at,
-          type: fileType,
-          url: file.driveurl,
-          bucket: "trading_files"
-        };
-      });
+      const formattedFiles = exeFiles
+        .map(file => {
+          // Get file type
+          let fileType = 'unknown';
+          const extension = file.type.toLowerCase();
+          
+          if (extension === 'pdf') fileType = 'pdf';
+          else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
+          else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
+          else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
+          else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
+          else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
+          
+          return {
+            id: file.id,
+            name: file.name,
+            size: file.size || 'Unknown size',
+            created_at: file.created_at,
+            type: fileType,
+            url: file.driveurl,
+            bucket: "trading_files"
+          };
+        })
+        // Filter out zip files for non-premium users
+        .filter(file => {
+          // If zip file, only show to premium users
+          if (file.type === 'zip') {
+            return hasPremium;
+          }
+          // Show all other files to all users
+          return true;
+        });
       
       setFiles(formattedFiles);
     } catch (error) {
@@ -132,6 +154,21 @@ const Files = () => {
                   bucket={file.bucket}
                 />
               ))}
+            </div>
+          )}
+          
+          {!hasPremium && (
+            <div className="mt-6 p-4 bg-charcoalPrimary border border-cyan/20 rounded-lg">
+              <h3 className="text-white font-medium mb-2">Premium Content</h3>
+              <p className="text-gray-400 text-sm mb-3">
+                Subscribe to our premium plan to access additional ZIP archives and resources.
+              </p>
+              <button 
+                onClick={() => window.location.href = '/subscription'}
+                className="bg-cyan/90 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan transition-colors"
+              >
+                Upgrade Now
+              </button>
             </div>
           )}
         </div>
