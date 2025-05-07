@@ -3,12 +3,10 @@ import React from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
-import PaymentDialog from "@/components/subscription/PaymentDialog";
 import LoadingState from "@/components/files/LoadingState";
 import PremiumBanner from "@/components/files/PremiumBanner";
 import EmptyFilesState from "@/components/files/EmptyFilesState";
 import FilesList from "@/components/files/FilesList";
-import PaymentSuccessModal from "@/components/files/PaymentSuccessModal";
 import { useFileManagement } from "@/hooks/useFileManagement";
 
 const Files: React.FC = () => {
@@ -16,15 +14,8 @@ const Files: React.FC = () => {
   const { 
     files, 
     isLoading, 
-    hasPremium, 
-    paymentDialogOpen, 
-    setPaymentDialogOpen, 
-    showSuccessImage, 
-    setShowSuccessImage, 
-    hasPremiumFiles, 
-    handlePaymentSuccess,
-    selectedPaymentMethod,
-    setSelectedPaymentMethod
+    hasPremium,
+    hasPremiumFiles
   } = useFileManagement(user?.id);
 
   if (isLoading) {
@@ -45,12 +36,7 @@ const Files: React.FC = () => {
 
           {/* Premium features notice for users without premium */}
           {hasPremiumFiles && !hasPremium && (
-            <PremiumBanner 
-              onUpgradeClick={() => {
-                setSelectedPaymentMethod("razorpay");
-                setPaymentDialogOpen(true);
-              }} 
-            />
+            <PremiumBanner />
           )}
 
           {files.length === 0 ? (
@@ -60,24 +46,6 @@ const Files: React.FC = () => {
           )}
         </div>
       </main>
-      
-      {/* Payment success modal */}
-      <PaymentSuccessModal 
-        show={showSuccessImage} 
-        onClose={() => setShowSuccessImage(false)} 
-      />
-      
-      {/* Payment dialog */}
-      {paymentDialogOpen && (
-        <PaymentDialog
-          open={paymentDialogOpen}
-          onOpenChange={setPaymentDialogOpen}
-          planName="Pro"
-          planPrice="₹999"
-          onSuccess={handlePaymentSuccess}
-          paymentMethod={selectedPaymentMethod}
-        />
-      )}
       
       <BottomNav />
     </div>

@@ -20,10 +20,6 @@ export function useFileManagement(userId?: string) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPremium, setHasPremium] = useState(false);
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [showSuccessImage, setShowSuccessImage] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("razorpay");
 
   useEffect(() => {
     const checkPremium = async () => {
@@ -104,20 +100,6 @@ export function useFileManagement(userId?: string) {
       setIsLoading(false);
     }
   };
-  
-  const handlePaymentSuccess = () => {
-    setPaymentDialogOpen(false);
-    setShowSuccessImage(true);
-    
-    // Hide success image after 5 seconds
-    setTimeout(() => {
-      setShowSuccessImage(false);
-      // Refresh premium status
-      checkUserPremiumStatus(userId || '').then(isPremium => {
-        setHasPremium(isPremium);
-      });
-    }, 5000);
-  };
 
   // Check if there are premium files
   const hasPremiumFiles = files.some(file => file.is_premium);
@@ -126,14 +108,6 @@ export function useFileManagement(userId?: string) {
     files,
     isLoading,
     hasPremium,
-    paymentDialogOpen,
-    setPaymentDialogOpen,
-    showSuccessImage,
-    setShowSuccessImage,
-    selectedFile,
-    hasPremiumFiles,
-    handlePaymentSuccess,
-    selectedPaymentMethod,
-    setSelectedPaymentMethod
+    hasPremiumFiles
   };
 }

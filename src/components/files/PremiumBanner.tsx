@@ -1,28 +1,17 @@
 
 import React from "react";
 import { Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
-interface PremiumBannerProps {
-  onUpgradeClick: () => void;
-}
-
-const PremiumBanner: React.FC<PremiumBannerProps> = ({ onUpgradeClick }) => {
+const PremiumBanner: React.FC = () => {
   return (
     <div className="mb-6 bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between border border-purple-800/40">
-      <div className="flex items-center mb-4 sm:mb-0">
+      <div className="flex items-center">
         <Lock className="h-6 w-6 text-purple-400 mr-3" />
         <div>
           <h3 className="text-white font-medium">Premium Content Available</h3>
-          <p className="text-gray-300 text-sm">Click the lock icon to pay ₹1 and download ZIP files</p>
+          <p className="text-gray-300 text-sm">Some files require a premium subscription</p>
         </div>
       </div>
-      <Button 
-        onClick={onUpgradeClick} 
-        className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
-      >
-        Upgrade to Pro
-      </Button>
     </div>
   );
 };
