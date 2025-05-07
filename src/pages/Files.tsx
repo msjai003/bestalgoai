@@ -48,50 +48,89 @@ const Files = () => {
       
       console.log("Fetching files for bucket type:", selectedBucket);
       
-      const { data, error } = await supabase
-        .from('file_links')
-        .select('*')
-        .eq('bucket_type', selectedBucket)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching files:", error);
-        toast({
-          title: "Error fetching files",
-          description: "Could not load file list. Please try again later.",
-          variant: "destructive",
+      if (selectedBucket === STORAGE_BUCKETS.APP_FILES) {
+        // Fetch documents from file_links table
+        const { data, error } = await supabase
+          .from('file_links')
+          .select('*')
+          .eq('bucket_type', selectedBucket)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching document files:", error);
+          toast({
+            title: "Error fetching files",
+            description: "Could not load document files. Please try again later.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Document files data received:", data);
+        
+        // Format the data to match the FileItem interface
+        const filesWithFormat = data.map(file => {
+          // Get file type
+          let fileType = 'unknown';
+          const extension = file.file_type.toLowerCase();
+          
+          if (extension === 'pdf') fileType = 'pdf';
+          else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
+          else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
+          else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
+          else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
+          else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
+          
+          return {
+            id: file.id,
+            name: file.name,
+            size: file.size_display || 'Unknown size',
+            created_at: file.created_at,
+            type: fileType,
+            url: file.google_drive_url,
+            bucket: file.bucket_type
+          };
         });
-        return;
+        
+        console.log("Formatted document files:", filesWithFormat);
+        setFiles(filesWithFormat);
+      } else if (selectedBucket === STORAGE_BUCKETS.EXE_FILES) {
+        // Fetch executable files from exe_files table
+        const { data, error } = await supabase
+          .from('exe_files')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching executable files:", error);
+          toast({
+            title: "Error fetching files",
+            description: "Could not load executable files. Please try again later.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Executable files data received:", data);
+        
+        // Format the data to match the FileItem interface
+        const filesWithFormat = data.map(file => {
+          return {
+            id: file.id,
+            name: file.name,
+            size: file.size || 'Unknown size',
+            created_at: file.created_at,
+            type: file.type.toLowerCase(),
+            url: file.driveurl,
+            bucket: STORAGE_BUCKETS.EXE_FILES
+          };
+        });
+        
+        console.log("Formatted executable files:", filesWithFormat);
+        setFiles(filesWithFormat);
       }
-      
-      console.log("Files data received:", data);
-      
-      // Format the data to match the FileItem interface
-      const filesWithFormat = data.map(file => {
-        // Get file type
-        let fileType = 'unknown';
-        const extension = file.file_type.toLowerCase();
-        
-        if (extension === 'pdf') fileType = 'pdf';
-        else if (['doc', 'docx'].includes(extension)) fileType = 'docx';
-        else if (['zip', 'rar', '7z'].includes(extension)) fileType = 'zip';
-        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) fileType = 'image';
-        else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
-        else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
-        
-        return {
-          id: file.id,
-          name: file.name,
-          size: file.size_display || 'Unknown size',
-          created_at: file.created_at,
-          type: fileType,
-          url: file.google_drive_url,
-          bucket: file.bucket_type
-        };
-      });
-      
-      console.log("Formatted files:", filesWithFormat);
-      setFiles(filesWithFormat);
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({

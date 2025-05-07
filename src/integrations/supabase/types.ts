@@ -657,38 +657,35 @@ export type Database = {
         }
         Relationships: []
       }
-      file_links: {
+      exe_files: {
         Row: {
-          bucket_type: string
           created_at: string
           description: string | null
-          file_type: string
-          google_drive_url: string
+          driveurl: string
           id: number
           name: string
-          size_display: string | null
+          size: string | null
+          type: string
           updated_at: string
         }
         Insert: {
-          bucket_type: string
           created_at?: string
           description?: string | null
-          file_type: string
-          google_drive_url: string
+          driveurl: string
           id?: number
           name: string
-          size_display?: string | null
+          size?: string | null
+          type: string
           updated_at?: string
         }
         Update: {
-          bucket_type?: string
           created_at?: string
           description?: string | null
-          file_type?: string
-          google_drive_url?: string
+          driveurl?: string
           id?: number
           name?: string
-          size_display?: string | null
+          size?: string | null
+          type?: string
           updated_at?: string
         }
         Relationships: []

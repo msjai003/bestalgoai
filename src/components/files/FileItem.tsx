@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface FileItemProps {
-  id: string;
+  id: number;
   name: string;
   size: string;
   type: string;
@@ -24,7 +24,7 @@ const FileItem = ({
   bucket,
 }: FileItemProps) => {
   const { toast } = useToast();
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
   const handleDownload = async () => {
     setDownloadingId(id);
@@ -50,7 +50,11 @@ const FileItem = ({
   };
 
   return (
-    <div className="flex items-center justify-center py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+    <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+      <div className="flex flex-col">
+        <span className="font-medium text-white">{name}</span>
+        <span className="text-sm text-gray-400">{size}</span>
+      </div>
       <Button
         onClick={handleDownload}
         variant="ghost"
