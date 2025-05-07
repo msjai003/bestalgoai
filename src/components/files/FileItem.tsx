@@ -108,7 +108,7 @@ const FileItem = ({
           onClick={handleDownload}
           variant="ghost"
           size="sm"
-          className={`${isPremiumFile && !hasPremium ? 'text-purple-400 hover:text-purple-300' : 'text-cyan hover:bg-transparent'}`}
+          className={`${isPremiumFile && !hasPremium ? 'text-purple-400 hover:text-purple-300 hover:bg-transparent' : 'text-cyan hover:text-cyan hover:bg-transparent'}`}
           disabled={downloadingId === id}
         >
           {downloadingId === id ? (
