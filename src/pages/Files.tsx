@@ -131,13 +131,12 @@ const Files = () => {
     }, 5000);
   };
 
-  // Filter out ZIP files for non-premium users
-  const displayFiles = files.filter(file => 
-    hasPremium ? true : file.type !== 'zip'
-  );
+  // Filter out ZIP files for non-premium users for display purposes
+  // We'll still show them but with a lock icon
+  const displayFiles = files;
 
-  // Check if there are ZIP files that are hidden
-  const hasHiddenZipFiles = files.length > displayFiles.length;
+  // Check if there are ZIP files that should be premium-only
+  const hasZipFiles = files.some(file => file.type === 'zip');
 
   if (isLoading) {
     return (
@@ -166,6 +165,25 @@ const Files = () => {
         <div className="bg-charcoalSecondary rounded-lg p-4">
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
+          {/* Premium features notice for users without premium */}
+          {hasZipFiles && !hasPremium && (
+            <div className="mb-6 bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex items-center mb-4 sm:mb-0">
+                <Lock className="h-6 w-6 text-purple-400 mr-3" />
+                <div>
+                  <h3 className="text-white font-medium">Premium Content Available</h3>
+                  <p className="text-gray-300 text-sm">Upgrade to access premium ZIP files</p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setPaymentDialogOpen(true)} 
+                className="bg-cyan hover:bg-cyan/80 w-full sm:w-auto"
+              >
+                Upgrade to Pro
+              </Button>
+            </div>
+          )}
+
           {displayFiles.length === 0 ? (
             <div className="text-center py-8 flex flex-col items-center justify-center">
               <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
@@ -186,25 +204,6 @@ const Files = () => {
                   hasPremium={hasPremium}
                 />
               ))}
-            </div>
-          )}
-          
-          {/* Premium files notice */}
-          {hasHiddenZipFiles && !hasPremium && (
-            <div className="mt-6 border-t border-gray-700 pt-4">
-              <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 p-4 rounded-lg flex flex-col items-center">
-                <Lock className="h-8 w-8 text-cyan mb-2" />
-                <h3 className="text-lg font-medium text-white">Premium ZIP Files Available</h3>
-                <p className="text-gray-300 text-center mb-3">
-                  {files.length - displayFiles.length} ZIP file(s) are available with a premium subscription
-                </p>
-                <Button 
-                  onClick={() => setPaymentDialogOpen(true)} 
-                  className="bg-cyan hover:bg-cyan/80"
-                >
-                  Upgrade to Pro
-                </Button>
-              </div>
             </div>
           )}
         </div>

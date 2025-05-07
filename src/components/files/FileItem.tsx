@@ -122,7 +122,11 @@ const FileItem = ({
           {downloadingId === id ? (
             <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
           ) : (
-            <Download className="h-5 w-5" />
+            isPremiumFile && !hasPremium ? (
+              <Lock className="h-5 w-5" />
+            ) : (
+              <Download className="h-5 w-5" />
+            )
           )}
         </Button>
       </div>
