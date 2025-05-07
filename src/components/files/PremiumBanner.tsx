@@ -14,7 +14,7 @@ const PremiumBanner: React.FC<PremiumBannerProps> = ({ onUpgradeClick }) => {
         <Lock className="h-6 w-6 text-purple-400 mr-3" />
         <div>
           <h3 className="text-white font-medium">Premium Content Available</h3>
-          <p className="text-gray-300 text-sm">Upgrade to access premium ZIP files</p>
+          <p className="text-gray-300 text-sm">Click the lock icon to pay ₹1 and download ZIP files</p>
         </div>
       </div>
       <Button 

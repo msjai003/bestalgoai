@@ -90,9 +90,6 @@ export function useFileManagement(userId?: string) {
         });
       
       setFiles(formattedFiles);
-      
-      // No longer automatically opening payment dialog when files load
-      // This ensures users can only download ZIP files after payment
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({
