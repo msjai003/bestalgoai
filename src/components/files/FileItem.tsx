@@ -4,6 +4,7 @@ import { Download, Lock, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface FileItemProps {
   id: number;
@@ -81,16 +82,10 @@ const FileItem = ({
         <div className="flex flex-col">
           <div className="flex items-center">
             <span className="font-medium text-white">{name}</span>
-            {isPremiumFile && !canDownload && (
-              <span className="ml-2 px-2 py-0.5 bg-purple-900/50 text-purple-200 text-xs rounded-full flex items-center">
-                <Lock className="h-3 w-3 mr-1" />
-                Premium
-              </span>
-            )}
             {isPremiumFile && hasJustPaid && (
-              <span className="ml-2 px-2 py-0.5 bg-green-900/50 text-green-200 text-xs rounded-full flex items-center">
+              <Badge variant="success" className="ml-2">
                 Paid
-              </span>
+              </Badge>
             )}
           </div>
           <span className="text-sm text-gray-400">{size}</span>
@@ -107,7 +102,7 @@ const FileItem = ({
           ) : (
             !canDownload ? (
               <div className="flex items-center">
-                <IndianRupee className="h-3 w-3 mr-1" />
+                <IndianRupee className="h-4 w-4 mr-1" />
                 <span>1</span>
                 <Lock className="h-4 w-4 ml-1" />
               </div>
