@@ -38,7 +38,6 @@ const Files = () => {
   }, [user]);
 
   const fetchFiles = async () => {
-    
     try {
       setIsLoading(true);
       
@@ -100,7 +99,6 @@ const Files = () => {
   };
 
   if (isLoading) {
-    
     return (
       <div className="bg-charcoalPrimary min-h-screen">
         <Header />
@@ -147,21 +145,6 @@ const Files = () => {
                   hasPremium={hasPremium}
                 />
               ))}
-            </div>
-          )}
-          
-          {!hasPremium && (
-            <div className="mt-6 p-4 bg-charcoalPrimary border border-cyan/20 rounded-lg">
-              <h3 className="text-white font-medium mb-2">Premium Content</h3>
-              <p className="text-gray-400 text-sm mb-3">
-                Subscribe to our premium plan to access additional ZIP archives and resources.
-              </p>
-              <button 
-                onClick={() => window.location.href = '/subscription'}
-                className="bg-cyan/90 text-white px-4 py-2 rounded-md text-sm hover:bg-cyan transition-colors"
-              >
-                Upgrade Now
-              </button>
             </div>
           )}
         </div>
