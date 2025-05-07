@@ -23,6 +23,7 @@ export function useFileManagement(userId?: string) {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [showSuccessImage, setShowSuccessImage] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("razorpay");
 
   useEffect(() => {
     const checkPremium = async () => {
@@ -131,6 +132,8 @@ export function useFileManagement(userId?: string) {
     setShowSuccessImage,
     selectedFile,
     hasPremiumFiles,
-    handlePaymentSuccess
+    handlePaymentSuccess,
+    selectedPaymentMethod,
+    setSelectedPaymentMethod
   };
 }

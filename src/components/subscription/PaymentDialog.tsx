@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Dialog,
@@ -10,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader } from "lucide-react";
+import { Loader, CreditCard } from "lucide-react";
 import { useAdminConfig } from "@/hooks/useAdminConfig";
 import { supabase } from "@/integrations/supabase/client";
+import PaymentMethodForm from "@/components/subscription/PaymentMethodForm";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -22,6 +24,7 @@ interface PaymentDialogProps {
   onSuccess: () => void;
   selectedStrategyId?: number;
   selectedStrategyName?: string | null;
+  paymentMethod?: string;
 }
 
 interface RazorpayConfig {
@@ -38,7 +41,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   planPrice,
   onSuccess,
   selectedStrategyId,
-  selectedStrategyName
+  selectedStrategyName,
+  paymentMethod = "razorpay"
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -219,26 +223,29 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   React.useEffect(() => {
-    if (open && (!configLoading || configError)) {
+    if (open && paymentMethod === "razorpay" && (!configLoading || configError)) {
       handleRazorpayPayment();
     }
-  }, [open, configLoading, configError]);
+  }, [open, configLoading, configError, paymentMethod]);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
-        <DialogHeader>
-          <DialogTitle>Processing Payment</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {planName === 'Premium' || planPrice === '₹4999' ? 
-              "Connecting to payment gateway to unlock all premium strategies" :
-              (selectedStrategyName ? 
-                `Connecting to payment gateway to unlock ${selectedStrategyName}` :
-                `Connecting to payment gateway for the ${planName} plan`)
-            }
-          </DialogDescription>
-        </DialogHeader>
-        
+  // Render different content based on payment method
+  const renderPaymentContent = () => {
+    if (paymentMethod === "card") {
+      return (
+        <PaymentMethodForm
+          planName={planName}
+          planPrice={planPrice}
+          onSuccess={onSuccess}
+          onCancel={() => onOpenChange(false)}
+          selectedStrategyId={selectedStrategyId}
+          selectedStrategyName={selectedStrategyName}
+        />
+      );
+    }
+
+    // Default Razorpay processing screen
+    return (
+      <>
         <div className="flex flex-col items-center justify-center py-8">
           <Loader className="h-12 w-12 animate-spin text-[#FF00D4] mb-4" />
           <p className="text-center text-gray-300">Please wait while we connect to Razorpay...</p>
@@ -264,6 +271,30 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <p>This application is using Razorpay's {razorpayConfig?.mode || 'test'} payment processing.</p>
           <p>Your payment information is securely handled by Razorpay.</p>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
+        <DialogHeader>
+          <DialogTitle>
+            {paymentMethod === "card" ? "Card Payment" : "Processing Payment"}
+          </DialogTitle>
+          <DialogDescription className="text-gray-400">
+            {paymentMethod === "card" 
+              ? "Enter your card details to complete payment"
+              : (planName === 'Premium' || planPrice === '₹4999' 
+                ? "Connecting to payment gateway to unlock all premium strategies" 
+                : (selectedStrategyName 
+                  ? `Connecting to payment gateway to unlock ${selectedStrategyName}` 
+                  : `Connecting to payment gateway for the ${planName} plan`))
+            }
+          </DialogDescription>
+        </DialogHeader>
+        
+        {renderPaymentContent()}
       </DialogContent>
     </Dialog>
   );

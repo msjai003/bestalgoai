@@ -22,7 +22,9 @@ const Files: React.FC = () => {
     showSuccessImage, 
     setShowSuccessImage, 
     hasPremiumFiles, 
-    handlePaymentSuccess 
+    handlePaymentSuccess,
+    selectedPaymentMethod,
+    setSelectedPaymentMethod
   } = useFileManagement(user?.id);
 
   if (isLoading) {
@@ -43,7 +45,12 @@ const Files: React.FC = () => {
 
           {/* Premium features notice for users without premium */}
           {hasPremiumFiles && !hasPremium && (
-            <PremiumBanner onUpgradeClick={() => setPaymentDialogOpen(true)} />
+            <PremiumBanner 
+              onUpgradeClick={() => {
+                setSelectedPaymentMethod("razorpay");
+                setPaymentDialogOpen(true);
+              }} 
+            />
           )}
 
           {files.length === 0 ? (
@@ -68,6 +75,7 @@ const Files: React.FC = () => {
           planName="Pro"
           planPrice="₹999"
           onSuccess={handlePaymentSuccess}
+          paymentMethod={selectedPaymentMethod}
         />
       )}
       

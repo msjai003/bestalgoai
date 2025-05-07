@@ -1,12 +1,19 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, IndianRupee } from "lucide-react";
+import { Download, Lock, IndianRupee, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuGroup, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface FileItemProps {
   id: number;
@@ -37,6 +44,7 @@ const FileItem = ({
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [hasJustPaid, setHasJustPaid] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>("razorpay");
 
   // Check if user has already paid for this premium file
   useEffect(() => {
@@ -62,11 +70,17 @@ const FileItem = ({
   const isPremiumFile = is_premium;
   const canDownload = hasJustPaid || hasPaid || hasPremium || !isPremiumFile;
 
+  const handlePaymentClick = () => {
+    // Open the dropdown instead of directly showing payment dialog
+    if (isPremiumFile && !hasPremium && !hasJustPaid && !hasPaid) {
+      setPaymentDialogOpen(true);
+    }
+  };
+
   const handleDownload = async () => {
     // For premium files, check payment status
     if (isPremiumFile && !hasPremium && !hasJustPaid && !hasPaid) {
-      // Show payment dialog for premium files if user doesn't have premium and hasn't paid
-      setPaymentDialogOpen(true);
+      // Show payment options dropdown
       return;
     }
     
@@ -138,27 +152,62 @@ const FileItem = ({
           </div>
           <span className="text-sm text-gray-400">{size}</span>
         </div>
-        <Button
-          onClick={handleDownload}
-          variant="ghost"
-          size="sm"
-          className={`${!canDownload ? 'text-purple-400 hover:text-purple-300 hover:bg-transparent' : 'text-cyan hover:text-cyan hover:bg-transparent'}`}
-          disabled={downloadingId === id}
-        >
-          {downloadingId === id ? (
-            <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
-          ) : (
-            !canDownload ? (
-              <div className="flex items-center">
-                <IndianRupee className="h-4 w-4 mr-1" />
-                <span>1</span>
-                <Lock className="h-4 w-4 ml-1" />
-              </div>
+        
+        {!canDownload ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-purple-400 hover:text-purple-300 hover:bg-transparent"
+              >
+                <div className="flex items-center">
+                  <IndianRupee className="h-4 w-4 mr-1" />
+                  <span>1</span>
+                  <Lock className="h-4 w-4 ml-1" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-charcoalSecondary border border-gray-700 text-white">
+              <DropdownMenuGroup>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setPaymentMethod("razorpay");
+                    setPaymentDialogOpen(true);
+                  }}
+                  className="hover:bg-charcoalPrimary/50"
+                >
+                  <CreditCard className="mr-2 h-4 w-4 text-purple-400" />
+                  <span>Pay with Razorpay</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setPaymentMethod("card");
+                    setPaymentDialogOpen(true);
+                  }}
+                  className="hover:bg-charcoalPrimary/50"
+                >
+                  <CreditCard className="mr-2 h-4 w-4 text-cyan" />
+                  <span>Pay with Card</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button
+            onClick={handleDownload}
+            variant="ghost"
+            size="sm"
+            className="text-cyan hover:text-cyan hover:bg-transparent"
+            disabled={downloadingId === id}
+          >
+            {downloadingId === id ? (
+              <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
             ) : (
               <Download className="h-5 w-5" />
-            )
-          )}
-        </Button>
+            )}
+          </Button>
+        )}
       </div>
       
       {paymentDialogOpen && (
@@ -168,6 +217,7 @@ const FileItem = ({
           planName="File Access"
           planPrice="₹1"
           onSuccess={handlePaymentSuccess}
+          paymentMethod={paymentMethod}
         />
       )}
     </>
