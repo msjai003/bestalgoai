@@ -35,6 +35,7 @@ const FileItem = ({
   const handleDownload = async () => {
     // For ZIP files, always check premium status
     if (isPremiumFile && !hasPremium) {
+      // Always show payment dialog for ZIP files if user doesn't have premium
       setPaymentDialogOpen(true);
       return;
     }

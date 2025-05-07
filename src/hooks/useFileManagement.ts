@@ -91,12 +91,8 @@ export function useFileManagement(userId?: string) {
       
       setFiles(formattedFiles);
       
-      // Find if there are any ZIP files at all
-      const zipFiles = formattedFiles.filter(file => file.type === 'zip');
-      if (zipFiles.length > 0 && !isPremium) {
-        setSelectedFile(zipFiles[0]);
-        setPaymentDialogOpen(true);
-      }
+      // No longer automatically opening payment dialog when files load
+      // This ensures users can only download ZIP files after payment
     } catch (error) {
       console.error("Exception fetching files:", error);
       toast({
