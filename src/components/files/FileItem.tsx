@@ -77,7 +77,10 @@ const FileItem = ({
             <span>Downloading...</span>
           </div>
         ) : (
-          <Download className="h-4 w-4" />
+          <>
+            <Download className="h-4 w-4 mr-1" />
+            <span>Download</span>
+          </>
         )}
       </Button>
     </div>
