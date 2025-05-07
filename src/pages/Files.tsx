@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -9,6 +8,7 @@ import FileItem from "@/components/files/FileItem";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { useAuth } from "@/contexts/AuthContext";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
+import { Button } from "@/components/ui/button";
 
 interface FileItem {
   id: number;
