@@ -100,17 +100,6 @@ const Files = () => {
     }
   };
 
-  const getBucketDisplayName = (bucketId: string) => {
-    switch (bucketId) {
-      case STORAGE_BUCKETS.APP_FILES:
-        return "Document Files";
-      case STORAGE_BUCKETS.EXE_FILES:
-        return "Executable Files";
-      default:
-        return bucketId;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="bg-charcoalPrimary min-h-screen">
