@@ -55,11 +55,11 @@ const FileItem = ({
   };
 
   return (
-    <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0">
-      <div className="flex items-center">
-        <div>
-          <h3 className="text-white font-medium">{name}</h3>
-          <div className="flex space-x-3 text-xs text-gray-400">
+    <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+      <div className="flex items-center overflow-hidden">
+        <div className="truncate">
+          <h3 className="text-white font-medium truncate">{name}</h3>
+          <div className="text-xs text-gray-400">
             <span>{size}</span>
           </div>
         </div>
@@ -68,7 +68,7 @@ const FileItem = ({
         onClick={handleDownload}
         variant="outline"
         size="sm"
-        className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary"
+        className="text-cyan border-cyan hover:bg-cyan hover:text-charcoalPrimary min-w-[110px] whitespace-nowrap"
         disabled={downloadingId === id}
       >
         {downloadingId === id ? (
