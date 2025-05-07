@@ -1,10 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, Lock, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FileItemProps {
   id: number;
@@ -15,6 +17,7 @@ interface FileItemProps {
   created_at: string;
   bucket: string;
   hasPremium: boolean;
+  is_premium: boolean;
 }
 
 const FileItem = ({
@@ -26,19 +29,43 @@ const FileItem = ({
   created_at,
   bucket,
   hasPremium,
+  is_premium,
 }: FileItemProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [hasJustPaid, setHasJustPaid] = useState(false);
+  const [hasPaid, setHasPaid] = useState(false);
 
-  const isPremiumFile = type === 'zip';
-  const canDownload = hasJustPaid || hasPremium || !isPremiumFile;
+  // Check if user has already paid for this premium file
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (user && is_premium) {
+        const { data } = await supabase
+          .from('user_file_payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('file_id', id)
+          .eq('status', 'completed')
+          .maybeSingle();
+        
+        if (data) {
+          setHasPaid(true);
+        }
+      }
+    };
+    
+    checkPaymentStatus();
+  }, [user, id, is_premium]);
+
+  const isPremiumFile = is_premium;
+  const canDownload = hasJustPaid || hasPaid || hasPremium || !isPremiumFile;
 
   const handleDownload = async () => {
-    // For ZIP files, check premium status
-    if (isPremiumFile && !hasPremium && !hasJustPaid) {
-      // Show payment dialog for ZIP files if user doesn't have premium and hasn't just paid
+    // For premium files, check payment status
+    if (isPremiumFile && !hasPremium && !hasJustPaid && !hasPaid) {
+      // Show payment dialog for premium files if user doesn't have premium and hasn't paid
       setPaymentDialogOpen(true);
       return;
     }
@@ -65,15 +92,36 @@ const FileItem = ({
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setPaymentDialogOpen(false);
     setHasJustPaid(true);
     
-    toast({
-      title: "Payment Successful",
-      description: `${name} is now available for download.`,
-      variant: "default",
-    });
+    // Record the payment in the database
+    if (user) {
+      try {
+        await supabase.from('user_file_payments').insert({
+          user_id: user.id,
+          file_id: id,
+          amount: 1.00,
+          status: 'completed'
+        });
+        
+        setHasPaid(true);
+        
+        toast({
+          title: "Payment Successful",
+          description: `${name} is now available for download.`,
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Error recording payment:", error);
+        toast({
+          title: "Error",
+          description: "Payment was processed but couldn't be recorded. Please contact support.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -82,7 +130,7 @@ const FileItem = ({
         <div className="flex flex-col">
           <div className="flex items-center">
             <span className="font-medium text-white">{name}</span>
-            {isPremiumFile && hasJustPaid && (
+            {isPremiumFile && (hasJustPaid || hasPaid) && (
               <Badge variant="success" className="ml-2">
                 Paid
               </Badge>

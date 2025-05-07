@@ -663,6 +663,7 @@ export type Database = {
           description: string | null
           driveurl: string
           id: number
+          is_premium: boolean | null
           name: string
           size: string | null
           type: string
@@ -673,6 +674,7 @@ export type Database = {
           description?: string | null
           driveurl: string
           id?: number
+          is_premium?: boolean | null
           name: string
           size?: string | null
           type: string
@@ -683,6 +685,7 @@ export type Database = {
           description?: string | null
           driveurl?: string
           id?: number
+          is_premium?: boolean | null
           name?: string
           size?: string | null
           type?: string
@@ -1534,6 +1537,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_file_payments: {
+        Row: {
+          amount: number
+          file_id: number
+          id: string
+          paid_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          file_id: number
+          id?: string
+          paid_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          file_id?: number
+          id?: string
+          paid_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_file_payments_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "exe_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {

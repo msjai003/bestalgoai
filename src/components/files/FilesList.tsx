@@ -10,6 +10,7 @@ interface FileData {
   type: string;
   url: string;
   bucket: string;
+  is_premium: boolean;
 }
 
 interface FilesListProps {
@@ -31,6 +32,7 @@ const FilesList: React.FC<FilesListProps> = ({ files, hasPremium }) => {
           created_at={file.created_at}
           bucket={file.bucket}
           hasPremium={hasPremium}
+          is_premium={file.is_premium}
         />
       ))}
     </div>

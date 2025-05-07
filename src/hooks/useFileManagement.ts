@@ -12,6 +12,7 @@ interface FileItem {
   type: string;
   url: string;
   bucket: string;
+  is_premium: boolean;
 }
 
 export function useFileManagement(userId?: string) {
@@ -85,7 +86,8 @@ export function useFileManagement(userId?: string) {
             created_at: file.created_at,
             type: fileType,
             url: file.driveurl,
-            bucket: "trading_files"
+            bucket: "trading_files",
+            is_premium: file.is_premium || false
           };
         });
       
@@ -116,8 +118,8 @@ export function useFileManagement(userId?: string) {
     }, 5000);
   };
 
-  // Check if there are ZIP files that should be premium-only
-  const hasZipFiles = files.some(file => file.type === 'zip');
+  // Check if there are premium files
+  const hasPremiumFiles = files.some(file => file.is_premium);
 
   return {
     files,
@@ -128,7 +130,7 @@ export function useFileManagement(userId?: string) {
     showSuccessImage,
     setShowSuccessImage,
     selectedFile,
-    hasZipFiles,
+    hasPremiumFiles,
     handlePaymentSuccess
   };
 }

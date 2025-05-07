@@ -21,7 +21,7 @@ const Files: React.FC = () => {
     setPaymentDialogOpen, 
     showSuccessImage, 
     setShowSuccessImage, 
-    hasZipFiles, 
+    hasPremiumFiles, 
     handlePaymentSuccess 
   } = useFileManagement(user?.id);
 
@@ -42,7 +42,7 @@ const Files: React.FC = () => {
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
           {/* Premium features notice for users without premium */}
-          {hasZipFiles && !hasPremium && (
+          {hasPremiumFiles && !hasPremium && (
             <PremiumBanner onUpgradeClick={() => setPaymentDialogOpen(true)} />
           )}
 
