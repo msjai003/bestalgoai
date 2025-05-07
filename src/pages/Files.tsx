@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { FileArchive, Loader } from "lucide-react";
+import { FileArchive, Loader, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import {
@@ -12,7 +12,15 @@ import {
   TabsTrigger
 } from "@/components/ui/tabs";
 import { STORAGE_BUCKETS } from "@/utils/storageUtils";
-import FileItem from "@/components/files/FileItem";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface FileItem {
   id: string;
@@ -91,6 +99,25 @@ const Files = () => {
     }
   };
 
+  const handleDownload = (file: FileItem) => {
+    try {
+      // Open Google Drive link in a new tab
+      window.open(file.url, '_blank');
+      
+      toast({
+        title: "Download started",
+        description: `${file.name} is being downloaded from Google Drive.`,
+      });
+    } catch (error) {
+      console.error("Error during download:", error);
+      toast({
+        title: "Download failed",
+        description: "Could not open the download link. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-charcoalPrimary min-h-screen">
@@ -139,13 +166,41 @@ const Files = () => {
                     <p className="text-gray-400">Check back later for available files</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                    {files.map((file) => (
-                      <FileItem 
-                        key={file.id}
-                        {...file}
-                      />
-                    ))}
+                  <div className="w-full overflow-auto">
+                    <Table className="w-full">
+                      <TableHeader className="bg-charcoalPrimary">
+                        <TableRow>
+                          <TableHead className="text-gray-300">Name</TableHead>
+                          <TableHead className="text-gray-300">Size</TableHead>
+                          <TableHead className="text-gray-300 text-right">Download</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {files.map((file) => (
+                          <TableRow 
+                            key={file.id}
+                            className="border-b border-gray-800 hover:bg-charcoalPrimary/30"
+                          >
+                            <TableCell className="font-medium text-white">
+                              {file.name}
+                            </TableCell>
+                            <TableCell className="text-gray-400">
+                              {file.size}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                onClick={() => handleDownload(file)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-cyan hover:bg-transparent"
+                              >
+                                <Download className="h-5 w-5" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </div>
