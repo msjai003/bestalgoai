@@ -1,191 +1,168 @@
 
 import React, { useState, useEffect } from "react";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { FileArchive, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Download } from "lucide-react";
-import { STORAGE_BUCKETS, listFiles, getFileUrl } from "@/utils/storageUtils";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FileUploadDialog from "@/components/files/FileUploadDialog";
+import { supabase } from "@/lib/supabase/client";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
+import { STORAGE_BUCKETS, formatFileSize } from "@/utils/storageUtils";
+import FileItem from "@/components/files/FileItem";
+
+interface FileItem {
+  id: string;
+  name: string;
+  size: string;
+  created_at: string;
+  type: string;
+  url: string;
+  bucket: string;
+}
 
 const Files = () => {
   const { toast } = useToast();
-  const [documentFiles, setDocumentFiles] = useState<any[]>([]);
-  const [appFiles, setAppFiles] = useState<any[]>([]);
-  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
-  const [isLoadingApps, setIsLoadingApps] = useState(true);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedBucket, setSelectedBucket] = useState(STORAGE_BUCKETS.APP_FILES);
-
-  const fetchFiles = async () => {
-    try {
-      setIsLoadingDocs(true);
-      const { data: docFiles, error: docError } = await listFiles(STORAGE_BUCKETS.APP_FILES);
-      
-      if (docError) {
-        console.error("Error fetching document files:", docError);
-        toast({
-          title: "Error",
-          description: "Failed to load document files. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        setDocumentFiles(docFiles || []);
-      }
-      
-      setIsLoadingDocs(false);
-      
-      setIsLoadingApps(true);
-      const { data: exeFiles, error: exeError } = await listFiles(STORAGE_BUCKETS.EXE_FILES);
-      
-      if (exeError) {
-        console.error("Error fetching application files:", exeError);
-        toast({
-          title: "Error",
-          description: "Failed to load application files. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        setAppFiles(exeFiles || []);
-      }
-      
-      setIsLoadingApps(false);
-    } catch (error) {
-      console.error("Error in fetchFiles:", error);
-      setIsLoadingDocs(false);
-      setIsLoadingApps(false);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading files.",
-        variant: "destructive",
-      });
-    }
-  };
 
   useEffect(() => {
     fetchFiles();
-  }, []);
+  }, [selectedBucket]);
 
-  const handleOpenUploadDialog = (bucketId: string) => {
-    setSelectedBucket(bucketId);
-    setUploadDialogOpen(true);
-  };
-
-  const handleFileUploadSuccess = () => {
-    fetchFiles();
-  };
-
-  const downloadFile = (fileName: string, bucketId: string) => {
+  const fetchFiles = async () => {
     try {
-      const fileUrl = getFileUrl(fileName, bucketId);
-      window.open(fileUrl, "_blank");
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .storage
+        .from(selectedBucket)
+        .list();
+      
+      if (error) {
+        console.error("Error fetching files:", error);
+        toast({
+          title: "Error fetching files",
+          description: "Could not load file list. Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Filter out folders (.emptyFolders)
+      const actualFiles = data?.filter(item => !item.id.includes('.emptyFolders')) || [];
+      
+      // Get URLs for each file
+      const filesWithUrls = await Promise.all(actualFiles.map(async (file) => {
+        const { data: urlData } = supabase
+          .storage
+          .from(selectedBucket)
+          .getPublicUrl(file.name);
+          
+        // Get file type
+        let fileType = 'unknown';
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        
+        if (extension === 'pdf') fileType = 'pdf';
+        else if (['doc', 'docx'].includes(extension || '')) fileType = 'docx';
+        else if (['zip', 'rar', '7z'].includes(extension || '')) fileType = 'zip';
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) fileType = 'image';
+        else if (['exe', 'msi'].includes(extension || '')) fileType = 'exe';
+        
+        // Format size
+        const formattedSize = formatFileSize(file.metadata?.size || 0);
+        
+        return {
+          id: file.id,
+          name: file.name,
+          size: formattedSize,
+          created_at: file.created_at,
+          type: fileType,
+          url: urlData.publicUrl,
+          bucket: selectedBucket
+        };
+      }));
+      
+      setFiles(filesWithUrls);
     } catch (error) {
-      console.error("Error downloading file:", error);
+      console.error("Exception fetching files:", error);
       toast({
-        title: "Download Error",
-        description: "Failed to download the file. Please try again.",
+        title: "Error fetching files",
+        description: "Could not load file list. Please try again later.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const renderFileGrid = (files: any[], bucketId: string, isLoading: boolean) => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-center p-10">
-          <div className="h-6 w-6 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
-          <span className="ml-2">Loading files...</span>
-        </div>
-      );
-    }
-
-    if (files.length === 0) {
-      return (
-        <div className="text-center py-8 text-gray-400">
-          <p>No files found</p>
-          <Button 
-            onClick={() => handleOpenUploadDialog(bucketId)}
-            className="mt-4 bg-cyan text-charcoalPrimary hover:bg-cyan/90"
-          >
-            Upload File
-          </Button>
-        </div>
-      );
-    }
-
+  if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
-        {files.map((file) => (
-          <div 
-            key={file.name} 
-            className="bg-charcoalSecondary rounded-lg p-4 flex flex-col items-center justify-center hover:bg-charcoalSecondary/80 transition-colors cursor-pointer"
-            onClick={() => downloadFile(file.name, bucketId)}
-          >
-            <Download className="h-8 w-8 text-cyan mb-2" />
-            <span className="text-xs text-center text-gray-400 truncate w-full">{file.name}</span>
+      <div className="bg-charcoalPrimary min-h-screen">
+        <Header />
+        <main className="pt-16 pb-20 px-4 flex items-center justify-center">
+          <div className="text-center">
+            <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+            <p className="text-gray-300">Loading files...</p>
           </div>
-        ))}
-        <div 
-          className="bg-charcoalSecondary bg-opacity-30 rounded-lg p-4 flex flex-col items-center justify-center border border-dashed border-gray-700 hover:border-cyan hover:bg-charcoalSecondary/50 transition-colors cursor-pointer"
-          onClick={() => handleOpenUploadDialog(bucketId)}
-        >
-          <div className="h-8 w-8 rounded-full border-2 border-gray-500 flex items-center justify-center mb-2">
-            <span className="text-gray-500 text-lg">+</span>
-          </div>
-          <span className="text-xs text-center text-gray-500">Upload New</span>
-        </div>
+        </main>
+        <BottomNav />
       </div>
     );
-  };
+  }
 
   return (
-    <div className="container mx-auto px-4 pt-8 pb-24">
-      <h1 className="text-2xl font-semibold mb-6">Files</h1>
-      
-      <Tabs defaultValue="documents" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="applications">Applications</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="documents" className="mt-4">
-          <div className="bg-charcoalPrimary rounded-lg border border-gray-800">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-              <h2 className="text-lg font-medium">Document Files</h2>
-              <Button 
-                onClick={() => handleOpenUploadDialog(STORAGE_BUCKETS.APP_FILES)}
-                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90"
-                size="sm"
-              >
-                Upload
-              </Button>
-            </div>
-            {renderFileGrid(documentFiles, STORAGE_BUCKETS.APP_FILES, isLoadingDocs)}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="applications" className="mt-4">
-          <div className="bg-charcoalPrimary rounded-lg border border-gray-800">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-              <h2 className="text-lg font-medium">Application Files</h2>
-              <Button 
-                onClick={() => handleOpenUploadDialog(STORAGE_BUCKETS.EXE_FILES)}
-                className="bg-cyan text-charcoalPrimary hover:bg-cyan/90"
-                size="sm"
-              >
-                Upload
-              </Button>
-            </div>
-            {renderFileGrid(appFiles, STORAGE_BUCKETS.EXE_FILES, isLoadingApps)}
-          </div>
-        </TabsContent>
-      </Tabs>
-      
-      <FileUploadDialog
-        open={uploadDialogOpen}
-        onOpenChange={setUploadDialogOpen}
-        bucketId={selectedBucket}
-        onSuccess={handleFileUploadSuccess}
-      />
+    <div className="bg-charcoalPrimary min-h-screen">
+      <Header />
+      <main className="pt-16 pb-20 px-4">
+        <div className="mt-4 mb-6">
+          <h1 className="text-2xl font-semibold text-white">Files</h1>
+          <p className="text-gray-400 mt-1">Download trading resources and templates</p>
+        </div>
+
+        <Tabs 
+          defaultValue={STORAGE_BUCKETS.APP_FILES}
+          value={selectedBucket}
+          onValueChange={setSelectedBucket}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value={STORAGE_BUCKETS.APP_FILES} className="data-[state=active]:text-cyan">
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value={STORAGE_BUCKETS.EXE_FILES} className="data-[state=active]:text-cyan">
+              Applications
+            </TabsTrigger>
+          </TabsList>
+
+          {[STORAGE_BUCKETS.APP_FILES, STORAGE_BUCKETS.EXE_FILES].map((bucketId) => (
+            <TabsContent key={bucketId} value={bucketId} className="mt-0">
+              <div className="bg-charcoalSecondary rounded-lg p-4">
+                {files.length === 0 ? (
+                  <div className="text-center py-8 flex flex-col items-center justify-center">
+                    <FileArchive className="h-12 w-12 mb-3 text-gray-500" />
+                    <p className="text-gray-400">Check back later for available files</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                    {files.map((file) => (
+                      <FileItem 
+                        key={file.id}
+                        {...file}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </main>
+      <BottomNav />
     </div>
   );
 };
