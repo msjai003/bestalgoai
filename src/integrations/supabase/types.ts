@@ -664,7 +664,7 @@ export type Database = {
           description: string | null
           file_type: string
           google_drive_url: string
-          id: string
+          id: number
           name: string
           size_display: string | null
           updated_at: string
@@ -675,7 +675,7 @@ export type Database = {
           description?: string | null
           file_type: string
           google_drive_url: string
-          id?: string
+          id?: number
           name: string
           size_display?: string | null
           updated_at?: string
@@ -686,7 +686,7 @@ export type Database = {
           description?: string | null
           file_type?: string
           google_drive_url?: string
-          id?: string
+          id?: number
           name?: string
           size_display?: string | null
           updated_at?: string

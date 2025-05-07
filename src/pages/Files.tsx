@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface FileItem {
-  id: string;
+  id: number; // Changed from string to number
   name: string;
   size: string;
   created_at: string;
@@ -76,7 +76,7 @@ const Files = () => {
         else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
         
         return {
-          id: file.id,
+          id: file.id, // Now returning a number
           name: file.name,
           size: file.size_display || 'Unknown size',
           created_at: file.created_at,
