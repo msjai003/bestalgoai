@@ -140,7 +140,7 @@ const FileItem = ({
               className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
             >
               <DollarSign className="h-4 w-4 mr-1" />
-              Unlock
+              Unlock (₹299)
             </Button>
           </DialogTrigger>
           <PaymentDialog
