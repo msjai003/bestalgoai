@@ -15,7 +15,7 @@ const PremiumBanner: React.FC = () => {
       <div className="mt-3 sm:mt-0">
         <div className="flex items-center text-cyan-400 text-sm">
           <CreditCard className="h-4 w-4 mr-1" />
-          <span>Click "Unlock" to purchase individual files for just ₹1</span>
+          <span>Click "Unlock" to purchase individual files</span>
         </div>
       </div>
     </div>
