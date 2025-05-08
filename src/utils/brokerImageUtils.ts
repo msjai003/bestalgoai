@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -174,6 +173,15 @@ export const getBrokerImageUrl = async (
       return `${bigulImage}?_t=${timestamp}`;
     }
     
+    // Special case for AliceBlue (broker ID 9)
+    if (brokerId === 9) {
+      const aliceBlueImage = "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png";
+      console.log("Using custom AliceBlue logo:", aliceBlueImage);
+      // Add cache busting parameter
+      const timestamp = new Date().getTime();
+      return `${aliceBlueImage}?_t=${timestamp}`;
+    }
+    
     // Get additional cache-busting seed from localStorage if available
     const refreshSeed = localStorage.getItem('broker_image_refresh') || '';
     
@@ -296,6 +304,11 @@ export const getBrokerImageUrl = async (
       return "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png?_t=" + new Date().getTime();
     }
     
+    // Special case for AliceBlue when there's an error
+    if (brokerId === 9) {
+      return "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png?_t=" + new Date().getTime();
+    }
+    
     return null;
   }
 };
@@ -381,6 +394,8 @@ export const getDefaultBrokerImage = (brokerId: number): string => {
       return "/lovable-uploads/e24c22b3-8f90-4b78-8f3f-b0100b2654bc.png";
     case 8: // Bigul
       return "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
+    case 9: // AliceBlue
+      return "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png";
     default:
       return `https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${Math.floor(Math.random() * 8) + 1}.jpg`;
   }

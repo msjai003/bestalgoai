@@ -139,7 +139,7 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
         }
         
         if (broker.id === 9) {
-          const aliceBlueImage = "/lovable-uploads/aliceblue_logo.png";
+          const aliceBlueImage = "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png";
           console.log("Using direct AliceBlue image:", aliceBlueImage);
           setImageUrl(`${aliceBlueImage}?_t=${timestamp}&retry=${retryCount}`);
           setIsLoading(false);

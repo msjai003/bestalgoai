@@ -210,7 +210,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "order_placement",
     function_enabled: true,
     is_premium: false,
-    image_url: "/lovable-uploads/aliceblue_logo.png"
+    image_url: "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png"
   },
   {
     id: "9-portfolio_tracking",
@@ -221,7 +221,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "portfolio_tracking",
     function_enabled: true,
     is_premium: false,
-    image_url: "/lovable-uploads/aliceblue_logo.png"
+    image_url: "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png"
   },
   {
     id: "9-fund_management",
@@ -232,7 +232,7 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_slug: "fund_management",
     function_enabled: true,
     is_premium: false,
-    image_url: "/lovable-uploads/aliceblue_logo.png"
+    image_url: "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png"
   }
 ];
 
@@ -403,7 +403,7 @@ export const getBrokerImage = async (
   
   // Special case for AliceBlue (broker ID 9)
   if (brokerId === 9) {
-    const aliceBlueImage = "/lovable-uploads/aliceblue_logo.png";
+    const aliceBlueImage = "/lovable-uploads/2567e0d9-3d2d-4f05-ad13-a6d081e8ae97.png";
     brokerImageCache[brokerId] = aliceBlueImage;
     return aliceBlueImage;
   }
