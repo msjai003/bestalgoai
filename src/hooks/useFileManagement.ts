@@ -101,6 +101,32 @@ export function useFileManagement(userId?: string) {
     }
   };
 
+  // Function to record a file payment
+  const recordFilePayment = async (fileId: number) => {
+    if (!userId) return false;
+    
+    try {
+      const { error } = await supabase
+        .from('user_file_payments')
+        .insert({
+          user_id: userId,
+          file_id: fileId,
+          status: 'completed',
+          amount: 299
+        });
+      
+      if (error) {
+        console.error("Error recording file payment:", error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Exception recording file payment:", error);
+      return false;
+    }
+  };
+
   // Check if there are premium files
   const hasPremiumFiles = files.some(file => file.is_premium);
 
@@ -108,6 +134,7 @@ export function useFileManagement(userId?: string) {
     files,
     isLoading,
     hasPremium,
-    hasPremiumFiles
+    hasPremiumFiles,
+    recordFilePayment
   };
 }

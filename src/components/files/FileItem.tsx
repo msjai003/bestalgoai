@@ -1,11 +1,13 @@
 
 import React, { useState } from "react";
-import { Download } from "lucide-react";
+import { Download, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import PaymentDialog from "@/components/subscription/PaymentDialog";
 
 interface FileItemProps {
   id: number;
@@ -34,6 +36,7 @@ const FileItem = ({
   const { user } = useAuth();
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
+  const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
 
   // Check if user has already paid for this premium file
   React.useEffect(() => {
@@ -81,6 +84,15 @@ const FileItem = ({
     }
   };
 
+  const handlePaymentSuccess = () => {
+    setHasPaid(true);
+    setOpenPaymentDialog(false);
+    toast({
+      title: "Payment successful",
+      description: `You can now download ${name}`,
+    });
+  };
+
   return (
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col">
@@ -110,14 +122,26 @@ const FileItem = ({
           )}
         </Button>
       ) : (
-        <Button
-          variant="ghost"
-          size="sm" 
-          disabled={true}
-          className="text-gray-500 hover:bg-transparent cursor-not-allowed"
-        >
-          <Download className="h-5 w-5" />
-        </Button>
+        <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Buy
+            </Button>
+          </DialogTrigger>
+          <PaymentDialog
+            open={openPaymentDialog}
+            onOpenChange={setOpenPaymentDialog}
+            planName={`File: ${name}`}
+            planPrice="₹299"
+            onSuccess={handlePaymentSuccess}
+            paymentMethod="razorpay"
+          />
+        </Dialog>
       )}
     </div>
   );
