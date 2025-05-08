@@ -140,14 +140,14 @@ const FileItem = ({
               className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
             >
               <DollarSign className="h-4 w-4 mr-1" />
-              Unlock (₹299)
+              Unlock (₹1)
             </Button>
           </DialogTrigger>
           <PaymentDialog
             open={openPaymentDialog}
             onOpenChange={setOpenPaymentDialog}
             planName={`File: ${name}`}
-            planPrice="₹299"
+            planPrice="₹1"
             onSuccess={handlePaymentSuccess}
             paymentMethod="razorpay"
             fileId={id}
