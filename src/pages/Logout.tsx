@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Home } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -53,9 +53,9 @@ const Logout = () => {
             
             <Link to="/" className="block">
               <Button 
-                variant="secondary" 
+                variant="cyan"
                 size="lg"
-                className="w-full py-6 text-base font-medium hover:bg-white/90 group transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full py-6 text-base font-medium hover:bg-cyan/90 group transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Home className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                 <span>Return to Home</span>
