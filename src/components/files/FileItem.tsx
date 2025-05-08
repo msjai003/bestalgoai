@@ -37,11 +37,15 @@ const FileItem = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+  
+  // Make zip files premium by default
+  const isZipFile = type === "zip" || name.toLowerCase().endsWith('.zip');
+  const isPremiumFile = is_premium || isZipFile;
 
   // Check if user has already paid for this premium file
   React.useEffect(() => {
     const checkPaymentStatus = async () => {
-      if (user && is_premium) {
+      if (user && isPremiumFile) {
         const { data } = await supabase
           .from('user_file_payments')
           .select('*')
@@ -57,9 +61,9 @@ const FileItem = ({
     };
     
     checkPaymentStatus();
-  }, [user, id, is_premium]);
+  }, [user, id, isPremiumFile]);
 
-  const canDownload = hasPremium || !is_premium || hasPaid;
+  const canDownload = hasPremium || !isPremiumFile || hasPaid;
 
   const handleDownload = async () => {
     setDownloadingId(id);
@@ -98,13 +102,13 @@ const FileItem = ({
       <div className="flex flex-col">
         <div className="flex items-center">
           <span className="font-medium text-white">{name}</span>
-          {is_premium && !canDownload && (
+          {isPremiumFile && !canDownload && (
             <Badge variant="destructive" className="ml-2">
               <Lock className="h-3 w-3 mr-1" />
               Locked
             </Badge>
           )}
-          {is_premium && hasPaid && (
+          {isPremiumFile && hasPaid && (
             <Badge variant="success" className="ml-2">
               Paid
             </Badge>
@@ -146,6 +150,7 @@ const FileItem = ({
             planPrice="₹299"
             onSuccess={handlePaymentSuccess}
             paymentMethod="razorpay"
+            fileId={id}
           />
         </Dialog>
       )}

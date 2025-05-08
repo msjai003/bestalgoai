@@ -9,7 +9,7 @@ const PremiumBanner: React.FC = () => {
         <Lock className="h-6 w-6 text-purple-400 mr-3" />
         <div>
           <h3 className="text-white font-medium">Premium Content Available</h3>
-          <p className="text-gray-300 text-sm">Some files are locked and require payment to unlock</p>
+          <p className="text-gray-300 text-sm">ZIP files and premium content are locked and require payment to unlock</p>
         </div>
       </div>
       <div className="mt-3 sm:mt-0">

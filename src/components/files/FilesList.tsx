@@ -19,9 +19,15 @@ interface FilesListProps {
 }
 
 const FilesList: React.FC<FilesListProps> = ({ files, hasPremium }) => {
+  // Mark zip files as premium
+  const enhancedFiles = files.map(file => ({
+    ...file,
+    is_premium: file.is_premium || file.type === "zip" || file.name.toLowerCase().endsWith('.zip')
+  }));
+
   return (
     <div className="space-y-1">
-      {files.map((file) => (
+      {enhancedFiles.map((file) => (
         <FileItem
           key={file.id}
           id={file.id}
