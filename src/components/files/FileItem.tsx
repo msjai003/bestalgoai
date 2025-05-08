@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +97,38 @@ const FileItem = ({
     });
   };
 
+  const handleLockFile = async () => {
+    if (!user) return;
+    
+    try {
+      // Delete the payment record for this file
+      const { error } = await supabase
+        .from('user_file_payments')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('file_id', id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      setHasPaid(false);
+      
+      toast({
+        title: "File locked",
+        description: `${name} has been locked again.`,
+      });
+    } catch (error) {
+      console.error("Error locking file:", error);
+      toast({
+        title: "Error",
+        description: "Could not lock the file. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col">
@@ -117,43 +149,58 @@ const FileItem = ({
         <span className="text-sm text-gray-400">{size}</span>
       </div>
       
-      {canDownload ? (
-        <Button
-          onClick={handleDownload}
-          variant="ghost"
-          size="sm"
-          className="text-cyan hover:text-cyan hover:bg-transparent"
-          disabled={downloadingId === id}
-        >
-          {downloadingId === id ? (
-            <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
-          ) : (
-            <Download className="h-5 w-5" />
-          )}
-        </Button>
-      ) : (
-        <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
-            >
-              <Lock className="h-4 w-4 mr-1" />
-              Unlock
-            </Button>
-          </DialogTrigger>
-          <PaymentDialog
-            open={openPaymentDialog}
-            onOpenChange={setOpenPaymentDialog}
-            planName={`File: ${name}`}
-            planPrice="₹1"
-            onSuccess={handlePaymentSuccess}
-            paymentMethod="razorpay"
-            fileId={id}
-          />
-        </Dialog>
-      )}
+      {/* Show different buttons based on the file's status */}
+      <div className="flex items-center gap-2">
+        {hasPaid && (
+          <Button
+            onClick={handleLockFile}
+            variant="ghost"
+            size="sm"
+            className="text-red-400 hover:text-red-500 hover:bg-transparent"
+            title="Lock file again"
+          >
+            <Lock className="h-5 w-5" />
+          </Button>
+        )}
+        
+        {canDownload ? (
+          <Button
+            onClick={handleDownload}
+            variant="ghost"
+            size="sm"
+            className="text-cyan hover:text-cyan hover:bg-transparent"
+            disabled={downloadingId === id}
+          >
+            {downloadingId === id ? (
+              <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Download className="h-5 w-5" />
+            )}
+          </Button>
+        ) : (
+          <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
+              >
+                <Lock className="h-4 w-4 mr-1" />
+                Unlock
+              </Button>
+            </DialogTrigger>
+            <PaymentDialog
+              open={openPaymentDialog}
+              onOpenChange={setOpenPaymentDialog}
+              planName={`File: ${name}`}
+              planPrice="₹1"
+              onSuccess={handlePaymentSuccess}
+              paymentMethod="razorpay"
+              fileId={id}
+            />
+          </Dialog>
+        )}
+      </div>
     </div>
   );
 };
