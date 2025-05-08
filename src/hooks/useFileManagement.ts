@@ -112,7 +112,7 @@ export function useFileManagement(userId?: string) {
           user_id: userId,
           file_id: fileId,
           status: 'completed',
-          amount: 299
+          amount: 1 // Changed from 299 to 1
         });
       
       if (error) {
