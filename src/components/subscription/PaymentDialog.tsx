@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -11,10 +10,11 @@ import { Button } from "@/components/ui/button";
 import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader, CreditCard } from "lucide-react";
+import { Loader, CreditCard, Lock, Unlock } from "lucide-react";
 import { useAdminConfig } from "@/hooks/useAdminConfig";
 import { supabase } from "@/integrations/supabase/client";
 import PaymentMethodForm from "@/components/subscription/PaymentMethodForm";
+import { useFileManagement } from "@/hooks/useFileManagement";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -25,6 +25,7 @@ interface PaymentDialogProps {
   selectedStrategyId?: number;
   selectedStrategyName?: string | null;
   paymentMethod?: string;
+  fileId?: number;
 }
 
 interface RazorpayConfig {
@@ -42,11 +43,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   onSuccess,
   selectedStrategyId,
   selectedStrategyName,
-  paymentMethod = "razorpay"
+  paymentMethod = "razorpay",
+  fileId
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const { recordFilePayment } = useFileManagement(user?.id);
   
   const { 
     config: razorpayConfig, 
@@ -69,6 +72,16 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     if (!user) return;
     
     try {
+      // If this is a file payment
+      if (fileId && planName.startsWith('File:')) {
+        const success = await recordFilePayment(fileId);
+        if (!success) {
+          throw new Error('Failed to record file payment');
+        }
+        return;
+      }
+      
+      // Otherwise handle regular plan selection
       const { error } = await supabase
         .from('plan_details')
         .insert({
@@ -279,17 +292,23 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle>
-            {paymentMethod === "card" ? "Card Payment" : "Processing Payment"}
+          <DialogTitle className="flex items-center gap-2">
+            {paymentMethod === "card" ? 
+              <>Card Payment</> : 
+              <>Unlock Content <Lock className="h-4 w-4" /></>
+            }
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             {paymentMethod === "card" 
               ? "Enter your card details to complete payment"
-              : (planName === 'Premium' || planPrice === '₹4999' 
-                ? "Connecting to payment gateway to unlock all premium strategies" 
-                : (selectedStrategyName 
-                  ? `Connecting to payment gateway to unlock ${selectedStrategyName}` 
-                  : `Connecting to payment gateway for the ${planName} plan`))
+              : (planName.startsWith('File:')
+                ? `Unlock premium content: ${planName.replace('File:', '').trim()}`
+                : (planName === 'Premium' || planPrice === '₹4999' 
+                  ? "Connecting to payment gateway to unlock all premium strategies" 
+                  : (selectedStrategyName 
+                    ? `Connecting to payment gateway to unlock ${selectedStrategyName}` 
+                    : `Connecting to payment gateway for the ${planName} plan`))
+              )
             }
           </DialogDescription>
         </DialogHeader>

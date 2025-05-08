@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Download, DollarSign } from "lucide-react";
+import { Download, DollarSign, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +98,12 @@ const FileItem = ({
       <div className="flex flex-col">
         <div className="flex items-center">
           <span className="font-medium text-white">{name}</span>
+          {is_premium && !canDownload && (
+            <Badge variant="destructive" className="ml-2">
+              <Lock className="h-3 w-3 mr-1" />
+              Locked
+            </Badge>
+          )}
           {is_premium && hasPaid && (
             <Badge variant="success" className="ml-2">
               Paid
@@ -130,7 +136,7 @@ const FileItem = ({
               className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
             >
               <DollarSign className="h-4 w-4 mr-1" />
-              Buy
+              Unlock
             </Button>
           </DialogTrigger>
           <PaymentDialog

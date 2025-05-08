@@ -35,7 +35,7 @@ const Files: React.FC = () => {
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
           {/* Premium features notice for users without premium */}
-          {hasPremiumFiles && !hasPremium && (
+          {hasPremiumFiles && (
             <PremiumBanner />
           )}
 
