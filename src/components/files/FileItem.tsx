@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FileItemProps {
   id: number;
@@ -37,6 +38,7 @@ const FileItem = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+  const isMobile = useIsMobile();
   
   // Make zip files premium by default
   const isZipFile = type === "zip" || name.toLowerCase().endsWith('.zip');
@@ -129,19 +131,20 @@ const FileItem = ({
     }
   };
 
+  // Render a more compact layout for mobile devices
   return (
-    <div className="flex items-center justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
-      <div className="flex flex-col">
-        <div className="flex items-center">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+      <div className="flex flex-col mb-2 sm:mb-0">
+        <div className="flex items-center flex-wrap gap-1">
           <span className="font-medium text-white">{name}</span>
           {isPremiumFile && !canDownload && (
-            <Badge variant="destructive" className="ml-2">
+            <Badge variant="destructive" className="ml-0 sm:ml-2">
               <Lock className="h-3 w-3 mr-1" />
               Locked
             </Badge>
           )}
           {isPremiumFile && hasPaid && (
-            <Badge variant="success" className="ml-2">
+            <Badge variant="success" className="ml-0 sm:ml-2">
               Paid
             </Badge>
           )}
@@ -150,12 +153,12 @@ const FileItem = ({
       </div>
       
       {/* Show different buttons based on the file's status */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {hasPaid && (
           <Button
             onClick={handleLockFile}
             variant="ghost"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             className="text-red-400 hover:text-red-500 hover:bg-transparent"
             title="Lock file again"
           >
@@ -167,7 +170,7 @@ const FileItem = ({
           <Button
             onClick={handleDownload}
             variant="ghost"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             className="text-cyan hover:text-cyan hover:bg-transparent"
             disabled={downloadingId === id}
           >
@@ -182,8 +185,8 @@ const FileItem = ({
             <DialogTrigger asChild>
               <Button
                 variant="outline"
-                size="sm"
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan"
+                size={isMobile ? "sm" : "sm"}
+                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto"
               >
                 <Lock className="h-4 w-4 mr-1" />
                 Unlock
