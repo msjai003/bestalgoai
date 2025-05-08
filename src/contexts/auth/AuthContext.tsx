@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { useAuthActions } from './useAuthActions';
@@ -67,7 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return { error };
         }
         
-        toast.success('Password updated successfully');
         return { error: null };
       } catch (error: any) {
         console.error('Error updating password:', error);

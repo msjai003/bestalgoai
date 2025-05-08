@@ -129,7 +129,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         
         // Send reset email with a redirect to our reset-password page
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${baseUrl}/auth/v1/callback`
+          redirectTo: `${baseUrl}/reset-password`
         });
         
         if (error) {
