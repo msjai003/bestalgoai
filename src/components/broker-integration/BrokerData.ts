@@ -84,5 +84,15 @@ export const brokers: Broker[] = [
     supportedAssets: ["Stocks", "Options", "Futures", "ETFs"],
     fees: "₹15 per order or 0.03% (whichever is lower)",
     apiRequired: true,
+  },
+  {
+    id: 9,
+    name: "AliceBlue",
+    logo: "/lovable-uploads/aliceblue_logo.png",
+    description: "Feature-rich trading platform with competitive pricing",
+    supportedAssets: ["Stocks", "Options", "Futures", "Commodities", "Currencies"],
+    fees: "₹15 per order flat fee structure",
+    apiRequired: true,
+    requiredInputs: ["api_key", "user_id"]
   }
 ];

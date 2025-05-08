@@ -1,4 +1,3 @@
-
 import { BrokerFunction, BrokerFunctionConfig, BrokerInfocapFunction, BrokerInfocapResponse, GetBrokerFunctionsParams, SaveBrokerFunctionParams } from '@/types/broker';
 import { brokers } from '@/components/broker-integration/BrokerData';
 import { supabase } from '@/integrations/supabase/client';
@@ -200,6 +199,40 @@ const staticBrokerFunctions: BrokerFunction[] = [
     function_enabled: true,
     is_premium: true,
     image_url: "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg"
+  },
+  // AliceBlue functions
+  {
+    id: "9-order_placement",
+    broker_id: 9,
+    broker_name: "AliceBlue",
+    function_name: "Order Placement",
+    function_description: "Place and manage orders seamlessly",
+    function_slug: "order_placement",
+    function_enabled: true,
+    is_premium: false,
+    image_url: "/lovable-uploads/aliceblue_logo.png"
+  },
+  {
+    id: "9-portfolio_tracking",
+    broker_id: 9,
+    broker_name: "AliceBlue",
+    function_name: "Portfolio Tracking",
+    function_description: "Track your investments in real-time",
+    function_slug: "portfolio_tracking",
+    function_enabled: true,
+    is_premium: false,
+    image_url: "/lovable-uploads/aliceblue_logo.png"
+  },
+  {
+    id: "9-fund_management",
+    broker_id: 9,
+    broker_name: "AliceBlue",
+    function_name: "Fund Management",
+    function_description: "Manage your trading funds efficiently",
+    function_slug: "fund_management",
+    function_enabled: true,
+    is_premium: false,
+    image_url: "/lovable-uploads/aliceblue_logo.png"
   }
 ];
 
@@ -366,6 +399,13 @@ export const getBrokerImage = async (
     const bigulImage = "/lovable-uploads/74071c2d-1d0d-4ad9-bad9-ce821097cc5c.png";
     brokerImageCache[brokerId] = bigulImage;
     return bigulImage;
+  }
+  
+  // Special case for AliceBlue (broker ID 9)
+  if (brokerId === 9) {
+    const aliceBlueImage = "/lovable-uploads/aliceblue_logo.png";
+    brokerImageCache[brokerId] = aliceBlueImage;
+    return aliceBlueImage;
   }
   
   // First check cache

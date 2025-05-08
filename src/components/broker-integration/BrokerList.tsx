@@ -1,4 +1,3 @@
-
 import { Search, ChevronRight, Check, AlertCircle, ImageOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Broker } from "@/types/broker";
@@ -139,6 +138,14 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
           return;
         }
         
+        if (broker.id === 9) {
+          const aliceBlueImage = "/lovable-uploads/aliceblue_logo.png";
+          console.log("Using direct AliceBlue image:", aliceBlueImage);
+          setImageUrl(`${aliceBlueImage}?_t=${timestamp}&retry=${retryCount}`);
+          setIsLoading(false);
+          return;
+        }
+        
         const img = await getBrokerImageUrl(broker.id);
         
         console.log(`Image URL result for broker ${broker.id} (${broker.name}):`, img);
@@ -181,7 +188,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
             broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
             broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
             broker.id === 7 || broker.name.toLowerCase().includes('5 paisa') ||
-            broker.id === 8 || broker.name.toLowerCase().includes('bigul')) {
+            broker.id === 8 || broker.name.toLowerCase().includes('bigul') ||
+            broker.id === 9 || broker.name.toLowerCase().includes('aliceblue')) {
           toast.error(`Failed to load ${broker.name} image, using fallback`);
         }
       } finally {
@@ -202,7 +210,8 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
          broker.id === 4 || broker.name.toLowerCase().includes('hdfc') ||
          broker.id === 6 || broker.name.toLowerCase().includes('groww') ||
          broker.id === 7 || broker.name.toLowerCase().includes('5 paisa') ||
-         broker.id === 8 || broker.name.toLowerCase().includes('bigul')) && retryCount < 2) {
+         broker.id === 8 || broker.name.toLowerCase().includes('bigul') ||
+         broker.id === 9 || broker.name.toLowerCase().includes('aliceblue')) && retryCount < 2) {
       console.log(`Retrying ${broker.name} image load, attempt ${retryCount + 1}`);
       setRetryCount(prev => prev + 1);
     } else if (retryCount >= 2) {
