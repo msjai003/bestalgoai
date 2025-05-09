@@ -31,7 +31,6 @@ import StrategySelection from "@/pages/StrategySelection";
 import StrategyDetails from "@/pages/StrategyDetails";
 import StrategyManagement from "@/pages/StrategyManagement";
 import BacktestReport from "@/pages/BacktestReport";
-import ZenflowBacktest from "@/pages/ZenflowBacktest";
 import ZenflowBacktestReport from "@/pages/ZenflowBacktestReport";
 import LiveTrading from "@/pages/LiveTrading";
 import Alerts from "@/pages/Alerts";
@@ -131,12 +130,6 @@ function AppRoutes() {
       <Route path="/backtest-report" element={
         <ProtectedRoute>
           <BacktestReport />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/zenflow-backtest" element={
-        <ProtectedRoute>
-          <ZenflowBacktest />
         </ProtectedRoute>
       } />
       
