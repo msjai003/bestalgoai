@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BookOpen, TrendingUp, Heart, School, Briefcase, Files, BookText } from 'lucide-react';
+import { BookOpen, BarChart, BookText, Workflow, TrendingUp, Heart, School, Briefcase, Files } from 'lucide-react';
 import QuickAccessItem from './QuickAccessItem';
 
 export const QuickAccessSection = () => {
@@ -16,6 +16,13 @@ export const QuickAccessSection = () => {
         />
         
         <QuickAccessItem
+          icon={BarChart}
+          text="Backtest"
+          route="/zenflow-backtest"
+          className=""
+        />
+        
+        <QuickAccessItem
           icon={BookOpen}
           text="Education"
           route="/education"
@@ -26,6 +33,13 @@ export const QuickAccessSection = () => {
           icon={School}
           text="Classes"
           route="/classes"
+          className=""
+        />
+        
+        <QuickAccessItem
+          icon={Workflow}
+          text="Strategies"
+          route="/strategy-selection"
           className=""
         />
         

@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
 import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -122,11 +122,29 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      {/* Redirect backtesting routes to live trading */}
-      <Route path="/backtest" element={<Navigate to="/live-trading" />} />
-      <Route path="/backtest-report" element={<Navigate to="/live-trading" />} />
-      <Route path="/zenflow-backtest" element={<Navigate to="/live-trading" />} />
-      <Route path="/zenflow-backtest-report" element={<Navigate to="/live-trading" />} />
+      <Route path="/backtest" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/backtest-report" element={
+        <ProtectedRoute>
+          <BacktestReport />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/zenflow-backtest" element={
+        <ProtectedRoute>
+          <ZenflowBacktest />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/zenflow-backtest-report" element={
+        <ProtectedRoute>
+          <ZenflowBacktestReport />
+        </ProtectedRoute>
+      } />
       
       <Route path="/live-trading" element={
         <ProtectedRoute>
