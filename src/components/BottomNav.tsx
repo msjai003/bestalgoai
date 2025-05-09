@@ -25,8 +25,6 @@ export const BottomNav = () => {
             isActive={location.pathname === '/strategy-management'}
           />
           
-          {/* Removed Classes navigation */}
-          
           <NavItem 
             to="/live-trading" 
             icon="fa-chart-line" 
