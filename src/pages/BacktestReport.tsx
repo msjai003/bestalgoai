@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,9 @@ import {
   Save,
   Trash,
   ChevronLeft,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ArrowRight,
+  Layers
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
@@ -317,35 +318,19 @@ const BacktestReport = () => {
 
       <main className="pt-16 pb-20 px-4">
         <div className="bg-charcoalSecondary/50 p-1 rounded-xl mt-4 mb-6">
-          <div className="grid grid-cols-1 gap-1">
+          <div className="grid grid-cols-2 gap-1">
             <Link to="/strategy-builder" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
               Strategy Builder
+            </Link>
+            <Link to="/zenflow-backtest" className="text-charcoalTextSecondary py-2 px-4 rounded-lg text-sm font-medium text-center">
+              Zenflow
             </Link>
           </div>
         </div>
 
         {!fileUploaded ? (
           <div className="mt-8">
-            {/* Empty state - removed Zenflow Backtest Tools section */}
-            <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
-              <FileSpreadsheet className="h-12 w-12 text-gray-500 mx-auto mb-3" />
-              <p className="text-charcoalTextSecondary mb-4">Upload a CSV file to analyze backtest results</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={triggerFileInput}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Backtest File
-              </Button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".csv"
-                className="hidden"
-              />
-            </div>
+            {/* Removed the Zenflow Backtest Tools section */}
           </div>
         ) : (
           <>
