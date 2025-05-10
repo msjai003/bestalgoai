@@ -50,13 +50,27 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   }
 
   console.log('Fetched predefined strategies:', data);
-
-  return (data || []).map(strategy => ({
-    ...strategy,
-    performance: strategy.performance as PredefinedStrategy['performance'],
-    parameters: strategy.parameters as PredefinedStrategy['parameters'],
-    strategy_details: strategy.strategy_details as PredefinedStrategy['strategy_details']
-  }));
+  
+  // Make sure to properly parse the strategy_details column
+  return (data || []).map(strategy => {
+    // Parse the strategy details for each strategy
+    let parsedStrategyDetails = strategy.strategy_details;
+    
+    // Ensure it's properly parsed if it exists
+    if (parsedStrategyDetails && typeof parsedStrategyDetails === 'object') {
+      // Make sure Legs is accessible if it exists
+      if (parsedStrategyDetails.Legs) {
+        console.log('Strategy has legs:', parsedStrategyDetails.Legs);
+      }
+    }
+    
+    return {
+      ...strategy,
+      performance: strategy.performance as PredefinedStrategy['performance'],
+      parameters: strategy.parameters as PredefinedStrategy['parameters'],
+      strategy_details: parsedStrategyDetails
+    };
+  });
 };
 
 export const usePredefinedStrategies = () => {

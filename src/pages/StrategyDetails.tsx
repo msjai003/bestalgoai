@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -471,11 +472,11 @@ const StrategyDetails = () => {
                     <div className="mb-8">
                       <div className="space-y-6">
                         {strategyLegs && strategyLegs.length > 0 ? (
-                          strategyLegs.map((leg: any, index: number) => (
+                          strategyLegs.map((leg, index) => (
                             <div key={index} className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                               <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                                 <Layers className="h-5 w-5 text-cyan mr-2" />
-                                Leg #{leg.id}
+                                Leg #{leg.id || index + 1}
                               </h3>
                               
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -508,31 +509,31 @@ const StrategyDetails = () => {
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
-                                  <p className="text-white font-medium">{leg.targetProfit}</p>
+                                  <p className="text-white font-medium">{leg.targetProfit || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.stopLoss}</p>
+                                  <p className="text-white font-medium">{leg.stopLoss || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
-                                  <p className="text-white font-medium">{leg.trailSL}</p>
+                                  <p className="text-white font-medium">{leg.trailSL || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnTarget}</p>
+                                  <p className="text-white font-medium">{leg.reEntryOnTarget || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss}</p>
+                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
-                                  <p className="text-white font-medium">{leg.simpleMomentum}</p>
+                                  <p className="text-white font-medium">{leg.simpleMomentum || "Off"}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
-                                  <p className="text-white font-medium">{leg.rangeBreakout}</p>
+                                  <p className="text-white font-medium">{leg.rangeBreakout || "Off"}</p>
                                 </div>
                               </div>
                             </div>
