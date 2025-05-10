@@ -29,6 +29,8 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     throw error;
   }
 
+  console.log('Fetched predefined strategies:', data);
+
   return (data || []).map(strategy => ({
     ...strategy,
     performance: strategy.performance as PredefinedStrategy['performance'],
