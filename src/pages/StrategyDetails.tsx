@@ -592,6 +592,7 @@ const StrategyDetails = () => {
                   </Button>
                 </div>
               )}
+            </div>
           </CardContent>
         </Card>
       </main>
