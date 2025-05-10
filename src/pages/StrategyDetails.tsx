@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle, Settings } from "lucide-react";
+import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -159,90 +158,6 @@ const StrategyDetails = () => {
 
   const canAccess = !isPremium || hasPremium || isPaidStrategy;
 
-  // Organize parameters into categories for better display
-  const renderStrategyParameters = () => {
-    if (!strategy.parameters || !strategy.parameters.length) return null;
-    
-    // Group parameters into categories
-    const basicSettings = ['Index', 'Underlying from', 'Strategy Type'];
-    const timeSettings = ['Entry Time', 'Exit Time', 'No re-entry after'];
-    const positionSettings = ['Position', 'Segment', 'Option Type', 'Expiry'];
-    const executionSettings = ['Square Off', 'Trail SL to Break-even price', 'Leg Selection'];
-    const criteriaSettings = ['Strike Criteria', 'Premium', 'Total Lot'];
-    
-    const getParametersInCategory = (category: string[]) => {
-      return strategy.parameters.filter(p => category.includes(p.name));
-    };
-
-    return (
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-charcoalSecondary/50 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-cyan text-sm font-medium mb-3">Basic Settings</h3>
-            <div className="space-y-2">
-              {getParametersInCategory(basicSettings).map((param) => (
-                <div key={param.name} className="flex justify-between">
-                  <span className="text-gray-400 text-sm">{param.name}</span>
-                  <span className="text-white font-medium">{param.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-charcoalSecondary/50 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-cyan text-sm font-medium mb-3">Time Settings</h3>
-            <div className="space-y-2">
-              {getParametersInCategory(timeSettings).map((param) => (
-                <div key={param.name} className="flex justify-between">
-                  <span className="text-gray-400 text-sm">{param.name}</span>
-                  <span className="text-white font-medium">{param.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-charcoalSecondary/50 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-cyan text-sm font-medium mb-3">Position Settings</h3>
-            <div className="space-y-2">
-              {getParametersInCategory(positionSettings).map((param) => (
-                <div key={param.name} className="flex justify-between">
-                  <span className="text-gray-400 text-sm">{param.name}</span>
-                  <span className="text-white font-medium">{param.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-charcoalSecondary/50 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-cyan text-sm font-medium mb-3">Execution Settings</h3>
-            <div className="space-y-2">
-              {getParametersInCategory(executionSettings).map((param) => (
-                <div key={param.name} className="flex justify-between">
-                  <span className="text-gray-400 text-sm">{param.name}</span>
-                  <span className="text-white font-medium">{param.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-charcoalSecondary/50 rounded-lg p-4 border border-gray-700/30">
-          <h3 className="text-cyan text-sm font-medium mb-3">Selection Criteria</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {getParametersInCategory(criteriaSettings).map((param) => (
-              <div key={param.name} className="flex justify-between">
-                <span className="text-gray-400 text-sm">{param.name}</span>
-                <span className="text-white font-medium">{param.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
       <Header />
@@ -324,15 +239,6 @@ const StrategyDetails = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Strategy Parameters Section */}
-                <div className="mb-8">
-                  <h2 className="text-xl font-semibold mb-4 text-white/90 flex items-center">
-                    <Settings className="h-5 w-5 text-cyan mr-2" />
-                    Strategy Parameters
-                  </h2>
-                  {renderStrategyParameters()}
                 </div>
 
                 <div className="flex justify-between items-center mb-4">

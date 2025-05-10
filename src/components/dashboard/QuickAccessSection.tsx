@@ -18,7 +18,7 @@ export const QuickAccessSection = () => {
         <QuickAccessItem
           icon={BarChart}
           text="Backtest"
-          route="/zenflow-backtest"
+          route="/backtest"
           className=""
         />
         
