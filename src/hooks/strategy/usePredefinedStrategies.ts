@@ -15,6 +15,7 @@ export interface PredefinedStrategy {
     name: string;
     value: string;
   }>;
+  strategy_details?: Record<string, string> | null;
 }
 
 const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
@@ -31,7 +32,8 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   return (data || []).map(strategy => ({
     ...strategy,
     performance: strategy.performance as PredefinedStrategy['performance'],
-    parameters: strategy.parameters as PredefinedStrategy['parameters']
+    parameters: strategy.parameters as PredefinedStrategy['parameters'],
+    strategy_details: strategy.strategy_details as PredefinedStrategy['strategy_details']
   }));
 };
 

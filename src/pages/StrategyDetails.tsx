@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -71,7 +70,12 @@ const StrategyDetails = () => {
 
   // Function to get strategy details from new column
   const getStrategyDetailsParams = () => {
-    if (!strategy || !strategy.strategy_details) return {};
+    if (!strategy || !strategy.strategy_details) return {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
     
     const categories = {
       basicSettings: [
@@ -241,7 +245,9 @@ const StrategyDetails = () => {
   }
 
   const canAccess = !isPremium || hasPremium || isPaidStrategy;
-  const parameterCategories = strategy.strategy_details ? getStrategyDetailsParams() : getParameterCategories();
+  const parameterCategories = strategy && strategy.strategy_details 
+    ? getStrategyDetailsParams() 
+    : getParameterCategories();
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
