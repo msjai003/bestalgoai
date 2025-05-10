@@ -62,6 +62,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
         parsedStrategyDetails = JSON.parse(parsedStrategyDetails);
       } catch (err) {
         console.error('Error parsing strategy_details JSON:', err);
+        parsedStrategyDetails = null;
       }
     }
     
@@ -74,10 +75,12 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     }
     
     return {
-      ...strategy,
+      id: strategy.id,
+      name: strategy.name,
+      description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
-      strategy_details: parsedStrategyDetails
+      strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details']
     };
   });
 };
