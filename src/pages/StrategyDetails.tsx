@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
+import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle, Clock, Settings, Filter, Zap } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +28,46 @@ const StrategyDetails = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
+
+  // Group parameters by category for better organization
+  const getParameterCategories = () => {
+    if (!strategy || !strategy.parameters) return {};
+    
+    const categories = {
+      basicSettings: [
+        'Index', 'Underlying from', 'Strategy Type', 'Segment', 
+        'Position', 'Option Type', 'Risk Score'
+      ],
+      timeSettings: [
+        'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
+      ],
+      executionSettings: [
+        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+        'Total Lot', 'Strike Criteria', 'Premium'
+      ]
+    };
+    
+    const categorizedParams: Record<string, any[]> = {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
+    
+    strategy.parameters.forEach(param => {
+      if (categories.basicSettings.includes(param.name)) {
+        categorizedParams.basicSettings.push(param);
+      } else if (categories.timeSettings.includes(param.name)) {
+        categorizedParams.timeSettings.push(param);
+      } else if (categories.executionSettings.includes(param.name)) {
+        categorizedParams.executionSettings.push(param);
+      } else {
+        categorizedParams.other.push(param);
+      }
+    });
+    
+    return categorizedParams;
+  };
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
@@ -157,6 +198,7 @@ const StrategyDetails = () => {
   }
 
   const canAccess = !isPremium || hasPremium || isPaidStrategy;
+  const parameterCategories = getParameterCategories();
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
@@ -280,6 +322,60 @@ const StrategyDetails = () => {
                     <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
                   )}
                 </ScrollArea>
+
+                {/* Strategy Parameter Details */}
+                <div className="space-y-6 mb-8">
+                  {parameterCategories.basicSettings?.length > 0 && (
+                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                        <Settings className="h-5 w-5 text-cyan mr-2" />
+                        Basic Settings
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {parameterCategories.basicSettings.map((param, index) => (
+                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                            <p className="text-white font-medium">{param.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {parameterCategories.timeSettings?.length > 0 && (
+                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                        <Clock className="h-5 w-5 text-cyan mr-2" />
+                        Time Settings
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {parameterCategories.timeSettings.map((param, index) => (
+                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                            <p className="text-white font-medium">{param.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {parameterCategories.executionSettings?.length > 0 && (
+                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                        <Zap className="h-5 w-5 text-cyan mr-2" />
+                        Execution Settings
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {parameterCategories.executionSettings.map((param, index) => (
+                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                            <p className="text-white font-medium">{param.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
                   <div className="flex items-center gap-3 mb-2">
