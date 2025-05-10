@@ -83,7 +83,7 @@ const StrategyDetails = () => {
         'Position', 'Option Type'
       ],
       timeSettings: [
-        'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
+        'Entry Time', 'Exit Time', 'No Re-entry After', 'Expiry'
       ],
       executionSettings: [
         'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
