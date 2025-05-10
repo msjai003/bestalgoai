@@ -69,6 +69,49 @@ const StrategyDetails = () => {
     return categorizedParams;
   };
 
+  // Function to get strategy details from new column
+  const getStrategyDetailsParams = () => {
+    if (!strategy || !strategy.strategy_details) return {};
+    
+    const categories = {
+      basicSettings: [
+        'Index', 'Underlying from', 'Strategy Type', 'Segment', 
+        'Position', 'Option Type'
+      ],
+      timeSettings: [
+        'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
+      ],
+      executionSettings: [
+        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+        'Total Lot', 'Strike Criteria', 'Premium'
+      ]
+    };
+    
+    const categorizedParams: Record<string, any[]> = {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
+    
+    // Iterate through strategy_details and categorize
+    Object.entries(strategy.strategy_details).forEach(([key, value]) => {
+      const param = { name: key, value: value };
+      
+      if (categories.basicSettings.includes(key)) {
+        categorizedParams.basicSettings.push(param);
+      } else if (categories.timeSettings.includes(key)) {
+        categorizedParams.timeSettings.push(param);
+      } else if (categories.executionSettings.includes(key)) {
+        categorizedParams.executionSettings.push(param);
+      } else {
+        categorizedParams.other.push(param);
+      }
+    });
+    
+    return categorizedParams;
+  };
+
   useEffect(() => {
     const checkWishlistStatus = async () => {
       if (!user || !strategy) return;
@@ -198,7 +241,7 @@ const StrategyDetails = () => {
   }
 
   const canAccess = !isPremium || hasPremium || isPaidStrategy;
-  const parameterCategories = getParameterCategories();
+  const parameterCategories = strategy.strategy_details ? getStrategyDetailsParams() : getParameterCategories();
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">

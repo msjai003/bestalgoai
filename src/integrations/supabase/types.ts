@@ -1039,6 +1039,7 @@ export type Database = {
           name: string
           parameters: Json
           performance: Json
+          strategy_details: Json | null
         }
         Insert: {
           description: string
@@ -1046,6 +1047,7 @@ export type Database = {
           name: string
           parameters: Json
           performance: Json
+          strategy_details?: Json | null
         }
         Update: {
           description?: string
@@ -1053,6 +1055,7 @@ export type Database = {
           name?: string
           parameters?: Json
           performance?: Json
+          strategy_details?: Json | null
         }
         Relationships: []
       }
