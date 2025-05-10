@@ -49,19 +49,28 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     throw error;
   }
 
-  console.log('Fetched predefined strategies:', data);
+  console.log('Fetched predefined strategies raw data:', data);
   
   // Make sure to properly parse the strategy_details column
   return (data || []).map(strategy => {
-    // Parse the strategy details for each strategy
+    // Ensure strategy_details is properly parsed
     let parsedStrategyDetails = strategy.strategy_details;
     
-    // Ensure it's properly parsed if it exists
-    if (parsedStrategyDetails && typeof parsedStrategyDetails === 'object') {
-      // Make sure Legs is accessible if it exists
-      if (parsedStrategyDetails.Legs) {
-        console.log('Strategy has legs:', parsedStrategyDetails.Legs);
+    // If it's a string, try to parse it as JSON
+    if (parsedStrategyDetails && typeof parsedStrategyDetails === 'string') {
+      try {
+        parsedStrategyDetails = JSON.parse(parsedStrategyDetails);
+      } catch (err) {
+        console.error('Error parsing strategy_details JSON:', err);
       }
+    }
+    
+    // Log the data for debugging
+    if (parsedStrategyDetails && parsedStrategyDetails.Legs) {
+      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs.length} legs:`, 
+        parsedStrategyDetails.Legs);
+    } else {
+      console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
     }
     
     return {
