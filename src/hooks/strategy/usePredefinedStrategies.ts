@@ -2,6 +2,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface StrategyLeg {
+  id: number;
+  lots: number;
+  position: string;
+  optionType: string;
+  expiry: string;
+  strikeCriteria: string;
+  premium: number;
+  targetProfit: string;
+  stopLoss: string;
+  trailSL: string;
+  reEntryOnTarget: string;
+  reEntryOnStopLoss: string;
+  simpleMomentum: string;
+  rangeBreakout: string;
+}
+
 export interface PredefinedStrategy {
   id: number;
   name: string;
@@ -15,7 +32,10 @@ export interface PredefinedStrategy {
     name: string;
     value: string;
   }>;
-  strategy_details?: Record<string, string> | null;
+  strategy_details?: {
+    [key: string]: any;
+    Legs?: StrategyLeg[];
+  } | null;
 }
 
 const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {

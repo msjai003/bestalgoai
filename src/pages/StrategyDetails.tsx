@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle, Clock, Settings, Filter, Zap } from "lucide-react";
+import { ArrowLeft, Heart, Lock, Play, ChevronLeft, Award, BarChart3, TrendingUp, AlertCircle, Clock, Settings, Filter, Zap, Layers } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ const StrategyDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasPremium, setHasPremium] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'legs'>('overview');
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -101,6 +102,9 @@ const StrategyDetails = () => {
     
     // Iterate through strategy_details and categorize
     Object.entries(strategy.strategy_details).forEach(([key, value]) => {
+      // Skip the 'Legs' key as we'll handle it separately
+      if (key === 'Legs') return;
+      
       const param = { name: key, value: value };
       
       if (categories.basicSettings.includes(key)) {
@@ -115,6 +119,15 @@ const StrategyDetails = () => {
     });
     
     return categorizedParams;
+  };
+
+  // Function to get the legs from strategy_details
+  const getStrategyLegs = () => {
+    if (!strategy || !strategy.strategy_details || !strategy.strategy_details.Legs) {
+      return [];
+    }
+    
+    return strategy.strategy_details.Legs;
   };
 
   useEffect(() => {
@@ -249,6 +262,7 @@ const StrategyDetails = () => {
   const parameterCategories = strategy && strategy.strategy_details 
     ? getStrategyDetailsParams() 
     : getParameterCategories();
+  const strategyLegs = getStrategyLegs();
 
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
@@ -333,99 +347,205 @@ const StrategyDetails = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-white/90 flex items-center">
-                    <TrendingUp className="h-5 w-5 text-cyan mr-2" />
-                    Strategy Logic
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400">Advanced View</span>
-                    <Switch 
-                      checked={showAdvanced} 
-                      onCheckedChange={setShowAdvanced}
-                    />
+                <div className="mb-6">
+                  <div className="flex justify-between mb-4">
+                    <div className="flex space-x-4">
+                      <Button
+                        variant={activeTab === 'overview' ? 'default' : 'outline'}
+                        className={`${
+                          activeTab === 'overview'
+                            ? 'bg-cyan text-charcoalPrimary'
+                            : 'bg-transparent border-gray-700 text-gray-300 hover:text-cyan hover:border-cyan/50'
+                        }`}
+                        onClick={() => setActiveTab('overview')}
+                      >
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Overview
+                      </Button>
+                      <Button
+                        variant={activeTab === 'legs' ? 'default' : 'outline'}
+                        className={`${
+                          activeTab === 'legs'
+                            ? 'bg-cyan text-charcoalPrimary'
+                            : 'bg-transparent border-gray-700 text-gray-300 hover:text-cyan hover:border-cyan/50'
+                        }`}
+                        onClick={() => setActiveTab('legs')}
+                      >
+                        <Layers className="h-4 w-4 mr-2" />
+                        Legs
+                      </Button>
+                    </div>
+                    {activeTab === 'overview' && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400">Advanced View</span>
+                        <Switch 
+                          checked={showAdvanced} 
+                          onCheckedChange={setShowAdvanced}
+                        />
+                      </div>
+                    )}
                   </div>
-                </div>
+                  
+                  {activeTab === 'overview' ? (
+                    <>
+                      <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
+                        {showAdvanced ? (
+                          <div className="space-y-4">
+                            <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
+                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                              <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                                <li>Moving Average Crossover (EMA 9/21)</li>
+                                <li>Relative Strength Index (RSI)</li>
+                                <li>Volume Profile Analysis</li>
+                              </ul>
+                            </div>
+                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                              <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                                <li>EMA 9 crosses above EMA 21</li>
+                                <li>RSI moves above 50 from below</li>
+                                <li>Volume confirms price movement</li>
+                              </ul>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
+                        )}
+                      </ScrollArea>
 
-                <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
-                  {showAdvanced ? (
-                    <div className="space-y-4">
-                      <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                      <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                        <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
-                        <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
-                          <li>Moving Average Crossover (EMA 9/21)</li>
-                          <li>Relative Strength Index (RSI)</li>
-                          <li>Volume Profile Analysis</li>
-                        </ul>
+                      {/* Strategy Parameter Details */}
+                      <div className="space-y-6 mb-8">
+                        {parameterCategories.basicSettings?.length > 0 && (
+                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                              <Settings className="h-5 w-5 text-cyan mr-2" />
+                              Basic Settings
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {parameterCategories.basicSettings.map((param, index) => (
+                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                  <p className="text-white font-medium">{param.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {parameterCategories.timeSettings?.length > 0 && (
+                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                              <Clock className="h-5 w-5 text-cyan mr-2" />
+                              Time Settings
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {parameterCategories.timeSettings.map((param, index) => (
+                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                  <p className="text-white font-medium">{param.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {parameterCategories.executionSettings?.length > 0 && (
+                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                              <Zap className="h-5 w-5 text-cyan mr-2" />
+                              Execution Settings
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {parameterCategories.executionSettings.map((param, index) => (
+                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                  <p className="text-white font-medium">{param.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                        <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
-                        <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
-                          <li>EMA 9 crosses above EMA 21</li>
-                          <li>RSI moves above 50 from below</li>
-                          <li>Volume confirms price movement</li>
-                        </ul>
-                      </div>
-                    </div>
+                    </>
                   ) : (
-                    <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                  )}
-                </ScrollArea>
-
-                {/* Strategy Parameter Details */}
-                <div className="space-y-6 mb-8">
-                  {parameterCategories.basicSettings?.length > 0 && (
-                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                        <Settings className="h-5 w-5 text-cyan mr-2" />
-                        Basic Settings
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {parameterCategories.basicSettings.map((param, index) => (
-                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                            <p className="text-white font-medium">{param.value}</p>
+                    <div className="mb-8">
+                      <div className="space-y-6">
+                        {strategyLegs && strategyLegs.length > 0 ? (
+                          strategyLegs.map((leg: any, index: number) => (
+                            <div key={index} className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                              <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                                <Layers className="h-5 w-5 text-cyan mr-2" />
+                                Leg #{leg.id}
+                              </h3>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Lots</span>
+                                  <p className="text-white font-medium">{leg.lots}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Position</span>
+                                  <p className="text-white font-medium">{leg.position}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Option Type</span>
+                                  <p className="text-white font-medium">{leg.optionType}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Expiry</span>
+                                  <p className="text-white font-medium">{leg.expiry}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Strike Criteria</span>
+                                  <p className="text-white font-medium">{leg.strikeCriteria}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Premium</span>
+                                  <p className="text-white font-medium">{leg.premium}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
+                                  <p className="text-white font-medium">{leg.targetProfit}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
+                                  <p className="text-white font-medium">{leg.stopLoss}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
+                                  <p className="text-white font-medium">{leg.trailSL}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
+                                  <p className="text-white font-medium">{leg.reEntryOnTarget}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
+                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
+                                  <p className="text-white font-medium">{leg.simpleMomentum}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
+                                  <p className="text-white font-medium">{leg.rangeBreakout}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center text-gray-400 p-6">
+                            <p>No leg details available for this strategy.</p>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   )}
-                  
-                  {parameterCategories.timeSettings?.length > 0 && (
-                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                        <Clock className="h-5 w-5 text-cyan mr-2" />
-                        Time Settings
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {parameterCategories.timeSettings.map((param, index) => (
-                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                            <p className="text-white font-medium">{param.value}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {parameterCategories.executionSettings?.length > 0 && (
-                    <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                      <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                        <Zap className="h-5 w-5 text-cyan mr-2" />
-                        Execution Settings
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {parameterCategories.executionSettings.map((param, index) => (
-                          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                            <p className="text-white font-medium">{param.value}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
 
                 <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
                   <div className="flex items-center gap-3 mb-2">
