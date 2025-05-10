@@ -547,57 +547,57 @@ const StrategyDetails = () => {
                     </div>
                   )}
 
-                <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Award className="h-5 w-5 text-cyan" />
-                    <h3 className="text-lg font-semibold text-white">Performance Highlights</h3>
+                  <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Award className="h-5 w-5 text-cyan" />
+                      <h3 className="text-lg font-semibold text-white">Performance Highlights</h3>
+                    </div>
+                    <ul className="space-y-2 pl-9">
+                      <li className="text-gray-300 list-disc">Consistent returns in ranging markets</li>
+                      <li className="text-gray-300 list-disc">Optimal for medium-term horizons (1-3 days)</li>
+                      <li className="text-gray-300 list-disc">Manages downside risk with adaptive stop-loss</li>
+                    </ul>
                   </div>
-                  <ul className="space-y-2 pl-9">
-                    <li className="text-gray-300 list-disc">Consistent returns in ranging markets</li>
-                    <li className="text-gray-300 list-disc">Optimal for medium-term horizons (1-3 days)</li>
-                    <li className="text-gray-300 list-disc">Manages downside risk with adaptive stop-loss</li>
-                  </ul>
-                </div>
 
-                <div className="flex justify-between items-center flex-wrap gap-4">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-charcoalPrimary rounded-full border border-gray-700 mr-3">
-                      <AlertCircle className="h-5 w-5 text-cyan" />
+                  <div className="flex justify-between items-center flex-wrap gap-4">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-charcoalPrimary rounded-full border border-gray-700 mr-3">
+                        <AlertCircle className="h-5 w-5 text-cyan" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Risk Level</p>
+                        <p className="font-medium text-white">Moderate</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Risk Level</p>
-                      <p className="font-medium text-white">Moderate</p>
-                    </div>
+                    
+                    <Button 
+                      className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-6 py-6 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-base"
+                    >
+                      <Play className="h-5 w-5 mr-2" />
+                      Deploy Strategy
+                    </Button>
                   </div>
-                  
+                </>
+              ) : (
+                <div className="text-center py-12 bg-charcoalSecondary/40 rounded-xl border border-gray-700/50">
+                  <Lock className="h-16 w-16 mx-auto mb-4 text-cyan/70 animate-pulse" />
+                  <h3 className="text-xl font-semibold mb-2 text-white">Premium Strategy</h3>
+                  <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                    <span className="font-medium text-cyan">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
+                  </p>
                   <Button 
-                    className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-6 py-6 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-base"
+                    className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-8 py-6 rounded-full shadow-lg hover:shadow-cyan/20 font-medium text-base transition-all duration-300"
+                    onClick={handleUpgrade}
                   >
-                    <Play className="h-5 w-5 mr-2" />
-                    Deploy Strategy
+                    Unlock {strategy.name}
                   </Button>
                 </div>
-              </>
-            ) : (
-              <div className="text-center py-12 bg-charcoalSecondary/40 rounded-xl border border-gray-700/50">
-                <Lock className="h-16 w-16 mx-auto mb-4 text-cyan/70 animate-pulse" />
-                <h3 className="text-xl font-semibold mb-2 text-white">Premium Strategy</h3>
-                <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                  <span className="font-medium text-cyan">{strategy.name}</span> is a premium strategy. Upgrade to unlock it and all premium strategies.
-                </p>
-                <Button 
-                  className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-8 py-6 rounded-full shadow-lg hover:shadow-cyan/20 font-medium text-base transition-all duration-300"
-                  onClick={handleUpgrade}
-                >
-                  Unlock {strategy.name}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
-  );
+              )}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
 };
 
 export default StrategyDetails;
