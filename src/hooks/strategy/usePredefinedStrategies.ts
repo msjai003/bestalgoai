@@ -54,7 +54,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   // Make sure to properly parse the strategy_details column
   return (data || []).map(strategy => {
     // Ensure strategy_details is properly parsed
-    let parsedStrategyDetails = strategy.strategy_details;
+    let parsedStrategyDetails: any = strategy.strategy_details;
     
     // If it's a string, try to parse it as JSON
     if (parsedStrategyDetails && typeof parsedStrategyDetails === 'string') {
@@ -74,7 +74,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     
     // Log the data for debugging
     if (hasLegs) {
-      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs.length} legs:`, 
+      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs?.length} legs:`, 
         parsedStrategyDetails.Legs);
     } else {
       console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
