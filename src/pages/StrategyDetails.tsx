@@ -593,11 +593,11 @@ const StrategyDetails = () => {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
 };
 
 export default StrategyDetails;
