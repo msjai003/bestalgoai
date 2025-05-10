@@ -66,8 +66,14 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       }
     }
     
+    // Type guard to check if parsedStrategyDetails has the Legs property
+    const hasLegs = parsedStrategyDetails && 
+      typeof parsedStrategyDetails === 'object' && 
+      parsedStrategyDetails !== null &&
+      'Legs' in parsedStrategyDetails;
+    
     // Log the data for debugging
-    if (parsedStrategyDetails && parsedStrategyDetails.Legs) {
+    if (hasLegs) {
       console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs.length} legs:`, 
         parsedStrategyDetails.Legs);
     } else {
