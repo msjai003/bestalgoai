@@ -1,7 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 export interface StrategyLeg {
   id: number;
@@ -41,8 +40,6 @@ export interface PredefinedStrategy {
 }
 
 const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
-  console.log('Fetching predefined strategies...');
-  
   const { data, error } = await supabase
     .from('predefined_strategies')
     .select('*')
@@ -50,11 +47,6 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
 
   if (error) {
     console.error('Error fetching predefined strategies:', error);
-    toast({
-      title: "Error loading strategies",
-      description: error.message,
-      variant: "destructive",
-    });
     throw error;
   }
 
@@ -62,24 +54,17 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   
   // Make sure to properly parse the strategy_details column
   return (data || []).map(strategy => {
-    console.log(`Processing strategy ${strategy.id} - ${strategy.name}:`, strategy);
-    
     // Ensure strategy_details is properly parsed
     let parsedStrategyDetails: any = strategy.strategy_details;
     
     // If it's a string, try to parse it as JSON
     if (parsedStrategyDetails && typeof parsedStrategyDetails === 'string') {
       try {
-        console.log(`Strategy ${strategy.id} has string strategy_details, parsing:`, parsedStrategyDetails);
         parsedStrategyDetails = JSON.parse(parsedStrategyDetails);
       } catch (err) {
-        console.error(`Error parsing strategy_details JSON for strategy ${strategy.id}:`, err);
+        console.error('Error parsing strategy_details JSON:', err);
         parsedStrategyDetails = null;
       }
-    } else if (parsedStrategyDetails) {
-      console.log(`Strategy ${strategy.id} has object strategy_details:`, parsedStrategyDetails);
-    } else {
-      console.log(`Strategy ${strategy.id} has no strategy_details`);
     }
     
     // Handle both uppercase and lowercase 'legs' key
