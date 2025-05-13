@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
@@ -20,6 +20,15 @@ const StrategySelection = () => {
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
+  
+  // Debug log to see strategy names
+  useEffect(() => {
+    if (predefinedStrategies) {
+      console.log("Loaded predefined strategies:", 
+        predefinedStrategies.map(s => ({ id: s.id, name: s.name }))
+      );
+    }
+  }, [predefinedStrategies]);
   
   const {
     strategies,
@@ -53,6 +62,15 @@ const StrategySelection = () => {
     brokerDialogOpen,
     targetMode
   });
+  
+  // Additional debug log to verify strategy names in the final list
+  useEffect(() => {
+    if (strategies.length > 0) {
+      console.log("Processed strategies for display:", 
+        strategies.map(s => ({ id: s.id, name: s.name, isPremium: s.isPremium }))
+      );
+    }
+  }, [strategies]);
 
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">

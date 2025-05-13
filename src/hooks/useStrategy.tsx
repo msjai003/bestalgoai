@@ -25,11 +25,27 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     // When predefinedStrategies are loaded or change, update our state
     if (predefinedStrategies.length > 0) {
+      console.log("Setting strategies from predefined list:", 
+        predefinedStrategies.map(s => ({ id: s.id, name: s.name }))
+      );
+      
       setStrategies(prevStrategies => {
         // If we already have strategies loaded with user settings, don't override them
         if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
-          return prevStrategies;
+          // Merge the predefined strategy names with our existing user settings
+          return prevStrategies.map(prevStrategy => {
+            const matchedStrategy = predefinedStrategies.find(s => s.id === prevStrategy.id);
+            if (matchedStrategy) {
+              return {
+                ...prevStrategy,
+                name: matchedStrategy.name,
+                description: matchedStrategy.description
+              };
+            }
+            return prevStrategy;
+          });
         }
+        
         return predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,

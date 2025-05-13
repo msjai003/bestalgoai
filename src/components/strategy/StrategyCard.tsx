@@ -65,7 +65,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="text-xl font-semibold text-white hover:text-cyan transition-colors duration-300">
-                {strategy.name}
+                {strategy.name || `Strategy ${strategy.id}`}
               </h3>
             </div>
             <div className="flex gap-2 z-10 relative">
