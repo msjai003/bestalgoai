@@ -9,7 +9,7 @@ export interface StrategyLeg {
   optionType: string;
   expiry: string;
   strikeCriteria: string;
-  premium: number | string;
+  premium: number;
   targetProfit: string;
   stopLoss: string;
   trailSL: string;
@@ -67,28 +67,18 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       }
     }
     
-    // Handle both uppercase and lowercase 'legs' key
+    // Type guard to check if parsedStrategyDetails has the Legs property
     const hasLegs = parsedStrategyDetails && 
       typeof parsedStrategyDetails === 'object' && 
       parsedStrategyDetails !== null &&
-      (('Legs' in parsedStrategyDetails) || ('legs' in parsedStrategyDetails));
+      'Legs' in parsedStrategyDetails;
     
-    // Normalize the legs data
+    // Log the data for debugging
     if (hasLegs) {
-      const legsArray = parsedStrategyDetails.Legs || parsedStrategyDetails.legs;
-      
-      if (Array.isArray(legsArray)) {
-        console.log(`Strategy ${strategy.id} has ${legsArray.length} legs:`, legsArray);
-        // Ensure we use uppercase "Legs" consistently
-        if ('legs' in parsedStrategyDetails) {
-          parsedStrategyDetails.Legs = legsArray;
-          delete parsedStrategyDetails.legs;
-        }
-      } else {
-        console.log(`Strategy ${strategy.id} has invalid leg data.`);
-      }
+      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs?.length} legs:`, 
+        parsedStrategyDetails.Legs);
     } else {
-      console.log(`Strategy ${strategy.id} has no legs data.`);
+      console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
     }
     
     return {
