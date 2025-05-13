@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download } from "lucide-react";
+import { Download, FileLock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -103,11 +103,13 @@ const FileItem = ({
           <span className="font-medium text-white">{name}</span>
           {is_premium && !canDownload && (
             <Badge variant="destructive" className="ml-0 sm:ml-2">
+              <FileLock className="h-3 w-3 mr-1" />
               Locked
             </Badge>
           )}
           {is_premium && hasPaid && (
             <Badge variant="success" className="ml-0 sm:ml-2">
+              <LockOpen className="h-3 w-3 mr-1" />
               Paid
             </Badge>
           )}
@@ -139,6 +141,7 @@ const FileItem = ({
                 size={isMobile ? "sm" : "sm"}
                 className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto"
               >
+                <FileLock className="h-4 w-4 mr-1" />
                 Unlock
               </Button>
             </DialogTrigger>
