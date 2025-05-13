@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, Unlock } from "lucide-react";
+import { Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -39,15 +39,11 @@ const FileItem = ({
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const isMobile = useIsMobile();
-  
-  // Make zip files premium by default
-  const isZipFile = type === "zip" || name.toLowerCase().endsWith('.zip');
-  const isPremiumFile = is_premium || isZipFile;
 
-  // Check if user has already paid for this premium file
-  React.useEffect(() => {
+  // Check if user has already paid for this file
+  useEffect(() => {
     const checkPaymentStatus = async () => {
-      if (user && isPremiumFile) {
+      if (user && is_premium) {
         const { data } = await supabase
           .from('user_file_payments')
           .select('*')
@@ -63,9 +59,9 @@ const FileItem = ({
     };
     
     checkPaymentStatus();
-  }, [user, id, isPremiumFile]);
+  }, [user, id, is_premium]);
 
-  const canDownload = hasPremium || !isPremiumFile || hasPaid;
+  const canDownload = hasPremium || !is_premium || hasPaid;
 
   const handleDownload = async () => {
     setDownloadingId(id);
@@ -99,51 +95,19 @@ const FileItem = ({
     });
   };
 
-  const handleLockFile = async () => {
-    if (!user) return;
-    
-    try {
-      // Delete the payment record for this file
-      const { error } = await supabase
-        .from('user_file_payments')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('file_id', id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      setHasPaid(false);
-      
-      toast({
-        title: "File locked",
-        description: `${name} has been locked again.`,
-      });
-    } catch (error) {
-      console.error("Error locking file:", error);
-      toast({
-        title: "Error",
-        description: "Could not lock the file. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  };
-
   // Render a more compact layout for mobile devices
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col mb-2 sm:mb-0">
         <div className="flex items-center flex-wrap gap-1">
           <span className="font-medium text-white">{name}</span>
-          {isPremiumFile && !canDownload && (
+          {is_premium && !canDownload && (
             <Badge variant="destructive" className="ml-0 sm:ml-2">
               <Lock className="h-3 w-3 mr-1" />
               Locked
             </Badge>
           )}
-          {isPremiumFile && hasPaid && (
+          {is_premium && hasPaid && (
             <Badge variant="success" className="ml-0 sm:ml-2">
               Paid
             </Badge>
@@ -154,18 +118,6 @@ const FileItem = ({
       
       {/* Show different buttons based on the file's status */}
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
-        {hasPaid && (
-          <Button
-            onClick={handleLockFile}
-            variant="ghost"
-            size={isMobile ? "sm" : "sm"}
-            className="text-red-400 hover:text-red-500 hover:bg-transparent"
-            title="Lock file again"
-          >
-            <Lock className="h-5 w-5" />
-          </Button>
-        )}
-        
         {canDownload ? (
           <Button
             onClick={handleDownload}
