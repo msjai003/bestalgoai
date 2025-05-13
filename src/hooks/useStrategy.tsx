@@ -22,6 +22,25 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // When predefinedStrategies are loaded or change, update our state
+    if (predefinedStrategies.length > 0) {
+      setStrategies(prevStrategies => {
+        // If we already have strategies loaded with user settings, don't override them
+        if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
+          return prevStrategies;
+        }
+        return predefinedStrategies.map(strategy => ({
+          ...strategy,
+          isWishlisted: false,
+          isLive: false,
+          isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
+          isPaid: false
+        }));
+      });
+    }
+  }, [predefinedStrategies]);
+
+  useEffect(() => {
     if (user) {
       loadStrategies();
       checkPremiumStatus(user.id);
@@ -54,7 +73,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             };
           }
           
-          return userStrategy ? { ...predefinedStrategy, ...userStrategy } : predefinedStrategy;
+          return userStrategy ? { ...predefinedStrategy, ...userStrategy } : {
+            ...predefinedStrategy,
+            isWishlisted: false,
+            isLive: false,
+            isPremium: predefinedStrategy.id > 1, // Setting premium flag (usually id 1 is free)
+            isPaid: false
+          };
         });
         return mergedStrategies;
       });

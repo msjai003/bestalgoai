@@ -35,6 +35,8 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
     );
   }
 
+  console.log("Rendering strategies:", strategies);
+
   return (
     <div className="grid gap-4 pb-4">
       {strategies.map((strategy) => (
