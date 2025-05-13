@@ -133,10 +133,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           </div>
           
-          {/* Always show the strategy description */}
-          <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-            {strategy.description}
-          </p>
+          {canAccess ? (
+            <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+              {strategy.description}
+            </p>
+          ) : (
+            <p className="text-gray-300 text-sm mb-4">
+              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+            </p>
+          )}
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">

@@ -52,47 +52,8 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
 
   console.log('Fetched predefined strategies raw data:', data);
   
-  // Default strategies to use if no data is found or needs modification
-  const defaultStrategies: PredefinedStrategy[] = [
-    {
-      id: 1,
-      name: "Velox Edge Strategy",
-      description: "A popular intraday strategy for consistent returns",
-      performance: {
-        winRate: "65%",
-        avgProfit: "8%",
-        drawdown: "4%"
-      },
-      parameters: [
-        { name: "Lot Size", value: "1" },
-        { name: "Index", value: "NIFTY" }
-      ],
-      strategy_details: null
-    },
-    {
-      id: 2,
-      name: "Zenflow Strategy", // Renamed premium strategy to Zenflow
-      description: "Advanced multi-leg options strategy with dynamic hedging",
-      performance: {
-        winRate: "78%",
-        avgProfit: "15%",
-        drawdown: "6%"
-      },
-      parameters: [
-        { name: "Lot Size", value: "2" },
-        { name: "Index", value: "BANKNIFTY" }
-      ],
-      strategy_details: null
-    }
-  ];
-  
-  // If no data returned, use default strategies
-  if (!data || data.length === 0) {
-    return defaultStrategies;
-  }
-  
-  // Make sure to properly parse and transform the data from the database
-  const strategies = data.map(strategy => {
+  // Make sure to properly parse the strategy_details column
+  return (data || []).map(strategy => {
     // Ensure strategy_details is properly parsed
     let parsedStrategyDetails: any = strategy.strategy_details;
     
@@ -129,21 +90,16 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     } else {
       console.log(`Strategy ${strategy.id} has no legs data.`);
     }
-
-    // Override premium strategy (id=2) name to "Zenflow Strategy"
-    const strategyName = strategy.id === 2 ? "Zenflow Strategy" : strategy.name;
     
     return {
       id: strategy.id,
-      name: strategyName,
+      name: strategy.name,
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
       strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details']
     };
   });
-  
-  return strategies;
 };
 
 export const usePredefinedStrategies = () => {
