@@ -27,7 +27,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isPremium = strategy.id > 1;
   // All strategies are now accessible
   const canAccess = true;
 

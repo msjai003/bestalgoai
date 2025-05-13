@@ -83,7 +83,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     
     return {
       id: strategy.id,
-      name: strategy.name,
+      name: strategy.name, // Ensure we're using the name from the database
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
