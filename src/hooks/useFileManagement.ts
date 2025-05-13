@@ -101,6 +101,31 @@ export function useFileManagement(userId?: string) {
     }
   };
 
+  // Function to check if user has already paid for a specific file
+  const checkFilePaidStatus = async (fileId: number) => {
+    if (!userId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_file_payments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('file_id', fileId)
+        .eq('status', 'completed')
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error checking file payment status:", error);
+        return false;
+      }
+      
+      return !!data;
+    } catch (error) {
+      console.error("Exception checking file payment status:", error);
+      return false;
+    }
+  };
+
   // Function to record a file payment
   const recordFilePayment = async (fileId: number) => {
     if (!userId) return false;
@@ -128,13 +153,14 @@ export function useFileManagement(userId?: string) {
   };
 
   // Check if there are premium files
-  const hasPremiumFiles = true; // Always true since all files are now premium
+  const hasPremiumFiles = files.some(file => file.is_premium);
 
   return {
     files,
     isLoading,
     hasPremium,
     hasPremiumFiles,
+    checkFilePaidStatus,
     recordFilePayment
   };
 }

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import PremiumBanner from "@/components/files/PremiumBanner";
 import EmptyFilesState from "@/components/files/EmptyFilesState";
 import FilesList from "@/components/files/FilesList";
 import { useFileManagement } from "@/hooks/useFileManagement";
+import PaymentSuccessModal from "@/components/files/PaymentSuccessModal";
 
 const Files: React.FC = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ const Files: React.FC = () => {
     isLoading, 
     hasPremium
   } = useFileManagement(user?.id);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   if (isLoading) {
     return <LoadingState />;
@@ -39,10 +41,19 @@ const Files: React.FC = () => {
           {files.length === 0 ? (
             <EmptyFilesState />
           ) : (
-            <FilesList files={files} hasPremium={hasPremium} />
+            <FilesList 
+              files={files} 
+              hasPremium={hasPremium} 
+              onPaymentSuccess={() => setShowSuccessModal(true)} 
+            />
           )}
         </div>
       </main>
+      
+      <PaymentSuccessModal 
+        show={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+      />
       
       <BottomNav />
     </div>

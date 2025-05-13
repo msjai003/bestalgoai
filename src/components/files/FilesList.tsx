@@ -16,9 +16,10 @@ interface FileData {
 interface FilesListProps {
   files: FileData[];
   hasPremium: boolean;
+  onPaymentSuccess?: () => void;
 }
 
-const FilesList: React.FC<FilesListProps> = ({ files, hasPremium }) => {
+const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSuccess }) => {
   // Mark ALL files as premium/locked
   const enhancedFiles = files.map(file => ({
     ...file,
