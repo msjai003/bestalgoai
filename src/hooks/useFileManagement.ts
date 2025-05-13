@@ -62,7 +62,7 @@ export function useFileManagement(userId?: string) {
       
       console.log("Files data received:", exeFiles);
       
-      // Format the data to match the FileItem interface
+      // Format the data to match the FileItem interface and mark all as premium
       const formattedFiles = exeFiles
         .map(file => {
           // Get file type
@@ -84,7 +84,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: file.is_premium || false
+            is_premium: true // Mark all files as premium
           };
         });
       
@@ -128,7 +128,7 @@ export function useFileManagement(userId?: string) {
   };
 
   // Check if there are premium files
-  const hasPremiumFiles = files.some(file => file.is_premium);
+  const hasPremiumFiles = true; // Always true since all files are now premium
 
   return {
     files,

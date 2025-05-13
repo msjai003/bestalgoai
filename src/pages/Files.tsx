@@ -14,17 +14,8 @@ const Files: React.FC = () => {
   const { 
     files, 
     isLoading, 
-    hasPremium,
-    hasPremiumFiles
+    hasPremium
   } = useFileManagement(user?.id);
-
-  // Check if any file is a ZIP file
-  const hasZipFiles = files.some(
-    file => file.type === "zip" || file.name.toLowerCase().endsWith('.zip')
-  );
-
-  // Show premium banner if there are premium or zip files
-  const shouldShowPremiumBanner = hasPremiumFiles || hasZipFiles;
 
   if (isLoading) {
     return <LoadingState />;
@@ -42,10 +33,8 @@ const Files: React.FC = () => {
         <div className="bg-charcoalSecondary rounded-lg p-4">
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
-          {/* Premium features notice */}
-          {shouldShowPremiumBanner && (
-            <PremiumBanner />
-          )}
+          {/* Always show the premium banner as all files will be locked */}
+          <PremiumBanner />
 
           {files.length === 0 ? (
             <EmptyFilesState />
