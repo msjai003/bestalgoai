@@ -139,7 +139,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
-              This premium strategy requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+              {strategy.description} <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
             </p>
           )}
 
