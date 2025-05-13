@@ -63,8 +63,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     navigate(`/strategy-details/${strategy.id}`);
   };
 
-  console.log("Strategy in card:", strategy);
-
   return (
     <Card className="bg-gradient-to-br from-charcoalSecondary via-charcoalSecondary to-charcoalPrimary rounded-xl border border-gray-700/50 shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10 hover:-translate-y-1">
       <CardContent className="p-0">
