@@ -23,7 +23,7 @@ const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSucce
   // Mark ALL files as premium/locked
   const enhancedFiles = files.map(file => ({
     ...file,
-    is_premium: true
+    is_premium: true // Force all files to be premium/locked
   }));
 
   return (

@@ -117,7 +117,7 @@ const FileItem = ({
         <span className="text-sm text-gray-400">{size}</span>
       </div>
       
-      {/* Show different buttons based on the file's status */}
+      {/* Only show download button if file is accessible, otherwise show unlock button */}
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
           <Button
