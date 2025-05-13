@@ -30,6 +30,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPremium = strategy.id > 1;
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
+  console.log("Rendering strategy in StrategyCard:", {
+    id: strategy.id,
+    name: strategy.name,
+    description: strategy.description,
+    isPremium,
+    canAccess
+  });
+
   const toggleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
     

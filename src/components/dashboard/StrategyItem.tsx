@@ -23,6 +23,14 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !strategy.isPremium || hasPremium || strategy.isPaid;
   
+  console.log("Rendering strategy in StrategyItem:", {
+    id: strategy.id,
+    name: strategy.name,
+    description: strategy.description,
+    isPremium: strategy.isPremium,
+    isAccessible
+  });
+  
   return (
     <Link 
       to={`/strategy-details/${strategy.id}`}

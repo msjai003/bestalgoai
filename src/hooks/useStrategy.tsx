@@ -24,18 +24,25 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     // When predefinedStrategies are loaded or change, update our state
     if (predefinedStrategies.length > 0) {
+      console.log("Received predefined strategies in useStrategy:", predefinedStrategies);
       setStrategies(prevStrategies => {
         // If we already have strategies loaded with user settings, don't override them
         if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
+          console.log("Preserving existing strategies with user settings");
           return prevStrategies;
         }
-        return predefinedStrategies.map(strategy => ({
-          ...strategy,
-          isWishlisted: false,
-          isLive: false,
-          isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
-          isPaid: false
-        }));
+        
+        console.log("Creating new strategies with defaults");
+        return predefinedStrategies.map(strategy => {
+          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}`);
+          return {
+            ...strategy,
+            isWishlisted: false,
+            isLive: false,
+            isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
+            isPaid: false
+          };
+        });
       });
     }
   }, [predefinedStrategies]);
@@ -63,17 +70,30 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
+          console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
+            hasUserStrategy: !!userStrategy,
+            userPaidStatus: userStrategy?.paid_status
+          });
+          
           // If user has a strategy with paid_status='paid', mark it as accessible
           // We need to check if the property exists before accessing it
           if (userStrategy && userStrategy.paid_status === 'paid') {
+            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked`);
             return { 
               ...predefinedStrategy, 
               ...userStrategy,
+              name: predefinedStrategy.name, // Ensure we keep the original name
+              description: predefinedStrategy.description, // Ensure we keep the original description
               isPaid: true  // Mark as paid/unlocked
             };
           }
           
-          return userStrategy ? { ...predefinedStrategy, ...userStrategy } : {
+          return userStrategy ? {
+            ...predefinedStrategy,
+            ...userStrategy,
+            name: predefinedStrategy.name, // Ensure we keep the original name
+            description: predefinedStrategy.description, // Ensure we keep the original description
+          } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
@@ -81,6 +101,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isPaid: false
           };
         });
+        
+        console.log("Final merged strategies:", mergedStrategies);
         return mergedStrategies;
       });
     } catch (error) {
