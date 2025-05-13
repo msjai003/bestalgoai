@@ -43,33 +43,8 @@ export async function getPricingPlans() {
  * @returns Promise<boolean> indicating if the user has premium access
  */
 export async function checkUserPremiumStatus(userId: string): Promise<boolean> {
-  if (!userId) {
-    return false;
-  }
-
-  try {
-    // Get the most recent plan for the user
-    const params: ExecuteSqlParams = { 
-      query: `SELECT * FROM plan_details 
-              WHERE user_id = '${userId}'
-              ORDER BY selected_at DESC
-              LIMIT 1` 
-    };
-    const { data, error } = await supabase.rpc('execute_sql', params);
-
-    if (error) {
-      console.error('Error checking premium status:', error);
-      return false;
-    }
-
-    // Check if we have data and if the first item indicates premium status
-    const plan = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
-    return plan && 
-      (plan.plan_name === 'Pro' || plan.plan_name === 'Elite' || plan.is_paid === true);
-  } catch (error) {
-    console.error('Exception checking premium status:', error);
-    return false;
-  }
+  // All users now have premium status by default
+  return true;
 }
 
 /**
@@ -83,22 +58,12 @@ export async function syncPremiumAccess(userId: string): Promise<boolean> {
   }
 
   try {
-    // Check if the user has premium status
-    const hasPremium = await checkUserPremiumStatus(userId);
-    
-    if (!hasPremium) {
-      return false;
-    }
-    
-    // Here we would typically sync the premium status with other parts of the application
-    // For example, unlocking premium strategies
-    
-    // For now, we'll just update any strategies the user has to mark them as paid if they have premium
+    // Force all user strategies to be marked as paid
     const { error } = await supabase.rpc('force_strategy_paid_status', {
       p_user_id: userId,
       p_strategy_id: 1,  // Using a placeholder ID
-      p_strategy_name: 'Premium Strategy',
-      p_strategy_description: 'Unlocked with premium subscription'
+      p_strategy_name: 'All Strategies',
+      p_strategy_description: 'All strategies are now free'
     });
     
     if (error) {

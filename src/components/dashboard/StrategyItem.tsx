@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 interface StrategyItemProps {
   strategy: {
@@ -16,14 +15,13 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
-  // All strategies are now accessible, regardless of premium status
+  // All strategies are now accessible
   const isAccessible = true;
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
     name: strategy.name,
     description: strategy.description,
-    isPremium: strategy.isPremium,
     isAccessible
   });
   

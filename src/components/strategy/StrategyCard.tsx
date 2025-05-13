@@ -8,7 +8,6 @@ import { HeartIcon, PlayIcon, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -23,12 +22,12 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onToggleWishlist,
   onToggleLiveMode,
   isAuthenticated,
-  hasPremium = false
+  hasPremium = true // Default to true to ensure all strategies are accessible
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // All strategies are now accessible
+  // All strategies are accessible
   const canAccess = true;
 
   console.log("Rendering strategy in StrategyCard:", {

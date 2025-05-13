@@ -6,7 +6,6 @@ import {
   updateStrategyLiveConfig,
   updateStrategyTradeType
 } from "@/hooks/strategy/useStrategyDatabase";
-import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -17,7 +16,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live trade" | "paper trade">("paper trade");
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
-  const [hasPremium, setHasPremium] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -38,7 +36,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...strategy,
             isWishlisted: false,
             isLive: false,
-            // Important: All strategies are unlocked by default
+            // All strategies are free
             isPremium: false,
             isPaid: true
           };
@@ -50,14 +48,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     if (user) {
       loadStrategies();
-      setHasPremium(true); // Set premium status to true for all users
     }
   }, [user]);
-
-  const checkPremiumStatus = async (userId: string) => {
-    // Always set premium status to true
-    setHasPremium(true);
-  };
 
   const loadStrategies = async () => {
     if (!user) return;
@@ -75,20 +67,20 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             userPaidStatus: userStrategy?.paid_status
           });
           
-          // All strategies are now accessible
+          // All strategies are free and accessible
           return userStrategy ? {
             ...predefinedStrategy,
             ...userStrategy,
-            name: predefinedStrategy.name, // Ensure we keep the original name
-            description: predefinedStrategy.description, // Ensure we keep the original description
-            isPaid: true, // Mark all strategies as paid/unlocked
-            isPremium: false // No strategy is premium anymore
+            name: predefinedStrategy.name,
+            description: predefinedStrategy.description,
+            isPaid: true,
+            isPremium: false
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: false, // No strategy is premium anymore
-            isPaid: true // Mark all strategies as paid/unlocked
+            isPremium: false,
+            isPaid: true
           };
         });
         
@@ -123,7 +115,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
 
     // Always open the dialog to choose mode, regardless of current state
-    // This allows users to switch between brokers
     setTargetMode("live trade");
     setConfirmDialogOpen(true);
   };
@@ -258,6 +249,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    hasPremium: true // Always return true for hasPremium
+    hasPremium: true // Always return true for hasPremium to unlock all features
   };
 };
