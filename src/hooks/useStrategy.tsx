@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,8 +38,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...strategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
-            isPaid: false
+            // Important: All strategies are unlocked by default
+            isPremium: false,
+            isPaid: true
           };
         });
       });
@@ -50,13 +50,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     if (user) {
       loadStrategies();
-      checkPremiumStatus(user.id);
+      setHasPremium(true); // Set premium status to true for all users
     }
   }, [user]);
 
   const checkPremiumStatus = async (userId: string) => {
-    const isPremium = await checkUserPremiumStatus(userId);
-    setHasPremium(isPremium);
+    // Always set premium status to true
+    setHasPremium(true);
   };
 
   const loadStrategies = async () => {
@@ -75,30 +75,20 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             userPaidStatus: userStrategy?.paid_status
           });
           
-          // If user has a strategy with paid_status='paid', mark it as accessible
-          // We need to check if the property exists before accessing it
-          if (userStrategy && userStrategy.paid_status === 'paid') {
-            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked`);
-            return { 
-              ...predefinedStrategy, 
-              ...userStrategy,
-              name: predefinedStrategy.name, // Ensure we keep the original name
-              description: predefinedStrategy.description, // Ensure we keep the original description
-              isPaid: true  // Mark as paid/unlocked
-            };
-          }
-          
+          // All strategies are now accessible
           return userStrategy ? {
             ...predefinedStrategy,
             ...userStrategy,
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
+            isPaid: true, // Mark all strategies as paid/unlocked
+            isPremium: false // No strategy is premium anymore
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: predefinedStrategy.id > 1, // Setting premium flag (usually id 1 is free)
-            isPaid: false
+            isPremium: false, // No strategy is premium anymore
+            isPaid: true // Mark all strategies as paid/unlocked
           };
         });
         
@@ -268,6 +258,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    hasPremium
+    hasPremium: true // Always return true for hasPremium
   };
 };
