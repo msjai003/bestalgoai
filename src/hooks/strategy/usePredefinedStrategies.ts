@@ -17,6 +17,7 @@ export interface StrategyLeg {
   reEntryOnStopLoss: string;
   simpleMomentum: string;
   rangeBreakout: string;
+  segment?: string;
 }
 
 export interface PredefinedStrategy {
