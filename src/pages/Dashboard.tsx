@@ -16,8 +16,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
-  // Set hasPremium to true by default to unlock all strategies
-  const [hasPremium, setHasPremium] = useState<boolean>(true);
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
   const [isSyncingPremium, setIsSyncingPremium] = useState(false);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
@@ -51,19 +50,36 @@ const Dashboard = () => {
       return;
     }
     
-    // Always set hasPremium to true
-    setHasPremium(true);
-    
-    // Still sync premium access to database for consistency
-    const syncPremiumForUser = async () => {
-      if (!isSyncingPremium) {
-        setIsSyncingPremium(true);
-        await syncPremiumAccess(user.id);
-        setIsSyncingPremium(false);
+    const checkPremium = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plan_details')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('selected_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.is_paid === true)) {
+          setHasPremium(true);
+          
+          // If the user has premium, sync their access to unlock strategies
+          if (!isSyncingPremium && data.is_paid === true) {
+            setIsSyncingPremium(true);
+            const synced = await syncPremiumAccess(user.id);
+            setIsSyncingPremium(false);
+            
+            if (synced) {
+              console.log("Premium access synced successfully");
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
       }
     };
     
-    syncPremiumForUser();
+    checkPremium();
   }, [user, isSyncingPremium]);
 
   if (isVerifyingAuth || user === null) {

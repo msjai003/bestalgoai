@@ -54,8 +54,6 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   
   // Make sure to properly parse the strategy_details column
   return (data || []).map(strategy => {
-    console.log(`Processing strategy ${strategy.id} with name: "${strategy.name}"`);
-    
     // Ensure strategy_details is properly parsed
     let parsedStrategyDetails: any = strategy.strategy_details;
     
@@ -85,7 +83,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     
     return {
       id: strategy.id,
-      name: strategy.name,  // Ensure we're using the correct name from the database
+      name: strategy.name,
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],

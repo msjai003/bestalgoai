@@ -18,40 +18,23 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live trade" | "paper trade">("paper trade");
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
-  // Set hasPremium to true by default to unlock all strategies
-  const [hasPremium, setHasPremium] = useState(true);
+  const [hasPremium, setHasPremium] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     // When predefinedStrategies are loaded or change, update our state
     if (predefinedStrategies.length > 0) {
-      console.log("Setting strategies from predefined list:", 
-        predefinedStrategies.map(s => ({ id: s.id, name: s.name }))
-      );
-      
       setStrategies(prevStrategies => {
         // If we already have strategies loaded with user settings, don't override them
         if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
-          // Merge the predefined strategy names with our existing user settings
-          return prevStrategies.map(prevStrategy => {
-            const matchedStrategy = predefinedStrategies.find(s => s.id === prevStrategy.id);
-            if (matchedStrategy) {
-              return {
-                ...prevStrategy,
-                name: matchedStrategy.name,
-                description: matchedStrategy.description
-              };
-            }
-            return prevStrategy;
-          });
+          return prevStrategies;
         }
-        
         return predefinedStrategies.map(strategy => ({
           ...strategy,
           isWishlisted: false,
           isLive: false,
-          isPremium: false, // Set all strategies as non-premium
-          isPaid: true // Mark all strategies as paid/unlocked
+          isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
+          isPaid: false
         }));
       });
     }
@@ -60,14 +43,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     if (user) {
       loadStrategies();
-      // Always set hasPremium to true for all users
-      setHasPremium(true);
+      checkPremiumStatus(user.id);
     }
   }, [user]);
 
   const checkPremiumStatus = async (userId: string) => {
-    // Always return true to unlock all strategies
-    setHasPremium(true);
+    const isPremium = await checkUserPremiumStatus(userId);
+    setHasPremium(isPremium);
   };
 
   const loadStrategies = async () => {
@@ -81,12 +63,22 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
-          // Mark all strategies as accessible
-          return { 
-            ...predefinedStrategy, 
-            ...(userStrategy || {}),
-            isPremium: false, // Set all strategies as non-premium
-            isPaid: true  // Mark all as paid/unlocked
+          // If user has a strategy with paid_status='paid', mark it as accessible
+          // We need to check if the property exists before accessing it
+          if (userStrategy && userStrategy.paid_status === 'paid') {
+            return { 
+              ...predefinedStrategy, 
+              ...userStrategy,
+              isPaid: true  // Mark as paid/unlocked
+            };
+          }
+          
+          return userStrategy ? { ...predefinedStrategy, ...userStrategy } : {
+            ...predefinedStrategy,
+            isWishlisted: false,
+            isLive: false,
+            isPremium: predefinedStrategy.id > 1, // Setting premium flag (usually id 1 is free)
+            isPaid: false
           };
         });
         return mergedStrategies;
@@ -254,6 +246,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    hasPremium: true // Always return true for hasPremium
+    hasPremium
   };
 };
