@@ -134,13 +134,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
           
           <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-            {!canAccess ? (
-              <span>
-                {strategy.description} <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade to access</span>
-              </span>
-            ) : (
-              strategy.description
-            )}
+            {strategy.description}
           </p>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
