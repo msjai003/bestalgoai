@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +7,7 @@ import {
   updateStrategyLiveConfig,
   updateStrategyTradeType
 } from "@/hooks/strategy/useStrategyDatabase";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -16,6 +18,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [targetMode, setTargetMode] = useState<"live trade" | "paper trade">("paper trade");
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
+  const [hasPremium, setHasPremium] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -36,9 +39,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...strategy,
             isWishlisted: false,
             isLive: false,
-            // All strategies are free
-            isPremium: false,
-            isPaid: true
+            isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
+            isPaid: false
           };
         });
       });
@@ -48,8 +50,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   useEffect(() => {
     if (user) {
       loadStrategies();
+      checkPremiumStatus(user.id);
     }
   }, [user]);
+
+  const checkPremiumStatus = async (userId: string) => {
+    const isPremium = await checkUserPremiumStatus(userId);
+    setHasPremium(isPremium);
+  };
 
   const loadStrategies = async () => {
     if (!user) return;
@@ -67,20 +75,30 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             userPaidStatus: userStrategy?.paid_status
           });
           
-          // All strategies are free and accessible
+          // If user has a strategy with paid_status='paid', mark it as accessible
+          // We need to check if the property exists before accessing it
+          if (userStrategy && userStrategy.paid_status === 'paid') {
+            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked`);
+            return { 
+              ...predefinedStrategy, 
+              ...userStrategy,
+              name: predefinedStrategy.name, // Ensure we keep the original name
+              description: predefinedStrategy.description, // Ensure we keep the original description
+              isPaid: true  // Mark as paid/unlocked
+            };
+          }
+          
           return userStrategy ? {
             ...predefinedStrategy,
             ...userStrategy,
-            name: predefinedStrategy.name,
-            description: predefinedStrategy.description,
-            isPaid: true,
-            isPremium: false
+            name: predefinedStrategy.name, // Ensure we keep the original name
+            description: predefinedStrategy.description, // Ensure we keep the original description
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: false,
-            isPaid: true
+            isPremium: predefinedStrategy.id > 1, // Setting premium flag (usually id 1 is free)
+            isPaid: false
           };
         });
         
@@ -115,6 +133,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
 
     // Always open the dialog to choose mode, regardless of current state
+    // This allows users to switch between brokers
     setTargetMode("live trade");
     setConfirmDialogOpen(true);
   };
@@ -249,6 +268,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    hasPremium: true // Always return true for hasPremium to unlock all features
+    hasPremium
   };
 };

@@ -26,8 +26,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-cyan/10 to-cyan/5 rounded-full -ml-16 -mb-16 blur-3xl z-0"></div>
-      
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
           <div>

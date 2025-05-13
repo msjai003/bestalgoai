@@ -13,7 +13,7 @@ import { PredefinedStrategyList } from "@/components/strategy/PredefinedStrategy
 import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigation";
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
-import { TrendingUp } from "lucide-react";
+import { Sparkles, TrendingUp } from "lucide-react";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -70,6 +70,13 @@ const StrategySelection = () => {
                   <h1 className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">Strategy Selection</h1>
                 </div>
                 <p className="text-gray-400 text-sm">Choose from our optimized trading strategies or create your own custom approach</p>
+                
+                {!hasPremium && (
+                  <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-yellow-900/20 to-yellow-700/10 p-2 pl-3 rounded-lg border border-yellow-700/30">
+                    <Sparkles className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+                    <p className="text-xs text-yellow-300">Upgrade to unlock premium strategies with advanced features</p>
+                  </div>
+                )}
               </div>
             </div>
             

@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Play, Trash2 } from "lucide-react";
+import { Plus, Play, Trash2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface StrategySectionProps {
@@ -29,6 +29,26 @@ export const StrategySection = ({
   showEmptyStateButton = true,
 }: StrategySectionProps) => {
   const navigate = useNavigate();
+
+  // Helper function to determine if a strategy is premium based on its ID
+  const isPremiumStrategy = (strategyId: number | string) => {
+    // Use the same logic as in StrategyCard component
+    return Number(strategyId) > 1;
+  };
+
+  // Helper to check if a premium strategy has been paid for
+  const isPaidStrategy = (strategy: any) => {
+    return strategy.isPaid === true;
+  };
+
+  const handlePremiumClick = (strategyId: number | string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from propagating
+    
+    // Store the strategy ID in sessionStorage before redirecting
+    sessionStorage.setItem('selectedStrategyId', strategyId.toString());
+    sessionStorage.setItem('redirectAfterPayment', '/strategy-management');
+    navigate('/pricing');
+  };
   
   const handleToggleLiveMode = (strategyId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // Stop event from propagating
@@ -88,7 +108,10 @@ export const StrategySection = ({
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold text-white hover:text-cyan transition-colors duration-300">{strategy.name}</h3>
-                  <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
+                  {/* Show description only if it's not a premium strategy OR if it's a premium strategy that has been paid for */}
+                  {(!isPremiumStrategy(strategy.id) || isPaidStrategy(strategy)) && strategy.description && (
+                    <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
+                  )}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Tooltip>
@@ -110,18 +133,32 @@ export const StrategySection = ({
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className={`${strategy.isLive ? "text-green-500 hover:text-green-400 hover:bg-green-500/10" : "text-gray-400 hover:text-gray-300 hover:bg-white/5"} p-2 cursor-pointer transition-colors duration-300`}
-                        onClick={(e) => handleToggleLiveMode(strategy.id, e)}
-                        aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
+                      {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 cursor-pointer transition-colors duration-300"
+                          onClick={(e) => handlePremiumClick(strategy.id, e)}
+                          aria-label="Premium strategy"
+                        >
+                          <Lock className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={`${strategy.isLive ? "text-green-500 hover:text-green-400 hover:bg-green-500/10" : "text-gray-400 hover:text-gray-300 hover:bg-white/5"} p-2 cursor-pointer transition-colors duration-300`}
+                          onClick={(e) => handleToggleLiveMode(strategy.id, e)}
+                          aria-label={strategy.isLive ? "Switch to paper trading" : "Switch to live trading"}
+                        >
+                          <Play className="h-4 w-4" />
+                        </Button>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      {strategy.isLive ? (
+                      {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? (
+                        <p>Unlock this premium strategy</p>
+                      ) : strategy.isLive ? (
                         <p>Switch to paper trading</p>
                       ) : (
                         <p>Click to live trade</p>
@@ -142,8 +179,8 @@ export const StrategySection = ({
                     )}
                   </div>
                   
-                  <div className={`${strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-cyan/20 text-cyan'} px-2 py-1 rounded-md text-xs font-medium`}>
-                    {strategy.isLive ? 'Live Trading' : 'Paper Trading'}
+                  <div className={`${isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'bg-yellow-500/20 text-yellow-400' : (strategy.isLive ? 'bg-green-500/20 text-green-400' : 'bg-cyan/20 text-cyan')} px-2 py-1 rounded-md text-xs font-medium`}>
+                    {isPremiumStrategy(strategy.id) && !isPaidStrategy(strategy) ? 'Premium' : (strategy.isLive ? 'Live Trading' : 'Paper Trading')}
                   </div>
                 </div>
               </div>
