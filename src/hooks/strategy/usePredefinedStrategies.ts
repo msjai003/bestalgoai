@@ -52,61 +52,125 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
 
   console.log('Fetched predefined strategies raw data:', data);
   
-  // If no data is returned, return an empty array
+  // If no data is returned, return default strategies
   if (!data || data.length === 0) {
     console.log('No predefined strategies found in the database');
-    // Create a default strategy if no strategies are found
-    return [{
-      id: 1,
-      name: "Velox Edge Strategy",
-      description: "A fast-paced intraday strategy for NIFTY options",
-      performance: {
-        winRate: "65%",
-        avgProfit: "12%",
-        drawdown: "8%"
+    // Create default strategies if no strategies are found
+    return [
+      {
+        id: 1,
+        name: "Velox Edge Strategy",
+        description: "A fast-paced intraday strategy for NIFTY options",
+        performance: {
+          winRate: "65%",
+          avgProfit: "12%",
+          drawdown: "8%"
+        },
+        parameters: [
+          { name: "Lot Size", value: "1" },
+          { name: "Index", value: "NIFTY" }
+        ],
+        strategy_details: {
+          Index: "NIFTY",
+          "Underlying from": "Futures",
+          "Strategy Type": "Intraday",
+          "Entry Time": "09:20",
+          "Exit Time": "15:15",
+          "No Re-entry After": "Disabled",
+          "Square Off": "Partial",
+          "Trail SL to Break-even price": "Enabled",
+          "Apply to": "All Legs",
+          "Total Lot": "1",
+          Segments: ["Futures", "Options"],
+          Legs: [
+            {
+              id: 1,
+              lots: 1,
+              position: "Sell",
+              optionType: "Put",
+              expiry: "Weekly",
+              strikeCriteria: "Closest Premium",
+              premium: 100,
+              targetProfit: "Disabled",
+              stopLoss: "Disabled",
+              trailSL: "Enabled",
+              reEntryOnTarget: "Disabled",
+              reEntryOnStopLoss: "Disabled",
+              simpleMomentum: "Disabled",
+              rangeBreakout: "Disabled",
+              segment: "options"
+            }
+          ]
+        }
       },
-      parameters: [
-        { name: "Lot Size", value: "1" },
-        { name: "Index", value: "NIFTY" }
-      ],
-      strategy_details: {
-        Index: "NIFTY",
-        "Underlying from": "Futures",
-        "Strategy Type": "Intraday",
-        "Entry Time": "09:20",
-        "Exit Time": "15:15",
-        "No Re-entry After": "Disabled",
-        "Square Off": "Partial",
-        "Trail SL to Break-even price": "Enabled",
-        "Apply to": "All Legs",
-        "Total Lot": "1",
-        Segments: ["Futures", "Options"],
-        Legs: [
-          {
-            id: 1,
-            lots: 1,
-            position: "Sell",
-            optionType: "Put",
-            expiry: "Weekly",
-            strikeCriteria: "Closest Premium",
-            premium: 100,
-            targetProfit: "Disabled",
-            stopLoss: "Disabled",
-            trailSL: "Enabled",
-            reEntryOnTarget: "Disabled",
-            reEntryOnStopLoss: "Disabled",
-            simpleMomentum: "Disabled",
-            rangeBreakout: "Disabled",
-            segment: "options"
-          }
-        ]
+      {
+        id: 2,
+        name: "Zenflow Strategy",
+        description: "Advanced multi-leg options strategy with dynamic hedging",
+        performance: {
+          winRate: "78%",
+          avgProfit: "15%",
+          drawdown: "6%"
+        },
+        parameters: [
+          { name: "Lot Size", value: "2" },
+          { name: "Index", value: "BANKNIFTY" }
+        ],
+        strategy_details: {
+          Index: "BANKNIFTY",
+          "Underlying from": "Futures",
+          "Strategy Type": "Intraday",
+          "Entry Time": "09:30",
+          "Exit Time": "15:20",
+          "No Re-entry After": "14:30",
+          "Square Off": "Complete",
+          "Trail SL to Break-even price": "Enabled",
+          "Apply to": "All Legs",
+          "Total Lot": "2",
+          Segments: ["Options"],
+          Legs: [
+            {
+              id: 1,
+              lots: 2,
+              position: "Sell",
+              optionType: "Call",
+              expiry: "Weekly",
+              strikeCriteria: "ATM",
+              premium: 120,
+              targetProfit: "10%",
+              stopLoss: "5%",
+              trailSL: "Enabled",
+              reEntryOnTarget: "Enabled",
+              reEntryOnStopLoss: "Disabled",
+              simpleMomentum: "Enabled",
+              rangeBreakout: "Enabled",
+              segment: "options"
+            },
+            {
+              id: 2,
+              lots: 1,
+              position: "Buy",
+              optionType: "Put",
+              expiry: "Weekly",
+              strikeCriteria: "OTM",
+              premium: 80,
+              targetProfit: "15%",
+              stopLoss: "8%",
+              trailSL: "Enabled",
+              reEntryOnTarget: "Disabled",
+              reEntryOnStopLoss: "Disabled",
+              simpleMomentum: "Enabled",
+              rangeBreakout: "Disabled",
+              segment: "options"
+            }
+          ]
+        }
       }
-    }];
+    ];
   }
   
   // Make sure to properly parse the strategy_details column
-  return (data || []).map(strategy => {
-    // Ensure strategy_details is properly parsed
+  const strategies = (data || []).map(strategy => {
     let parsedStrategyDetails: any = strategy.strategy_details;
     
     // If it's a string, try to parse it as JSON
@@ -143,15 +207,23 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       console.log(`Strategy ${strategy.id} has no legs data.`);
     }
     
+    // For premium strategy (ID 2), rename to Zenflow Strategy
+    const name = strategy.id === 2 ? "Zenflow Strategy" : strategy.name;
+    const description = strategy.id === 2 ? 
+      "Advanced multi-leg options strategy with dynamic hedging" : 
+      strategy.description;
+      
     return {
       id: strategy.id,
-      name: strategy.name,
-      description: strategy.description,
+      name: name,
+      description: description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
       strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details']
     };
   });
+  
+  return strategies;
 };
 
 export const usePredefinedStrategies = () => {
