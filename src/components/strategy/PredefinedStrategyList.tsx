@@ -46,7 +46,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
           onToggleWishlist={onToggleWishlist}
           onToggleLiveMode={onToggleLiveMode}
           isAuthenticated={!!user}
-          hasPremium={false} // This should be determined by user's subscription status
+          hasPremium={true} // All strategies are now accessible
         />
       ))}
     </div>
