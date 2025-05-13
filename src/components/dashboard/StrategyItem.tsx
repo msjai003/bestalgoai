@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface StrategyItemProps {
@@ -53,7 +54,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
                 onPremiumClick();
               }}
             >
-              Unlock
+              <Lock className="h-3 w-3 mr-1" /> Unlock
             </Button>
           )}
         </div>

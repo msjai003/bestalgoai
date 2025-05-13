@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Strategy } from "@/hooks/strategy/types";
-import { HeartIcon, PlayIcon, StopCircleIcon, Eye } from "lucide-react";
+import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -118,10 +118,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       style={{ zIndex: 10 }}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
-                      {strategy.isLive ? 
-                        <PlayIcon size={24} className="cursor-pointer text-green-400" /> : 
-                        <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
-                      }
+                      {!canAccess ? (
+                        <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
+                      ) : (
+                        strategy.isLive ? 
+                          <PlayIcon size={24} className="cursor-pointer text-green-400" /> : 
+                          <PlayIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(0,188,212,0.7)]" />
+                      )}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
