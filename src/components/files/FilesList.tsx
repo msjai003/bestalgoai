@@ -20,8 +20,6 @@ interface FilesListProps {
 }
 
 const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSuccess }) => {
-  // We don't need to explicitly mark files as premium anymore since they'll come from the database with is_premium set to true
-  // Just pass the files directly to the FileItem component
   return (
     <div className="space-y-1">
       {files.map((file) => (

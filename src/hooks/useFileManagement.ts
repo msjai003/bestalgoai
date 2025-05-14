@@ -63,7 +63,6 @@ export function useFileManagement(userId?: string) {
       console.log("Files data received:", exeFiles);
       
       // Format the data to match the FileItem interface
-      // is_premium is now set to true in the database for all files
       const formattedFiles = exeFiles
         .map(file => {
           // Get file type
@@ -88,7 +87,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: isPremium // Ensure premium status is applied
+            is_premium: isPremium // Always mark zip files as premium
           };
         });
       
@@ -181,14 +180,10 @@ export function useFileManagement(userId?: string) {
     }
   };
 
-  // All files are now premium after the SQL update
-  const hasPremiumFiles = true;
-
   return {
     files,
     isLoading,
     hasPremium,
-    hasPremiumFiles,
     checkFilePaidStatus,
     recordFilePayment
   };
