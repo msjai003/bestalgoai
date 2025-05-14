@@ -114,37 +114,6 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
   }
 };
 
-// Helper function to update local storage wishlist
-export const updateLocalStorageWishlist = (
-  strategyId: number,
-  isWishlisted: boolean,
-  strategies: Strategy[]
-): void => {
-  const storedWishlist = localStorage.getItem('wishlistedStrategies');
-  let wishlistedStrategies: any[] = [];
-  
-  if (storedWishlist) {
-    try {
-      wishlistedStrategies = JSON.parse(storedWishlist);
-    } catch (error) {
-      console.error("Error parsing wishlisted strategies:", error);
-    }
-  }
-  
-  if (isWishlisted) {
-    if (!wishlistedStrategies.some(s => s.id === strategyId)) {
-      const strategyToAdd = strategies.find(s => s.id === strategyId);
-      if (strategyToAdd) {
-        wishlistedStrategies.push({...strategyToAdd, isWishlisted: true});
-      }
-    }
-  } else {
-    wishlistedStrategies = wishlistedStrategies.filter(s => s.id !== strategyId);
-  }
-  
-  localStorage.setItem('wishlistedStrategies', JSON.stringify(wishlistedStrategies));
-};
-
 // Function to load wishlist items from the wishlist_maintain table
 export const loadWishlistItems = async (userId: string): Promise<Array<{id: number, name: string, description: string}>> => {
   try {

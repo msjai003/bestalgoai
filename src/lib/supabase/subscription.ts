@@ -76,9 +76,11 @@ export const syncWishlistMaintain = async (
   isWishlisted: boolean
 ): Promise<void> => {
   try {
+    console.log(`Syncing wishlist_maintain for user ${userId}, strategy ${strategyId}, wishlisted: ${isWishlisted}`);
+    
     if (isWishlisted) {
       // Add to wishlist_maintain table
-      const { error: insertError } = await supabase
+      const { data, error: insertError } = await supabase
         .from('wishlist_maintain')
         .upsert({
           user_id: userId,
@@ -88,13 +90,15 @@ export const syncWishlistMaintain = async (
         }, { 
           onConflict: 'user_id,strategy_id',
           ignoreDuplicates: false
-        });
+        })
+        .select();
       
       if (insertError) {
+        console.error("Error inserting into wishlist_maintain:", insertError);
         throw insertError;
       }
       
-      console.log(`Strategy ${strategyId} added to wishlist_maintain`);
+      console.log(`Strategy ${strategyId} added to wishlist_maintain`, data);
     } else {
       // Remove from wishlist_maintain table
       const { error: deleteError } = await supabase
@@ -104,6 +108,7 @@ export const syncWishlistMaintain = async (
         .eq('strategy_id', strategyId);
       
       if (deleteError) {
+        console.error("Error deleting from wishlist_maintain:", deleteError);
         throw deleteError;
       }
       

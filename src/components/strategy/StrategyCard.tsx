@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,9 +42,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     e.stopPropagation();
     
     if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add strategies to your wishlist",
+      });
       navigate('/auth');
       return;
     }
+    
+    console.log(`Toggling wishlist for strategy ${strategy.id}, current state: ${strategy.isWishlisted}`);
     onToggleWishlist(strategy.id, !strategy.isWishlisted);
   };
 
@@ -93,6 +98,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       size="icon"
                       className={`${strategy.isWishlisted ? "text-red-400" : "text-gray-400 hover:text-red-400"} transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 cursor-pointer hover:bg-gray-700/50 hover:shadow-md`}
                       onClick={toggleWishlist}
+                      aria-label={strategy.isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                     >
                       <HeartIcon 
                         size={24} 

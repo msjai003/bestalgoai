@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +7,7 @@ import {
   updateStrategyTradeType
 } from "@/hooks/strategy/useStrategyDatabase";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
+import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -113,13 +113,43 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   };
 
-  // Fixed type signature to match expected types in PredefinedStrategyList
-  const handleToggleWishlist = (id: number, isWishlisted: boolean) => {
-    setStrategies(prevStrategies =>
-      prevStrategies.map(strategy =>
-        strategy.id === id ? { ...strategy, isWishlisted: !strategy.isWishlisted } : strategy
-      )
-    );
+  // Updated handleToggleWishlist function to correctly use wishlist_maintain table
+  const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
+    if (!user) {
+      console.log("User not authenticated, cannot toggle wishlist");
+      return;
+    }
+
+    try {
+      console.log(`Toggle wishlist for strategy ${id}, current state: ${isWishlisted}`);
+
+      // Find the strategy to get its name and description
+      const strategy = strategies.find(s => s.id === id);
+      if (!strategy) {
+        console.error(`Strategy with ID ${id} not found`);
+        return;
+      }
+
+      if (!isWishlisted) {
+        // Add to wishlist
+        await addToWishlist(user.id, id, strategy.name, strategy.description || "");
+        toast.success(`Added "${strategy.name}" to your wishlist`);
+      } else {
+        // Remove from wishlist
+        await removeFromWishlist(user.id, id);
+        toast.success(`Removed "${strategy.name}" from your wishlist`);
+      }
+
+      // Update local state
+      setStrategies(prevStrategies =>
+        prevStrategies.map(strategy =>
+          strategy.id === id ? { ...strategy, isWishlisted: !isWishlisted } : strategy
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      toast.error("Failed to update wishlist");
+    }
   };
 
   // Fixed type signature to match expected types in PredefinedStrategyList
