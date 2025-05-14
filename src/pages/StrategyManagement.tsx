@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Strategy } from "@/hooks/strategy/types";
 import { useStrategyWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
@@ -60,7 +60,10 @@ const StrategyManagement = () => {
         title: "Success",
         description: "Strategy removed from wishlist",
       });
-      window.location.reload();
+      
+      // No need for a full page reload, we can just wait for the wishlist hook to update
+      // We'll keep this for now to ensure consistency, but can be optimized later
+      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       console.error("Error removing strategy from wishlist:", error);
       toast({

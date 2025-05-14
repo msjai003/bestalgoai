@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Strategy } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { syncWishlistMaintain } from "@/lib/supabase/subscription";
 
 // Helper function to add strategy to wishlist using the new wishlist_maintain table
 export const addToWishlist = async (
@@ -13,6 +13,8 @@ export const addToWishlist = async (
   strategyDescription: string
 ): Promise<void> => {
   try {
+    console.log(`Adding strategy ${strategyId} to wishlist for user ${userId}`);
+    
     // Check if the strategy already exists in the wishlist_maintain table
     const { data: existingWishlist, error: queryError } = await supabase
       .from('wishlist_maintain')
@@ -23,24 +25,11 @@ export const addToWishlist = async (
       
     if (queryError) throw queryError;
     
-    if (existingWishlist) {
-      // Entry already exists, no need to insert
-      console.log("Strategy already in wishlist, skipping insert");
-      return;
+    if (!existingWishlist) {
+      // Sync with wishlist_maintain table
+      await syncWishlistMaintain(userId, strategyId, strategyName, strategyDescription, true);
+      console.log("Strategy added to wishlist_maintain table");
     }
-    
-    // Insert into the new wishlist_maintain table
-    const { error } = await supabase
-      .from('wishlist_maintain')
-      .insert({
-        user_id: userId,
-        strategy_id: strategyId,
-        strategy_name: strategyName,
-        strategy_description: strategyDescription
-      });
-      
-    if (error) throw error;
-    console.log("Strategy added to wishlist_maintain table");
     
     // Also update the strategy_selections table to maintain backward compatibility
     // First check if the strategy exists in strategy_selections
@@ -66,6 +55,23 @@ export const addToWishlist = async (
         
       if (updateError) throw updateError;
       console.log("Strategy updated in strategy_selections table");
+    } else {
+      // Insert a new record in strategy_selections if it doesn't exist
+      const { error: insertError } = await supabase
+        .from('strategy_selections')
+        .insert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription,
+          is_wishlisted: true, // Explicitly mark as wishlisted
+          trade_type: 'paper trade',
+          quantity: 0,
+          selected_broker: ''
+        });
+      
+      if (insertError) throw insertError;
+      console.log("Strategy inserted into strategy_selections table");
     }
   } catch (error) {
     console.error("Error adding to wishlist:", error);
@@ -78,17 +84,8 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
   try {
     console.log(`Removing strategy ${strategyId} from wishlist for user ${userId}`);
     
-    // Delete from wishlist_maintain table
-    const { error: deleteError } = await supabase
-      .from('wishlist_maintain')
-      .delete()
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
-      
-    if (deleteError) {
-      console.error("Error deleting from wishlist_maintain:", deleteError);
-      throw deleteError;
-    }
+    // Sync with wishlist_maintain table
+    await syncWishlistMaintain(userId, strategyId, "", "", false);
     console.log("Deleted from wishlist_maintain table");
     
     // Update the strategy_selections table to maintain backward compatibility
