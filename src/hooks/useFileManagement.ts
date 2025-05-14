@@ -113,7 +113,7 @@ export function useFileManagement(userId?: string) {
             size: '2.5 MB',
             created_at: new Date().toISOString(),
             type: 'zip',
-            url: `https://drive.google.com/file/d/${fileName}/view`,
+            url: `https://drive.google.com/file/d/${fileName === "downloaded_bestalgoai-infocap-ai.zip" ? "1fycQOnUve_XC9smVSajFFwJaazwpagcO" : "1G_c0PaubJHi4_5fvq0FNwlWz-Migq2jh"}/view`,
             bucket: "trading_files",
             is_premium: true // All manually added zip files are definitely premium
           });
