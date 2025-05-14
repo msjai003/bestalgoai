@@ -61,6 +61,7 @@ const FileItem = ({
     checkPaymentStatus();
   }, [user, id, is_premium]);
 
+  // A file can be downloaded if user has premium subscription OR has paid for this specific file
   const canDownload = hasPremium || !is_premium || hasPaid;
 
   const handleDownload = async () => {
@@ -95,7 +96,6 @@ const FileItem = ({
     });
   };
 
-  // Render a more compact layout for mobile devices
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col mb-2 sm:mb-0">
@@ -127,11 +127,8 @@ const FileItem = ({
             className="text-cyan hover:text-cyan hover:bg-transparent"
             disabled={downloadingId === id}
           >
-            {downloadingId === id ? (
-              <div className="h-4 w-4 border-2 border-current border-r-transparent rounded-full animate-spin"></div>
-            ) : (
-              <Download className="h-5 w-5" />
-            )}
+            <Download className="h-5 w-5" />
+            <span className="ml-1 sm:ml-2">Download</span>
           </Button>
         ) : (
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>

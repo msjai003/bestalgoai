@@ -15,7 +15,8 @@ const Files: React.FC = () => {
   const { 
     files, 
     isLoading, 
-    hasPremium
+    hasPremium,
+    checkFilePaidStatus
   } = useFileManagement(user?.id);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
