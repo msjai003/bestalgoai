@@ -27,7 +27,7 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({ show, onClose
             className="rounded-lg w-full max-w-sm"
           />
         </div>
-        <p className="text-green-400 mb-4">All ZIP files are now unlocked!</p>
+        <p className="text-green-400 mb-4">Your file is now unlocked! Click the download button to access it.</p>
         <Button
           onClick={onClose}
           className="bg-cyan hover:bg-cyan/80"

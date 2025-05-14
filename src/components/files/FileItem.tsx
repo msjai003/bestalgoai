@@ -117,9 +117,9 @@ const FileItem = ({
         <span className="text-sm text-gray-400">{size}</span>
       </div>
       
-      {/* Only show download button if file is accessible, otherwise show unlock button */}
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
+          // Show download button only if user can download
           <Button
             onClick={handleDownload}
             variant="ghost"
@@ -131,6 +131,7 @@ const FileItem = ({
             <span className="ml-1 sm:ml-2">Download</span>
           </Button>
         ) : (
+          // Show lock icon button if file is locked
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
             <DialogTrigger asChild>
               <Button
@@ -138,8 +139,8 @@ const FileItem = ({
                 size={isMobile ? "sm" : "sm"}
                 className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
               >
-                <Lock className="h-4 w-4 mr-2" />
-                <span>Unlock</span>
+                <Lock className="h-5 w-5 mr-2" />
+                <span>Unlock (₹1)</span>
               </Button>
             </DialogTrigger>
             <PaymentDialog

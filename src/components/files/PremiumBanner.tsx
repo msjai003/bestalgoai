@@ -8,8 +8,8 @@ const PremiumBanner: React.FC = () => {
       <div className="flex items-start sm:items-center">
         <Lock className="h-8 w-8 text-cyan mr-3 mt-0.5 sm:mt-0" />
         <div>
-          <h3 className="text-white text-lg font-medium">Premium Content Available</h3>
-          <p className="text-gray-300 text-sm">All files are locked and require payment to unlock. After payment, you'll see the download button.</p>
+          <h3 className="text-white text-lg font-medium">Premium Files Available</h3>
+          <p className="text-gray-300 text-sm">All files are locked and require a one-time payment of ₹1 to unlock. Click the lock icon to make payment and get access.</p>
         </div>
       </div>
     </div>

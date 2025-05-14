@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
@@ -137,7 +137,7 @@ export function useFileManagement(userId?: string) {
           user_id: userId,
           file_id: fileId,
           status: 'completed',
-          amount: 1 // Changed from 299 to 1
+          amount: 1 // 1 rupee payment
         });
       
       if (error) {
