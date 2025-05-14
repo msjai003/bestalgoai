@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Strategy } from "@/hooks/strategy/types";
@@ -23,6 +24,8 @@ const StrategyManagement = () => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<Strategy | null>(null);
+
+  console.log("Current wishlisted strategies:", wishlistedStrategies);
 
   const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
