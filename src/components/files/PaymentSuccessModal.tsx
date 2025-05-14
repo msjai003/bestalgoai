@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Unlock } from "lucide-react";
 
 interface PaymentSuccessModalProps {
   show: boolean;
@@ -21,11 +22,9 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({ show, onClose
         </button>
         <h3 className="text-xl font-bold text-white mb-4">Payment Successful!</h3>
         <div className="flex justify-center mb-4">
-          <img 
-            src="/public/lovable-uploads/08728724-393e-42b7-bd7b-de74eb6bae04.png" 
-            alt="Trading interface" 
-            className="rounded-lg w-full max-w-sm"
-          />
+          <div className="bg-green-500/20 rounded-full p-4">
+            <Unlock className="h-10 w-10 text-green-500" />
+          </div>
         </div>
         <p className="text-green-400 mb-4">Your file is now unlocked! Click the download button to access it.</p>
         <Button
