@@ -20,8 +20,6 @@ interface FilesListProps {
 }
 
 const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSuccess }) => {
-  console.log("FilesList rendering with files:", files);
-  
   return (
     <div className="space-y-1">
       {files.map((file) => (
