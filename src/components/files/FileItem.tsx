@@ -4,7 +4,7 @@ import { Download, Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
@@ -99,18 +99,18 @@ const FileItem = ({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col mb-2 sm:mb-0">
-        <div className="flex items-center flex-wrap gap-1">
+        <div className="flex items-center flex-wrap gap-2">
           <span className="font-medium text-white">{name}</span>
           {is_premium && !canDownload && (
-            <Badge variant="destructive" className="ml-0 sm:ml-2">
-              <Lock className="h-3 w-3 mr-1" />
-              Locked
+            <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
+              <Lock className="h-4 w-4 text-white" />
+              <span>Locked</span>
             </Badge>
           )}
           {is_premium && hasPaid && (
-            <Badge variant="success" className="ml-0 sm:ml-2">
-              <Unlock className="h-3 w-3 mr-1" />
-              Paid
+            <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
+              <Unlock className="h-4 w-4 text-white" />
+              <span>Paid</span>
             </Badge>
           )}
         </div>
@@ -124,7 +124,7 @@ const FileItem = ({
             onClick={handleDownload}
             variant="ghost"
             size={isMobile ? "sm" : "sm"}
-            className="text-cyan hover:text-cyan hover:bg-transparent"
+            className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
             disabled={downloadingId === id}
           >
             <Download className="h-5 w-5" />
@@ -136,10 +136,10 @@ const FileItem = ({
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto"
+                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
               >
-                <Lock className="h-4 w-4 mr-1" />
-                Unlock
+                <Lock className="h-4 w-4 mr-2" />
+                <span>Unlock</span>
               </Button>
             </DialogTrigger>
             <PaymentDialog
