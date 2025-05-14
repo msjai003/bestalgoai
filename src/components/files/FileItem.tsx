@@ -40,7 +40,7 @@ const FileItem = ({
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const isMobile = useIsMobile();
 
-  // Ensure zip files are always locked
+  // Always treat zip files as premium content regardless of database setting
   const isZipFile = type === 'zip' || name.toLowerCase().endsWith('.zip');
   const isLockedFile = is_premium || isZipFile;
 

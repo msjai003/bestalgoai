@@ -76,8 +76,8 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Ensure zip files are always marked as premium (locked)
-          const isPremium = file.is_premium || fileType === 'zip';
+          // Ensure all zip files are ALWAYS marked as premium regardless of database setting
+          const isPremium = fileType === 'zip' ? true : (file.is_premium || false);
           
           return {
             id: file.id,
@@ -87,7 +87,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: isPremium // Always mark zip files as premium
+            is_premium: isPremium // Force zip files to be premium
           };
         });
       
@@ -111,7 +111,7 @@ export function useFileManagement(userId?: string) {
             type: 'zip',
             url: `https://drive.google.com/file/d/${fileName}/view`,
             bucket: "trading_files",
-            is_premium: true // Make sure all manually added files are also marked as premium
+            is_premium: true // All manually added zip files are definitely premium
           });
         }
       }

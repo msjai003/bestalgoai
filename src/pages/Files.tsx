@@ -36,7 +36,7 @@ const Files: React.FC = () => {
         <div className="bg-charcoalSecondary rounded-lg p-4">
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>
 
-          {/* Always show the premium banner as all files will be locked */}
+          {/* Always show the premium banner as all zip files will be locked */}
           <PremiumBanner />
 
           {files.length === 0 ? (
