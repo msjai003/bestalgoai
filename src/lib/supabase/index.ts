@@ -8,3 +8,6 @@ export * from './auth';
 export * from './types';
 export * from './connection';
 export * from './browser-detection';
+
+// Export broker functions if needed
+export * from '../broker-functions';

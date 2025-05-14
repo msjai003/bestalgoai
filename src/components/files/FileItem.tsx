@@ -103,13 +103,13 @@ const FileItem = ({
           <span className="font-medium text-white">{name}</span>
           {is_premium && !canDownload && (
             <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
-              <Lock className="h-4 w-4 text-white" />
+              <Lock className="h-3.5 w-3.5" />
               <span>Locked</span>
             </Badge>
           )}
           {is_premium && hasPaid && (
             <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
-              <Unlock className="h-4 w-4 text-white" />
+              <Unlock className="h-3.5 w-3.5" />
               <span>Paid</span>
             </Badge>
           )}
