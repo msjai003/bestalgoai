@@ -11,11 +11,6 @@ const PremiumBanner = () => {
         </div>
         <div>
           <h3 className="text-white font-medium mb-1">Premium Files</h3>
-          <p className="text-gray-400 text-sm">
-            All files are locked to protect my work. Click the download button
-            with the lock icon to pay ₹1 and unlock. After payment, you'll be
-            able to download.
-          </p>
         </div>
       </div>
     </div>
