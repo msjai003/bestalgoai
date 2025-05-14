@@ -65,6 +65,16 @@ const FileItem = ({
   const canDownload = hasPremium || !is_premium || hasPaid;
 
   const handleDownload = async () => {
+    // Only allow download if the user can access this file
+    if (!canDownload) {
+      toast({
+        title: "Payment required",
+        description: "Please pay to unlock this file before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setDownloadingId(id);
     
     try {
@@ -119,7 +129,7 @@ const FileItem = ({
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
-          // Show download button with no lock when user can download
+          // Show download button without lock when user can download
           <Button
             onClick={handleDownload}
             variant="ghost"
@@ -137,10 +147,12 @@ const FileItem = ({
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center relative"
+                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
               >
-                <Lock className="h-5 w-5 mr-2" />
-                <Download className="h-5 w-5" />
+                <div className="flex items-center">
+                  <Lock className="h-5 w-5 mr-2" />
+                  <Download className="h-5 w-5" />
+                </div>
                 <span className="ml-2">Download (₹1)</span>
               </Button>
             </DialogTrigger>

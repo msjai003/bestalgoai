@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Unlock } from "lucide-react";
+import { Unlock, Download } from "lucide-react";
 
 interface PaymentSuccessModalProps {
   show: boolean;
@@ -26,7 +26,8 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({ show, onClose
             <Unlock className="h-10 w-10 text-green-500" />
           </div>
         </div>
-        <p className="text-green-400 mb-4">Your file is now unlocked! Click the download button to access it.</p>
+        <p className="text-green-400 mb-2">Your file is now unlocked!</p>
+        <p className="text-white mb-4">Click the <Download className="h-4 w-4 inline" /> download button to access your file.</p>
         <Button
           onClick={onClose}
           className="bg-cyan hover:bg-cyan/80"
