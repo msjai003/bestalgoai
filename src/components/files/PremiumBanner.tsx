@@ -11,6 +11,9 @@ const PremiumBanner = () => {
         </div>
         <div>
           <h3 className="text-white font-medium mb-1">Premium Files</h3>
+          <p className="text-gray-400 text-sm">
+            Premium files require a one-time payment to unlock
+          </p>
         </div>
       </div>
     </div>
