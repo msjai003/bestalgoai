@@ -1968,7 +1968,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      all_strategy_metrics: {
+        Row: {
+          avg_profit_per_trade: number | null
+          created_at: string | null
+          drawdown_duration: string | null
+          loss_percentage: number | null
+          max_drawdown: number | null
+          max_drawdown_percentage: number | null
+          number_of_trades: number | null
+          overall_profit: number | null
+          overall_profit_percentage: number | null
+          return_max_dd: number | null
+          reward_to_risk_ratio: number | null
+          strategy_name: string | null
+          updated_at: string | null
+          win_percentage: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       execute_sql: {
