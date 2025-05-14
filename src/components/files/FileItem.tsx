@@ -158,11 +158,8 @@ const FileItem = ({
                 size={isMobile ? "sm" : "sm"}
                 className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
               >
-                <div className="flex items-center">
-                  <Lock className="h-5 w-5 mr-2" />
-                  <Download className="h-5 w-5" />
-                </div>
-                <span className="ml-2">Download (₹1)</span>
+                <Lock className="h-5 w-5 mr-1" />
+                <span className="ml-1">Pay ₹1 to unlock</span>
               </Button>
             </DialogTrigger>
             <PaymentDialog
