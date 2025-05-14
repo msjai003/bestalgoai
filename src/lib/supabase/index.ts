@@ -1,12 +1,10 @@
 
-// Main exports file for Supabase functionality
+// Export client from the new modular structure
 export * from './client';
+
+// Export other supabase utilities
+export * from './subscription';
+export * from './auth';
+export * from './types';
 export * from './connection';
 export * from './browser-detection';
-export * from './auth';
-
-// Export broker functions related utilities
-export * from '../broker-functions';
-
-// Export subscription related utilities
-export * from './subscription';
