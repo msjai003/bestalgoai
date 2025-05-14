@@ -54,8 +54,8 @@ const BacktestVisualization = () => {
           {strategies.map((strategy) => (
             strategy.id === selectedStrategy && (
               <div key={strategy.id} className="animate-fade-in">
-                <h2 className="text-xl font-bold text-white">{strategy.name}</h2>
-                <p className="text-charcoalTextSecondary mb-4">{strategy.description}</p>
+                <h2 className="text-2xl font-bold text-white text-center mb-2">{strategy.name}</h2>
+                <p className="text-charcoalTextSecondary mb-6 text-center">{strategy.description}</p>
               </div>
             )
           ))}
@@ -64,13 +64,13 @@ const BacktestVisualization = () => {
         <BacktestStrategyChart strategyType={selectedStrategy} className="mb-6" />
 
         <div className="bg-charcoalSecondary/30 rounded-xl p-4 mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3">Strategy Performance</h3>
-          <p className="text-charcoalTextSecondary mb-4">
+          <h3 className="text-lg font-semibold text-white mb-3 text-center">Strategy Performance</h3>
+          <p className="text-charcoalTextSecondary mb-4 text-center">
             The chart above shows the historical performance of the {strategies.find(s => s.id === selectedStrategy)?.name} 
             across different years. Each data point represents the total performance for that year.
           </p>
           
-          <div className="space-y-2">
+          <div className="space-y-2 max-w-md mx-auto">
             <div className="flex items-center">
               <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
               <span className="text-charcoalTextPrimary text-sm">Positive returns indicate profitable months</span>
@@ -84,16 +84,6 @@ const BacktestVisualization = () => {
               <span className="text-charcoalTextPrimary text-sm">The line represents the yearly performance trend</span>
             </div>
           </div>
-        </div>
-        
-        <div className="bg-charcoalSecondary/30 rounded-xl p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">What is Backtesting?</h3>
-          <p className="text-charcoalTextSecondary mb-2">
-            Backtesting is the process of testing a trading strategy using historical data to see how it would have performed.
-          </p>
-          <p className="text-charcoalTextSecondary">
-            These results are based on historical performance and are not indicative of future returns. All trading involves risk.
-          </p>
         </div>
       </main>
       

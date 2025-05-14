@@ -1,11 +1,8 @@
+
 import * as React from "react"
+import { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
-
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 10
 const TOAST_REMOVE_DELAY = 1000000
 
 type ToasterToast = ToastProps & {
@@ -13,7 +10,6 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-  variant?: "default" | "destructive" | "success"
 }
 
 const actionTypes = {
@@ -43,11 +39,11 @@ type Action =
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: string
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: string
     }
 
 interface State {
@@ -138,7 +134,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ variant, ...props }: Toast) {
+function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -153,7 +149,6 @@ function toast({ variant, ...props }: Toast) {
     toast: {
       ...props,
       id,
-      variant,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
@@ -168,32 +163,15 @@ function toast({ variant, ...props }: Toast) {
   }
 }
 
-toast.success = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
-  return toast({
-    variant: "success",
-    title: typeof content === "string" ? content : undefined,
-    description: typeof content !== "string" ? content : undefined,
-    ...options,
-  })
-}
+// Variants for different toast types
+toast.success = (title: string, options?: Omit<Toast, "title" | "variant">) => 
+  toast({ ...options, title, variant: "success" })
 
-toast.error = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
-  return toast({
-    variant: "destructive",
-    title: typeof content === "string" ? content : undefined,
-    description: typeof content !== "string" ? content : undefined,
-    ...options,
-  })
-}
+toast.error = (title: string, options?: Omit<Toast, "title" | "variant">) => 
+  toast({ ...options, title, variant: "destructive" })
 
-toast.info = (content: React.ReactNode, options?: Omit<Toast, "title" | "description" | "variant">) => {
-  return toast({
-    variant: "default",
-    title: typeof content === "string" ? content : undefined,
-    description: typeof content !== "string" ? content : undefined,
-    ...options,
-  })
-}
+toast.info = (title: string, options?: Omit<Toast, "title" | "variant">) => 
+  toast({ ...options, title, variant: "default" })
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
