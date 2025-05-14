@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, Unlock } from "lucide-react";
+import { Download, Lock, Unlock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -71,8 +71,12 @@ const FileItem = ({
   // A file requires payment if it's locked and user doesn't have premium or hasn't paid specifically for this file
   const requiresPayment = isLockedFile && !hasPremium && !hasPaid;
 
+  const handlePayment = () => {
+    setOpenPaymentDialog(true);
+  };
+
   const handleDownload = async () => {
-    // If the file requires payment, open payment dialog directly
+    // If the file requires payment, open payment dialog
     if (requiresPayment) {
       setOpenPaymentDialog(true);
       return;
@@ -153,27 +157,42 @@ const FileItem = ({
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-          <Button
-            onClick={handleDownload}
-            variant={requiresPayment ? "outline" : "ghost"}
-            size={isMobile ? "sm" : "sm"}
-            className={requiresPayment 
-              ? "text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center" 
-              : "text-cyan hover:text-cyan hover:bg-transparent flex items-center"}
-            disabled={downloadingId === id}
-          >
-            {requiresPayment ? (
-              <>
-                <Lock className="h-5 w-5 mr-1" />
-                <span className="ml-1">Pay ₹1 to download</span>
-              </>
-            ) : (
-              <>
-                <Download className="h-5 w-5" />
-                <span className="ml-1 sm:ml-2">Download</span>
-              </>
-            )}
-          </Button>
+          {requiresPayment ? (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button
+                onClick={handlePayment}
+                variant="outline" 
+                size={isMobile ? "sm" : "sm"}
+                className="text-white bg-cyan hover:bg-cyan/80 border-cyan flex items-center justify-center"
+              >
+                <CreditCard className="h-4 w-4 mr-1" />
+                <span>Pay ₹1</span>
+              </Button>
+              
+              <Button
+                onClick={handleDownload}
+                variant="ghost"
+                size={isMobile ? "sm" : "sm"}
+                className="text-cyan hover:text-white hover:bg-transparent flex items-center justify-center"
+                disabled={downloadingId === id}
+              >
+                <Download className="h-4 w-4 mr-1" />
+                <span>Download</span>
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={handleDownload}
+              variant="ghost"
+              size={isMobile ? "sm" : "sm"}
+              className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
+              disabled={downloadingId === id}
+            >
+              <Download className="h-5 w-5" />
+              <span className="ml-1 sm:ml-2">Download</span>
+            </Button>
+          )}
+          
           <PaymentDialog
             open={openPaymentDialog}
             onOpenChange={setOpenPaymentDialog}
