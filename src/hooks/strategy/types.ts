@@ -1,3 +1,4 @@
+
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
@@ -14,7 +15,7 @@ export interface Strategy {
   quantity: number;
   selectedBroker?: string;
   brokerUsername?: string;
-  tradeType?: string;
+  tradeType?: "paper trade" | "live trade"; // Restrict to specific values
   pnl?: string;
   successRate?: string;
   isPremium?: boolean; // Whether this is a premium strategy
@@ -28,7 +29,7 @@ export interface StrategySelection {
   quantity?: number;
   selected_broker?: string;
   broker_username?: string;
-  trade_type?: string;
+  trade_type?: "paper trade" | "live trade";
 }
 
 export interface BrokerFunction {

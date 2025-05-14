@@ -22,7 +22,7 @@ export const loadUserStrategies = async (userId: string) => {
       quantity: selection.quantity,
       selectedBroker: selection.selected_broker,
       brokerUsername: selection.broker_username,
-      tradeType: selection.trade_type,
+      tradeType: selection.trade_type as "paper trade" | "live trade",
       uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
       rowId: selection.id,
       paid_status: selection.paid_status, // Make sure we're including this field
@@ -45,7 +45,7 @@ export const updateStrategyLiveConfig = async (
   quantity: number,
   selectedBroker: string,
   brokerUsername: string,
-  tradeType: string,
+  tradeType: "paper trade" | "live trade",
   strategyName: string = "",
   strategyDescription: string = ""
 ) => {
@@ -152,7 +152,7 @@ export const updateStrategyLiveConfig = async (
 export const updateStrategyTradeType = async (
   userId: string,
   strategyId: number | string,
-  tradeType: string,
+  tradeType: "paper trade" | "live trade",
   selectedBroker: string,
   brokerUsername: string = ""
 ) => {
