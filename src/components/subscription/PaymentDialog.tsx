@@ -1,19 +1,13 @@
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
+
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { convertPriceToAmount, initializeRazorpayPayment } from "@/utils/razorpayUtils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { initializeRazorpayPayment, convertPriceToAmount } from "@/utils/razorpayUtils";
 import { useToast } from "@/hooks/use-toast";
-import { Loader, CreditCard, Lock, Unlock } from "lucide-react";
-import { useAdminConfig } from "@/hooks/useAdminConfig";
-import { supabase } from "@/integrations/supabase/client";
-import PaymentMethodForm from "@/components/subscription/PaymentMethodForm";
 import { useFileManagement } from "@/hooks/useFileManagement";
 
 interface PaymentDialogProps {
@@ -21,18 +15,9 @@ interface PaymentDialogProps {
   onOpenChange: (open: boolean) => void;
   planName: string;
   planPrice: string;
-  onSuccess: () => void;
-  selectedStrategyId?: number;
-  selectedStrategyName?: string | null;
-  paymentMethod?: string;
+  onSuccess?: () => void;
+  paymentMethod?: 'stripe' | 'razorpay';
   fileId?: number;
-}
-
-interface RazorpayConfig {
-  test_key: string;
-  test_secret: string;
-  live_key: string;
-  mode: 'test' | 'live';
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -41,279 +26,160 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   planName,
   planPrice,
   onSuccess,
-  selectedStrategyId,
-  selectedStrategyName,
-  paymentMethod = "razorpay",
+  paymentMethod = 'razorpay',
   fileId
 }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = React.useState(false);
   const { recordFilePayment } = useFileManagement(user?.id);
-  
-  const { 
-    config: razorpayConfig, 
-    loading: configLoading, 
-    error: configError 
-  } = useAdminConfig<RazorpayConfig>('razorpay_config');
-  
-  React.useEffect(() => {
-    if (configError) {
-      console.error('Error loading Razorpay config:', configError);
-      toast({
-        title: "Configuration Error",
-        description: "Payment system configuration issue. Using default test configuration.",
-        variant: "destructive",
-      });
-    }
-  }, [configError, toast]);
-  
-  const savePlanSelection = async (payment_id: string) => {
-    if (!user) return;
-    
-    try {
-      // If this is a file payment
-      if (fileId && planName.startsWith('File:')) {
-        const success = await recordFilePayment(fileId);
-        if (!success) {
-          throw new Error('Failed to record file payment');
-        }
-        return;
-      }
-      
-      // Otherwise handle regular plan selection
-      const { error } = await supabase
-        .from('plan_details')
-        .insert({
-          user_id: user.id,
-          plan_name: planName,
-          plan_price: planPrice,
-          is_paid: true
-        });
 
-      if (error) {
-        console.error('Error saving plan selection:', error);
-        throw error;
-      }
-      
-      if (planName === 'Premium' || planPrice === '₹4999') {
-        await unlockAllStrategies(user.id);
-      }
-      else if (selectedStrategyId) {
-        const { error: strategyError } = await supabase.rpc(
-          'force_strategy_paid_status',
-          {
-            p_user_id: user.id,
-            p_strategy_id: selectedStrategyId,
-            p_strategy_name: selectedStrategyName || '',
-            p_strategy_description: `Premium strategy unlocked with ${planName} plan`
-          }
-        );
-        
-        if (strategyError) {
-          console.error('Error updating strategy status:', strategyError);
-          throw strategyError;
-        }
-      }
-    } catch (error) {
-      console.error('Error in plan selection:', error);
-      toast({
-        title: "Database Error",
-        description: "Failed to save your plan selection. Please contact support.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const unlockAllStrategies = async (userId: string) => {
-    try {
-      const { data: strategies, error: strategiesError } = await supabase
-        .from('predefined_strategies')
-        .select('id, name, description');
-        
-      if (strategiesError) {
-        console.error('Error fetching strategies:', strategiesError);
-        throw strategiesError;
-      }
-      
-      if (!strategies || strategies.length === 0) {
-        console.log('No strategies found to unlock');
-        return;
-      }
-      
-      console.log(`Unlocking ${strategies.length} strategies for Premium user`);
-      
-      for (const strategy of strategies) {
-        const { error: strategyError } = await supabase.rpc(
-          'force_strategy_paid_status',
-          {
-            p_user_id: userId,
-            p_strategy_id: strategy.id,
-            p_strategy_name: strategy.name,
-            p_strategy_description: strategy.description || 'Premium strategy unlocked with subscription'
-          }
-        );
-        
-        if (strategyError) {
-          console.error(`Error unlocking strategy ${strategy.id}:`, strategyError);
-        }
-      }
-      
-      console.log('All strategies successfully unlocked');
-    } catch (error) {
-      console.error('Error in unlocking all strategies:', error);
-    }
-  };
-  
-  const handleRazorpayPayment = () => {
+  const handlePayment = async () => {
     if (!user) {
       toast({
-        title: "Login Required",
-        description: "Please login to make a payment",
+        title: "Authentication required",
+        description: "Please sign in to make a payment",
         variant: "destructive",
       });
       return;
     }
 
-    if (!razorpayConfig) {
-      toast({
-        title: "Configuration Notice",
-        description: "Using default payment configuration.",
-        variant: "default",
-      });
-      // Continue with default config that will be set in initializeRazorpayPayment
-    }
-
     setIsProcessing(true);
-    const amount = convertPriceToAmount(planPrice);
-    
-    const userName = user.email?.split('@')[0] || "";
-    const userEmail = user.email || "";
-    
-    const apiKey = razorpayConfig?.mode === 'test' 
-      ? (razorpayConfig?.test_key || 'rzp_test_Q9hmPFiRhnZuqK')
-      : (razorpayConfig?.live_key || 'rzp_live_AlwIwA3L3AFrKc');
-    
-    const options = {
-      key: apiKey,
-      amount: amount,
-      currency: "INR",
-      name: "AlgoTrade",
-      description: `Payment for ${planName} plan`,
-      prefill: {
-        name: userName,
-        email: userEmail,
-      },
-      theme: {
-        color: "#FF00D4",
-      },
-    };
 
-    initializeRazorpayPayment(
-      options,
-      (payment_id) => {
-        savePlanSelection(payment_id).then(() => {
-          setIsProcessing(false);
-          toast({
-            title: "Payment Successful",
-            description: planName === 'Premium' || planPrice === '₹4999' 
-              ? "All premium strategies have been unlocked!" 
-              : `Payment completed: ${payment_id}`,
-            variant: "default",
-          });
-          onSuccess();
-        });
-      },
-      () => {
+    try {
+      // For file payments specifically
+      if (fileId) {
+        // If this is a file payment, use Razorpay
+        const options = {
+          key: "rzp_test_aJfzN0zDA3pZRi", // Replace with your actual Razorpay key
+          amount: convertPriceToAmount(planPrice),
+          currency: "INR",
+          name: "InfoCap AI",
+          description: `Payment for ${planName}`,
+          prefill: {
+            name: user.name || "",
+            email: user.email || "",
+          },
+          theme: {
+            color: "#0891B2", // cyan color from tailwind
+          },
+        };
+
+        // Initialize Razorpay payment
+        initializeRazorpayPayment(
+          options,
+          async (payment_id) => {
+            console.log("Payment success:", payment_id);
+            
+            // Record the file payment in the database
+            if (fileId) {
+              const success = await recordFilePayment(fileId);
+              if (success) {
+                toast({
+                  title: "Payment successful",
+                  description: `You now have access to ${planName}`,
+                });
+                if (onSuccess) onSuccess();
+              } else {
+                toast({
+                  title: "Payment recording failed",
+                  description: "Payment was successful but we couldn't record it. Please contact support.",
+                  variant: "destructive",
+                });
+              }
+            }
+            
+            setIsProcessing(false);
+            onOpenChange(false);
+          },
+          () => {
+            console.error("Payment failed");
+            toast({
+              title: "Payment failed",
+              description: "Something went wrong with your payment. Please try again.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          }
+        );
+      } else {
+        // Regular subscription payment logic here
+        // ...
+        console.log("Regular subscription payment not implemented");
         setIsProcessing(false);
-        toast({
-          title: "Payment Failed",
-          description: "Please try again",
-          variant: "destructive",
-        });
       }
-    );
-  };
-
-  React.useEffect(() => {
-    if (open && paymentMethod === "razorpay" && (!configLoading || configError)) {
-      handleRazorpayPayment();
+    } catch (error) {
+      console.error("Error during payment:", error);
+      toast({
+        title: "Payment error",
+        description: "An unexpected error occurred. Please try again later.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
     }
-  }, [open, configLoading, configError, paymentMethod]);
-
-  // Render different content based on payment method
-  const renderPaymentContent = () => {
-    if (paymentMethod === "card") {
-      return (
-        <PaymentMethodForm
-          planName={planName}
-          planPrice={planPrice}
-          onSuccess={onSuccess}
-          onCancel={() => onOpenChange(false)}
-          selectedStrategyId={selectedStrategyId}
-          selectedStrategyName={selectedStrategyName}
-        />
-      );
-    }
-
-    // Default Razorpay processing screen
-    return (
-      <>
-        <div className="flex flex-col items-center justify-center py-8">
-          <Loader className="h-12 w-12 animate-spin text-[#FF00D4] mb-4" />
-          <p className="text-center text-gray-300">Please wait while we connect to Razorpay...</p>
-          <p className="text-center text-gray-300 mt-2">Amount: {planPrice}</p>
-          {(planName === 'Premium' || planPrice === '₹4999') && (
-            <p className="text-center text-[#FF00D4] mt-4 font-medium">
-              All premium strategies will be unlocked with this plan!
-            </p>
-          )}
-        </div>
-        
-        <div className="flex justify-end">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isProcessing}
-          >
-            Cancel
-          </Button>
-        </div>
-        
-        <div className="text-xs text-gray-400 mt-4">
-          <p>This application is using Razorpay's {razorpayConfig?.mode || 'test'} payment processing.</p>
-          <p>Your payment information is securely handled by Razorpay.</p>
-        </div>
-      </>
-    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
+      <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {paymentMethod === "card" ? 
-              <>Card Payment</> : 
-              <>Unlock Content <Lock className="h-4 w-4" /></>
-            }
+          <DialogTitle className="text-xl font-bold text-white">
+            {fileId ? "Unlock File" : "Choose Your Plan"}
           </DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {paymentMethod === "card" 
-              ? "Enter your card details to complete payment"
-              : (planName.startsWith('File:')
-                ? `Unlock premium content: ${planName.replace('File:', '').trim()}`
-                : (planName === 'Premium' || planPrice === '₹4999' 
-                  ? "Connecting to payment gateway to unlock all premium strategies" 
-                  : (selectedStrategyName 
-                    ? `Connecting to payment gateway to unlock ${selectedStrategyName}` 
-                    : `Connecting to payment gateway for the ${planName} plan`))
-              )
-            }
-          </DialogDescription>
         </DialogHeader>
-        
-        {renderPaymentContent()}
+
+        <div className="pt-4">
+          <div className="bg-charcoalPrimary p-4 rounded-lg mb-4">
+            <h3 className="font-semibold text-lg text-white">{planName}</h3>
+            <p className="text-cyan text-xl font-bold">{planPrice}</p>
+            
+            {fileId ? (
+              <p className="text-gray-300 text-sm mt-2">
+                One-time payment to unlock this file for permanent access.
+              </p>
+            ) : (
+              <div className="mt-2 space-y-2">
+                <p className="text-gray-300 text-sm flex items-center">
+                  <span className="mr-2">✓</span> Feature 1
+                </p>
+                <p className="text-gray-300 text-sm flex items-center">
+                  <span className="mr-2">✓</span> Feature 2
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <p className="text-gray-300 mb-2">Select payment method:</p>
+            <RadioGroup defaultValue={paymentMethod} className="flex flex-col gap-2">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="razorpay" id="razorpay" />
+                <Label htmlFor="razorpay" className="text-white">
+                  Razorpay (Credit/Debit Card, UPI, Wallets)
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handlePayment}
+              disabled={isProcessing}
+              className="bg-cyan hover:bg-cyan/80 text-white"
+            >
+              {isProcessing ? "Processing..." : `Pay ${planPrice}`}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
