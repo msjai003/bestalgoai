@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, Unlock } from "lucide-react";
+import { Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,6 @@ const FileItem = ({
   name,
   size,
   type,
-  url,
   created_at,
   bucket,
   hasPremium,
@@ -35,7 +34,6 @@ const FileItem = ({
 }: FileItemProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const isMobile = useIsMobile();
@@ -68,45 +66,12 @@ const FileItem = ({
   // A file can be downloaded if user has premium subscription OR has paid for this specific file
   const canDownload = hasPremium || !isLockedFile || hasPaid;
 
-  const handleDownload = async () => {
-    // Only allow download if the user can access this file
-    if (!canDownload) {
-      toast({
-        title: "Payment required",
-        description: "Please pay to unlock this file before downloading.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setDownloadingId(id);
-    
-    try {
-      // Open Google Drive link in a new tab
-      window.open(url, '_blank');
-      
-      toast({
-        title: "Download link opened",
-        description: `${name} is being downloaded from Google Drive.`,
-      });
-    } catch (error) {
-      console.error("Error during download:", error);
-      toast({
-        title: "Download failed",
-        description: "Could not open the download link. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
   const handlePaymentSuccess = () => {
     setHasPaid(true);
     setOpenPaymentDialog(false);
     toast({
       title: "Payment successful",
-      description: `You can now download ${name}`,
+      description: `You can now access ${name}`,
     });
   };
 
@@ -138,31 +103,20 @@ const FileItem = ({
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
-          // Show download button without lock when user can download
-          <Button
-            onClick={handleDownload}
-            variant="ghost"
-            size={isMobile ? "sm" : "sm"}
-            className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
-            disabled={downloadingId === id}
-          >
-            <Download className="h-5 w-5" />
-            <span className="ml-1 sm:ml-2">Download</span>
-          </Button>
+          // Show unlock icon when user can access
+          <div className="text-green-500 p-2">
+            <Unlock className="h-5 w-5" />
+          </div>
         ) : (
-          // Show download button with lock icon for locked files
+          // Show lock icon with payment trigger for locked files
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
             <DialogTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
+                className="text-red-500 hover:text-red-400 hover:bg-transparent"
               >
-                <div className="flex items-center">
-                  <Lock className="h-5 w-5 mr-2" />
-                  <Download className="h-5 w-5" />
-                </div>
-                <span className="ml-2">Download (₹1)</span>
+                <Lock className="h-5 w-5" />
               </Button>
             </DialogTrigger>
             <PaymentDialog
