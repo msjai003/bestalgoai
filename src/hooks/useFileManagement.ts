@@ -77,6 +77,9 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
+          // Ensure zip files are always marked as premium (locked)
+          const isPremium = file.is_premium || fileType === 'zip';
+          
           return {
             id: file.id,
             name: file.name,
@@ -85,7 +88,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: file.is_premium // Use the value from the database which is now true
+            is_premium: isPremium // Ensure premium status is applied
           };
         });
       
@@ -100,7 +103,7 @@ export function useFileManagement(userId?: string) {
       
       for (const fileName of requiredFiles) {
         if (!existingFileNames.includes(fileName)) {
-          // Add missing file to the list
+          // Add missing file to the list - ensure zip files are always marked as premium
           formattedFiles.unshift({
             id: Math.floor(Math.random() * 10000) + 1000, // Generate random ID
             name: fileName,

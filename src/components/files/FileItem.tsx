@@ -40,10 +40,14 @@ const FileItem = ({
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const isMobile = useIsMobile();
 
+  // Ensure zip files are always locked
+  const isZipFile = type === 'zip' || name.toLowerCase().endsWith('.zip');
+  const isLockedFile = is_premium || isZipFile;
+
   // Check if user has already paid for this file
   useEffect(() => {
     const checkPaymentStatus = async () => {
-      if (user && is_premium) {
+      if (user && isLockedFile) {
         const { data } = await supabase
           .from('user_file_payments')
           .select('*')
@@ -59,10 +63,10 @@ const FileItem = ({
     };
     
     checkPaymentStatus();
-  }, [user, id, is_premium]);
+  }, [user, id, isLockedFile]);
 
   // A file can be downloaded if user has premium subscription OR has paid for this specific file
-  const canDownload = hasPremium || !is_premium || hasPaid;
+  const canDownload = hasPremium || !isLockedFile || hasPaid;
 
   const handleDownload = async () => {
     // Only allow download if the user can access this file
@@ -111,16 +115,21 @@ const FileItem = ({
       <div className="flex flex-col mb-2 sm:mb-0">
         <div className="flex items-center flex-wrap gap-2">
           <span className="font-medium text-white">{name}</span>
-          {is_premium && !canDownload && (
+          {isLockedFile && !canDownload && (
             <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
               <Lock className="h-3.5 w-3.5" />
               <span>Locked</span>
             </Badge>
           )}
-          {is_premium && hasPaid && (
+          {isLockedFile && hasPaid && (
             <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
               <Unlock className="h-3.5 w-3.5" />
               <span>Paid</span>
+            </Badge>
+          )}
+          {isZipFile && (
+            <Badge variant="outline" className="ml-0 sm:ml-2">
+              ZIP
             </Badge>
           )}
         </div>
