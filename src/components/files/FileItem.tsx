@@ -72,6 +72,7 @@ const FileItem = ({
   const requiresPayment = isLockedFile && !hasPremium && !hasPaid;
 
   const handleDownload = async () => {
+    // If the file requires payment, open payment dialog directly
     if (requiresPayment) {
       setOpenPaymentDialog(true);
       return;
@@ -151,40 +152,38 @@ const FileItem = ({
       </div>
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
-        {requiresPayment ? (
-          <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
-              >
-                <Lock className="h-5 w-5 mr-1" />
-                <span className="ml-1">Pay ₹1 to unlock</span>
-              </Button>
-            </DialogTrigger>
-            <PaymentDialog
-              open={openPaymentDialog}
-              onOpenChange={setOpenPaymentDialog}
-              planName={`File: ${name}`}
-              planPrice="₹1"
-              onSuccess={handlePaymentSuccess}
-              paymentMethod="razorpay"
-              fileId={id}
-            />
-          </Dialog>
-        ) : (
+        <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
           <Button
             onClick={handleDownload}
-            variant="ghost"
+            variant={requiresPayment ? "outline" : "ghost"}
             size={isMobile ? "sm" : "sm"}
-            className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
+            className={requiresPayment 
+              ? "text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center" 
+              : "text-cyan hover:text-cyan hover:bg-transparent flex items-center"}
             disabled={downloadingId === id}
           >
-            <Download className="h-5 w-5" />
-            <span className="ml-1 sm:ml-2">Download</span>
+            {requiresPayment ? (
+              <>
+                <Lock className="h-5 w-5 mr-1" />
+                <span className="ml-1">Pay ₹1 to download</span>
+              </>
+            ) : (
+              <>
+                <Download className="h-5 w-5" />
+                <span className="ml-1 sm:ml-2">Download</span>
+              </>
+            )}
           </Button>
-        )}
+          <PaymentDialog
+            open={openPaymentDialog}
+            onOpenChange={setOpenPaymentDialog}
+            planName={`File: ${name}`}
+            planPrice="₹1"
+            onSuccess={handlePaymentSuccess}
+            paymentMethod="razorpay"
+            fileId={id}
+          />
+        </Dialog>
       </div>
     </div>
   );
