@@ -68,17 +68,12 @@ const FileItem = ({
     checkPaymentStatus();
   }, [user, id, isLockedFile]);
 
-  // A file can be downloaded if user has premium subscription OR has paid for this specific file
-  const canDownload = hasPremium || !isLockedFile || hasPaid;
+  // A file requires payment if it's locked and user doesn't have premium or hasn't paid specifically for this file
+  const requiresPayment = isLockedFile && !hasPremium && !hasPaid;
 
   const handleDownload = async () => {
-    // Only allow download if the user can access this file
-    if (!canDownload) {
-      toast({
-        title: "Payment required",
-        description: "Please pay to unlock this file before downloading.",
-        variant: "destructive",
-      });
+    if (requiresPayment) {
+      setOpenPaymentDialog(true);
       return;
     }
     
@@ -104,13 +99,29 @@ const FileItem = ({
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setHasPaid(true);
     setOpenPaymentDialog(false);
+    
+    // Record successful payment in database
+    if (user) {
+      await supabase.from('user_file_payments').insert({
+        user_id: user.id,
+        file_id: id,
+        status: 'completed',
+        amount: 1 // 1 rupee payment
+      });
+    }
+    
     toast({
       title: "Payment successful",
       description: `You can now download ${name}`,
     });
+    
+    // Auto-trigger download after successful payment
+    setTimeout(() => {
+      window.open(url, '_blank');
+    }, 1000);
   };
 
   return (
@@ -118,7 +129,7 @@ const FileItem = ({
       <div className="flex flex-col mb-2 sm:mb-0">
         <div className="flex items-center flex-wrap gap-2">
           <span className="font-medium text-white">{name}</span>
-          {isLockedFile && !canDownload && (
+          {isLockedFile && requiresPayment && (
             <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
               <Lock className="h-3.5 w-3.5" />
               <span>Locked</span>
@@ -140,20 +151,7 @@ const FileItem = ({
       </div>
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
-        {canDownload ? (
-          // Show download button without lock when user can download
-          <Button
-            onClick={handleDownload}
-            variant="ghost"
-            size={isMobile ? "sm" : "sm"}
-            className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
-            disabled={downloadingId === id}
-          >
-            <Download className="h-5 w-5" />
-            <span className="ml-1 sm:ml-2">Download</span>
-          </Button>
-        ) : (
-          // Show download button with lock icon for locked files
+        {requiresPayment ? (
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
             <DialogTrigger asChild>
               <Button
@@ -175,6 +173,17 @@ const FileItem = ({
               fileId={id}
             />
           </Dialog>
+        ) : (
+          <Button
+            onClick={handleDownload}
+            variant="ghost"
+            size={isMobile ? "sm" : "sm"}
+            className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
+            disabled={downloadingId === id}
+          >
+            <Download className="h-5 w-5" />
+            <span className="ml-1 sm:ml-2">Download</span>
+          </Button>
         )}
       </div>
     </div>

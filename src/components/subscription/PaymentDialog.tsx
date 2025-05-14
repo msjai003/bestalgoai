@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -109,7 +108,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         );
       } else {
         // Regular subscription payment logic here
-        // ...
         console.log("Regular subscription payment not implemented");
         setIsProcessing(false);
       }
