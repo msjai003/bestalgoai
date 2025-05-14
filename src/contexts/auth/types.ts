@@ -19,6 +19,7 @@ export interface AuthUser {
   user_metadata: Record<string, any>;
   aud: string;
   created_at: string;
+  name?: string; // Added name property
 }
 
 export interface AuthContextType {

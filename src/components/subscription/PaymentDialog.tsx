@@ -18,6 +18,8 @@ interface PaymentDialogProps {
   onSuccess?: () => void;
   paymentMethod?: 'stripe' | 'razorpay';
   fileId?: number;
+  selectedStrategyId?: number;
+  selectedStrategyName?: string;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -27,7 +29,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   planPrice,
   onSuccess,
   paymentMethod = 'razorpay',
-  fileId
+  fileId,
+  selectedStrategyId,
+  selectedStrategyName
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const isMobile = useIsMobile();
@@ -58,7 +62,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           name: "InfoCap AI",
           description: `Payment for ${planName}`,
           prefill: {
-            name: user.name || "",
+            name: user.email?.split('@')[0] || "", // Use email prefix if name is not available
             email: user.email || "",
           },
           theme: {
