@@ -15,15 +15,7 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
     <section className="space-y-4">
       <div className="bg-charcoalSecondary/30 rounded-xl p-4 border border-gray-700 shadow-lg">
         <div className="space-y-3">
-          {!isActive ? (
-            <Button 
-              variant="logout"
-              className="w-full py-6 rounded-full font-medium shadow-lg hover:opacity-90 transition-opacity"
-              onClick={onToggleTrading}
-            >
-              Start Trading All
-            </Button>
-          ) : (
+          {isActive ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between px-3 py-2 bg-cyan/20 rounded-lg border border-cyan/30">
                 <div className="flex items-center gap-2">
@@ -41,7 +33,7 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
                 Square Off All Positions
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </section>
