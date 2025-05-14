@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export interface BacktestResult {
   id: string;
@@ -64,13 +64,12 @@ export const useBacktestResults = () => {
       let supabaseResults: BacktestResult[] = [];
       
       if (user) {
-        // Use explicit typing to avoid type inference issues
+        // Use generic typing for the query
         const { data, error } = await supabase
           .from('backtest_results')
           .select('*')
           .eq('user_id', user.id)
-          .order('createdAt', { ascending: false })
-          .returns<any[]>();
+          .order('createdAt', { ascending: false });
 
         if (error) {
           throw error;
@@ -78,7 +77,7 @@ export const useBacktestResults = () => {
 
         if (data) {
           // Safely map the data to our BacktestResult type
-          supabaseResults = data.map(item => ({
+          supabaseResults = data.map((item: any) => ({
             id: item.id,
             title: item.title,
             description: item.description,
@@ -153,7 +152,7 @@ export const useBacktestResults = () => {
       
       // Save to Supabase if user is authenticated
       if (user) {
-        // Use type assertion to safely handle the insert
+        // Type assertions for Supabase insert
         const { error } = await supabase
           .from('backtest_results')
           .insert({
