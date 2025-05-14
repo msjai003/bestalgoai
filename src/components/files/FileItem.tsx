@@ -119,7 +119,7 @@ const FileItem = ({
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
-          // Show download button only if user can download
+          // Show download button with no lock when user can download
           <Button
             onClick={handleDownload}
             variant="ghost"
@@ -131,7 +131,7 @@ const FileItem = ({
             <span className="ml-1 sm:ml-2">Download</span>
           </Button>
         ) : (
-          // Show lock icon button if file is locked
+          // Show download button with lock icon for locked files
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
             <DialogTrigger asChild>
               <Button
@@ -139,8 +139,9 @@ const FileItem = ({
                 size={isMobile ? "sm" : "sm"}
                 className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
               >
-                <Lock className="h-5 w-5 mr-2" />
-                <span>Unlock (₹1)</span>
+                <Download className="h-5 w-5 mr-2" />
+                <Lock className="h-4 w-4 absolute top-1 right-1" />
+                <span>Download (₹1)</span>
               </Button>
             </DialogTrigger>
             <PaymentDialog

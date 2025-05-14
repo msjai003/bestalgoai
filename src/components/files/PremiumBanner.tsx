@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Lock } from "lucide-react";
+import { Lock, Download } from "lucide-react";
 
 const PremiumBanner: React.FC = () => {
   return (
@@ -9,7 +9,12 @@ const PremiumBanner: React.FC = () => {
         <Lock className="h-10 w-10 text-cyan mr-3 mt-0.5 sm:mt-0 flex-shrink-0" />
         <div>
           <h3 className="text-white text-lg font-medium">Files Locked for Protection</h3>
-          <p className="text-gray-300 text-sm">All files are locked to protect my work. Just pay ₹1 per file to unlock and download. Thank you for your support!</p>
+          <p className="text-gray-300 text-sm">All files are locked to protect my work. Click the Download button with <Lock className="h-3.5 w-3.5 inline text-cyan" /> icon and pay ₹1 to unlock. Thank you for your support!</p>
+          <div className="mt-2 text-xs text-gray-400 flex items-center">
+            <Download className="h-4 w-4 mr-1" />
+            <Lock className="h-3 w-3 absolute ml-4 mt-[-8px]" />
+            <span className="ml-6">= Pay ₹1 to unlock and download</span>
+          </div>
         </div>
       </div>
     </div>
