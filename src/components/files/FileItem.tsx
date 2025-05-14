@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FileItemProps {
   id: number;
@@ -36,7 +35,6 @@ const FileItem = ({
   const { user } = useAuth();
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
-  const isMobile = useIsMobile();
 
   // Ensure zip files are always locked
   const isZipFile = type === 'zip' || name.toLowerCase().endsWith('.zip');
