@@ -160,6 +160,8 @@ export const loadWishlistItems = async (userId: string): Promise<Array<{id: numb
     }
     
     console.log(`Loaded ${data?.length || 0} wishlist items from wishlist_maintain table`);
+    console.log("Wishlist data:", data);
+    
     return (data || []).map(item => ({
       id: item.strategy_id,
       name: item.strategy_name,
@@ -188,6 +190,14 @@ export const useStrategyWishlist = () => {
         if (user) {
           // Load wishlist items from the wishlist_maintain table
           const items = await loadWishlistItems(user.id);
+          console.log("Wishlist items loaded:", items);
+          
+          if (items.length === 0) {
+            console.log("No wishlist items found for user", user.id);
+            setWishlistedStrategies([]);
+            setIsLoading(false);
+            return;
+          }
           
           // Ensure all required Strategy properties are included
           const strategies: Strategy[] = items.map(item => ({
@@ -204,6 +214,7 @@ export const useStrategyWishlist = () => {
             }
           }));
           
+          console.log("Converted wishlist items to strategies:", strategies);
           setWishlistedStrategies(strategies);
         }
       } catch (error) {

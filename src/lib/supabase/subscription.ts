@@ -22,7 +22,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
   }
 };
 
-// Add the syncPremiumAccess function
+// Export the syncPremiumAccess function to fix the import error
 export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
   try {
     // Check if user has a valid premium subscription

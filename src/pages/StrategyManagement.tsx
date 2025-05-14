@@ -25,7 +25,19 @@ const StrategyManagement = () => {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<Strategy | null>(null);
 
+  // Enhanced debug logging
   console.log("Current wishlisted strategies:", wishlistedStrategies);
+  console.log("Current user:", user?.id);
+  console.log("Is loading:", isLoading);
+
+  useEffect(() => {
+    // Add additional debug logging when component mounts or strategies change
+    console.log("StrategyManagement mounted or strategies changed", {
+      strategiesCount: wishlistedStrategies.length,
+      isLoading,
+      hasPremium
+    });
+  }, [wishlistedStrategies, isLoading, hasPremium]);
 
   const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
