@@ -20,15 +20,11 @@ interface FilesListProps {
 }
 
 const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSuccess }) => {
-  // Mark ALL files as premium/locked
-  const enhancedFiles = files.map(file => ({
-    ...file,
-    is_premium: true // Force all files to be premium/locked
-  }));
-
+  // We don't need to explicitly mark files as premium anymore since they'll come from the database with is_premium set to true
+  // Just pass the files directly to the FileItem component
   return (
     <div className="space-y-1">
-      {enhancedFiles.map((file) => (
+      {files.map((file) => (
         <FileItem
           key={file.id}
           id={file.id}
