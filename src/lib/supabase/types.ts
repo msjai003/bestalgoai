@@ -77,6 +77,95 @@ export interface Database {
           created_at: string
         }
       }
+      backtest_results: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          strategyId: string | null
+          startDate: string
+          endDate: string
+          strategyName: string | null
+          entryDate: string | null
+          entryWeekday: string | null
+          entryTime: string | null
+          entryPrice: number | null
+          quantity: number | null
+          instrumentKind: string | null
+          strikePrice: number | null
+          position: string | null
+          exitDate: string | null
+          exitWeekday: string | null
+          exitTime: string | null
+          exitPrice: number | null
+          pl: number | null
+          plPercentage: number | null
+          expiryDate: string | null
+          highestMtm: number | null
+          lowestMtm: number | null
+          remarks: string | null
+          createdAt: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          strategyId?: string | null
+          startDate: string
+          endDate: string
+          strategyName?: string | null
+          entryDate?: string | null
+          entryWeekday?: string | null
+          entryTime?: string | null
+          entryPrice?: number | null
+          quantity?: number | null
+          instrumentKind?: string | null
+          strikePrice?: number | null
+          position?: string | null
+          exitDate?: string | null
+          exitWeekday?: string | null
+          exitTime?: string | null
+          exitPrice?: number | null
+          pl?: number | null
+          plPercentage?: number | null
+          expiryDate?: string | null
+          highestMtm?: number | null
+          lowestMtm?: number | null
+          remarks?: string | null
+          createdAt?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          strategyId?: string | null
+          startDate?: string
+          endDate?: string
+          strategyName?: string | null
+          entryDate?: string | null
+          entryWeekday?: string | null
+          entryTime?: string | null
+          entryPrice?: number | null
+          quantity?: number | null
+          instrumentKind?: string | null
+          strikePrice?: number | null
+          position?: string | null
+          exitDate?: string | null
+          exitWeekday?: string | null
+          exitTime?: string | null
+          exitPrice?: number | null
+          pl?: number | null
+          plPercentage?: number | null
+          expiryDate?: string | null
+          highestMtm?: number | null
+          lowestMtm?: number | null
+          remarks?: string | null
+          createdAt?: string
+          user_id?: string | null
+        }
+      }
       // Add other tables as needed
     }
     Views: {

@@ -64,17 +64,20 @@ export const useBacktestResults = () => {
       let supabaseResults: BacktestResult[] = [];
       
       if (user) {
+        // Use explicit typing to avoid type inference issues
         const { data, error } = await supabase
           .from('backtest_results')
           .select('*')
           .eq('user_id', user.id)
-          .order('createdAt', { ascending: false });
+          .order('createdAt', { ascending: false })
+          .returns<any[]>();
 
         if (error) {
           throw error;
         }
 
         if (data) {
+          // Safely map the data to our BacktestResult type
           supabaseResults = data.map(item => ({
             id: item.id,
             title: item.title,
@@ -150,12 +153,13 @@ export const useBacktestResults = () => {
       
       // Save to Supabase if user is authenticated
       if (user) {
-        const { data: supabaseData, error } = await supabase
+        // Use type assertion to safely handle the insert
+        const { error } = await supabase
           .from('backtest_results')
           .insert({
             ...newResult,
             user_id: user.id
-          });
+          } as any);
 
         if (error) {
           console.error("Error saving to Supabase:", error);
