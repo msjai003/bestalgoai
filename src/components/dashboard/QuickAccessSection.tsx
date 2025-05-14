@@ -57,12 +57,7 @@ export const QuickAccessSection = () => {
           className=""
         />
         
-        <QuickAccessItem
-          icon={Briefcase}
-          text="Results"
-          route="/orders"
-          className=""
-        />
+        {/* Removed Results QuickAccessItem */}
 
         <QuickAccessItem
           icon={Files}
