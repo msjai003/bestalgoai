@@ -51,6 +51,7 @@ import ResetPassword from "@/components/auth/ResetPassword";
 import AuthVerifyHandler from "@/components/auth/AuthVerifyHandler";
 import Orders from "@/pages/Orders";
 import Files from "@/pages/Files";
+import BacktestVisualization from "./pages/BacktestVisualization";
 
 const queryClient = new QueryClient();
 
@@ -210,6 +211,7 @@ function AppRoutes() {
       } />
       
       {/* Make sure all unmatched routes show NotFound */}
+      <Route path="/backtest-visualization" element={<BacktestVisualization />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,8 @@ import {
   Save,
   Trash,
   ChevronLeft,
-  FileSpreadsheet
+  FileSpreadsheet,
+  BarChart3
 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useBacktestResults, BacktestResult } from '@/hooks/strategy/useBacktestResults';
@@ -326,18 +326,28 @@ const BacktestReport = () => {
 
         {!fileUploaded ? (
           <div className="mt-8">
-            {/* Empty state - removed Zenflow Backtest Tools section */}
             <div className="text-center p-8 bg-charcoalSecondary/50 rounded-xl">
               <FileSpreadsheet className="h-12 w-12 text-gray-500 mx-auto mb-3" />
               <p className="text-charcoalTextSecondary mb-4">Upload a CSV file to analyze backtest results</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={triggerFileInput}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Backtest File
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={triggerFileInput}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Backtest File
+                </Button>
+                <Link to="/backtest-visualization">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    View Strategy Visualizations
+                  </Button>
+                </Link>
+              </div>
               <input
                 type="file"
                 ref={fileInputRef}
