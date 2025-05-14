@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { BrokerConfig } from "./types";
 
 export const loadUserStrategies = async (userId: string) => {
   try {
@@ -13,26 +13,57 @@ export const loadUserStrategies = async (userId: string) => {
       return [];
     }
 
-    return strategySelections.map(selection => ({
-      id: selection.strategy_id,
-      name: selection.strategy_name,
-      description: selection.strategy_description,
-      isWishlisted: false, // This value is not stored in the strategy_selections table
-      isLive: selection.trade_type === "live trade",
-      quantity: selection.quantity,
-      selectedBroker: selection.selected_broker,
-      brokerUsername: selection.broker_username,
-      tradeType: selection.trade_type,
-      uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
-      rowId: selection.id,
-      paid_status: selection.paid_status, // Make sure we're including this field
-      // Add default performance object since it's required by the Strategy type
-      performance: {
-        winRate: "N/A",
-        avgProfit: "N/A",
-        drawdown: "N/A"
+    // Group strategies by their ID to build broker-specific configurations
+    const strategiesMap = new Map();
+    
+    strategySelections.forEach(selection => {
+      const strategyId = selection.strategy_id;
+      
+      // Create broker config for this selection
+      const brokerConfig = {
+        brokerName: selection.selected_broker || "",
+        brokerUsername: selection.broker_username || "",
+        quantity: selection.quantity || 0,
+        tradeType: selection.trade_type || "paper trade"
+      };
+      
+      if (strategiesMap.has(strategyId)) {
+        // Add this broker config to existing strategy
+        const strategy = strategiesMap.get(strategyId);
+        strategy.brokerConfigs.push(brokerConfig);
+        
+        // If any broker is in live mode, mark the strategy as live
+        if (brokerConfig.tradeType === "live trade") {
+          strategy.isLive = true;
+        }
+      } else {
+        // Create new strategy with this broker config
+        strategiesMap.set(strategyId, {
+          id: strategyId,
+          name: selection.strategy_name,
+          description: selection.strategy_description,
+          isWishlisted: false, // This value is not stored in the strategy_selections table
+          isLive: selection.trade_type === "live trade",
+          quantity: selection.quantity,
+          selectedBroker: selection.selected_broker,
+          brokerUsername: selection.broker_username,
+          tradeType: selection.trade_type,
+          uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
+          rowId: selection.id,
+          paid_status: selection.paid_status,
+          brokerConfigs: [brokerConfig],
+          // Add default performance object since it's required by the Strategy type
+          performance: {
+            winRate: "N/A",
+            avgProfit: "N/A",
+            drawdown: "N/A"
+          }
+        });
       }
-    }));
+    });
+    
+    // Convert map to array
+    return Array.from(strategiesMap.values());
   } catch (error) {
     console.error("Error loading user strategies:", error);
     return [];

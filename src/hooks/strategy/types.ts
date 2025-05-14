@@ -1,26 +1,36 @@
 export interface Strategy {
-  id: number;
-  uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
-  rowId?: string; // Add rowId to store the actual database row ID
+  id: number | string;
   name: string;
-  description: string;
-  performance: {
+  description?: string;
+  performance?: {
     winRate: string;
     avgProfit: string;
     drawdown: string;
   };
-  isWishlisted: boolean;
-  isLive: boolean;
+  isLive?: boolean;
+  isPremium?: boolean;
+  isPaid?: boolean;
+  quantity?: number;
+  selectedBroker?: string | null;
+  brokerUsername?: string | null;
+  tradeType?: 'paper trade' | 'live trade';
+  isWishlisted?: boolean;
+  isCustom?: boolean;
+  isFeatured?: boolean;
+  legs?: any[];
+  uniqueId?: string;
+  rowId?: string | null;
+  paid_status?: string;
+  createdBy?: string;
+  // New field to support broker-specific configurations
+  brokerConfigs?: BrokerConfig[];
+}
+
+export interface BrokerConfig {
+  brokerName: string;
+  brokerUsername: string;
   quantity: number;
-  selectedBroker?: string;
-  brokerUsername?: string;
-  tradeType?: string;
-  pnl?: string;
-  successRate?: string;
-  isPremium?: boolean; // Whether this is a premium strategy
-  isPaid?: boolean; // Whether the user has paid for this strategy
-  isCustom?: boolean; // Whether this is a custom strategy or predefined
-  paid_status?: string; // Add this property to match what's coming from the database
+  tradeType: 'paper trade' | 'live trade';
 }
 
 export interface StrategySelection {
@@ -55,4 +65,14 @@ export interface BrokerCredentials {
   brokerUsername?: string; // Optional
   tradeType?: string; // Optional
   pnl?: string; // Optional
+}
+
+export interface PerformanceMetrics {
+  winRate: string;
+  avgProfit: string;
+  drawdown: string;
+}
+
+export interface StrategyWithMetrics extends Strategy {
+  metrics: PerformanceMetrics;
 }
