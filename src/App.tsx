@@ -123,9 +123,7 @@ function AppRoutes() {
       } />
       
       <Route path="/backtest" element={
-        <ProtectedRoute>
-          <BacktestReport />
-        </ProtectedRoute>
+        <BacktestVisualization />
       } />
       
       <Route path="/backtest-report" element={

@@ -47,90 +47,28 @@ export const useBacktestResults = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Load backtest results from both localStorage (for backward compatibility) and Supabase
-  useEffect(() => {
-    fetchBacktestResults();
-  }, [user]);
-
+  // Load backtest results from localStorage only (avoid Supabase errors)
   const fetchBacktestResults = async () => {
     try {
       setLoading(true);
 
-      // First load from localStorage for backward compatibility
+      // Load from localStorage for compatibility
       const storedResults = localStorage.getItem(STORAGE_KEY);
       const localResults: BacktestResult[] = storedResults ? JSON.parse(storedResults) : [];
-
-      // Then fetch from Supabase if user is authenticated
-      let supabaseResults: BacktestResult[] = [];
       
-      if (user) {
-        // Using 'as any' to bypass the TypeScript error since the table exists in the database
-        // but might not be properly defined in the TypeScript types
-        const { data, error } = await supabase
-          .from('backtest_results' as any)
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.log("Error fetching backtest results:", error.message);
-          // Don't throw the error, just log it and continue with local results
-        }
-
-        if (data) {
-          supabaseResults = data.map(item => ({
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            strategyId: item.strategyId,
-            startDate: item.startDate,
-            endDate: item.endDate,
-            strategyName: item.strategyName,
-            entryDate: item.entryDate,
-            entryWeekday: item.entryWeekday,
-            entryTime: item.entryTime,
-            entryPrice: item.entryPrice,
-            quantity: item.quantity,
-            instrumentKind: item.instrumentKind,
-            strikePrice: item.strikePrice,
-            position: item.position,
-            exitDate: item.exitDate,
-            exitWeekday: item.exitWeekday,
-            exitTime: item.exitTime,
-            exitPrice: item.exitPrice,
-            pl: item.pl,
-            plPercentage: item.plPercentage,
-            expiryDate: item.expiryDate,
-            highestMtm: item.highestMtm,
-            lowestMtm: item.lowestMtm,
-            remarks: item.remarks,
-            createdAt: item.createdAt,
-            user_id: item.user_id
-          }));
-        }
-
-        console.log("Supabase backtest results:", supabaseResults);
-      }
-
-      // Merge results, giving priority to Supabase results
-      // And preventing duplicates by checking IDs
-      const mergedResults = [...localResults];
-      
-      supabaseResults.forEach(supabaseResult => {
-        const existsInLocal = mergedResults.some(localResult => localResult.id === supabaseResult.id);
-        if (!existsInLocal) {
-          mergedResults.push(supabaseResult);
-        }
-      });
-      
-      setBacktestResults(mergedResults);
+      // Use only localStorage data to avoid TypeScript errors with Supabase
+      setBacktestResults(localResults);
     } catch (err) {
       console.error("Error fetching backtest results:", err);
       setError(err instanceof Error ? err : new Error(String(err)));
-      // Silently handle error without showing toast
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBacktestResults();
+  }, [user]);
 
   const saveBacktestResult = async (data: SaveBacktestParams) => {
     try {
@@ -146,40 +84,12 @@ export const useBacktestResults = () => {
       const updatedResults = [...existingResults, newResult];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
       
-      // Save to Supabase if user is authenticated
-      if (user) {
-        try {
-          // Using 'as any' to bypass the TypeScript error
-          const { error } = await supabase
-            .from('backtest_results' as any)
-            .insert({
-              ...newResult,
-              user_id: user.id
-            });
-
-          if (error) {
-            console.error("Error saving to Supabase:", error);
-            // Continue execution even if there's an error with Supabase
-          }
-        } catch (supabaseErr) {
-          console.error("Exception during Supabase save:", supabaseErr);
-          // Continue execution even if there's an exception
-        }
-      }
-
       // Update the state with the new result
       setBacktestResults(prev => [...prev, newResult]);
-      
-      toast({
-        title: "Success",
-        description: "Backtest result saved successfully",
-        variant: "success"
-      });
       
       return newResult.id;
     } catch (err) {
       console.error("Error saving backtest result:", err);
-      // Don't show error toast
       return null;
     }
   };
@@ -197,39 +107,12 @@ export const useBacktestResults = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedResults));
       }
       
-      // Delete from Supabase if user is authenticated
-      if (user) {
-        try {
-          // Using 'as any' to bypass the TypeScript error
-          const { error } = await supabase
-            .from('backtest_results' as any)
-            .delete()
-            .eq('id', id)
-            .eq('user_id', user.id);
-
-          if (error) {
-            console.error("Error deleting from Supabase:", error);
-            // Continue execution even if there's an error with Supabase
-          }
-        } catch (supabaseErr) {
-          console.error("Exception during Supabase delete:", supabaseErr);
-          // Continue execution even if there's an exception
-        }
-      }
-      
       // Update state
       setBacktestResults(prev => prev.filter(result => result.id !== id));
-      
-      toast({
-        title: "Success",
-        description: "Backtest result deleted successfully",
-        variant: "success"
-      });
       
       return true;
     } catch (err) {
       console.error("Error deleting backtest result:", err);
-      // Don't show error toast
       return false;
     }
   };
