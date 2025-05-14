@@ -10,10 +10,11 @@ import { toast } from "sonner";
 interface BrokerListProps {
   brokers: Broker[];
   onSelectBroker: (brokerId: number) => void;
+  selectedBrokerId?: number | null;
   loading?: boolean;
 }
 
-export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerListProps) => {
+export const BrokerList = ({ brokers, onSelectBroker, selectedBrokerId = null, loading = false }: BrokerListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredBrokers = brokers.filter((broker) =>
@@ -56,7 +57,8 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
             <BrokerCard 
               key={`${broker.id}-card`} 
               broker={broker} 
-              onSelect={onSelectBroker} 
+              onSelect={onSelectBroker}
+              isSelected={selectedBrokerId === broker.id}
             />
           ))
         ) : (
@@ -69,7 +71,15 @@ export const BrokerList = ({ brokers, onSelectBroker, loading = false }: BrokerL
   );
 };
 
-const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: number) => void }) => {
+const BrokerCard = ({ 
+  broker, 
+  onSelect, 
+  isSelected = false 
+}: { 
+  broker: Broker, 
+  onSelect: (id: number) => void,
+  isSelected?: boolean 
+}) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -224,7 +234,9 @@ const BrokerCard = ({ broker, onSelect }: { broker: Broker, onSelect: (id: numbe
 
   return (
     <div
-      className="flex items-center p-4 bg-gray-800/30 rounded-xl border border-gray-700 cursor-pointer hover:border-pink-500 transition-colors"
+      className={`flex items-center p-4 bg-gray-800/30 rounded-xl border cursor-pointer hover:border-pink-500 transition-colors ${
+        isSelected ? "border-pink-500" : "border-gray-700"
+      }`}
       onClick={() => onSelect(broker.id)}
     >
       <Avatar className="w-10 h-10 rounded-lg overflow-hidden">
