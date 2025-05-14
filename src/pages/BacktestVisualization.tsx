@@ -6,6 +6,7 @@ import { BacktestStrategyChart } from "@/components/backtest/BacktestStrategyCha
 import { ChevronLeft } from "lucide-react";
 import { type StrategyType } from '@/hooks/strategy/useStrategyBacktestData';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const strategies = [
   { id: 'zenflow', name: 'Zenflow Strategy', description: 'Our flagship strategy optimized for consistent returns' },
@@ -17,6 +18,7 @@ const strategies = [
 
 const BacktestVisualization = () => {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>('zenflow');
+  const isMobile = useIsMobile();
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
@@ -38,6 +40,7 @@ const BacktestVisualization = () => {
                 key={strategy.id}
                 className={cn(
                   "py-2 px-3 rounded-lg text-sm font-medium text-center transition-colors",
+                  isMobile ? "text-xs px-1" : "",
                   selectedStrategy === strategy.id
                     ? "bg-cyan text-charcoalPrimary"
                     : "text-charcoalTextSecondary hover:bg-charcoalSecondary/80"
@@ -50,12 +53,28 @@ const BacktestVisualization = () => {
           </div>
         </div>
 
-        <div className="mb-6 flex flex-col items-center">
+        <div className={cn(
+          "mb-6 flex flex-col",
+          isMobile ? "px-2" : "items-center"
+        )}>
           {strategies.map((strategy) => (
             strategy.id === selectedStrategy && (
-              <div key={strategy.id} className="animate-fade-in w-full max-w-lg text-center">
-                <h2 className="text-2xl font-bold text-white mb-3">{strategy.name}</h2>
-                <p className="text-charcoalTextSecondary mb-6">{strategy.description}</p>
+              <div key={strategy.id} className={cn(
+                "animate-fade-in",
+                isMobile ? "w-full text-left" : "w-full max-w-lg text-center"
+              )}>
+                <h2 className={cn(
+                  "text-2xl font-bold text-white mb-3",
+                  isMobile ? "" : "text-center"
+                )}>
+                  {strategy.name}
+                </h2>
+                <p className={cn(
+                  "text-charcoalTextSecondary mb-6",
+                  isMobile ? "" : "text-center"
+                )}>
+                  {strategy.description}
+                </p>
               </div>
             )
           ))}
@@ -64,8 +83,16 @@ const BacktestVisualization = () => {
         <BacktestStrategyChart strategyType={selectedStrategy} className="mb-6" />
 
         <div className="bg-charcoalSecondary/30 rounded-xl p-4 mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3 text-center">Strategy Performance</h3>
-          <p className="text-charcoalTextSecondary mb-4 text-center">
+          <h3 className={cn(
+            "text-lg font-semibold text-white mb-3",
+            isMobile ? "" : "text-center"
+          )}>
+            Strategy Performance
+          </h3>
+          <p className={cn(
+            "text-charcoalTextSecondary mb-4",
+            isMobile ? "" : "text-center"
+          )}>
             The chart above shows the historical performance of the {strategies.find(s => s.id === selectedStrategy)?.name} 
             across different years. Each data point represents the total performance for that year.
           </p>
