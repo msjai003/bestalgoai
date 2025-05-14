@@ -51,7 +51,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     }
     
     console.log(`Toggling wishlist for strategy ${strategy.id}, current state: ${strategy.isWishlisted}`);
-    onToggleWishlist(strategy.id, !strategy.isWishlisted);
+    onToggleWishlist(strategy.id, strategy.isWishlisted);
   };
 
   const toggleLiveMode = (e: React.MouseEvent) => {

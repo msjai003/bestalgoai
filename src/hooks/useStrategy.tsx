@@ -135,9 +135,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         await addToWishlist(user.id, id, strategy.name, strategy.description || "");
         toast.success(`Added "${strategy.name}" to your wishlist`);
       } else {
-        // Remove from wishlist
+        // Remove from wishlist - with a more generic message
         await removeFromWishlist(user.id, id);
-        toast.success(`Removed "${strategy.name}" from your wishlist`);
+        toast.success(`Removed strategy from your wishlist`);
       }
 
       // Update local state
