@@ -34,8 +34,19 @@ const BrokerIntegration = () => {
 
   const handleSelectBroker = (brokerId: number) => {
     setSelectedBrokerId(brokerId);
-    // Navigate to the credentials page with the selected broker ID
-    navigate("/broker-credentials", { state: { brokerId } });
+  };
+
+  const handleContinue = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    if (selectedBrokerId) {
+      // Navigate to the credentials page with the selected broker ID
+      navigate("/broker-credentials", { state: { brokerId: selectedBrokerId } });
+    } else {
+      toast.error("Please select a broker to continue");
+    }
   };
 
   return (
@@ -46,6 +57,7 @@ const BrokerIntegration = () => {
             variant="ghost" 
             className="p-2"
             onClick={() => navigate('/settings')}
+            type="button"
           >
             <ChevronLeft className="w-5 h-5 text-charcoalTextSecondary" />
           </Button>
@@ -58,6 +70,7 @@ const BrokerIntegration = () => {
         <BrokerList 
           brokers={brokers} 
           onSelectBroker={handleSelectBroker}
+          selectedBrokerId={selectedBrokerId}
           loading={loading}
         />
       </main>
@@ -66,8 +79,9 @@ const BrokerIntegration = () => {
         <div className="flex flex-col gap-3">
           <Button
             className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-xl font-semibold"
-            onClick={() => selectedBrokerId && handleSelectBroker(selectedBrokerId)}
+            onClick={handleContinue}
             disabled={!selectedBrokerId}
+            type="button"
           >
             Continue
           </Button>
@@ -75,6 +89,7 @@ const BrokerIntegration = () => {
             variant="outline"
             className="w-full h-12 border border-charcoalSecondary bg-transparent text-charcoalTextPrimary rounded-xl font-semibold"
             onClick={() => navigate("/settings")}
+            type="button"
           >
             Cancel
           </Button>

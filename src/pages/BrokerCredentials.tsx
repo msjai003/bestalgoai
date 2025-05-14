@@ -146,7 +146,11 @@ const BrokerCredentials = () => {
     }
   };
 
-  const handleStepSubmit = () => {
+  const handleStepSubmit = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     switch (connectionStep) {
       case "credentials":
         handleCredentialsSubmit();
@@ -180,12 +184,15 @@ const BrokerCredentials = () => {
       />
 
       <main className="pt-20 px-4 pb-24">
-        {renderCurrentStep()}
+        <form onSubmit={handleStepSubmit}>
+          {renderCurrentStep()}
+        </form>
       </main>
 
       <section className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800">
         <div className="flex flex-col gap-3">
           <button
+            type="button"
             className="w-full h-12 bg-gradient-to-r from-cyan to-cyan/80 text-charcoalPrimary rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleStepSubmit}
             disabled={isSubmitting || isLoading}
@@ -194,6 +201,7 @@ const BrokerCredentials = () => {
           </button>
           
           <button
+            type="button"
             className="w-full h-12 border border-charcoalSecondary bg-transparent text-charcoalTextPrimary rounded-xl font-semibold"
             onClick={handleBack}
             disabled={isSubmitting || isLoading}

@@ -1,3 +1,4 @@
+
 import { ChevronLeft, User, Lock, Key, Shield, Hash, KeyRound, FileKey, Eye, EyeOff, Package } from "lucide-react";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -56,10 +57,21 @@ export const CredentialsForm = ({
     return selectedBroker.requiredInputs.includes(fieldName);
   };
 
+  // Prevent form submission on enter key
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   return (
     <section className="mb-6">
       <div className="flex items-center mb-4">
-        <button onClick={onBack} className="mr-3 p-2 rounded-full hover:bg-gray-800">
+        <button 
+          type="button" 
+          onClick={onBack} 
+          className="mr-3 p-2 rounded-full hover:bg-gray-800"
+        >
           <ChevronLeft className="w-5 h-5 text-gray-300" />
         </button>
         <h1 className="text-2xl font-bold">
@@ -118,6 +130,7 @@ export const CredentialsForm = ({
             className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100"
             value={credentials.username}
             onChange={(e) => updateCredential('username', e.target.value)}
+            onKeyDown={handleKeyDown}
             required
           />
           <p className="text-gray-400 text-xs mt-1">
@@ -137,6 +150,7 @@ export const CredentialsForm = ({
               className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
               value={credentials.password}
               onChange={(e) => updateCredential('password', e.target.value)}
+              onKeyDown={handleKeyDown}
               required
             />
             <Button
@@ -169,6 +183,7 @@ export const CredentialsForm = ({
               className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
               value={productType}
               onChange={(e) => setProductType && setProductType(e.target.value)}
+              onKeyDown={handleKeyDown}
               readOnly={!setProductType}
             />
             <Button
@@ -204,6 +219,7 @@ export const CredentialsForm = ({
               className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
               value={credentials.secretKey}
               onChange={(e) => updateCredential('secretKey', e.target.value)}
+              onKeyDown={handleKeyDown}
               required
             />
             <Button
@@ -238,6 +254,7 @@ export const CredentialsForm = ({
               className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
               value={credentials.twoFactorSecret}
               onChange={(e) => updateCredential('twoFactorSecret', e.target.value)}
+              onKeyDown={handleKeyDown}
               required
             />
             <Button
@@ -273,6 +290,7 @@ export const CredentialsForm = ({
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
                 value={credentials.sessionId}
                 onChange={(e) => updateCredential('sessionId', e.target.value)}
+                onKeyDown={handleKeyDown}
                 required={isFieldRequired('session_id')}
               />
               <Button
@@ -307,6 +325,7 @@ export const CredentialsForm = ({
                 className="mt-1 bg-gray-800/50 border-gray-700 text-gray-100 pr-10"
                 value={credentials.apiKey}
                 onChange={(e) => updateCredential('apiKey', e.target.value)}
+                onKeyDown={handleKeyDown}
                 required={isFieldRequired('api_key')}
               />
               <Button
