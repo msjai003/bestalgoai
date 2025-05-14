@@ -50,12 +50,12 @@ const BacktestVisualization = () => {
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col items-center">
           {strategies.map((strategy) => (
             strategy.id === selectedStrategy && (
-              <div key={strategy.id} className="animate-fade-in">
-                <h2 className="text-2xl font-bold text-white text-center mb-2">{strategy.name}</h2>
-                <p className="text-charcoalTextSecondary mb-6 text-center">{strategy.description}</p>
+              <div key={strategy.id} className="animate-fade-in w-full max-w-lg text-center">
+                <h2 className="text-2xl font-bold text-white mb-3">{strategy.name}</h2>
+                <p className="text-charcoalTextSecondary mb-6">{strategy.description}</p>
               </div>
             )
           ))}
