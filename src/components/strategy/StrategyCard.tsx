@@ -7,7 +7,7 @@ import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface StrategyCardProps {
   strategy: Strategy;

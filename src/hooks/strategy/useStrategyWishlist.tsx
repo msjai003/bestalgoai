@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { Strategy } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { syncWishlistMaintain } from "@/lib/supabase/subscription";
 
-// Helper function to add strategy to wishlist using the new wishlist_maintain table
+// Helper function to add strategy to wishlist using the wishlist_maintain table
 export const addToWishlist = async (
   userId: string,
   strategyId: number,
