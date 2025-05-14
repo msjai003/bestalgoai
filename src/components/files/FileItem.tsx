@@ -137,11 +137,11 @@ const FileItem = ({
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center"
+                className="text-cyan hover:text-white hover:bg-cyan/80 border-cyan w-full sm:w-auto flex items-center relative"
               >
-                <Download className="h-5 w-5 mr-2" />
-                <Lock className="h-4 w-4 absolute top-1 right-1" />
-                <span>Download (₹1)</span>
+                <Lock className="h-5 w-5 mr-2" />
+                <Download className="h-5 w-5" />
+                <span className="ml-2">Download (₹1)</span>
               </Button>
             </DialogTrigger>
             <PaymentDialog
