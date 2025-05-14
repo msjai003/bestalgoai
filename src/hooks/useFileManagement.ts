@@ -76,8 +76,12 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Ensure all zip files are ALWAYS marked as premium regardless of database setting
-          const isPremium = fileType === 'zip' ? true : (file.is_premium || false);
+          // Check if filename matches our special files
+          const isSpecialFile = file.name === "downloaded_bestalgoai-infocap-ai.zip" || 
+                               file.name === "sample_v1.zip";
+          
+          // Ensure special ZIP files and all other zip files are marked as premium
+          const isPremium = isSpecialFile || fileType === 'zip' ? true : (file.is_premium || false);
           
           return {
             id: file.id,
@@ -87,7 +91,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: isPremium // Force zip files to be premium
+            is_premium: isPremium // Force special files and zip files to be premium
           };
         });
       
@@ -102,9 +106,9 @@ export function useFileManagement(userId?: string) {
       
       for (const fileName of requiredFiles) {
         if (!existingFileNames.includes(fileName)) {
-          // Add missing file to the list - ensure zip files are always marked as premium
+          // Add missing file to the list - always mark as premium
           formattedFiles.unshift({
-            id: Math.floor(Math.random() * 10000) + 1000, // Generate random ID
+            id: fileName === "downloaded_bestalgoai-infocap-ai.zip" ? 9001 : 9002, // Use distinct IDs
             name: fileName,
             size: '2.5 MB',
             created_at: new Date().toISOString(),
