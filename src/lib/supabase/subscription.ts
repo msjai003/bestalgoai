@@ -22,7 +22,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
   }
 };
 
-// Add the missing syncPremiumAccess function
+// Add the syncPremiumAccess function
 export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
   try {
     // Check if user has a valid premium subscription
@@ -67,7 +67,7 @@ export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
   }
 };
 
-// New function to sync wishlist with wishlist_maintain table
+// Function to sync wishlist with wishlist_maintain table
 export const syncWishlistMaintain = async (
   userId: string,
   strategyId: number,

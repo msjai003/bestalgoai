@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Strategy } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,21 +16,9 @@ export const addToWishlist = async (
   try {
     console.log(`Adding strategy ${strategyId} to wishlist for user ${userId}`);
     
-    // Check if the strategy already exists in the wishlist_maintain table
-    const { data: existingWishlist, error: queryError } = await supabase
-      .from('wishlist_maintain')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .maybeSingle();
-      
-    if (queryError) throw queryError;
-    
-    if (!existingWishlist) {
-      // Sync with wishlist_maintain table
-      await syncWishlistMaintain(userId, strategyId, strategyName, strategyDescription, true);
-      console.log("Strategy added to wishlist_maintain table");
-    }
+    // Sync with wishlist_maintain table
+    await syncWishlistMaintain(userId, strategyId, strategyName, strategyDescription, true);
+    console.log("Strategy added to wishlist_maintain table");
     
     // Also update the strategy_selections table to maintain backward compatibility
     // First check if the strategy exists in strategy_selections
@@ -84,7 +73,7 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
   try {
     console.log(`Removing strategy ${strategyId} from wishlist for user ${userId}`);
     
-    // Sync with wishlist_maintain table
+    // Sync with wishlist_maintain table - set isWishlisted to false to remove
     await syncWishlistMaintain(userId, strategyId, "", "", false);
     console.log("Deleted from wishlist_maintain table");
     
@@ -104,39 +93,20 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
     if (strategies && strategies.length > 0) {
       console.log(`Found ${strategies.length} entries in strategy_selections to update`);
       
-      // Check if any of the strategies are paid
-      const paidStrategy = strategies.find(strategy => strategy.paid_status === 'paid');
-      
-      if (paidStrategy) {
-        // If this is a paid strategy, don't delete it - just update the wishlist status
-        const { error } = await supabase
-          .from('strategy_selections')
-          .update({ 
-            is_wishlisted: false // Set wishlist status to false but keep the record
-          })
-          .eq('id', paidStrategy.id);
+      // Set is_wishlisted flag to false for all related strategies
+      const { error } = await supabase
+        .from('strategy_selections')
+        .update({ 
+          is_wishlisted: false
+        })
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId);
           
-        if (error) {
-          console.error("Error updating paid strategy:", error);
-          throw error;
-        }
-        console.log("Updated paid strategy wishlist status");
-      } else {
-        // If it's not a paid strategy, update the is_wishlisted flag to false
-        const { error } = await supabase
-          .from('strategy_selections')
-          .update({ 
-            is_wishlisted: false
-          })
-          .eq('user_id', userId)
-          .eq('strategy_id', strategyId);
-          
-        if (error) {
-          console.error("Error updating non-paid strategy:", error);
-          throw error;
-        }
-        console.log("Updated non-paid strategy wishlist status");
+      if (error) {
+        console.error("Error updating strategy wishlist status:", error);
+        throw error;
       }
+      console.log("Updated strategy wishlist status in strategy_selections");
     }
   } catch (error) {
     console.error("Error removing from wishlist:", error);
@@ -178,7 +148,7 @@ export const updateLocalStorageWishlist = (
 // Function to load wishlist items from the wishlist_maintain table
 export const loadWishlistItems = async (userId: string): Promise<Array<{id: number, name: string, description: string}>> => {
   try {
-    console.log(`Loading wishlist items for user ${userId}`);
+    console.log(`Loading wishlist items from wishlist_maintain table for user ${userId}`);
     const { data, error } = await supabase
       .from('wishlist_maintain')
       .select('strategy_id, strategy_name, strategy_description')
@@ -189,7 +159,7 @@ export const loadWishlistItems = async (userId: string): Promise<Array<{id: numb
       throw error;
     }
     
-    console.log(`Loaded ${data?.length || 0} wishlist items from database`);
+    console.log(`Loaded ${data?.length || 0} wishlist items from wishlist_maintain table`);
     return (data || []).map(item => ({
       id: item.strategy_id,
       name: item.strategy_name,
@@ -208,15 +178,15 @@ export const useStrategyWishlist = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Remove hasPremium from useAuth() since it doesn't exist
-  // Instead create a local variable for premium status check
-  const isPremium = user?.id ? true : false; // Simplified check, adjust as needed
+  // Create a local variable for premium status check
+  const hasPremium = user?.id ? true : false; // Simplified check, adjust as needed
 
   useEffect(() => {
     const loadWishlist = async () => {
       setIsLoading(true);
       try {
         if (user) {
+          // Load wishlist items from the wishlist_maintain table
           const items = await loadWishlistItems(user.id);
           
           // Ensure all required Strategy properties are included
@@ -254,6 +224,6 @@ export const useStrategyWishlist = () => {
   return {
     wishlistedStrategies,
     isLoading,
-    hasPremium: isPremium // Use our local variable instead of missing property
+    hasPremium // Use our local variable
   };
 };
