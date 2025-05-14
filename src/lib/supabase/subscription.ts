@@ -1,3 +1,4 @@
+
 import { supabase } from './client';
 
 export const checkUserPremiumStatus = async (userId: string): Promise<boolean> => {
@@ -17,6 +18,51 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
     return !!planDetails;
   } catch (error) {
     console.error("Error in checkUserPremiumStatus:", error);
+    return false;
+  }
+};
+
+// Add the missing syncPremiumAccess function
+export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
+  try {
+    // Check if user has a valid premium subscription
+    const { data: planDetails, error } = await supabase
+      .from('plan_details')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_paid', true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error checking premium status for sync:", error);
+      return false;
+    }
+
+    if (!planDetails) {
+      console.log("No premium subscription found for user during sync");
+      return false;
+    }
+
+    // Grant access to premium strategies by inserting records into strategy_access table
+    // This assumes a strategy_access table exists to track which users have access to which premium strategies
+    const { error: accessError } = await supabase
+      .from('strategy_access')
+      .upsert([
+        { user_id: userId, access_level: 'premium', granted_at: new Date().toISOString() }
+      ], { 
+        onConflict: 'user_id',
+        ignoreDuplicates: false
+      });
+
+    if (accessError) {
+      console.error("Error syncing premium access:", accessError);
+      return false;
+    }
+
+    console.log("Premium access synced successfully for user:", userId);
+    return true;
+  } catch (error) {
+    console.error("Error in syncPremiumAccess:", error);
     return false;
   }
 };
