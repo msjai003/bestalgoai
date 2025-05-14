@@ -76,7 +76,7 @@ const FileItem = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-4 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
       <div className="flex flex-col mb-2 sm:mb-0">
         <div className="flex items-center flex-wrap gap-2">
           <span className="font-medium text-white">{name}</span>
@@ -104,8 +104,8 @@ const FileItem = ({
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         {canDownload ? (
           // Show unlock icon when user can access
-          <div className="text-green-500 p-2">
-            <Unlock className="h-5 w-5" />
+          <div className="text-green-500 p-2 bg-green-500/10 rounded-full hover:bg-green-500/20 transition-colors">
+            <Unlock className="h-6 w-6" />
           </div>
         ) : (
           // Show lock icon with payment trigger for locked files
@@ -113,10 +113,10 @@ const FileItem = ({
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
-                size={isMobile ? "sm" : "sm"}
-                className="text-red-500 hover:text-red-400 hover:bg-transparent"
+                size="icon"
+                className="text-red-500 hover:text-white hover:bg-red-500/30 rounded-full p-2"
               >
-                <Lock className="h-5 w-5" />
+                <Lock className="h-6 w-6" />
               </Button>
             </DialogTrigger>
             <PaymentDialog
