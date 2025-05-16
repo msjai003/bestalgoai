@@ -80,7 +80,7 @@ export function useFileManagement(userId?: string) {
           const isSpecialFile = file.name === "downloaded_bestalgoai-infocap-ai.zip" || 
                                file.name === "sample_v1.zip";
           
-          // Ensure special ZIP files and all other zip files are marked as premium
+          // Force all ZIP files and special files to be marked as premium
           const isPremium = isSpecialFile || fileType === 'zip' ? true : (file.is_premium || false);
           
           return {
