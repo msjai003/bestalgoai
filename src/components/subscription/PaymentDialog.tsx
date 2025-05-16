@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth/AuthContext";
 import { initializeRazorpayPayment, convertPriceToAmount } from "@/utils/razorpayUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useFileManagement } from "@/hooks/useFileManagement";

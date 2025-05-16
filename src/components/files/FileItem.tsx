@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth/AuthContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,16 +51,22 @@ const FileItem = ({
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (user && isLockedFile) {
-        const { data } = await supabase
-          .from('user_file_payments')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('file_id', id)
-          .eq('status', 'completed')
-          .maybeSingle();
-        
-        if (data) {
-          setHasPaid(true);
+        try {
+          const { data, error } = await supabase
+            .from('user_file_payments')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('file_id', id)
+            .eq('status', 'completed')
+            .maybeSingle();
+          
+          if (error) {
+            console.error("Error checking payment status:", error);
+          } else if (data) {
+            setHasPaid(true);
+          }
+        } catch (err) {
+          console.error("Exception checking payment status:", err);
         }
       }
     };
@@ -110,12 +116,25 @@ const FileItem = ({
     
     // Record successful payment in database
     if (user) {
-      await supabase.from('user_file_payments').insert({
-        user_id: user.id,
-        file_id: id,
-        status: 'completed',
-        amount: 1 // 1 rupee payment
-      });
+      try {
+        const { error } = await supabase.from('user_file_payments').insert({
+          user_id: user.id,
+          file_id: id,
+          status: 'completed',
+          amount: 1 // 1 rupee payment
+        });
+        
+        if (error) {
+          console.error("Error recording payment:", error);
+          toast({
+            title: "Payment recording failed",
+            description: "Payment was successful but we couldn't record it. Please contact support.",
+            variant: "destructive",
+          });
+        }
+      } catch (err) {
+        console.error("Exception recording payment:", err);
+      }
     }
     
     toast({

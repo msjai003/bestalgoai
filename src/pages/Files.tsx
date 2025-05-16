@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Header from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth/AuthContext";
 import LoadingState from "@/components/files/LoadingState";
 import EmptyFilesState from "@/components/files/EmptyFilesState";
 import FilesList from "@/components/files/FilesList";
