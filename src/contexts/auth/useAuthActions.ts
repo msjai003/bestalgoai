@@ -26,29 +26,10 @@ const mapToAuthUser = (user: User | null): AuthUser | null => {
 
 export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) => {
   return {
-    signIn: async (email: string, password: string) => {
-      try {
-        setIsLoading(true);
-        
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) {
-          console.error('Error during sign in:', error);
-          return { error, data: null };
-        }
-        
-        const authUser = mapToAuthUser(data.user);
-        setUser(authUser);
-        return { error: null, data: { user: authUser } };
-      } catch (error: any) {
-        console.error('Error during sign in:', error);
-        return { error: error as Error, data: null };
-      } finally {
-        setIsLoading(false);
-      }
+    signIn: async (user: User | null) => {
+      if (!user) return;
+      const authUser = mapToAuthUser(user);
+      setUser(authUser);
     },
     
     signUp: async (

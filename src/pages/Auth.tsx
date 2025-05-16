@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import ForgotPassword from "@/components/auth/ForgotPassword";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signIn } = useAuth();
@@ -48,6 +50,18 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary">
+        <div className="w-full max-w-md">
+          <div className="bg-charcoalSecondary/20 border border-gray-700 rounded-xl p-6">
+            <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary">
@@ -110,9 +124,13 @@ const Auth = () => {
                 </button>
               </div>
               <div className="text-right">
-                <a href="#" className="text-cyan text-xs hover:underline">
+                <button 
+                  type="button" 
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-cyan text-xs hover:underline"
+                >
                   Forgot Password?
-                </a>
+                </button>
               </div>
             </div>
 

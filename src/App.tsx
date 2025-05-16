@@ -70,6 +70,7 @@ function AppRoutes() {
       <Route path="/classes" element={<Classes />} />
       <Route path="/smart-learn" element={<SmartLearn />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/*" element={<ResetPassword />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
