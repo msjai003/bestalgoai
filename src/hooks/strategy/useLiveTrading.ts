@@ -24,6 +24,7 @@ export const useLiveTrading = () => {
   const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
   const [currentBroker, setCurrentBroker] = useState<string | null>(null);
   const [currentBrokerName, setCurrentBrokerName] = useState<string | null>(null);
+  const [currentRowId, setCurrentRowId] = useState<string | null>(null);
   const [pendingQuantity, setPendingQuantity] = useState<number>(0);
   
   const { customStrategies } = useCustomStrategies();
@@ -75,9 +76,16 @@ export const useLiveTrading = () => {
     });
   };
   
-  const handleToggleLiveMode = async (id: number, uniqueId?: string, rowId?: string, broker?: string) => {
+  const handleToggleLiveMode = async (
+    id: number, 
+    uniqueId?: string, 
+    rowId?: string, 
+    broker?: string
+  ) => {
     const strategy = strategies.find(s => {
-      if (s.id === id) return true;
+      if (s.id === id) {
+        return rowId ? s.rowId === rowId : true;
+      }
       return (uniqueId && s.uniqueId === uniqueId) || (rowId && s.rowId === rowId);
     });
     
@@ -89,6 +97,7 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(typeof id === 'number' ? id : parseInt(id as string, 10));
     setCurrentStrategyName(strategy.name || `Strategy ${id}`);
     setCurrentBrokerName(strategy.selectedBroker || null);
+    setCurrentRowId(strategy.rowId || null);
     
     if (strategy.isCustom && strategy.rowId) {
       setCurrentCustomId(strategy.rowId);
@@ -108,74 +117,64 @@ export const useLiveTrading = () => {
         setShowConfirmationDialog(false);
         setShowQuantityDialog(true);
       } else {
-        if (currentCustomId) {
-          const { error } = await supabase
-            .from('custom_strategies')
-            .update({
-              trade_type: 'paper trade',
-              quantity: 0,
-              selected_broker: null,
-              broker_username: null
+        // Important: Use rowId for exact record targeting
+        if (currentRowId) {
+          console.log(`Updating specific strategy row (${currentRowId}) to paper trade mode`);
+          
+          if (currentCustomId) {
+            // For custom strategies
+            const { error } = await supabase
+              .from('custom_strategies')
+              .update({
+                trade_type: 'paper trade'
+              })
+              .eq('id', currentCustomId)
+              .eq('user_id', user.id);
+              
+            if (error) throw error;
+          } else {
+            // For predefined strategies - using rowId for exact matching
+            const { error } = await supabase
+              .from('strategy_selections')
+              .update({
+                trade_type: 'paper trade'
+              })
+              .eq('id', currentRowId)
+              .eq('user_id', user.id);
+              
+            if (error) throw error;
+          }
+          
+          // Update local state - carefully match the exact strategy by rowId
+          setStrategies(prev => 
+            prev.map(strategy => {
+              if (strategy.rowId === currentRowId) {
+                return {
+                  ...strategy,
+                  isLive: false,
+                  tradeType: 'paper trade'
+                };
+              }
+              return strategy;
             })
-            .eq('id', currentCustomId)
-            .eq('user_id', user.id);
-            
-          if (error) throw error;
-        } else if (currentStrategyId !== null) {
-          // Fetch the current strategy name and description before updating
-          const { data: stratData } = await supabase
-            .from('predefined_strategies')
-            .select('name, description')
-            .eq('id', currentStrategyId)
-            .single();
-            
-          const strategyName = stratData?.name || currentStrategyName;
-          const strategyDescription = stratData?.description || "";
-            
-          const { error } = await supabase
-            .from('strategy_selections')
-            .update({
-              trade_type: 'paper trade',
-              quantity: 0,
-              selected_broker: null,
-              broker_username: null,
-              strategy_name: strategyName,
-              strategy_description: strategyDescription
-            })
-            .eq('strategy_id', currentStrategyId)
-            .eq('user_id', user.id);
-            
-          if (error) throw error;
+          );
+          
+          toast({
+            title: "Paper Trading Enabled",
+            description: `${currentStrategyName || 'Strategy'} is now in paper trading mode with ${currentBrokerName || 'broker'}`,
+            duration: 3000,
+          });
+        } else {
+          console.error("Missing rowId for paper trade update");
+          toast({
+            title: "Error",
+            description: "Could not identify the specific strategy to update",
+            variant: "destructive",
+          });
         }
         
-        setStrategies(prev => 
-          prev.map(strategy => {
-            if (strategy.id === currentStrategyId || strategy.rowId === currentCustomId) {
-              return {
-                ...strategy,
-                isLive: false,
-                quantity: 0,
-                selectedBroker: null,
-                brokerUsername: null,
-                tradeType: 'paper trade'
-              };
-            }
-            return strategy;
-          })
-        );
-        
-        toast({
-          title: "Paper Trading Enabled",
-          description: `${currentStrategyName || 'Strategy'} is now in paper trading mode`,
-          duration: 3000,
-        });
-        
         setShowConfirmationDialog(false);
-        setCurrentStrategyId(null);
-        setCurrentCustomId(null);
-        setCurrentStrategyName("");
-        setCurrentBrokerName(null);
-        setTargetMode(null);
+        resetState();
       }
     } catch (error) {
       console.error("Error updating strategy mode:", error);
@@ -185,6 +184,16 @@ export const useLiveTrading = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  const resetState = () => {
+    setCurrentStrategyId(null);
+    setCurrentCustomId(null);
+    setCurrentStrategyName("");
+    setCurrentBrokerName(null);
+    setCurrentRowId(null);
+    setTargetMode(null);
+    setPendingQuantity(0);
   };
   
   const handleQuantitySubmit = async (quantity: number) => {
@@ -198,52 +207,51 @@ export const useLiveTrading = () => {
     }
     
     try {
-      const strategy = strategies.find(s => s.id === currentStrategyId || s.rowId === currentCustomId);
-      
-      if (strategy?.isCustom && strategy.rowId) {
-        const { error } = await supabase
-          .from('custom_strategies')
-          .update({ quantity })
-          .eq('id', strategy.rowId)
-          .eq('user_id', user.id);
-          
-        if (error) throw error;
-      } else if (strategy && currentStrategyId !== null) {
-        // Fetch the strategy name and description from predefined_strategies
-        const { data: stratData } = await supabase
-          .from('predefined_strategies')
-          .select('name, description')
-          .eq('id', currentStrategyId)
-          .single();
-          
-        // Use the actual strategy name and description from predefined_strategies
-        await updateStrategyLiveConfig(
-          user.id,
-          currentStrategyId,
-          quantity,
-          strategy.selectedBroker || "",
-          strategy.brokerUsername || "",
-          strategy.isLive ? "live trade" : "paper trade",
-          stratData?.name || strategy.name,
-          stratData?.description || strategy.description || ""
+      // This branch is for updating just the quantity of an existing strategy
+      if (currentRowId) {
+        if (currentCustomId) {
+          // For custom strategies
+          const { error } = await supabase
+            .from('custom_strategies')
+            .update({ quantity })
+            .eq('id', currentCustomId)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        } else {
+          // For predefined strategies - using rowId for exact matching
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({ quantity })
+            .eq('id', currentRowId)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+        }
+        
+        // Update local state, matching by rowId
+        setStrategies(prev => 
+          prev.map(s => {
+            if (s.rowId === currentRowId) {
+              return { ...s, quantity };
+            }
+            return s;
+          })
         );
+        
+        toast({
+          title: "Quantity Updated",
+          description: `${currentStrategyName || 'Strategy'} quantity set to ${quantity}`,
+          duration: 3000,
+        });
+      } else {
+        console.error("Missing rowId for quantity update");
+        toast({
+          title: "Error",
+          description: "Could not identify the specific strategy to update",
+          variant: "destructive",
+        });
       }
-      
-      setStrategies(prev => 
-        prev.map(s => {
-          if (s.id === currentStrategyId || s.rowId === currentCustomId) {
-            return { ...s, quantity };
-          }
-          return s;
-        })
-      );
-      
-      toast({
-        title: "Quantity Updated",
-        description: `${currentStrategyName || 'Strategy'} quantity set to ${quantity}`,
-        duration: 3000,
-      });
-      
     } catch (error) {
       console.error("Error updating quantity:", error);
       toast({
@@ -254,20 +262,12 @@ export const useLiveTrading = () => {
     }
     
     setShowQuantityDialog(false);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentStrategyName("");
+    resetState();
   };
   
   const handleCancelQuantity = () => {
     setShowQuantityDialog(false);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentStrategyName("");
-    
-    if (targetMode === "live") {
-      setTargetMode(null);
-    }
+    resetState();
   };
   
   const handleBrokerSubmit = async (brokerId: string, accountName: string) => {
@@ -290,37 +290,51 @@ export const useLiveTrading = () => {
       const username = brokerData.username;
       setCurrentBrokerName(brokerName);
       
-      if (targetMode === "live" && pendingQuantity > 0) {
+      if (targetMode === "live" && pendingQuantity > 0 && currentStrategyId) {
         try {
-          if (currentCustomId) {
-            const { error } = await supabase
-              .from('custom_strategies')
-              .update({
-                trade_type: 'live trade',
-                quantity: pendingQuantity,
-                selected_broker: brokerName,
-                broker_username: username
-              })
-              .eq('id', currentCustomId)
-              .eq('user_id', user.id);
-              
-            if (error) throw error;
-          } else if (currentStrategyId !== null) {
-            // Fetch the actual strategy name and description from predefined_strategies
-            const { data: stratData } = await supabase
-              .from('predefined_strategies')
-              .select('name, description')
-              .eq('id', currentStrategyId)
-              .single();
-              
-            const strategyName = stratData?.name || "";
-            const strategyDescription = stratData?.description || "";
+          // Fetch the actual strategy name and description from predefined_strategies
+          const { data: stratData } = await supabase
+            .from('predefined_strategies')
+            .select('name, description')
+            .eq('id', currentStrategyId)
+            .single();
             
-            // This part is critical - it saves the data to strategy_selections table
-            // with strategy name, description, quantity, broker info
+          const strategyName = stratData?.name || currentStrategyName;
+          const strategyDescription = stratData?.description || "";
+          
+          // Check if this strategy+broker combination already exists
+          const { data: existingCombo, error: comboError } = await supabase
+            .from('strategy_selections')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('strategy_id', currentStrategyId)
+            .eq('selected_broker', brokerName);
+          
+          if (comboError) throw comboError;
+          
+          let rowId;
+          if (existingCombo && existingCombo.length > 0) {
+            // Update existing record
+            rowId = existingCombo[0].id;
             const { error } = await supabase
               .from('strategy_selections')
               .update({
+                trade_type: 'live trade',
+                quantity: pendingQuantity,
+                broker_username: username,
+                strategy_name: strategyName,
+                strategy_description: strategyDescription
+              })
+              .eq('id', rowId);
+              
+            if (error) throw error;
+          } else {
+            // Insert new record
+            const { data, error } = await supabase
+              .from('strategy_selections')
+              .insert({
+                user_id: user.id,
+                strategy_id: currentStrategyId,
                 trade_type: 'live trade',
                 quantity: pendingQuantity,
                 selected_broker: brokerName,
@@ -328,31 +342,25 @@ export const useLiveTrading = () => {
                 strategy_name: strategyName,
                 strategy_description: strategyDescription
               })
-              .eq('strategy_id', currentStrategyId)
-              .eq('user_id', user.id);
+              .select();
               
             if (error) throw error;
+            rowId = data?.[0]?.id;
           }
           
-          setStrategies(prev => 
-            prev.map(strategy => {
-              if (strategy.id === currentStrategyId || strategy.rowId === currentCustomId) {
-                return {
-                  ...strategy,
-                  isLive: true,
-                  quantity: pendingQuantity,
-                  selectedBroker: brokerName,
-                  brokerUsername: username,
-                  tradeType: 'live trade'
-                };
-              }
-              return strategy;
-            })
+          // Reload strategies to get fresh data
+          const updatedStrategies = await loadUserStrategies(user.id);
+          
+          // Merge with custom strategies
+          const filteredCustomStrategies = customStrategies.filter(
+            strategy => !strategy.name.includes("Evercrest")
           );
+          
+          setStrategies([...updatedStrategies, ...filteredCustomStrategies]);
           
           toast({
             title: "Live Trading Enabled",
-            description: `${currentStrategyName || 'Strategy'} is now live with broker ${brokerName} and quantity ${pendingQuantity}`,
+            description: `${strategyName} is now live with broker ${brokerName} and quantity ${pendingQuantity}`,
             duration: 3000,
           });
         } catch (error) {
@@ -365,55 +373,27 @@ export const useLiveTrading = () => {
         }
         
         setShowBrokerDialog(false);
-        setPendingQuantity(0);
-        setCurrentStrategyId(null);
-        setCurrentCustomId(null);
-        setCurrentStrategyName("");
-        setTargetMode(null);
+        resetState();
         return;
       }
       
-      if (currentStrategyId !== null) {
+      if (currentRowId && currentStrategyId) {
         try {
-          const strategy = strategies.find(s => s.id === currentStrategyId);
-          
-          // Fetch the actual strategy name and description from predefined_strategies
-          const { data: stratData } = await supabase
-            .from('predefined_strategies')
-            .select('name, description')
-            .eq('id', currentStrategyId)
-            .single();
+          // Update broker for a specific strategy record (identified by rowId)
+          const { error } = await supabase
+            .from('strategy_selections')
+            .update({
+              selected_broker: brokerName,
+              broker_username: username
+            })
+            .eq('id', currentRowId);
             
-          const strategyName = stratData?.name || "";
-          const strategyDescription = stratData?.description || "";
+          if (error) throw error;
           
-          if (strategy?.isCustom && strategy.rowId) {
-            const { error } = await supabase
-              .from('custom_strategies')
-              .update({
-                selected_broker: brokerName,
-                broker_username: username
-              })
-              .eq('id', strategy.rowId)
-              .eq('user_id', user.id);
-              
-            if (error) throw error;
-          } else if (strategy) {
-            await updateStrategyLiveConfig(
-              user.id,
-              currentStrategyId,
-              strategy.quantity || 0,
-              brokerName,
-              username,
-              strategy.isLive ? "live trade" : "paper trade",
-              strategyName,
-              strategyDescription
-            );
-          }
-          
+          // Update local state
           setStrategies(prev => 
             prev.map(s => {
-              if (s.id === currentStrategyId) {
+              if (s.rowId === currentRowId) {
                 return { 
                   ...s, 
                   selectedBroker: brokerName,
@@ -426,7 +406,7 @@ export const useLiveTrading = () => {
           
           toast({
             title: "Broker Settings Updated",
-            description: `${currentStrategyName || 'Strategy'} broker set to ${brokerName}`,
+            description: `${currentStrategyName} broker set to ${brokerName}`,
             duration: 3000,
           });
           
@@ -441,10 +421,7 @@ export const useLiveTrading = () => {
       }
       
       setShowBrokerDialog(false);
-      setCurrentStrategyId(null);
-      setCurrentCustomId(null);
-      setCurrentStrategyName("");
-      setCurrentBrokerName(null);
+      resetState();
     } catch (error) {
       console.error("Error in broker submission process:", error);
       toast({
@@ -453,17 +430,13 @@ export const useLiveTrading = () => {
         variant: "destructive",
       });
       setShowBrokerDialog(false);
+      resetState();
     }
   };
   
   const handleCancelBroker = () => {
     setShowBrokerDialog(false);
-    setCurrentStrategyId(null);
-    setCurrentCustomId(null);
-    setCurrentStrategyName("");
-    setCurrentBrokerName(null);
-    setTargetMode(null);
-    setPendingQuantity(0);
+    resetState();
   };
 
   return {
