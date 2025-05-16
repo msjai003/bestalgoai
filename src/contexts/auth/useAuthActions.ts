@@ -30,6 +30,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
       if (!user) return;
       const authUser = mapToAuthUser(user);
       setUser(authUser);
+      console.log("User successfully signed in:", user.id);
     },
     
     signUp: async (
@@ -67,6 +68,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         
         if (authUser) {
           setUser(authUser);
+          console.log("User successfully signed up:", authUser.id);
         }
         
         return { error: null, data: { user: authUser } };
@@ -90,6 +92,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         }
         
         setUser(null);
+        console.log("User signed out successfully");
       } catch (error) {
         console.error('Error during sign out:', error);
       } finally {

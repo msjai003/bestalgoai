@@ -25,6 +25,32 @@ export const useAuthState = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Set up auth state listener FIRST to avoid missing auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (session?.user) {
+          const authUser = mapToAuthUser(session.user);
+          setUser(authUser);
+          
+          // Handle Google sign-in event separately to avoid race conditions
+          if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
+            console.log('Google sign-in detected, handling user details');
+            // Use setTimeout to prevent blocking the auth state change
+            setTimeout(() => {
+              handleGoogleSignIn(session.user);
+            }, 0);
+          }
+        } else {
+          setUser(null);
+          setGoogleUserDetails(null);
+        }
+        setIsLoading(false);
+      }
+    );
+    
+    // THEN check for existing session
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -53,29 +79,6 @@ export const useAuthState = () => {
     };
     
     checkSession();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-        
-        if (session?.user) {
-          const authUser = mapToAuthUser(session.user);
-          setUser(authUser);
-          
-          // Handle Google sign-in event separately to avoid race conditions
-          if (event === 'SIGNED_IN' && session.user.app_metadata?.provider === 'google') {
-            console.log('Google sign-in detected, handling user details');
-            setTimeout(() => {
-              handleGoogleSignIn(session.user);
-            }, 0);
-          }
-        } else {
-          setUser(null);
-          setGoogleUserDetails(null);
-        }
-        setIsLoading(false);
-      }
-    );
     
     return () => {
       subscription.unsubscribe();
