@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -76,9 +75,8 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Check if filename matches our special files
-          const isSpecialFile = file.name === "downloaded_bestalgoai-infocap-ai.zip" || 
-                               file.name === "sample_v1.zip";
+          // Check if filename is sample_v1.zip (the only special file we want to keep)
+          const isSpecialFile = file.name === "sample_v1.zip";
           
           // Force all ZIP files and special files to be marked as premium
           const isPremium = isSpecialFile || fileType === 'zip' ? true : (file.is_premium || false);
@@ -91,16 +89,13 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: isPremium // Force special files and zip files to be premium
+            is_premium: isPremium
           };
         });
       
-      // Ensure the specified files exist in the list
-      // If they don't exist in the database, we'll add them manually for display purposes
-      const requiredFiles = [
-        "downloaded_bestalgoai-infocap-ai.zip",
-        "sample_v1.zip"
-      ];
+      // Ensure the sample_v1.zip file exists in the list
+      // We only keep sample_v1.zip as a required file now
+      const requiredFiles = ["sample_v1.zip"];
       
       const existingFileNames = formattedFiles.map(file => file.name);
       
@@ -108,7 +103,7 @@ export function useFileManagement(userId?: string) {
         if (!existingFileNames.includes(fileName)) {
           // Add missing file to the list - always mark as premium
           formattedFiles.unshift({
-            id: fileName === "downloaded_bestalgoai-infocap-ai.zip" ? 9001 : 9002, // Use distinct IDs
+            id: 9002, // Use distinct ID
             name: fileName,
             size: '2.5 MB',
             created_at: new Date().toISOString(),
