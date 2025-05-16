@@ -14,9 +14,6 @@ const PremiumBanner = () => {
           <p className="text-gray-400 text-sm">
             ZIP files are locked and require payment to unlock
           </p>
-          <p className="text-gray-400 text-sm mt-1">
-            Click "Unlock" to purchase individual files
-          </p>
         </div>
       </div>
     </div>
