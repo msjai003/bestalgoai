@@ -43,6 +43,9 @@ export const useCustomStrategies = () => {
               drawdown = perf.drawdown ? String(perf.drawdown) : "N/A";
             }
             
+            // Ensure tradeType is properly typed
+            const tradeType = strategy.trade_type === "live trade" ? "live trade" : "paper trade";
+            
             return {
               id: typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : parseInt(Math.random() * 10000 + 1000 + ''),
               name: strategy.name,
@@ -53,7 +56,7 @@ export const useCustomStrategies = () => {
               quantity: strategy.quantity || 0,
               selectedBroker: strategy.selected_broker || "",
               brokerUsername: strategy.broker_username || "",
-              tradeType: strategy.trade_type || "paper trade",
+              tradeType: tradeType,
               rowId: strategy.id,
               uniqueId: `custom-${strategy.id}`,
               performance: {
