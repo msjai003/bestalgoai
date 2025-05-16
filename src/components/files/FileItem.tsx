@@ -34,10 +34,6 @@ const FileItem = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const isMobile = useIsMobile();
 
-  // All files are free to download
-  const isLockedFile = false;
-  const requiresPayment = false;
-
   const handleDownload = async () => {
     setDownloadingId(id);
     
@@ -73,9 +69,6 @@ const FileItem = ({
       
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         <FileActions 
-          isLockedFile={false}
-          requiresPayment={false}
-          onUnlock={() => {}}
           onDownload={handleDownload}
           isDownloading={downloadingId === id}
           isMobile={isMobile}

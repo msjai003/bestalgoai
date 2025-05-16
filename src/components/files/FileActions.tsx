@@ -4,9 +4,6 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface FileActionsProps {
-  isLockedFile: boolean;
-  requiresPayment: boolean;
-  onUnlock: () => void;
   onDownload: () => void;
   isDownloading: boolean;
   isMobile: boolean;
