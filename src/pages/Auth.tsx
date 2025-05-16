@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,7 +14,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuth(); // Using signIn instead of login to match AuthContextType
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +35,7 @@ const Auth = () => {
         variant: "default",
       });
 
-      // Use email parameter for signIn instead of user object to match the function signature
-      signIn(email, password);
+      login(data.session?.user);
       navigate("/dashboard");
     } catch (error: any) {
       toast({
