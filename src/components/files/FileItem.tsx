@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/auth/AuthContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PaymentDialog from "@/components/subscription/PaymentDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface FileItemProps {
   id: number;
@@ -38,6 +39,7 @@ const FileItem = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+  const [openPaymentAlert, setOpenPaymentAlert] = useState(false);
   const isMobile = useIsMobile();
 
   // Check if this is one of our special files that should always be locked
@@ -77,14 +79,28 @@ const FileItem = ({
   // A file requires payment if it's locked and user doesn't have premium or hasn't paid specifically for this file
   const requiresPayment = isLockedFile && !hasPremium && !hasPaid;
 
+  const showPaymentPrompt = () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access premium files",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Show payment alert first
+    setOpenPaymentAlert(true);
+  };
+
   const handlePayment = () => {
+    setOpenPaymentAlert(false);
     setOpenPaymentDialog(true);
   };
 
   const handleDownload = async () => {
-    // If the file requires payment, open payment dialog
+    // If the file requires payment, open payment alert
     if (requiresPayment) {
-      setOpenPaymentDialog(true);
+      showPaymentPrompt();
       return;
     }
     
@@ -149,44 +165,34 @@ const FileItem = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
-      <div className="flex flex-col mb-2 sm:mb-0">
-        <div className="flex items-center flex-wrap gap-2">
-          <span className="font-medium text-white">{name}</span>
-          {isLockedFile && requiresPayment && (
-            <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
-              <Lock className="h-3.5 w-3.5" />
-              <span>Locked</span>
-            </Badge>
-          )}
-          {isLockedFile && hasPaid && (
-            <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
-              <Unlock className="h-3.5 w-3.5" />
-              <span>Paid</span>
-            </Badge>
-          )}
-          {isZipFile && (
-            <Badge variant="outline" className="ml-0 sm:ml-2">
-              ZIP
-            </Badge>
-          )}
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
+        <div className="flex flex-col mb-2 sm:mb-0">
+          <div className="flex items-center flex-wrap gap-2">
+            <span className="font-medium text-white">{name}</span>
+            {isLockedFile && requiresPayment && (
+              <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Locked</span>
+              </Badge>
+            )}
+            {isLockedFile && hasPaid && (
+              <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
+                <Unlock className="h-3.5 w-3.5" />
+                <span>Paid</span>
+              </Badge>
+            )}
+            {isZipFile && (
+              <Badge variant="outline" className="ml-0 sm:ml-2">
+                ZIP
+              </Badge>
+            )}
+          </div>
+          <span className="text-sm text-gray-400">{size}</span>
         </div>
-        <span className="text-sm text-gray-400">{size}</span>
-      </div>
-      
-      <div className="flex items-center gap-2 mt-1 sm:mt-0">
-        <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-          {requiresPayment ? (
-            <Button
-              onClick={handlePayment}
-              variant="outline" 
-              size={isMobile ? "sm" : "sm"}
-              className="text-white bg-cyan hover:bg-cyan/80 border-cyan flex items-center justify-center"
-            >
-              <CreditCard className="h-4 w-4 mr-1" />
-              <span>Pay ₹1</span>
-            </Button>
-          ) : (
+        
+        <div className="flex items-center gap-2 mt-1 sm:mt-0">
+          <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
             <Button
               onClick={handleDownload}
               variant="ghost"
@@ -197,20 +203,40 @@ const FileItem = ({
               <Download className="h-5 w-5" />
               <span className="ml-1 sm:ml-2">Download</span>
             </Button>
-          )}
-          
-          <PaymentDialog
-            open={openPaymentDialog}
-            onOpenChange={setOpenPaymentDialog}
-            planName={`File: ${name}`}
-            planPrice="₹1"
-            onSuccess={handlePaymentSuccess}
-            paymentMethod="razorpay"
-            fileId={id}
-          />
-        </Dialog>
+            
+            <PaymentDialog
+              open={openPaymentDialog}
+              onOpenChange={setOpenPaymentDialog}
+              planName={`File: ${name}`}
+              planPrice="₹1"
+              onSuccess={handlePaymentSuccess}
+              paymentMethod="razorpay"
+              fileId={id}
+            />
+          </Dialog>
+        </div>
       </div>
-    </div>
+
+      {/* Payment Alert Dialog */}
+      <AlertDialog open={openPaymentAlert} onOpenChange={setOpenPaymentAlert}>
+        <AlertDialogContent className="bg-charcoalSecondary border-gray-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Premium Content</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              This file is locked and requires a one-time payment of ₹1 to access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogAction onClick={() => setOpenPaymentAlert(false)} className="bg-gray-700 hover:bg-gray-600 text-white">
+              Cancel
+            </AlertDialogAction>
+            <AlertDialogAction onClick={handlePayment} className="bg-cyan hover:bg-cyan/80 text-white">
+              Proceed to Payment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
