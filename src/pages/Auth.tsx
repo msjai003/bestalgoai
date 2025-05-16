@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,7 +15,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { signIn } = useAuth(); // Changed from login to signIn to match AuthContextType
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,7 @@ const Auth = () => {
         variant: "default",
       });
 
-      login(data.session?.user);
+      signIn(data.session?.user); // Changed from login to signIn to match AuthContextType
       navigate("/dashboard");
     } catch (error: any) {
       toast({
