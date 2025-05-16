@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, Unlock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth/AuthContext";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import PaymentDialog from "@/components/subscription/PaymentDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import PaymentDialog from "@/components/subscription/PaymentDialog";
+import FilePremiumBadge from "@/components/files/FilePremiumBadge";
+import FileTypeBadge from "@/components/files/FileTypeBadge";
+import FileStatusBadge from "@/components/files/FileStatusBadge";
+import FileActions from "@/components/files/FileActions";
+import FilePaymentAlert from "@/components/files/FilePaymentAlert";
 
 interface FileItemProps {
   id: number;
@@ -163,9 +164,6 @@ const FileItem = ({
     }, 1000);
   };
 
-  // Add console logs to debug why the lock icon might not be showing
-  console.log("File details:", { name, type, isZipFile, requiresPayment });
-
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
@@ -173,68 +171,28 @@ const FileItem = ({
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
             
-            {/* Enhanced lock icon display for ZIP files with debug info */}
-            {console.log("Should show premium badge?", isZipFile && requiresPayment)}
-            {isZipFile && requiresPayment && (
-              <div className="flex items-center ml-1 text-amber-500" data-testid="premium-badge">
-                <Lock className="h-4 w-4 mr-1" aria-label="Premium file" />
-                <span className="text-xs font-medium">Premium</span>
-              </div>
-            )}
-            
-            {isZipFile && (
-              <Badge variant="outline" className="ml-0 sm:ml-2">
-                ZIP
-              </Badge>
-            )}
+            <FilePremiumBadge show={isZipFile && requiresPayment} />
+            <FileTypeBadge type={type} name={name} />
           </div>
           <span className="text-sm text-gray-400">{size}</span>
         </div>
         
         <div className="flex items-center gap-2 mt-1 sm:mt-0">
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-            {isZipFile && (
-              <>
-                {requiresPayment ? (
-                  <Badge variant="destructive" className="flex items-center gap-1 mr-2">
-                    <Lock className="h-3.5 w-3.5" />
-                    <span>Locked</span>
-                  </Badge>
-                ) : (
-                  hasPaid && (
-                    <Badge variant="success" className="flex items-center gap-1 mr-2">
-                      <Unlock className="h-3.5 w-3.5" />
-                      <span>Unlocked</span>
-                    </Badge>
-                  )
-                )}
-              </>
-            )}
+            <FileStatusBadge 
+              isLockedFile={isLockedFile} 
+              requiresPayment={requiresPayment} 
+              hasPaid={hasPaid} 
+            />
             
-            {/* For ZIP files that require payment, show only Unlock button */}
-            {isZipFile && requiresPayment ? (
-              <Button
-                onClick={showPaymentPrompt}
-                variant="outline" 
-                size={isMobile ? "sm" : "sm"}
-                className="bg-cyan hover:bg-cyan/80 text-white flex items-center"
-              >
-                <Lock className="h-4 w-4 mr-1" />
-                <span>Unlock</span>
-              </Button>
-            ) : (
-              /* For non-ZIP files or ZIP files that are already paid for, show Download button */
-              <Button
-                onClick={handleDownload}
-                variant="ghost"
-                size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
-                disabled={downloadingId === id}
-              >
-                <Download className="h-5 w-5" />
-                <span className="ml-1 sm:ml-2">Download</span>
-              </Button>
-            )}
+            <FileActions 
+              isLockedFile={isLockedFile}
+              requiresPayment={requiresPayment}
+              onUnlock={showPaymentPrompt}
+              onDownload={handleDownload}
+              isDownloading={downloadingId === id}
+              isMobile={isMobile}
+            />
             
             <PaymentDialog
               open={openPaymentDialog}
@@ -249,25 +207,11 @@ const FileItem = ({
         </div>
       </div>
 
-      {/* Payment Alert Dialog */}
-      <AlertDialog open={openPaymentAlert} onOpenChange={setOpenPaymentAlert}>
-        <AlertDialogContent className="bg-charcoalSecondary border-gray-700 text-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Premium Content</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-300">
-              This ZIP file is locked and requires a one-time payment of ₹1 to unlock and download.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4">
-            <AlertDialogAction onClick={() => setOpenPaymentAlert(false)} className="bg-gray-700 hover:bg-gray-600 text-white">
-              Cancel
-            </AlertDialogAction>
-            <AlertDialogAction onClick={handlePayment} className="bg-cyan hover:bg-cyan/80 text-white">
-              Proceed to Payment
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <FilePaymentAlert 
+        open={openPaymentAlert} 
+        onOpenChange={setOpenPaymentAlert} 
+        onProceed={handlePayment} 
+      />
     </>
   );
 };
