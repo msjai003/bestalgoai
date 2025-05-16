@@ -177,28 +177,15 @@ const FileItem = ({
       <div className="flex items-center gap-2 mt-1 sm:mt-0">
         <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
           {requiresPayment ? (
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                onClick={handlePayment}
-                variant="outline" 
-                size={isMobile ? "sm" : "sm"}
-                className="text-white bg-cyan hover:bg-cyan/80 border-cyan flex items-center justify-center"
-              >
-                <CreditCard className="h-4 w-4 mr-1" />
-                <span>Pay ₹1</span>
-              </Button>
-              
-              <Button
-                onClick={handleDownload}
-                variant="ghost"
-                size={isMobile ? "sm" : "sm"}
-                className="text-cyan hover:text-white hover:bg-transparent flex items-center justify-center"
-                disabled={downloadingId === id}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                <span>Download</span>
-              </Button>
-            </div>
+            <Button
+              onClick={handlePayment}
+              variant="outline" 
+              size={isMobile ? "sm" : "sm"}
+              className="text-white bg-cyan hover:bg-cyan/80 border-cyan flex items-center justify-center"
+            >
+              <CreditCard className="h-4 w-4 mr-1" />
+              <span>Pay ₹1</span>
+            </Button>
           ) : (
             <Button
               onClick={handleDownload}
