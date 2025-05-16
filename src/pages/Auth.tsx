@@ -15,7 +15,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuth(); // Changed from login to signIn to match AuthContextType
+  const { signIn } = useAuth(); // Using signIn instead of login to match AuthContextType
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +36,9 @@ const Auth = () => {
         variant: "default",
       });
 
-      // Fix: Pass the user object and a callback function as required by the signIn method
-      signIn(data.session?.user, () => {
-        navigate("/dashboard");
-      });
+      // Use email parameter for signIn instead of user object to match the function signature
+      signIn(email, password);
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Login failed!",
