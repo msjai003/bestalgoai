@@ -42,12 +42,11 @@ const FileItem = ({
   const [openPaymentAlert, setOpenPaymentAlert] = useState(false);
   const isMobile = useIsMobile();
 
-  // Check if this is one of our special files that should always be locked
-  const isSpecialFile = name === "downloaded_bestalgoai-infocap-ai.zip" || name === "sample_v1.zip";
-  
-  // Always treat zip files and special files as premium content regardless of database setting
+  // Check if this is a zip file
   const isZipFile = type === 'zip' || name.toLowerCase().endsWith('.zip');
-  const isLockedFile = is_premium || isZipFile || isSpecialFile;
+  
+  // Only zip files require payment
+  const isLockedFile = isZipFile;
 
   // Check if user has already paid for this file
   useEffect(() => {
