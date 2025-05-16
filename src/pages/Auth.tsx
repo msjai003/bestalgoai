@@ -36,8 +36,10 @@ const Auth = () => {
         variant: "default",
       });
 
-      signIn(data.session?.user); // Changed from login to signIn to match AuthContextType
-      navigate("/dashboard");
+      // Fix: Pass the user object and a callback function as required by the signIn method
+      signIn(data.session?.user, () => {
+        navigate("/dashboard");
+      });
     } catch (error: any) {
       toast({
         title: "Login failed!",
