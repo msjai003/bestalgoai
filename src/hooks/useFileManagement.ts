@@ -76,11 +76,9 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Check if this is a ZIP file
-          const isZipFile = fileType === 'zip' || file.name.toLowerCase().endsWith('.zip');
-          
-          // Force all ZIP files to be marked as premium
-          const isPremium = isZipFile ? true : (file.is_premium || false);
+          // Mark all files as premium regardless of type
+          // This ensures all downloadable files require payment
+          const isPremium = true;
           
           return {
             id: file.id,
