@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -75,11 +76,11 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Check if filename is sample_v1.zip (the only special file we want to keep)
-          const isSpecialFile = file.name === "sample_v1.zip";
+          // Check if this is a ZIP file
+          const isZipFile = fileType === 'zip' || file.name.toLowerCase().endsWith('.zip');
           
-          // Force all ZIP files and special files to be marked as premium
-          const isPremium = isSpecialFile || fileType === 'zip' ? true : (file.is_premium || false);
+          // Force all ZIP files to be marked as premium
+          const isPremium = isZipFile ? true : (file.is_premium || false);
           
           return {
             id: file.id,
@@ -92,28 +93,6 @@ export function useFileManagement(userId?: string) {
             is_premium: isPremium
           };
         });
-      
-      // Ensure the sample_v1.zip file exists in the list
-      // We only keep sample_v1.zip as a required file now
-      const requiredFiles = ["sample_v1.zip"];
-      
-      const existingFileNames = formattedFiles.map(file => file.name);
-      
-      for (const fileName of requiredFiles) {
-        if (!existingFileNames.includes(fileName)) {
-          // Add missing file to the list - always mark as premium
-          formattedFiles.unshift({
-            id: 9002, // Use distinct ID
-            name: fileName,
-            size: '2.5 MB',
-            created_at: new Date().toISOString(),
-            type: 'zip',
-            url: `https://drive.google.com/file/d/${fileName}/view`,
-            bucket: "trading_files",
-            is_premium: true // All manually added zip files are definitely premium
-          });
-        }
-      }
       
       setFiles(formattedFiles);
     } catch (error) {
