@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -170,9 +170,12 @@ const FileItem = ({
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
             
-            {/* Show lock icon for ZIP files that require payment */}
+            {/* Enhanced lock icon display for ZIP files */}
             {isZipFile && requiresPayment && (
-              <Lock className="h-4 w-4 text-amber-500 ml-1" />
+              <div className="flex items-center ml-1 text-amber-500">
+                <Lock className="h-4 w-4 mr-1" />
+                <span className="text-xs font-medium">Premium</span>
+              </div>
             )}
             
             {isZipFile && (
@@ -196,6 +199,7 @@ const FileItem = ({
                 ) : (
                   hasPaid && (
                     <Badge variant="success" className="flex items-center gap-1 mr-2">
+                      <Unlock className="h-3.5 w-3.5" />
                       <span>Unlocked</span>
                     </Badge>
                   )
@@ -209,8 +213,9 @@ const FileItem = ({
                 onClick={showPaymentPrompt}
                 variant="outline" 
                 size={isMobile ? "sm" : "sm"}
-                className="bg-cyan hover:bg-cyan/80 text-white"
+                className="bg-cyan hover:bg-cyan/80 text-white flex items-center"
               >
+                <Lock className="h-4 w-4 mr-1" />
                 <span>Unlock</span>
               </Button>
             ) : (
@@ -246,7 +251,7 @@ const FileItem = ({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Premium Content</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300">
-              This file is locked and requires a one-time payment of ₹1 to access.
+              This ZIP file is locked and requires a one-time payment of ₹1 to unlock and download.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
