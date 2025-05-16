@@ -1,20 +1,21 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { Eye, EyeOff, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,7 @@ const Auth = () => {
         variant: "default",
       });
 
-      login(data.session?.user);
+      signIn(data.session?.user);
       navigate("/dashboard");
     } catch (error: any) {
       toast({
@@ -49,42 +50,95 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-900">
-      <Card className="w-full max-w-md bg-gray-800 text-white shadow-lg rounded-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-semibold">Login</CardTitle>
-          <CardDescription className="text-gray-400">Enter your email and password to login</CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
+    <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary">
+      <div className="w-full max-w-md">
+        <div className="text-left mb-8">
+          <h1 className="text-2xl font-semibold text-white mb-2">Welcome Back</h1>
+          <p className="text-gray-400">Login to access your trading algorithms and portfolio management.</p>
+        </div>
+        
+        <div className="bg-charcoalSecondary/30 rounded-xl border border-gray-700 p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <Info className="text-cyan h-5 w-5 mt-0.5" />
+            <p className="text-gray-300 text-sm">
+              Enter your email and password to login. New users can register from the sign up page.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-charcoalSecondary/20 border border-gray-700 rounded-xl p-6">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                Email Address
+              </label>
               <Input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-gray-700 text-white border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-500 focus:ring-cyan focus:border-cyan"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-gray-700 text-white border-gray-600 focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                  Password
+                </label>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-gray-800/80 border-gray-700 text-white pr-10 placeholder:text-gray-500 focus:ring-cyan focus:border-cyan"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              <div className="text-right">
+                <a href="#" className="text-cyan text-xs hover:underline">
+                  Forgot Password?
+                </a>
+              </div>
             </div>
-            <Button type="submit" className="w-full bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+
+            <Button 
+              type="submit" 
+              className="w-full bg-cyan text-charcoalPrimary py-5 hover:bg-cyan/90"
+              disabled={loading}
+            >
+              Sign In
+            </Button>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full border-gray-700 text-white py-5 flex items-center justify-center gap-2"
+              onClick={() => navigate('/signup')}
+            >
+              <span className="text-white">Create Account</span>
             </Button>
           </form>
-        </CardContent>
-      </Card>
+          
+          <div className="mt-6 text-center text-xs text-gray-400">
+            By signing in, you agree to our <a href="/terms" className="text-cyan hover:underline">Terms of Service</a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
