@@ -180,20 +180,24 @@ const FileItem = ({
         
         <div className="flex items-center gap-2 mt-1 sm:mt-0">
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-            {requiresPayment ? (
-              <Badge variant="destructive" className="flex items-center gap-1 mr-2">
-                <Lock className="h-3.5 w-3.5" />
-                <span>Locked</span>
-              </Badge>
-            ) : (
-              isZipFile && hasPaid && (
-                <Badge variant="success" className="flex items-center gap-1 mr-2">
-                  <span>Unlocked</span>
-                </Badge>
-              )
+            {isZipFile && (
+              <>
+                {requiresPayment ? (
+                  <Badge variant="destructive" className="flex items-center gap-1 mr-2">
+                    <Lock className="h-3.5 w-3.5" />
+                    <span>Locked</span>
+                  </Badge>
+                ) : (
+                  hasPaid && (
+                    <Badge variant="success" className="flex items-center gap-1 mr-2">
+                      <span>Unlocked</span>
+                    </Badge>
+                  )
+                )}
+              </>
             )}
             
-            {requiresPayment ? (
+            {isZipFile && requiresPayment ? (
               <Button
                 onClick={showPaymentPrompt}
                 variant="outline" 
