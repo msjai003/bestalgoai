@@ -12,7 +12,7 @@ const PremiumBanner = () => {
         <div>
           <h3 className="text-white font-medium mb-1">Premium Content Available</h3>
           <p className="text-gray-400 text-sm">
-            ZIP files and premium content are locked and require payment to unlock
+            ZIP files are locked and require payment to unlock
           </p>
           <p className="text-gray-400 text-sm mt-1">
             Click "Unlock" to purchase individual files

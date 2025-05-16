@@ -169,6 +169,9 @@ const FileItem = ({
         <div className="flex flex-col mb-2 sm:mb-0">
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
+            {isZipFile && requiresPayment && (
+              <Lock className="h-4 w-4 text-amber-500 ml-1" />
+            )}
             {isZipFile && (
               <Badge variant="outline" className="ml-0 sm:ml-2">
                 ZIP
@@ -197,6 +200,7 @@ const FileItem = ({
               </>
             )}
             
+            {/* For ZIP files that require payment, show only Unlock button */}
             {isZipFile && requiresPayment ? (
               <Button
                 onClick={showPaymentPrompt}
@@ -207,6 +211,7 @@ const FileItem = ({
                 <span>Unlock</span>
               </Button>
             ) : (
+              /* For non-ZIP files or ZIP files that are already paid for, show Download button */
               <Button
                 onClick={handleDownload}
                 variant="ghost"
