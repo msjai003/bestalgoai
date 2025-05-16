@@ -163,6 +163,9 @@ const FileItem = ({
     }, 1000);
   };
 
+  // Add console logs to debug why the lock icon might not be showing
+  console.log("File details:", { name, type, isZipFile, requiresPayment });
+
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 px-2 border-b border-gray-800 last:border-0 hover:bg-charcoalPrimary/30 rounded-md transition-colors">
@@ -170,10 +173,11 @@ const FileItem = ({
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
             
-            {/* Enhanced lock icon display for ZIP files */}
+            {/* Enhanced lock icon display for ZIP files with debug info */}
+            {console.log("Should show premium badge?", isZipFile && requiresPayment)}
             {isZipFile && requiresPayment && (
-              <div className="flex items-center ml-1 text-amber-500">
-                <Lock className="h-4 w-4 mr-1" />
+              <div className="flex items-center ml-1 text-amber-500" data-testid="premium-badge">
+                <Lock className="h-4 w-4 mr-1" aria-label="Premium file" />
                 <span className="text-xs font-medium">Premium</span>
               </div>
             )}
