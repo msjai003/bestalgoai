@@ -10,9 +10,12 @@ const PremiumBanner = () => {
           <Lock className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-white font-medium mb-1">Trading Files</h3>
+          <h3 className="text-white font-medium mb-1">Premium Content Available</h3>
           <p className="text-gray-400 text-sm">
-            ZIP files require a one-time payment of ₹1 to unlock. Other files are free to download.
+            ZIP files and premium content are locked and require payment to unlock
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            Click "Unlock" to purchase individual files
           </p>
         </div>
       </div>

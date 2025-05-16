@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Download, Lock, Unlock, CreditCard } from "lucide-react";
+import { Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -169,18 +169,6 @@ const FileItem = ({
         <div className="flex flex-col mb-2 sm:mb-0">
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
-            {isLockedFile && requiresPayment && (
-              <Badge variant="destructive" className="ml-0 sm:ml-2 flex items-center gap-1">
-                <Lock className="h-3.5 w-3.5" />
-                <span>Locked</span>
-              </Badge>
-            )}
-            {isLockedFile && hasPaid && (
-              <Badge variant="success" className="ml-0 sm:ml-2 flex items-center gap-1">
-                <Unlock className="h-3.5 w-3.5" />
-                <span>Paid</span>
-              </Badge>
-            )}
             {isZipFile && (
               <Badge variant="outline" className="ml-0 sm:ml-2">
                 ZIP
@@ -192,16 +180,40 @@ const FileItem = ({
         
         <div className="flex items-center gap-2 mt-1 sm:mt-0">
           <Dialog open={openPaymentDialog} onOpenChange={setOpenPaymentDialog}>
-            <Button
-              onClick={handleDownload}
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
-              className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
-              disabled={downloadingId === id}
-            >
-              <Download className="h-5 w-5" />
-              <span className="ml-1 sm:ml-2">Download</span>
-            </Button>
+            {requiresPayment ? (
+              <Badge variant="destructive" className="flex items-center gap-1 mr-2">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Locked</span>
+              </Badge>
+            ) : (
+              isZipFile && hasPaid && (
+                <Badge variant="success" className="flex items-center gap-1 mr-2">
+                  <span>Unlocked</span>
+                </Badge>
+              )
+            )}
+            
+            {requiresPayment ? (
+              <Button
+                onClick={showPaymentPrompt}
+                variant="outline" 
+                size={isMobile ? "sm" : "sm"}
+                className="bg-cyan hover:bg-cyan/80 text-white"
+              >
+                <span>Unlock</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={handleDownload}
+                variant="ghost"
+                size={isMobile ? "sm" : "sm"}
+                className="text-cyan hover:text-cyan hover:bg-transparent flex items-center"
+                disabled={downloadingId === id}
+              >
+                <Download className="h-5 w-5" />
+                <span className="ml-1 sm:ml-2">Download</span>
+              </Button>
+            )}
             
             <PaymentDialog
               open={openPaymentDialog}
