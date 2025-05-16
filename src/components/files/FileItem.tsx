@@ -169,9 +169,12 @@ const FileItem = ({
         <div className="flex flex-col mb-2 sm:mb-0">
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-medium text-white">{name}</span>
+            
+            {/* Show lock icon for ZIP files that require payment */}
             {isZipFile && requiresPayment && (
               <Lock className="h-4 w-4 text-amber-500 ml-1" />
             )}
+            
             {isZipFile && (
               <Badge variant="outline" className="ml-0 sm:ml-2">
                 ZIP
