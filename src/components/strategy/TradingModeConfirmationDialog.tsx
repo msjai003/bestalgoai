@@ -59,7 +59,6 @@ export const TradingModeConfirmationDialog = ({
                 Are you sure you want to switch <span className="font-semibold text-cyan">{strategyName}</span>
                 {brokerName && <span> with broker <span className="font-semibold text-cyan">{brokerName}</span></span>} to <span className="font-semibold text-cyan">paper trading</span> mode? 
                 No real funds will be used, but the strategy will continue to generate signals.
-                {brokerName && <p className="mt-2">This change will only affect trades for <span className="font-semibold text-cyan">{brokerName}</span>.</p>}
               </>
             )}
           </DialogDescription>
