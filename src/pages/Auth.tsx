@@ -15,7 +15,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuth(); // Using signIn instead of login to match AuthContextType
+  const { signIn } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,6 @@ const Auth = () => {
         variant: "default",
       });
 
-      // Use email parameter for signIn instead of user object to match the function signature
       signIn(email, password);
       navigate("/dashboard");
     } catch (error: any) {
