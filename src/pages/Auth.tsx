@@ -92,6 +92,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-500 focus:ring-cyan focus:border-cyan"
+                placeholder="Enter your email address"
                 required
               />
             </div>
@@ -109,6 +110,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-gray-800/80 border-gray-700 text-white pr-10 placeholder:text-gray-500 focus:ring-cyan focus:border-cyan"
+                  placeholder="Enter your password"
                   required
                 />
                 <button
