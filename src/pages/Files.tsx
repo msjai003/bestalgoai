@@ -8,7 +8,6 @@ import EmptyFilesState from "@/components/files/EmptyFilesState";
 import FilesList from "@/components/files/FilesList";
 import { useFileManagement } from "@/hooks/useFileManagement";
 import PaymentSuccessModal from "@/components/files/PaymentSuccessModal";
-import PremiumBanner from "@/components/files/PremiumBanner";
 
 const Files: React.FC = () => {
   const { user } = useAuth();
@@ -32,8 +31,6 @@ const Files: React.FC = () => {
           <h1 className="text-2xl font-semibold text-white">Files</h1>
           <p className="text-gray-400 mt-1">Download trading resources and templates</p>
         </div>
-
-        <PremiumBanner />
 
         <div className="bg-charcoalSecondary rounded-lg p-4">
           <h2 className="text-lg font-medium text-white mb-4">Trading Files</h2>

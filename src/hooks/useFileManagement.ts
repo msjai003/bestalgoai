@@ -76,9 +76,7 @@ export function useFileManagement(userId?: string) {
           else if (['exe', 'msi'].includes(extension)) fileType = 'exe';
           else if (['xlsx', 'xls', 'csv'].includes(extension)) fileType = 'xlsx';
           
-          // Only mark ZIP files as premium
-          const isPremium = fileType === 'zip';
-          
+          // Mark all files as non-premium
           return {
             id: file.id,
             name: file.name,
@@ -87,7 +85,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: isPremium
+            is_premium: false // Set all files as non-premium
           };
         });
       

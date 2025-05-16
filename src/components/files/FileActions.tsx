@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Download, Lock } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface FileActionsProps {
@@ -13,27 +13,10 @@ interface FileActionsProps {
 }
 
 const FileActions = ({ 
-  isLockedFile, 
-  requiresPayment, 
-  onUnlock, 
   onDownload, 
   isDownloading,
   isMobile 
 }: FileActionsProps) => {
-  if (isLockedFile && requiresPayment) {
-    return (
-      <Button
-        onClick={onUnlock}
-        variant="outline" 
-        size={isMobile ? "sm" : "sm"}
-        className="bg-cyan hover:bg-cyan/80 text-white flex items-center"
-      >
-        <Lock className="h-4 w-4 mr-1" />
-        <span>Unlock</span>
-      </Button>
-    );
-  }
-
   return (
     <Button
       onClick={onDownload}
