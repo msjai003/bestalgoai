@@ -12,7 +12,7 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
   onToggleTrading 
 }) => {
   return (
-    <section className="space-y-4 mb-24">
+    <section className="space-y-4">
       <div className="bg-charcoalSecondary/30 rounded-xl p-4 border border-gray-700 shadow-lg">
         <div className="space-y-3">
           {isActive ? (
@@ -30,18 +30,10 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
                 className="w-full py-6 rounded-lg font-medium"
                 onClick={onToggleTrading}
               >
-                Deactivate Trading
+                Square Off All Positions
               </Button>
             </div>
-          ) : (
-            <Button 
-              variant="cyan"
-              className="w-full py-6 rounded-lg font-medium text-charcoalPrimary"
-              onClick={onToggleTrading}
-            >
-              Activate Trading
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </section>
