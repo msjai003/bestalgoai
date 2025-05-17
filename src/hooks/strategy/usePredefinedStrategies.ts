@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { PREMIUM_STRATEGY_IDS } from "./types";
 
 export interface StrategyLeg {
   id: number;
@@ -83,13 +84,19 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
     }
     
+    // Explicitly check if the strategy ID is in the premium list
+    const isPremium = PREMIUM_STRATEGY_IDS.includes(strategy.id);
+    
+    console.log(`Setting isPremium flag for strategy ${strategy.id} to ${isPremium}. In PREMIUM_STRATEGY_IDS: ${PREMIUM_STRATEGY_IDS.includes(strategy.id)}`);
+    
     return {
       id: strategy.id,
       name: strategy.name,
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
-      strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details']
+      strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details'],
+      isPremium: isPremium // Add isPremium flag
     };
   });
 };

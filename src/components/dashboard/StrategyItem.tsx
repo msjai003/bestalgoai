@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyItemProps {
   strategy: {
@@ -17,17 +18,29 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
+  // Always convert string ID to number for comparison with PREMIUM_STRATEGY_IDS
+  const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+  
+  // Check if this strategy is in the premium list
+  const isPremiumStrategy = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
+  
+  // Update isPremium check to combine both the incoming flag and the constant check
+  const isActuallyPremium = strategy.isPremium || isPremiumStrategy;
+  
   // A strategy is accessible if:
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  const isAccessible = !strategy.isPremium || hasPremium || strategy.isPaid;
+  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
+    idType: typeof strategy.id,
+    numericalId: strategyIdNumber,
     name: strategy.name,
     description: strategy.description,
-    isPremium: strategy.isPremium,
+    isPremium: isActuallyPremium,
+    inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
     isAccessible
   });
   
@@ -43,7 +56,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
       <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-medium text-white">{strategy.name}</h3>
-          {strategy.isPremium && !isAccessible && (
+          {isActuallyPremium && !isAccessible && (
             <Button
               variant="outline"
               size="sm"

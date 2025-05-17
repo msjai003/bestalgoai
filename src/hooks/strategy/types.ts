@@ -22,6 +22,8 @@ export interface Strategy {
   isPaid?: boolean; // Whether the user has paid for this strategy
   isCustom?: boolean; // Whether this is a custom strategy or predefined
   paid_status?: string; // Add this property to match what's coming from the database
+  parameters?: any;
+  strategy_details?: any;
 }
 
 export interface StrategySelection {
@@ -57,3 +59,6 @@ export interface BrokerCredentials {
   tradeType?: string; // Optional
   pnl?: string; // Optional
 }
+
+// Constants for premium strategy IDs - Ensure Apex Flow (ID 5) is included
+export const PREMIUM_STRATEGY_IDS = [2, 3, 4, 5]; // Velox Edge, Nova Glide, Evercrest, Apex Flow
