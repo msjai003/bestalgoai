@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Define premium strategy IDs
+const PREMIUM_STRATEGY_IDS = [2, 3]; // Apexflow is ID=2
+
 interface StrategyItemProps {
   strategy: {
     id: string;

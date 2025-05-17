@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +9,9 @@ import {
 } from "@/hooks/strategy/useStrategyDatabase";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
+
+// Define the list of premium strategy IDs
+const PREMIUM_STRATEGY_IDS = [2, 3]; // Assuming Apexflow has ID=2, may need adjustment
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -39,7 +43,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...strategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
+            // Check if the strategy ID is in our premium list
+            isPremium: PREMIUM_STRATEGY_IDS.includes(strategy.id),
             isPaid: false
           };
         });
