@@ -38,10 +38,10 @@ const Auth = () => {
 
       if (error) throw error;
 
-      // Successfully logged in
+      // Successfully logged in - updated message here
       toast({
         title: "Login successful!",
-        description: "Welcome back to AlgoForge.",
+        description: "Welcome back to BestAlgo.ai.",
         variant: "default",
       });
 
