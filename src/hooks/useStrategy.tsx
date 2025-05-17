@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,9 +36,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         
         console.log("Creating new strategies with defaults");
         return predefinedStrategies.map(strategy => {
-          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}`);
+          // Explicitly convert strategy.id to number if it's a string
+          const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id;
+          
           // A strategy is premium if it's in the PREMIUM_STRATEGY_IDS list or has isPremium flag
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategy.id) || strategy.isPremium === true;
+          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
+          
+          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
           
           return {
             ...strategy,
@@ -74,13 +79,18 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
+          // Explicitly convert strategy ID to number if needed
+          const strategyIdNumber = typeof predefinedStrategy.id === 'string' ? 
+            parseInt(predefinedStrategy.id, 10) : predefinedStrategy.id;
+          
           // Check if this is a premium strategy
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(predefinedStrategy.id) || predefinedStrategy.isPremium === true;
+          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || predefinedStrategy.isPremium === true;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
             userPaidStatus: userStrategy?.paid_status,
-            isPremium: isPremium
+            isPremium: isPremium,
+            inPremiumIDs: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)
           });
           
           // If user has a strategy with paid_status='paid', mark it as accessible

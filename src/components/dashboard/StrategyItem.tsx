@@ -18,8 +18,11 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
-  // Check if this strategy is in the premium list - make sure to convert string ID to number
-  const isPremiumStrategy = PREMIUM_STRATEGY_IDS.includes(Number(strategy.id));
+  // Always convert string ID to number for comparison with PREMIUM_STRATEGY_IDS
+  const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+  
+  // Check if this strategy is in the premium list
+  const isPremiumStrategy = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
   
   // Update isPremium check to combine both the incoming flag and the constant check
   const isActuallyPremium = strategy.isPremium || isPremiumStrategy;
@@ -32,9 +35,12 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
+    idType: typeof strategy.id,
+    numericalId: strategyIdNumber,
     name: strategy.name,
     description: strategy.description,
     isPremium: isActuallyPremium,
+    inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
     isAccessible
   });
   

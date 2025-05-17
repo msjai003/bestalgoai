@@ -84,8 +84,10 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
     }
     
-    // Set isPremium flag based on the strategy ID - ensure all premium strategies are correctly identified
+    // Explicitly check if the strategy ID is in the premium list
     const isPremium = PREMIUM_STRATEGY_IDS.includes(strategy.id);
+    
+    console.log(`Setting isPremium flag for strategy ${strategy.id} to ${isPremium}. In PREMIUM_STRATEGY_IDS: ${PREMIUM_STRATEGY_IDS.includes(strategy.id)}`);
     
     return {
       id: strategy.id,
