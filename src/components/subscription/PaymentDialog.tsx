@@ -56,7 +56,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       if (fileId) {
         // If this is a file payment, use Razorpay
         const options = {
-          key: "rzp_live_YOURLIVEKEY", // Changed from test key to live key
+          key: "rzp_live_Li3y1PXPgKBgIX", // Your actual live Razorpay key
           amount: convertPriceToAmount(planPrice),
           currency: "INR",
           name: "InfoCap AI",

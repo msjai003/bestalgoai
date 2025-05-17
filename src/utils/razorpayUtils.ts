@@ -57,8 +57,10 @@ const createRazorpayInstance = (
   onError: () => void
 ) => {
   try {
-    console.log("Creating Razorpay instance with live mode settings");
-    const rzp = new (window as any).Razorpay({
+    console.log("Creating Razorpay instance with live mode settings", options);
+    
+    // Make sure the handler is not overridden
+    const finalOptions = {
       ...options,
       handler: function (response: any) {
         console.log("Payment successful in live mode", response);
@@ -68,7 +70,9 @@ const createRazorpayInstance = (
           response.razorpay_signature
         );
       },
-    });
+    };
+    
+    const rzp = new (window as any).Razorpay(finalOptions);
     
     rzp.on('payment.failed', function (response: any) {
       console.error('Payment failed in live mode:', response.error);
