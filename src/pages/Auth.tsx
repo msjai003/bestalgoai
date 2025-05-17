@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -59,7 +60,7 @@ const Auth = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary">
+      <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary p-4">
         <div className="w-full max-w-md">
           <div className="bg-charcoalSecondary/20 border border-gray-700 rounded-xl p-6">
             <ForgotPassword onBack={() => setShowForgotPassword(false)} />
@@ -70,23 +71,23 @@ const Auth = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary">
-      <div className="w-full max-w-md">
-        <div className="text-left mb-8">
+    <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary p-4">
+      <div className="w-full max-w-md mx-auto">
+        <div className="text-left mb-6 px-1">
           <h1 className="text-2xl font-semibold text-white mb-2">Welcome Back</h1>
           <p className="text-gray-400">Login to access your trading algorithms and portfolio management.</p>
         </div>
         
         <div className="bg-charcoalSecondary/30 rounded-xl border border-gray-700 p-4 mb-6">
           <div className="flex items-start gap-3">
-            <Info className="text-cyan h-5 w-5 mt-0.5" />
+            <Info className="text-cyan h-5 w-5 mt-0.5 flex-shrink-0" />
             <p className="text-gray-300 text-sm">
               Enter your email and password to login. New users can register from the sign up page.
             </p>
           </div>
         </div>
 
-        <div className="bg-charcoalSecondary/20 border border-gray-700 rounded-xl p-6">
+        <div className="bg-charcoalSecondary/20 border border-gray-700 rounded-xl p-5 sm:p-6">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-300">
@@ -147,7 +148,7 @@ const Auth = () => {
               className="w-full bg-cyan text-charcoalPrimary py-5 hover:bg-cyan/90"
               disabled={loading}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
             
             <Button 
