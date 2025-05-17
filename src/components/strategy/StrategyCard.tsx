@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -28,8 +29,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // A strategy is premium if its ID > 1
-  const isPremium = strategy.id > 1;
+  // A strategy is premium if it's in our premium list or marked as premium
+  const isPremium = strategy.isPremium || PREMIUM_STRATEGY_IDS.includes(strategy.id);
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
