@@ -6,7 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Loader } from 'lucide-react';
 import PaymentDialog from '@/components/subscription/PaymentDialog';
 import { usePredefinedStrategies } from '@/hooks/strategy/usePredefinedStrategies';
@@ -182,6 +182,8 @@ const PricingPage = () => {
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
     
+    const redirectAfterPayment = sessionStorage.getItem('redirectAfterPayment');
+    
     if (selectedStrategyName) {
       toast({
         title: "Strategy Unlocked!",
@@ -190,7 +192,12 @@ const PricingPage = () => {
       });
       
       if (selectedStrategyId) {
-        navigate(`/strategy-details/${selectedStrategyId}`);
+        if (redirectAfterPayment) {
+          sessionStorage.removeItem('redirectAfterPayment');
+          navigate(redirectAfterPayment);
+        } else {
+          navigate(`/strategy-details/${selectedStrategyId}`);
+        }
         return;
       }
     }

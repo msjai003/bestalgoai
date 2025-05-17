@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/auth/AuthContext";
 import { initializeRazorpayPayment, convertPriceToAmount } from "@/utils/razorpayUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useFileManagement } from "@/hooks/useFileManagement";
+import { supabase } from "@/lib/supabase";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -107,10 +108,178 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             setIsProcessing(false);
           }
         );
+      } else if (selectedStrategyId) {
+        // Handle strategy purchase
+        const options = {
+          key: "rzp_live_WAeIbAZ7YUqpt8",
+          amount: convertPriceToAmount(planPrice),
+          currency: "INR",
+          name: "InfoCap AI",
+          description: `Payment for ${selectedStrategyName || planName}`,
+          prefill: {
+            name: user.email?.split('@')[0] || "",
+            email: user.email || "",
+          },
+          theme: {
+            color: "#0891B2",
+          },
+        };
+
+        initializeRazorpayPayment(
+          options,
+          async (payment_id) => {
+            console.log("Strategy payment success:", payment_id);
+            
+            // Record the strategy payment in the database
+            try {
+              // First check if the user has a plan_details entry
+              const { data: planDetails, error: planError } = await supabase
+                .from('plan_details')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('selected_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+                
+              if (!planError && !planDetails) {
+                // No plan details found, insert new entry
+                await supabase
+                  .from('plan_details')
+                  .insert({
+                    user_id: user.id,
+                    plan_name: 'Premium',
+                    plan_price: planPrice,
+                    is_paid: true
+                  });
+              } else if (!planError) {
+                // Update existing plan to paid status
+                await supabase
+                  .from('plan_details')
+                  .update({ is_paid: true })
+                  .eq('id', planDetails.id);
+              }
+              
+              // Mark the specific strategy as paid in strategy_selections
+              if (selectedStrategyId) {
+                // Check if there's an existing selection
+                const { data: strategyData, error: strategyError } = await supabase
+                  .from('strategy_selections')
+                  .select('*')
+                  .eq('user_id', user.id)
+                  .eq('strategy_id', selectedStrategyId)
+                  .maybeSingle();
+
+                if (!strategyError && !strategyData) {
+                  // Insert new record
+                  await supabase
+                    .from('strategy_selections')
+                    .insert({
+                      user_id: user.id,
+                      strategy_id: selectedStrategyId,
+                      strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+                      paid_status: 'paid'
+                    });
+                } else if (!strategyError) {
+                  // Update existing strategy selection
+                  await supabase
+                    .from('strategy_selections')
+                    .update({ paid_status: 'paid' })
+                    .eq('user_id', user.id)
+                    .eq('strategy_id', selectedStrategyId);
+                }
+              }
+
+              toast({
+                title: "Payment successful",
+                description: selectedStrategyName 
+                  ? `You now have access to ${selectedStrategyName}`
+                  : "You now have premium access",
+              });
+              
+              if (onSuccess) onSuccess();
+            } catch (error) {
+              console.error("Error recording strategy payment:", error);
+              toast({
+                title: "Payment recorded but access not updated",
+                description: "Please contact support for assistance.",
+                variant: "destructive",
+              });
+            }
+            
+            setIsProcessing(false);
+            onOpenChange(false);
+          },
+          () => {
+            console.error("Payment failed");
+            toast({
+              title: "Payment failed",
+              description: "Something went wrong with your payment. Please try again.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          }
+        );
       } else {
-        // Regular subscription payment logic here
-        console.log("Regular subscription payment not implemented");
-        setIsProcessing(false);
+        // Regular subscription payment
+        const options = {
+          key: "rzp_live_WAeIbAZ7YUqpt8",
+          amount: convertPriceToAmount(planPrice),
+          currency: "INR",
+          name: "InfoCap AI",
+          description: `Subscription to ${planName} Plan`,
+          prefill: {
+            name: user.email?.split('@')[0] || "",
+            email: user.email || "",
+          },
+          theme: {
+            color: "#0891B2",
+          },
+        };
+
+        initializeRazorpayPayment(
+          options,
+          async (payment_id) => {
+            console.log("Subscription payment success:", payment_id);
+            
+            // Record the plan selection with paid status
+            try {
+              await supabase
+                .from('plan_details')
+                .insert({
+                  user_id: user.id,
+                  plan_name: planName,
+                  plan_price: planPrice,
+                  is_paid: true
+                });
+                
+              toast({
+                title: "Payment successful",
+                description: `Your subscription to ${planName} plan is now active`,
+              });
+              
+              if (onSuccess) onSuccess();
+            } catch (error) {
+              console.error("Error recording subscription:", error);
+              toast({
+                title: "Payment successful but subscription not updated",
+                description: "Please contact support for assistance.",
+                variant: "destructive",
+              });
+            }
+            
+            setIsProcessing(false);
+            onOpenChange(false);
+          },
+          () => {
+            console.error("Payment failed");
+            toast({
+              title: "Payment failed",
+              description: "Something went wrong with your payment. Please try again.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          }
+        );
       }
     } catch (error) {
       console.error("Error during payment:", error);
@@ -128,26 +297,33 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       <DialogContent className="bg-charcoalSecondary border-gray-700 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
-            {fileId ? "Unlock File" : "Choose Your Plan"}
+            {fileId ? "Unlock File" : selectedStrategyId ? "Unlock Strategy" : "Choose Your Plan"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="pt-4">
           <div className="bg-charcoalPrimary p-4 rounded-lg mb-4">
-            <h3 className="font-semibold text-lg text-white">{planName}</h3>
+            <h3 className="font-semibold text-lg text-white">{selectedStrategyName || planName}</h3>
             <p className="text-cyan text-xl font-bold">{planPrice}</p>
             
             {fileId ? (
               <p className="text-gray-300 text-sm mt-2">
                 One-time payment to unlock this file for permanent access.
               </p>
+            ) : selectedStrategyId ? (
+              <p className="text-gray-300 text-sm mt-2">
+                One-time payment to unlock the {selectedStrategyName} strategy permanently.
+              </p>
             ) : (
               <div className="mt-2 space-y-2">
                 <p className="text-gray-300 text-sm flex items-center">
-                  <span className="mr-2">✓</span> Feature 1
+                  <span className="mr-2">✓</span> All Premium Trading Strategies
                 </p>
                 <p className="text-gray-300 text-sm flex items-center">
-                  <span className="mr-2">✓</span> Feature 2
+                  <span className="mr-2">✓</span> Advanced Analytics & Reports
+                </p>
+                <p className="text-gray-300 text-sm flex items-center">
+                  <span className="mr-2">✓</span> Priority Support
                 </p>
               </div>
             )}

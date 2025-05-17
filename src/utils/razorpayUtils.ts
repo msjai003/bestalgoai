@@ -31,10 +31,12 @@ export const initializeRazorpayPayment = (
   }, 15000); // 15 seconds timeout for better reliability
   
   if (!(window as any).Razorpay) {
+    console.log("Loading Razorpay script");
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     script.onload = () => {
+      console.log("Razorpay script loaded successfully");
       clearTimeout(timeoutId);
       createRazorpayInstance(options, onSuccess, onError);
     };
@@ -45,6 +47,7 @@ export const initializeRazorpayPayment = (
     };
     document.body.appendChild(script);
   } else {
+    console.log("Razorpay script already loaded");
     clearTimeout(timeoutId);
     createRazorpayInstance(options, onSuccess, onError);
   }
@@ -57,13 +60,13 @@ const createRazorpayInstance = (
   onError: () => void
 ) => {
   try {
-    console.log("Creating Razorpay instance with live key rzp_live_WAeIbAZ7YUqpt8", options);
+    console.log("Creating Razorpay instance with options:", options);
     
     // Make sure the handler is not overridden
     const finalOptions = {
       ...options,
       handler: function (response: any) {
-        console.log("Payment successful in live mode", response);
+        console.log("Payment successful:", response);
         onSuccess(
           response.razorpay_payment_id,
           response.razorpay_order_id,
@@ -72,13 +75,18 @@ const createRazorpayInstance = (
       },
     };
     
+    if (!(window as any).Razorpay) {
+      throw new Error("Razorpay SDK not loaded");
+    }
+    
     const rzp = new (window as any).Razorpay(finalOptions);
     
     rzp.on('payment.failed', function (response: any) {
-      console.error('Payment failed in live mode:', response.error);
+      console.error('Payment failed:', response.error);
       onError();
     });
     
+    console.log("Opening Razorpay payment modal");
     rzp.open();
   } catch (error) {
     console.error('Error creating Razorpay instance:', error);
