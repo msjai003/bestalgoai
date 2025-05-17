@@ -1,4 +1,3 @@
-
 export interface Strategy {
   id: number;
   uniqueId?: string; // Add uniqueId property for multiple instances of the same strategy
@@ -62,4 +61,3 @@ export interface BrokerCredentials {
 
 // Constants for premium strategy IDs - Ensure Apex Flow (ID 5) is included
 export const PREMIUM_STRATEGY_IDS = [2, 3, 4, 5]; // Velox Edge, Nova Glide, Evercrest, Apex Flow
-

@@ -47,7 +47,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     isPremium,
     inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
     canAccess,
-    isWishlisted: strategy.isWishlisted
+    isWishlisted: strategy.isWishlisted,
+    hasPremium
   });
 
   const toggleWishlist = (e: React.MouseEvent) => {
