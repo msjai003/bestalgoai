@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 
 interface StrategiesSectionProps {
   strategies: Array<{
-    id: string;
+    id: string | number;
     name: string;
     description: string;
-    isPremium: boolean;
+    isPremium?: boolean;
+    isPaid?: boolean;
   }>;
   hasPremium: boolean;
   onPremiumClick: () => void;

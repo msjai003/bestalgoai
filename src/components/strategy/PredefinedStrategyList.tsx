@@ -10,6 +10,7 @@ interface PredefinedStrategyListProps {
   onToggleWishlist: (id: number, isWishlisted: boolean) => void;
   onToggleLiveMode: (id: number) => void;
   user: any;
+  hasPremium?: boolean;
 }
 
 export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
@@ -17,7 +18,8 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
   isLoading,
   onToggleWishlist,
   onToggleLiveMode,
-  user
+  user,
+  hasPremium = false
 }) => {
   if (isLoading) {
     return (
@@ -35,7 +37,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
     );
   }
 
-  console.log("Rendering strategies:", strategies);
+  console.log("Rendering strategies in PredefinedStrategyList:", strategies);
 
   return (
     <div className="grid gap-4 pb-4">
@@ -46,7 +48,7 @@ export const PredefinedStrategyList: React.FC<PredefinedStrategyListProps> = ({
           onToggleWishlist={onToggleWishlist}
           onToggleLiveMode={onToggleLiveMode}
           isAuthenticated={!!user}
-          hasPremium={false} // This should be determined by user's subscription status
+          hasPremium={hasPremium}
         />
       ))}
     </div>

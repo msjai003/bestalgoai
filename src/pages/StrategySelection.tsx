@@ -88,6 +88,7 @@ const StrategySelection = () => {
                 onToggleWishlist={handleToggleWishlist}
                 onToggleLiveMode={handleToggleLiveMode}
                 user={user}
+                hasPremium={hasPremium}
               />
             </div>
           </section>

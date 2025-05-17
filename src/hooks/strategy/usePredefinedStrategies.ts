@@ -55,7 +55,10 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   
   // Make sure to properly parse the strategy_details column
   return (data || []).map(strategy => {
-    console.log(`Processing strategy ${strategy.id}: ${strategy.name}`);
+    // Ensure strategy.id is a number for consistent comparison
+    const strategyId = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+    
+    console.log(`Processing strategy ${strategyId}: ${strategy.name}`);
     
     // Ensure strategy_details is properly parsed
     let parsedStrategyDetails: any = strategy.strategy_details;
@@ -78,19 +81,19 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     
     // Log the data for debugging
     if (hasLegs) {
-      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs?.length} legs:`, 
+      console.log(`Strategy ${strategyId} has ${parsedStrategyDetails.Legs?.length} legs:`, 
         parsedStrategyDetails.Legs);
     } else {
-      console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
+      console.log(`Strategy ${strategyId} has no legs or invalid leg data.`);
     }
     
     // Explicitly check if the strategy ID is in the premium list
-    const isPremium = PREMIUM_STRATEGY_IDS.includes(strategy.id);
+    const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyId);
     
-    console.log(`Setting isPremium flag for strategy ${strategy.id} to ${isPremium}. In PREMIUM_STRATEGY_IDS: ${PREMIUM_STRATEGY_IDS.includes(strategy.id)}`);
+    console.log(`Setting isPremium flag for strategy ${strategyId} to ${isPremium}. In PREMIUM_STRATEGY_IDS: ${PREMIUM_STRATEGY_IDS.includes(strategyId)}`);
     
     return {
-      id: strategy.id,
+      id: strategyId, // Ensure id is a number
       name: strategy.name,
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],

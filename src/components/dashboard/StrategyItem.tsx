@@ -7,10 +7,10 @@ import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyItemProps {
   strategy: {
-    id: string;
+    id: string | number;
     name: string;
     description: string;
-    isPremium: boolean;
+    isPremium?: boolean;
     isPaid?: boolean;
   };
   hasPremium: boolean;
@@ -18,7 +18,7 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
-  // Always convert string ID to number for comparison with PREMIUM_STRATEGY_IDS
+  // Always convert ID to number for comparison with PREMIUM_STRATEGY_IDS
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
   // Check if this strategy is in the premium list
