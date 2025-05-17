@@ -31,6 +31,7 @@ export const StrategySection = ({
   const navigate = useNavigate();
 
   // Helper function to determine if a strategy is premium based on its package field or isPremium flag
+  // or if it's specifically the Apexflow strategy (by name)
   const isPremiumStrategy = (strategy: any) => {
     // Special case for Apexflow - always show as premium
     if (strategy.name?.toLowerCase().includes('apex') || strategy.name?.toLowerCase().includes('flow')) {

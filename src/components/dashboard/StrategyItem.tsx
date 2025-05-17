@@ -21,8 +21,11 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // Always convert ID to number for comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
+  // Check if this is specifically the Apexflow strategy (by name)
+  const isApexflow = strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow');
+  
   // Update isPremium check to use the package field
-  const isActuallyPremium = strategy.package === 'premium' || strategy.isPremium === true;
+  const isActuallyPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR
@@ -30,8 +33,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
-  // Special handling for Apexflow strategy - always show as premium with lock icon
-  const isApexflow = strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow');
+  // Always show lock icon for Apexflow strategy
   const shouldShowLock = (isActuallyPremium && !isAccessible) || isApexflow;
   
   console.log("Rendering strategy in StrategyItem:", {
@@ -41,10 +43,10 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     name: strategy.name,
     description: strategy.description,
     isPremium: isActuallyPremium,
+    isApexflow,
     package: strategy.package,
     isAccessible,
     hasPremium,
-    isApexflow,
     shouldShowLock
   });
   

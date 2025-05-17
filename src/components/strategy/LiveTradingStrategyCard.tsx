@@ -24,9 +24,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
   
   // Check if this is a premium strategy or specifically Apexflow
-  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || 
-                    (strategy.name && (strategy.name.toLowerCase().includes('apex') || 
-                                      strategy.name.toLowerCase().includes('flow')));
+  const isApexflow = strategy.name && (strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow'));
+  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
   
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
