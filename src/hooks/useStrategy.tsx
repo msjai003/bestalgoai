@@ -37,15 +37,16 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         console.log("Creating new strategies with defaults");
         return predefinedStrategies.map(strategy => {
           // Explicitly convert strategy.id to number if it's a string
-          const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id;
+          const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
           
           // A strategy is premium if it's in the PREMIUM_STRATEGY_IDS list or has isPremium flag
           const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
           
-          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
           
           return {
             ...strategy,
+            id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on the ID

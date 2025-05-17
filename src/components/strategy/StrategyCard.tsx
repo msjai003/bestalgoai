@@ -30,13 +30,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const { toast } = useToast();
   
   // Explicitly convert strategy.id to a number to ensure proper comparison
-  const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id;
+  const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
   // A strategy is premium if it's in our premium list or marked as premium
-  const isPremium = strategy.isPremium || PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
+  const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
-  const canAccess = !isPremium || hasPremium || strategy.isPaid;
+  const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
 
   console.log("Rendering strategy in StrategyCard:", {
     id: strategy.id,

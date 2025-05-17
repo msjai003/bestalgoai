@@ -9,8 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
+import StrategiesSection from "@/components/dashboard/StrategiesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 import { syncPremiumAccess } from "@/lib/supabase/subscription";
+import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -19,6 +21,7 @@ const Dashboard = () => {
   const [hasPremium, setHasPremium] = useState<boolean>(false);
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
   const [isSyncingPremium, setIsSyncingPremium] = useState(false);
+  const [dashboardStrategies, setDashboardStrategies] = useState<any[]>([]);
   const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
   
   useEffect(() => {
@@ -35,6 +38,34 @@ const Dashboard = () => {
           navigate('/auth');
         } else {
           setIsVerifyingAuth(false);
+          
+          // Fetch some predefined strategies for dashboard display
+          const { data: predefinedData, error } = await supabase
+            .from('predefined_strategies')
+            .select('*')
+            .order('id', { ascending: true })
+            .limit(3);
+            
+          if (!error && predefinedData) {
+            // Process strategies to identify premium ones
+            const processedStrategies = predefinedData.map(strategy => {
+              // Ensure ID is a number for comparison
+              const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+              
+              // Check if strategy is premium
+              const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
+              
+              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}`);
+              
+              return {
+                id: strategyIdNumber,
+                name: strategy.name,
+                description: strategy.description,
+                isPremium: isPremium
+              };
+            });
+            setDashboardStrategies(processedStrategies);
+          }
         }
       } catch (error) {
         console.error('Error checking auth session:', error);
@@ -82,6 +113,10 @@ const Dashboard = () => {
     checkPremium();
   }, [user, isSyncingPremium]);
 
+  const handlePremiumClick = () => {
+    navigate('/pricing');
+  };
+
   if (isVerifyingAuth || user === null) {
     return (
       <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
@@ -102,6 +137,15 @@ const Dashboard = () => {
           currentValue={currentValue} 
         />
         <QuickAccessSection />
+        
+        {dashboardStrategies.length > 0 && (
+          <StrategiesSection
+            strategies={dashboardStrategies}
+            hasPremium={hasPremium}
+            onPremiumClick={handlePremiumClick}
+            showSignupPromo={!user}
+          />
+        )}
       </main>
       <BottomNav />
     </div>
