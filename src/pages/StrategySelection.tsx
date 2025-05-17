@@ -1,10 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import Header from "@/components/Header";
-import { CustomStrategyWizard } from "@/components/strategy/CustomStrategyWizard";
 import { useAuth } from "@/contexts/AuthContext";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
@@ -18,6 +17,7 @@ import { Sparkles, TrendingUp } from "lucide-react";
 const StrategySelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  // Always set predefined as the selected tab and make sure it doesn't change
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
   
@@ -43,16 +43,12 @@ const StrategySelection = () => {
     hasPremium
   } = useStrategy(predefinedStrategies || []);
 
-  const handleDeployStrategy = () => {
-    navigate("/backtest");
-  };
-
-  console.log("Strategy selection dialogs:", {
-    confirmDialogOpen,
-    quantityDialogOpen,
-    brokerDialogOpen,
-    targetMode
-  });
+  // Force the selectedTab to always be "predefined"
+  useEffect(() => {
+    if (selectedTab !== "predefined") {
+      setSelectedTab("predefined");
+    }
+  }, [selectedTab]);
 
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
@@ -69,7 +65,7 @@ const StrategySelection = () => {
                   <TrendingUp className="h-5 w-5 text-cyan" />
                   <h1 className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">Strategy Selection</h1>
                 </div>
-                <p className="text-gray-400 text-sm">Choose from our optimized trading strategies or create your own custom approach</p>
+                <p className="text-gray-400 text-sm">Choose from our optimized trading strategies for your investment approach</p>
                 
                 {!hasPremium && (
                   <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-yellow-900/20 to-yellow-700/10 p-2 pl-3 rounded-lg border border-yellow-700/30">
@@ -86,17 +82,13 @@ const StrategySelection = () => {
             />
             
             <div className="flex-1 overflow-auto scrollbar-none pb-2 mt-3">
-              {selectedTab === "predefined" ? (
-                <PredefinedStrategyList
-                  strategies={strategies}
-                  isLoading={isLoading}
-                  onToggleWishlist={handleToggleWishlist}
-                  onToggleLiveMode={handleToggleLiveMode}
-                  user={user}
-                />
-              ) : (
-                <CustomStrategyWizard onSubmit={handleDeployStrategy} />
-              )}
+              <PredefinedStrategyList
+                strategies={strategies}
+                isLoading={isLoading}
+                onToggleWishlist={handleToggleWishlist}
+                onToggleLiveMode={handleToggleLiveMode}
+                user={user}
+              />
             </div>
           </section>
         </main>

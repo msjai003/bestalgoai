@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Code, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 
 interface StrategyTabNavigationProps {
   selectedTab: "predefined" | "custom";
@@ -13,36 +13,25 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
   selectedTab,
   onTabChange
 }) => {
+  // Always ensure predefined is selected since we're hiding the custom tab
+  React.useEffect(() => {
+    if (selectedTab !== "predefined") {
+      onTabChange("predefined");
+    }
+  }, [selectedTab, onTabChange]);
+
   return (
     <div className="bg-gradient-to-r from-charcoalSecondary to-charcoalSecondary/70 p-1.5 rounded-xl mb-4 shadow-lg border border-gray-700/30">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <Button 
-          variant={selectedTab === "predefined" ? "cyan" : "outline"}
+          variant="cyan"
           className={cn(
-            "py-2 rounded-xl text-xs font-medium transition-all duration-300", // Changed from rounded-lg to rounded-xl
-            selectedTab === "predefined" 
-              ? "shadow-md shadow-cyan/20" 
-              : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
+            "py-2 rounded-xl text-xs font-medium transition-all duration-300 shadow-md shadow-cyan/20"
           )}
-          onClick={() => onTabChange("predefined")}
           size="sm"
         >
           <Zap className="h-3 w-3 mr-1.5" />
           Predefined Strategies
-        </Button>
-        <Button 
-          variant={selectedTab === "custom" ? "cyan" : "outline"}
-          className={cn(
-            "py-2 rounded-xl text-xs font-medium transition-all duration-300", // Changed from rounded-lg to rounded-xl
-            selectedTab === "custom" 
-              ? "shadow-md shadow-cyan/20" 
-              : "text-gray-400 hover:text-white hover:bg-charcoalSecondary/90"
-          )}
-          onClick={() => onTabChange("custom")}
-          size="sm"
-        >
-          <Code className="h-3 w-3 mr-1.5" />
-          Custom Strategy
         </Button>
       </div>
     </div>
