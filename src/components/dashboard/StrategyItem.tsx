@@ -41,7 +41,8 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     description: strategy.description,
     isPremium: isActuallyPremium,
     inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
-    isAccessible
+    isAccessible,
+    hasPremium
   });
   
   return (

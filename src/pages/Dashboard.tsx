@@ -52,10 +52,10 @@ const Dashboard = () => {
               // Ensure ID is a number for comparison
               const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
               
-              // Check if strategy is premium
+              // Check if strategy is premium - always ensure Apex Flow (ID 5) is included
               const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
               
-              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}`);
+              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
               
               return {
                 id: strategyIdNumber,
