@@ -13,7 +13,9 @@ import {
   Mail, 
   Phone, 
   Lock,
-  GraduationCap
+  GraduationCap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -36,6 +38,8 @@ const Signup = () => {
   const [tradingExperience, setTradingExperience] = useState('beginner');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { sendWelcomeEmail, testSmtpConnection } = useWelcomeSmtp();
@@ -155,7 +159,7 @@ const Signup = () => {
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <Link to="/" className="flex items-center">
-            <i className="fa-solid fa-chart-line text-[#FF00D4] text-2xl"></i>
+            <i className="fa-solid fa-chart-line text-cyan text-2xl"></i>
             <span className="text-white text-xl ml-2">BestAlgo.ai</span>
           </Link>
         </div>
@@ -251,13 +255,20 @@ const Signup = () => {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                placeholder="Create a secure password"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10 pr-10"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
           </div>
 
@@ -267,13 +278,20 @@ const Signup = () => {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10"
+                placeholder="Confirm your password"
+                className="bg-gray-800/50 border-gray-700 text-white h-12 pl-10 pr-10"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              >
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
           </div>
         </div>
@@ -281,7 +299,7 @@ const Signup = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-[#FF00D4] to-purple-600 text-white py-6 rounded-xl shadow-lg cursor-pointer"
+          className="w-full bg-cyan text-charcoalPrimary py-6 rounded-xl shadow-lg cursor-pointer hover:bg-cyan/90"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
@@ -289,7 +307,7 @@ const Signup = () => {
         <div className="text-center mt-6">
           <p className="text-gray-400 text-sm">
             Already have an account? 
-            <Link to="/auth" className="text-[#FF00D4] ml-2 hover:underline">
+            <Link to="/auth" className="text-cyan ml-2 hover:underline">
               Sign in
             </Link>
           </p>
