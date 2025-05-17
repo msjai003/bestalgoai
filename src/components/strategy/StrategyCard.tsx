@@ -18,9 +18,6 @@ interface StrategyCardProps {
   hasPremium?: boolean;
 }
 
-// List of strategies that should be accessible without premium
-const ALWAYS_ACCESSIBLE_STRATEGIES = ["Velox Edge", "Nova Glide", "Evercrest", "Apexflow"];
-
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   onToggleWishlist,
@@ -31,12 +28,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // A strategy is premium if its ID > 1, unless it's in the ALWAYS_ACCESSIBLE_STRATEGIES list
-  const isPremium = strategy.id > 1 && !ALWAYS_ACCESSIBLE_STRATEGIES.includes(strategy.name);
+  // A strategy is premium if its ID > 1
+  const isPremium = strategy.id > 1;
   
-  // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for,
-  // or if it's in the ALWAYS_ACCESSIBLE_STRATEGIES list
-  const canAccess = !isPremium || hasPremium || strategy.isPaid || ALWAYS_ACCESSIBLE_STRATEGIES.includes(strategy.name);
+  // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
+  const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
   console.log("Rendering strategy in StrategyCard:", {
     id: strategy.id,
