@@ -85,7 +85,7 @@ export function useFileManagement(userId?: string) {
             type: fileType,
             url: file.driveurl,
             bucket: "trading_files",
-            is_premium: false // All files are set as non-premium
+            is_premium: file.is_premium || false
           };
         });
       
@@ -102,9 +102,62 @@ export function useFileManagement(userId?: string) {
     }
   };
 
+  // Function to check if user has already paid for a specific file
+  const checkFilePaidStatus = async (fileId: number) => {
+    if (!userId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_file_payments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('file_id', fileId)
+        .eq('status', 'completed')
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error checking file payment status:", error);
+        return false;
+      }
+      
+      return !!data;
+    } catch (error) {
+      console.error("Exception checking file payment status:", error);
+      return false;
+    }
+  };
+
+  // Function to record a file payment
+  const recordFilePayment = async (fileId: number) => {
+    if (!userId) return false;
+    
+    try {
+      const { error } = await supabase
+        .from('user_file_payments')
+        .insert({
+          user_id: userId,
+          file_id: fileId,
+          status: 'completed',
+          amount: 1 // 1 rupee payment
+        });
+      
+      if (error) {
+        console.error("Error recording file payment:", error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Exception recording file payment:", error);
+      return false;
+    }
+  };
+
   return {
     files,
     isLoading,
-    hasPremium
+    hasPremium,
+    checkFilePaidStatus,
+    recordFilePayment
   };
 }

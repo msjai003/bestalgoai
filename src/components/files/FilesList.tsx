@@ -16,9 +16,10 @@ interface FileData {
 interface FilesListProps {
   files: FileData[];
   hasPremium: boolean;
+  onPaymentSuccess?: () => void;
 }
 
-const FilesList: React.FC<FilesListProps> = ({ files, hasPremium }) => {
+const FilesList: React.FC<FilesListProps> = ({ files, hasPremium, onPaymentSuccess }) => {
   return (
     <div className="space-y-1">
       {files.map((file) => (
