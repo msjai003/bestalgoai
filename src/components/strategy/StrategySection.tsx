@@ -1,11 +1,9 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Play, Trash2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Define premium strategy IDs
-const PREMIUM_STRATEGY_IDS = [2, 3]; // Apexflow is ID=2
 
 interface StrategySectionProps {
   title: string;
@@ -34,7 +32,8 @@ export const StrategySection = ({
 
   // Helper function to determine if a strategy is premium based on its ID
   const isPremiumStrategy = (strategyId: number | string) => {
-    return PREMIUM_STRATEGY_IDS.includes(Number(strategyId));
+    // Use the same logic as in StrategyCard component
+    return Number(strategyId) > 1;
   };
 
   // Helper to check if a premium strategy has been paid for

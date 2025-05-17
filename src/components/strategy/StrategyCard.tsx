@@ -10,9 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
-// Define premium strategy IDs
-const PREMIUM_STRATEGY_IDS = [2, 3]; // Apexflow is ID=2
-
 interface StrategyCardProps {
   strategy: Strategy;
   onToggleWishlist: (id: number, isWishlisted: boolean) => void;
@@ -31,8 +28,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // A strategy is premium if its ID is in the premium list
-  const isPremium = PREMIUM_STRATEGY_IDS.includes(strategy.id);
+  // A strategy is premium if its ID > 1
+  const isPremium = strategy.id > 1;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
@@ -90,7 +87,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       <CardContent className="p-0">
         <div className="p-5 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/5 to-cyan/0 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-cyan/20 to-cyan/5 rounded-full -ml-16 -mb-16 blur-3xl z-0"></div>
           
           <div className="flex justify-between items-start mb-4">
             <div>

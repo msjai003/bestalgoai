@@ -1,35 +1,102 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { Strategy } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
-// Helper function to fetch predefined strategies
-const fetchPredefinedStrategies = async (): Promise<Strategy[]> => {
-  console.log("Fetching predefined strategies...");
+export interface StrategyLeg {
+  id: number;
+  lots: number;
+  position: string;
+  optionType: string;
+  expiry: string;
+  strikeCriteria: string;
+  premium: number;
+  targetProfit: string;
+  stopLoss: string;
+  trailSL: string;
+  reEntryOnTarget: string;
+  reEntryOnStopLoss: string;
+  simpleMomentum: string;
+  rangeBreakout: string;
+  segment?: string;
+}
+
+export interface PredefinedStrategy {
+  id: number;
+  name: string;
+  description: string;
+  performance: {
+    winRate: string;
+    avgProfit: string;
+    drawdown: string;
+  };
+  parameters: Array<{
+    name: string;
+    value: string;
+  }>;
+  strategy_details?: {
+    [key: string]: any;
+    Legs?: StrategyLeg[];
+  } | null;
+}
+
+const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
   const { data, error } = await supabase
-    .from("predefined_strategies")
-    .select("*")
-    .order("id", { ascending: true });
+    .from('predefined_strategies')
+    .select('*')
+    .order('id', { ascending: true });
 
   if (error) {
-    console.error("Error fetching predefined strategies:", error);
+    console.error('Error fetching predefined strategies:', error);
     throw error;
   }
 
-  // Process the data to ensure Apexflow (ID=2) is marked correctly
-  const strategies = data.map(strategy => ({
-    ...strategy,
-    isPremium: strategy.id === 2 || strategy.id > 1, // Ensure Apexflow (ID=2) is always premium
-  }));
-
-  console.log("Fetched predefined strategies:", strategies);
-  return strategies;
+  console.log('Fetched predefined strategies raw data:', data);
+  
+  // Make sure to properly parse the strategy_details column
+  return (data || []).map(strategy => {
+    console.log(`Processing strategy ${strategy.id}: ${strategy.name}`);
+    
+    // Ensure strategy_details is properly parsed
+    let parsedStrategyDetails: any = strategy.strategy_details;
+    
+    // If it's a string, try to parse it as JSON
+    if (parsedStrategyDetails && typeof parsedStrategyDetails === 'string') {
+      try {
+        parsedStrategyDetails = JSON.parse(parsedStrategyDetails);
+      } catch (err) {
+        console.error('Error parsing strategy_details JSON:', err);
+        parsedStrategyDetails = null;
+      }
+    }
+    
+    // Type guard to check if parsedStrategyDetails has the Legs property
+    const hasLegs = parsedStrategyDetails && 
+      typeof parsedStrategyDetails === 'object' && 
+      parsedStrategyDetails !== null &&
+      'Legs' in parsedStrategyDetails;
+    
+    // Log the data for debugging
+    if (hasLegs) {
+      console.log(`Strategy ${strategy.id} has ${parsedStrategyDetails.Legs?.length} legs:`, 
+        parsedStrategyDetails.Legs);
+    } else {
+      console.log(`Strategy ${strategy.id} has no legs or invalid leg data.`);
+    }
+    
+    return {
+      id: strategy.id,
+      name: strategy.name,
+      description: strategy.description,
+      performance: strategy.performance as PredefinedStrategy['performance'],
+      parameters: strategy.parameters as PredefinedStrategy['parameters'],
+      strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details']
+    };
+  });
 };
 
-// Hook to load predefined strategies
 export const usePredefinedStrategies = () => {
   return useQuery({
-    queryKey: ["predefinedStrategies"],
-    queryFn: fetchPredefinedStrategies,
+    queryKey: ['predefined-strategies'],
+    queryFn: fetchPredefinedStrategies
   });
 };
