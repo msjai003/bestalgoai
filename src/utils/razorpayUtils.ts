@@ -57,7 +57,7 @@ const createRazorpayInstance = (
   onError: () => void
 ) => {
   try {
-    console.log("Creating Razorpay instance with live mode settings", options);
+    console.log("Creating Razorpay instance with live key rzp_live_WAeIbAZ7YUqpt8", options);
     
     // Make sure the handler is not overridden
     const finalOptions = {
