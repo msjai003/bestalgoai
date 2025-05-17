@@ -18,10 +18,10 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
-  // Check if this strategy is in the premium list
+  // Check if this strategy is in the premium list - make sure to convert string ID to number
   const isPremiumStrategy = PREMIUM_STRATEGY_IDS.includes(Number(strategy.id));
   
-  // Update isPremium check to use the constant
+  // Update isPremium check to combine both the incoming flag and the constant check
   const isActuallyPremium = strategy.isPremium || isPremiumStrategy;
   
   // A strategy is accessible if:
