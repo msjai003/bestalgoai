@@ -10,11 +10,11 @@ export type FeatureName =
 // Define fallback configurations for when database fetch fails
 const fallbackConfigs = {
   razorpay_config: {
-    test_key: 'rzp_test_mASR2hbkwpBOuE',
-    test_secret: 'oRTuIqjKKYEMsoYODwlVx3WB',
+    test_key: 'rzp_test_Q9hmPFiRhnZuqK',
+    test_secret: 'UwAgfVIu0WyhWYVzvaemWse2',
     live_key: 'rzp_live_AlwIwA3L3AFrKc',
     live_secret: 'mVIVbHy7ATembdBaNfNaMvdv',
-    mode: 'test' as const  // Changed mode to 'test'
+    mode: 'live' as const  // Changed default mode to 'live'
   }
 };
 

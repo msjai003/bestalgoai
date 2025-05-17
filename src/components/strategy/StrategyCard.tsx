@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -28,23 +28,17 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Explicitly convert strategy.id to a number to ensure proper comparison
-  const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id;
-  
-  // A strategy is premium if it's in our premium list or marked as premium
-  const isPremium = strategy.isPremium || PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
+  // A strategy is premium if its ID > 1
+  const isPremium = strategy.id > 1;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid;
 
   console.log("Rendering strategy in StrategyCard:", {
     id: strategy.id,
-    idType: typeof strategy.id,
-    numericalId: strategyIdNumber,
     name: strategy.name,
     description: strategy.description,
     isPremium,
-    inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
     canAccess,
     isWishlisted: strategy.isWishlisted
   });
@@ -168,7 +162,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               {strategy.name} is a premium strategy that requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
             </p>
           )}
-          
+
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-charcoalPrimary/50 backdrop-blur-sm border border-gray-700/30 rounded-lg p-3">
               <p className="text-gray-400 text-xs mb-1">Success Rate</p>

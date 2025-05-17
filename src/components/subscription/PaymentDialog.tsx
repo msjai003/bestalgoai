@@ -57,7 +57,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       if (fileId) {
         // If this is a file payment, use Razorpay
         const options = {
-          key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
+          key: "rzp_live_WAeIbAZ7YUqpt8", // Your updated live Razorpay key
           amount: convertPriceToAmount(planPrice),
           currency: "INR",
           name: "InfoCap AI",
@@ -111,7 +111,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       } else if (selectedStrategyId) {
         // Handle strategy purchase
         const options = {
-          key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
+          key: "rzp_live_WAeIbAZ7YUqpt8",
           amount: convertPriceToAmount(planPrice),
           currency: "INR",
           name: "InfoCap AI",
@@ -222,7 +222,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       } else {
         // Regular subscription payment
         const options = {
-          key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
+          key: "rzp_live_WAeIbAZ7YUqpt8",
           amount: convertPriceToAmount(planPrice),
           currency: "INR",
           name: "InfoCap AI",

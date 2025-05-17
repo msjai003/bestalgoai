@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +8,6 @@ import {
 } from "@/hooks/strategy/useStrategyDatabase";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -36,19 +34,12 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         
         console.log("Creating new strategies with defaults");
         return predefinedStrategies.map(strategy => {
-          // Explicitly convert strategy.id to number if it's a string
-          const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : strategy.id;
-          
-          // A strategy is premium if it's in the PREMIUM_STRATEGY_IDS list or has isPremium flag
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
-          
-          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
-          
+          console.log(`Setting up strategy ${strategy.id}: ${strategy.name}`);
           return {
             ...strategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on the ID
+            isPremium: strategy.id > 1, // Setting premium flag (usually id 1 is free)
             isPaid: false
           };
         });
@@ -79,18 +70,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
         const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
-          // Explicitly convert strategy ID to number if needed
-          const strategyIdNumber = typeof predefinedStrategy.id === 'string' ? 
-            parseInt(predefinedStrategy.id, 10) : predefinedStrategy.id;
-          
-          // Check if this is a premium strategy
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || predefinedStrategy.isPremium === true;
-          
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
-            userPaidStatus: userStrategy?.paid_status,
-            isPremium: isPremium,
-            inPremiumIDs: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)
+            userPaidStatus: userStrategy?.paid_status
           });
           
           // If user has a strategy with paid_status='paid', mark it as accessible
@@ -102,7 +84,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
               ...userStrategy,
               name: predefinedStrategy.name, // Ensure we keep the original name
               description: predefinedStrategy.description, // Ensure we keep the original description
-              isPremium: isPremium, // Keep the premium flag
               isPaid: true  // Mark as paid/unlocked
             };
           }
@@ -112,12 +93,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...userStrategy,
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
-            isPremium: isPremium, // Keep the premium flag
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on the ID
+            isPremium: predefinedStrategy.id > 1, // Setting premium flag (usually id 1 is free)
             isPaid: false
           };
         });
@@ -174,28 +154,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
 
   // Fixed type signature to match expected types in PredefinedStrategyList
   const handleToggleLiveMode = async (id: number) => {
-    // Find the strategy
+    setSelectedStrategyId(id);
     const strategy = strategies.find(s => s.id === id);
-    
+
     if (!strategy) {
       console.error(`Strategy with ID ${id} not found`);
       return;
     }
-    
-    // Check if the strategy is premium and not paid
-    const isPremium = PREMIUM_STRATEGY_IDS.includes(id) || strategy.isPremium === true;
-    const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
-    
-    if (isPremium && !canAccess) {
-      // If it's a premium strategy and user doesn't have access, redirect to pricing
-      sessionStorage.setItem('selectedStrategyId', id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
-      // We'll let the component handle the navigation
-      return;
-    }
-    
-    // Otherwise, proceed with the normal flow
-    setSelectedStrategyId(id);
+
     // Always open the dialog to choose mode, regardless of current state
     // This allows users to switch between brokers
     setTargetMode("live trade");
