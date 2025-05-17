@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -31,6 +32,10 @@ export const StrategySection = ({
 
   // Helper function to determine if a strategy is premium based on its package field or isPremium flag
   const isPremiumStrategy = (strategy: any) => {
+    // Special case for Apexflow - always show as premium
+    if (strategy.name?.toLowerCase().includes('apex') || strategy.name?.toLowerCase().includes('flow')) {
+      return true;
+    }
     return strategy.package === 'premium' || strategy.isPremium === true;
   };
 
@@ -100,7 +105,7 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => {
-            // Check if this is a premium strategy using the package field
+            // Check if this is a premium strategy using the package field or if it's Apexflow
             const isPremium = isPremiumStrategy(strategy);
             // Check if user has access to this premium strategy
             const canAccess = !isPremium || isPaidStrategy(strategy);
@@ -202,3 +207,5 @@ export const StrategySection = ({
     </div>
   );
 };
+
+export default StrategySection;

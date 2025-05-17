@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BarChart2, ChevronRight, Settings, Power } from "lucide-react";
+import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +23,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Determine the correct button text based on strategy.isLive
   const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
   
+  // Check if this is a premium strategy or specifically Apexflow
+  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || 
+                    (strategy.name && (strategy.name.toLowerCase().includes('apex') || 
+                                      strategy.name.toLowerCase().includes('flow')));
+  
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
@@ -34,6 +39,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               <p className="text-xs text-gray-400 mt-1">{strategy.description}</p>
             )}
           </div>
+          
+          {/* Show premium badge if applicable */}
+          {isPremium && !strategy.isPaid && (
+            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+              Premium
+            </Badge>
+          )}
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -123,15 +135,27 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={onToggleLiveMode}
-                    className={`min-w-[90px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
-                  >
-                    <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
-                    {buttonText}
-                  </Button>
+                  {isPremium && !strategy.isPaid ? (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={onToggleLiveMode}
+                      className="min-w-[90px] bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3"
+                    >
+                      <Lock className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
+                      Unlock
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={onToggleLiveMode}
+                      className={`min-w-[90px] ${strategy.isLive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-cyan/20 text-cyan border-cyan/30'} hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3`}
+                    >
+                      <Power className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />
+                      {buttonText}
+                    </Button>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent 
                   side="top" 
@@ -140,7 +164,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   sideOffset={5}
                 >
                   <p className="whitespace-nowrap px-2 py-1">
-                    {strategy.isLive ? "Switch to paper trading" : "Enable live trading"}
+                    {isPremium && !strategy.isPaid ? 
+                      "Unlock premium strategy" : 
+                      (strategy.isLive ? "Switch to paper trading" : "Enable live trading")}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -160,3 +186,5 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </div>
   );
 };
+
+export default StrategyCard;

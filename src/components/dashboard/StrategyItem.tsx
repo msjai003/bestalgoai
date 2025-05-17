@@ -30,6 +30,10 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
+  // Special handling for Apexflow strategy - always show as premium with lock icon
+  const isApexflow = strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow');
+  const shouldShowLock = (isActuallyPremium && !isAccessible) || isApexflow;
+  
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
     idType: typeof strategy.id,
@@ -39,7 +43,9 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     isPremium: isActuallyPremium,
     package: strategy.package,
     isAccessible,
-    hasPremium
+    hasPremium,
+    isApexflow,
+    shouldShowLock
   });
   
   return (
@@ -54,7 +60,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
       <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-medium text-white">{strategy.name}</h3>
-          {isActuallyPremium && !isAccessible && (
+          {shouldShowLock && (
             <Button
               variant="outline"
               size="sm"
