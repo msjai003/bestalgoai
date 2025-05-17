@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +8,6 @@ import {
 } from "@/hooks/strategy/useStrategyDatabase";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -39,17 +37,17 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Explicitly convert strategy.id to number if it's a string
           const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
           
-          // A strategy is premium if it's in the PREMIUM_STRATEGY_IDS list or has isPremium flag
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
+          // A strategy is premium if it has package='premium' or has isPremium flag
+          const isPremium = strategy.package === 'premium' || strategy.isPremium === true;
           
-          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}`);
           
           return {
             ...strategy,
             id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on the ID
+            isPremium: isPremium, // Setting premium flag based on package
             isPaid: false
           };
         });
@@ -84,14 +82,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           const strategyIdNumber = typeof predefinedStrategy.id === 'string' ? 
             parseInt(predefinedStrategy.id, 10) : predefinedStrategy.id;
           
-          // Check if this is a premium strategy
-          const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || predefinedStrategy.isPremium === true;
+          // Check if this is a premium strategy based on package field
+          const isPremium = predefinedStrategy.package === 'premium' || predefinedStrategy.isPremium === true;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
             userPaidStatus: userStrategy?.paid_status,
             isPremium: isPremium,
-            inPremiumIDs: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)
+            package: predefinedStrategy.package
           });
           
           // If user has a strategy with paid_status='paid', mark it as accessible
@@ -118,7 +116,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on the ID
+            isPremium: isPremium, // Setting premium flag based on package
             isPaid: false
           };
         });
@@ -184,7 +182,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
     
     // Check if the strategy is premium and not paid
-    const isPremium = PREMIUM_STRATEGY_IDS.includes(id) || strategy.isPremium === true;
+    const isPremium = strategy.package === 'premium' || strategy.isPremium === true;
     const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
     
     if (isPremium && !canAccess) {

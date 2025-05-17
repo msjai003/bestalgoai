@@ -1037,6 +1037,7 @@ export type Database = {
           description: string
           id: number
           name: string
+          package: string
           parameters: Json
           performance: Json
           strategy_details: Json | null
@@ -1045,6 +1046,7 @@ export type Database = {
           description: string
           id: number
           name: string
+          package?: string
           parameters: Json
           performance: Json
           strategy_details?: Json | null
@@ -1053,6 +1055,7 @@ export type Database = {
           description?: string
           id?: number
           name?: string
+          package?: string
           parameters?: Json
           performance?: Json
           strategy_details?: Json | null

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -12,7 +11,6 @@ import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import StrategiesSection from "@/components/dashboard/StrategiesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 import { syncPremiumAccess } from "@/lib/supabase/subscription";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -47,21 +45,22 @@ const Dashboard = () => {
             .limit(3);
             
           if (!error && predefinedData) {
-            // Process strategies to identify premium ones
+            // Process strategies to identify premium ones using the package field
             const processedStrategies = predefinedData.map(strategy => {
               // Ensure ID is a number for comparison
               const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
               
-              // Check if strategy is premium - always ensure Apex Flow (ID 5) is included
-              const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
+              // Check if strategy is premium based on package field
+              const isPremium = strategy.package === 'premium';
               
-              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, inPremiumIds: ${PREMIUM_STRATEGY_IDS.includes(strategyIdNumber)}`);
+              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}`);
               
               return {
                 id: strategyIdNumber,
                 name: strategy.name,
                 description: strategy.description,
-                isPremium: isPremium
+                isPremium: isPremium,
+                package: strategy.package
               };
             });
             setDashboardStrategies(processedStrategies);

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -32,8 +30,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Explicitly convert strategy.id to a number to ensure proper comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
-  // A strategy is premium if it's in our premium list or marked as premium
-  const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber) || strategy.isPremium === true;
+  // A strategy is premium if it has package='premium' or isPremium flag is true
+  const isPremium = strategy.package === 'premium' || strategy.isPremium === true;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
@@ -45,7 +43,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     name: strategy.name,
     description: strategy.description,
     isPremium,
-    inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
+    package: strategy.package,
     canAccess,
     isWishlisted: strategy.isWishlisted,
     hasPremium

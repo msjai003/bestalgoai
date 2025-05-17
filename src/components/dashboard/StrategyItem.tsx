@@ -3,7 +3,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategyItemProps {
   strategy: {
@@ -12,20 +11,18 @@ interface StrategyItemProps {
     description: string;
     isPremium?: boolean;
     isPaid?: boolean;
+    package?: string;
   };
   hasPremium: boolean;
   onPremiumClick: () => void;
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
-  // Always convert ID to number for comparison with PREMIUM_STRATEGY_IDS
+  // Always convert ID to number for comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
-  // Check if this strategy is in the premium list
-  const isPremiumStrategy = PREMIUM_STRATEGY_IDS.includes(strategyIdNumber);
-  
-  // Update isPremium check to combine both the incoming flag and the constant check
-  const isActuallyPremium = strategy.isPremium || isPremiumStrategy;
+  // Update isPremium check to use the package field
+  const isActuallyPremium = strategy.package === 'premium' || strategy.isPremium === true;
   
   // A strategy is accessible if:
   // - it's not premium, OR
@@ -40,7 +37,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     name: strategy.name,
     description: strategy.description,
     isPremium: isActuallyPremium,
-    inPremiumList: PREMIUM_STRATEGY_IDS.includes(strategyIdNumber),
+    package: strategy.package,
     isAccessible,
     hasPremium
   });

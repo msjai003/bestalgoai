@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Play, Trash2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { PREMIUM_STRATEGY_IDS } from "@/hooks/strategy/types";
 
 interface StrategySectionProps {
   title: string;
@@ -31,11 +29,9 @@ export const StrategySection = ({
 }: StrategySectionProps) => {
   const navigate = useNavigate();
 
-  // Helper function to determine if a strategy is premium based on its ID
-  const isPremiumStrategy = (strategyId: number | string) => {
-    // Check if it's in our premium strategy list or marked as premium
-    return PREMIUM_STRATEGY_IDS.includes(Number(strategyId)) || 
-           (strategies.find(s => s.id === Number(strategyId))?.isPremium === true);
+  // Helper function to determine if a strategy is premium based on its package field or isPremium flag
+  const isPremiumStrategy = (strategy: any) => {
+    return strategy.package === 'premium' || strategy.isPremium === true;
   };
 
   // Helper to check if a premium strategy has been paid for
@@ -104,8 +100,8 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => {
-            // Check if this is a premium strategy
-            const isPremium = isPremiumStrategy(strategy.id);
+            // Check if this is a premium strategy using the package field
+            const isPremium = isPremiumStrategy(strategy);
             // Check if user has access to this premium strategy
             const canAccess = !isPremium || isPaidStrategy(strategy);
             

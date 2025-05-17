@@ -1,7 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { PREMIUM_STRATEGY_IDS } from "./types";
 
 export interface StrategyLeg {
   id: number;
@@ -38,6 +37,7 @@ export interface PredefinedStrategy {
     [key: string]: any;
     Legs?: StrategyLeg[];
   } | null;
+  package: string; // New field: 'premium' or 'free'
 }
 
 const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
@@ -58,7 +58,7 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
     // Ensure strategy.id is a number for consistent comparison
     const strategyId = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
     
-    console.log(`Processing strategy ${strategyId}: ${strategy.name}`);
+    console.log(`Processing strategy ${strategyId}: ${strategy.name}, package: ${strategy.package}`);
     
     // Ensure strategy_details is properly parsed
     let parsedStrategyDetails: any = strategy.strategy_details;
@@ -87,10 +87,10 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       console.log(`Strategy ${strategyId} has no legs or invalid leg data.`);
     }
     
-    // Explicitly check if the strategy ID is in the premium list
-    const isPremium = PREMIUM_STRATEGY_IDS.includes(strategyId);
+    // Set isPremium based on the new package field
+    const isPremium = strategy.package === 'premium';
     
-    console.log(`Setting isPremium flag for strategy ${strategyId} to ${isPremium}. In PREMIUM_STRATEGY_IDS: ${PREMIUM_STRATEGY_IDS.includes(strategyId)}`);
+    console.log(`Setting isPremium flag for strategy ${strategyId} to ${isPremium}. Package: ${strategy.package}`);
     
     return {
       id: strategyId, // Ensure id is a number
@@ -99,7 +99,8 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
       strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details'],
-      isPremium: isPremium // Add isPremium flag
+      package: strategy.package, // Include the package field
+      isPremium: isPremium // Set isPremium based on package field
     };
   });
 };
