@@ -1,3 +1,4 @@
+
 // Type definition for Razorpay options
 interface RazorpayOptions {
   key: string;
@@ -56,9 +57,11 @@ const createRazorpayInstance = (
   onError: () => void
 ) => {
   try {
+    console.log("Creating Razorpay instance with live mode settings");
     const rzp = new (window as any).Razorpay({
       ...options,
       handler: function (response: any) {
+        console.log("Payment successful in live mode", response);
         onSuccess(
           response.razorpay_payment_id,
           response.razorpay_order_id,
@@ -68,7 +71,7 @@ const createRazorpayInstance = (
     });
     
     rzp.on('payment.failed', function (response: any) {
-      console.error('Payment failed:', response.error);
+      console.error('Payment failed in live mode:', response.error);
       onError();
     });
     
