@@ -42,13 +42,19 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // But not if it's Zenflow
   const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
   
+  // A strategy is accessible if:
+  // - it's not premium, OR
+  // - the user has premium access (checked by isPaid flag), OR
+  // - this specific strategy has been paid for
+  const isAccessible = !isPremium || strategy.isPaid === true;
+  
   // When the unlock button is clicked for premium or Speed Up strategies
   const handlePremiumClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // For Speed Up strategy, always redirect to pricing page
-    if (isSpeedUp) {
+    // For Speed Up strategy when not paid for, always redirect to pricing page
+    if (isSpeedUp && !strategy.isPaid) {
       // Save strategy ID and redirect path to session storage
       sessionStorage.setItem('selectedStrategyId', strategy.id?.toString() || '');
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
@@ -73,8 +79,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             )}
           </div>
           
-          {/* Show premium badge if applicable */}
-          {(isPremium && !strategy.isPaid) || isSpeedUp && (
+          {/* Show premium badge only if not paid for */}
+          {(isPremium && !strategy.isPaid) && (
             <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
               Premium
             </Badge>
@@ -168,7 +174,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  {(isPremium && !strategy.isPaid) || isSpeedUp ? (
+                  {(isPremium && !strategy.isPaid) ? (
                     <Button 
                       variant="outline"
                       size="sm"
@@ -197,7 +203,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   sideOffset={5}
                 >
                   <p className="whitespace-nowrap px-2 py-1">
-                    {(isPremium && !strategy.isPaid) || isSpeedUp ? 
+                    {(isPremium && !strategy.isPaid) ? 
                       "Unlock premium strategy" : 
                       (strategy.isLive ? "Switch to paper trading" : "Enable live trading")}
                   </p>

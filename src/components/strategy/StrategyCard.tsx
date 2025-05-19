@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
+  // Modified to allow Speed Up strategy access when user has premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
 
   console.log("Rendering strategy in StrategyCard:", {
@@ -92,8 +94,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       return;
     }
     
-    // For Speed Up strategy, always redirect to pricing page regardless of user's premium status
-    if (isSpeedUp) {
+    // For Speed Up strategy when user doesn't have premium, redirect to pricing page
+    if (isSpeedUp && !hasPremium) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
@@ -115,8 +117,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const handleViewFullStrategy = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // For Speed Up strategy, redirect to pricing page when clicking View Full Strategy
-    if (isSpeedUp) {
+    // For Speed Up strategy when user doesn't have premium, redirect to pricing page
+    if (isSpeedUp && !hasPremium) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
       navigate('/pricing');
@@ -169,13 +171,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess || isSpeedUp ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                      className={`${(!canAccess || (isSpeedUp && !hasPremium)) ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
                         flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20 z-10`}
                       style={{ zIndex: 10 }}
-                      aria-label={!canAccess || isSpeedUp ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
+                      aria-label={(!canAccess || (isSpeedUp && !hasPremium)) ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
-                      {!canAccess || isSpeedUp ? (
+                      {(!canAccess || (isSpeedUp && !hasPremium)) ? (
                         <LockIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                       ) : (
                         strategy.isLive ? 
@@ -185,7 +187,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {!canAccess || isSpeedUp ? (
+                    {(!canAccess || (isSpeedUp && !hasPremium)) ? (
                       <p>Unlock this premium strategy</p>
                     ) : strategy.isLive ? (
                       <p>Configure live trading settings</p>
@@ -198,8 +200,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           </div>
           
-          {/* Updated this section to handle description locking */}
-          {(canAccess && !isSpeedUp) ? (
+          {/* Only show locked description for strategies the user can't access */}
+          {(canAccess && !(isSpeedUp && !hasPremium)) ? (
             <p className="text-gray-300 text-sm mb-4 line-clamp-2">
               {strategy.description}
             </p>

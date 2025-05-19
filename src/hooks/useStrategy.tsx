@@ -110,9 +110,12 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Check if this is Evercrest strategy (always premium)
           const isEvercrest = predefinedStrategy.name.toLowerCase().includes('evercrest');
           
+          // Check if this is Speed Up strategy
+          const isSpeedUp = predefinedStrategy.name.toLowerCase().includes('speed up');
+          
           // Check if this is a premium strategy based on package field
           const isPremium = (predefinedStrategy.package === 'premium' || 
-            predefinedStrategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+            predefinedStrategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
@@ -121,8 +124,17 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isZenflow: isZenflow,
             isApexflow: isApexflow,
             isEvercrest: isEvercrest,
-            package: predefinedStrategy.package
+            isSpeedUp: isSpeedUp,
+            package: predefinedStrategy.package,
+            hasPremium: hasPremium
           });
+          
+          // For premium users, mark Speed Up as paid/accessible
+          let isPaid = false;
+          if (isSpeedUp && hasPremium) {
+            console.log(`User has premium, marking Speed Up strategy as paid/accessible`);
+            isPaid = true;
+          }
           
           // If user has a strategy with paid_status='paid', mark it as accessible
           // We need to check if the property exists before accessing it
@@ -144,12 +156,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
             isPremium: isPremium, // Keep the premium flag
+            isPaid: isPaid  // Set isPaid based on premium status for Speed Up
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on package
-            isPaid: false
+            isPaid: isPaid  // Set isPaid based on premium status for Speed Up
           };
         });
         
@@ -228,7 +241,17 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Check if this is a premium strategy
     const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
     
-    const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
+    // A strategy can be accessed if:
+    // - it's not premium, OR
+    // - the user has premium access (hasPremium) OR
+    // - this specific strategy has been paid for (isPaid)
+    // Speed Up is special - it's accessible if user has premium
+    let canAccess = !isPremium || hasPremium || strategy.isPaid === true;
+    
+    // Override for Speed Up - only accessible with premium
+    if (isSpeedUp) {
+      canAccess = hasPremium || strategy.isPaid === true;
+    }
     
     console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
       isPremium, 
@@ -238,8 +261,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       isSpeedUp
     });
     
-    // For Speed Up strategy, always redirect to pricing regardless of premium status
-    if (isSpeedUp) {
+    // For Speed Up strategy without premium, always redirect to pricing
+    if (isSpeedUp && !canAccess) {
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');

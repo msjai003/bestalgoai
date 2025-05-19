@@ -49,10 +49,11 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  const isAccessible = (!isActuallyPremium || hasPremium || strategy.isPaid) && !isSpeedUp;
+  // Modified to handle Speed Up strategy
+  const isAccessible = (!isActuallyPremium || hasPremium || strategy.isPaid);
   
-  // Show lock icon for premium strategies that are not accessible or Speed Up
-  const shouldShowLock = isActuallyPremium && !isAccessible || isSpeedUp;
+  // Show lock icon for premium strategies that are not accessible
+  const shouldShowLock = (isActuallyPremium && !isAccessible) || (isSpeedUp && !hasPremium);
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
@@ -71,13 +72,13 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     shouldShowLock
   });
   
-  // Handle clicks on the strategy - for premium strategies or Speed Up, show the premium dialog
+  // Handle clicks on the strategy - for premium strategies or Speed Up (when not premium), show the premium dialog
   const handleStrategyClick = (e: React.MouseEvent) => {
-    if (!isAccessible || isSpeedUp) {
+    if (!isAccessible || (isSpeedUp && !hasPremium)) {
       e.preventDefault();
       
-      // For Speed Up, directly navigate to pricing
-      if (isSpeedUp) {
+      // For Speed Up when user doesn't have premium, directly navigate to pricing
+      if (isSpeedUp && !hasPremium) {
         sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
         sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
         navigate('/pricing');
@@ -94,7 +95,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     e.preventDefault();
     e.stopPropagation();
     
-    if (isSpeedUp) {
+    if (isSpeedUp && !hasPremium) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
       navigate('/pricing');
@@ -105,7 +106,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
 
   // Handle view details click separately to control redirection for Speed Up
   const handleViewDetailsClick = (e: React.MouseEvent) => {
-    if (isSpeedUp) {
+    if (isSpeedUp && !hasPremium) {
       e.preventDefault();
       e.stopPropagation();
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
@@ -148,7 +149,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
           </div>
           <span 
             className="text-cyan text-xs cursor-pointer" 
-            onClick={isSpeedUp ? handleViewDetailsClick : undefined}
+            onClick={isSpeedUp && !hasPremium ? handleViewDetailsClick : undefined}
           >
             View Details
           </span>
