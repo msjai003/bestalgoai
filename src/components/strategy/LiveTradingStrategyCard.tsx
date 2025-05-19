@@ -60,7 +60,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
           
           {/* Show premium badge if applicable */}
-          {isPremium && !strategy.isPaid && (
+          {(isPremium && !strategy.isPaid) || isSpeedUp && (
             <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
               Premium
             </Badge>
@@ -154,7 +154,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  {isPremium && !strategy.isPaid ? (
+                  {(isPremium && !strategy.isPaid) || isSpeedUp ? (
                     <Button 
                       variant="outline"
                       size="sm"
@@ -183,7 +183,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   sideOffset={5}
                 >
                   <p className="whitespace-nowrap px-2 py-1">
-                    {isPremium && !strategy.isPaid ? 
+                    {(isPremium && !strategy.isPaid) || isSpeedUp ? 
                       "Unlock premium strategy" : 
                       (strategy.isLive ? "Switch to paper trading" : "Enable live trading")}
                   </p>
