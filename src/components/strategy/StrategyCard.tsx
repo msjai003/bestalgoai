@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,6 +114,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleViewFullStrategy = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // For Speed Up strategy, redirect to pricing page when clicking View Full Strategy
+    if (isSpeedUp) {
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
+      navigate('/pricing');
+      return;
+    }
+    
+    // For regular navigation to strategy details
     navigate(`/strategy-details/${strategy.id}`);
   };
 
@@ -233,4 +242,3 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </Card>
   );
 };
-

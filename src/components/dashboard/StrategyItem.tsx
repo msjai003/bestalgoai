@@ -102,6 +102,17 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
       onPremiumClick();
     }
   };
+
+  // Handle view details click separately to control redirection for Speed Up
+  const handleViewDetailsClick = (e: React.MouseEvent) => {
+    if (isSpeedUp) {
+      e.preventDefault();
+      e.stopPropagation();
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
+      navigate('/pricing');
+    }
+  };
   
   return (
     <Link 
@@ -135,7 +146,12 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
               <div className="text-green-400 font-medium">N/A</div>
             </div>
           </div>
-          <span className="text-cyan text-xs">View Details</span>
+          <span 
+            className="text-cyan text-xs cursor-pointer" 
+            onClick={isSpeedUp ? handleViewDetailsClick : undefined}
+          >
+            View Details
+          </span>
         </div>
       </div>
     </Link>
