@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,14 +34,11 @@ export const StrategySection = ({
   // or if it's specifically the Apexflow strategy (by name), but not if it's Zenflow
   const isPremiumStrategy = (strategy: any) => {
     // Special case for Apexflow - always show as premium
-    if (strategy.name?.toLowerCase().includes('apex') || strategy.name?.toLowerCase().includes('flow')) {
-      // Special case for Zenflow - always free even though it has "flow" in the name
-      if (strategy.name?.toLowerCase().includes('zen')) {
-        return false;
-      }
-      return true;
-    }
-    return strategy.package === 'premium' || strategy.isPremium === true;
+    const isApexflow = strategy.name?.toLowerCase().includes('apex');
+    // Special case for Zenflow - always free even though it has "flow" in the name
+    const isZenflow = strategy.name?.toLowerCase().includes('zen');
+    
+    return (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
   };
 
   // Helper to check if a premium strategy has been paid for
@@ -122,8 +120,15 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => {
+            // Check if this is Apexflow strategy (always premium)
+            const isApexflow = strategy.name?.toLowerCase().includes('apex');
+            
+            // Check if this is Zenflow strategy (always free)
+            const isZenflow = strategy.name?.toLowerCase().includes('zen');
+            
             // Check if this is a premium strategy using the package field or if it's Apexflow
-            const isPremium = isPremiumStrategy(strategy);
+            const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
+            
             // Check if user has access to this premium strategy
             const canAccess = !isPremium || isPaidStrategy(strategy);
             
