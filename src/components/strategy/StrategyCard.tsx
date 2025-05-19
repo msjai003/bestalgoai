@@ -147,7 +147,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       style={{ zIndex: 10 }}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
-                      {!canAccess || isPremium ? (
+                      {!canAccess ? (
                         <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                       ) : (
                         strategy.isLive ? 
@@ -157,7 +157,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {!canAccess || isPremium ? (
+                    {!canAccess ? (
                       <p>Unlock this premium strategy</p>
                     ) : strategy.isLive ? (
                       <p>Configure live trading settings</p>
@@ -170,13 +170,20 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           </div>
           
+          {/* Updated this section to handle description locking */}
           {canAccess ? (
             <p className="text-gray-300 text-sm mb-4 line-clamp-2">
               {strategy.description}
             </p>
           ) : (
             <p className="text-gray-300 text-sm mb-4">
-              {strategy.name} is a premium strategy that requires a subscription. <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">Upgrade now</span>
+              <span className="flex items-center gap-1">
+                <LockIcon size={14} className="text-yellow-500" />
+                <span>Premium strategy - </span>
+              </span>
+              <span onClick={(e) => {e.stopPropagation(); toggleLiveMode(e);}} className="text-cyan cursor-pointer hover:underline transition-colors duration-300">
+                Upgrade to unlock details
+              </span>
             </p>
           )}
           
