@@ -147,7 +147,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       style={{ zIndex: 10 }}
                       aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
-                      {!canAccess ? (
+                      {!canAccess || isPremium ? (
                         <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                       ) : (
                         strategy.isLive ? 
@@ -157,7 +157,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {!canAccess ? (
+                    {!canAccess || isPremium ? (
                       <p>Unlock this premium strategy</p>
                     ) : strategy.isLive ? (
                       <p>Configure live trading settings</p>
