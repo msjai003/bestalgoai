@@ -93,14 +93,23 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       return;
     }
     
-    // If it's premium and user doesn't have access, redirect to pricing page regardless of strategy type
-    if (!canAccess) {
+    // For Speed Up strategy, always redirect to pricing page regardless of user's premium status
+    if (isSpeedUp) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
       return;
     }
     
+    // For other premium strategies, check access
+    if (isPremium && !canAccess) {
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
+      return;
+    }
+    
+    // For regular strategies or premium with access, continue with normal flow
     onToggleLiveMode(strategy.id);
   };
 
@@ -151,11 +160,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                      className={`${!canAccess || isSpeedUp ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
                         flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20 z-10`}
                       style={{ zIndex: 10 }}
-                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
+                      aria-label={!canAccess || isSpeedUp ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
                       {!canAccess || isSpeedUp ? (
                         <LockIcon size={24} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
@@ -224,3 +233,4 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     </Card>
   );
 };
+

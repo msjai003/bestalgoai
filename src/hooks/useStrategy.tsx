@@ -8,6 +8,7 @@ import {
 } from "@/hooks/strategy/useStrategyDatabase";
 import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
+import { useNavigate } from "react-router-dom";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
   const [strategies, setStrategies] = useState(predefinedStrategies);
@@ -20,6 +21,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
   const [hasPremium, setHasPremium] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // When predefinedStrategies are loaded or change, update our state
@@ -236,11 +238,20 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       isSpeedUp
     });
     
+    // For Speed Up strategy, always redirect to pricing regardless of premium status
+    if (isSpeedUp) {
+      sessionStorage.setItem('selectedStrategyId', id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      navigate('/pricing');
+      return;
+    }
+    
+    // For other premium strategies, check if user has access
     if (isPremium && !canAccess) {
       // If it's a premium strategy and user doesn't have access, redirect to pricing
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
-      // We'll let the component handle the navigation
+      navigate('/pricing');
       return;
     }
     

@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface StrategyItemProps {
   strategy: {
@@ -18,6 +19,8 @@ interface StrategyItemProps {
 }
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
+  const navigate = useNavigate();
+  
   // Always convert ID to number for comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
@@ -46,10 +49,10 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
+  const isAccessible = (!isActuallyPremium || hasPremium || strategy.isPaid) && !isSpeedUp;
   
-  // Show lock icon for premium strategies that are not accessible
-  const shouldShowLock = isActuallyPremium && !isAccessible;
+  // Show lock icon for premium strategies that are not accessible or Speed Up
+  const shouldShowLock = isActuallyPremium && !isAccessible || isSpeedUp;
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
@@ -68,10 +71,34 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     shouldShowLock
   });
   
-  // Handle clicks on the strategy - for premium strategies, show the premium dialog
+  // Handle clicks on the strategy - for premium strategies or Speed Up, show the premium dialog
   const handleStrategyClick = (e: React.MouseEvent) => {
-    if (!isAccessible) {
+    if (!isAccessible || isSpeedUp) {
       e.preventDefault();
+      
+      // For Speed Up, directly navigate to pricing
+      if (isSpeedUp) {
+        sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+        sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
+        navigate('/pricing');
+        return;
+      }
+      
+      // For other premium strategies, use the passed in onPremiumClick
+      onPremiumClick();
+    }
+  };
+  
+  // Handle unlock button click - always navigate to pricing for Speed Up
+  const handleUnlockClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isSpeedUp) {
+      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
+      navigate('/pricing');
+    } else {
       onPremiumClick();
     }
   };
@@ -90,11 +117,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
               variant="outline"
               size="sm"
               className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-3 py-1 text-xs shadow-sm hover:shadow-cyan/20 transition-all"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onPremiumClick();
-              }}
+              onClick={handleUnlockClick}
             >
               <Lock className="h-3 w-3 mr-1" /> Unlock
             </Button>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Strategy } from "@/hooks/strategy/types";
+import { useNavigate } from "react-router-dom";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -20,6 +21,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   onEditQuantity,
   onViewDetails
 }) => {
+  const navigate = useNavigate();
+  
   // Determine the correct button text based on strategy.isLive
   const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
   
@@ -39,11 +42,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // But not if it's Zenflow
   const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
   
-  // When the unlock button is clicked for premium strategies
+  // When the unlock button is clicked for premium or Speed Up strategies
   const handlePremiumClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Still call the parent's onToggleLiveMode which will handle the premium upgrade flow
+    
+    // For Speed Up strategy, always redirect to pricing page
+    if (isSpeedUp) {
+      // Save strategy ID and redirect path to session storage
+      sessionStorage.setItem('selectedStrategyId', strategy.id?.toString() || '');
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      // Navigate to pricing page
+      navigate('/pricing');
+      return;
+    }
+    
+    // For other premium strategies, use the parent's handler
     onToggleLiveMode();
   };
   
