@@ -33,23 +33,28 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // Check if this is specifically the Speed Up strategy (by name)
   const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
   
-  // Update isPremium check:
+  // Check if this is specifically the Velox Edge strategy (by name)
+  const isVeloxEdge = strategy.name.toLowerCase().includes('velox');
+  
+  // Check if this is specifically the NovaGlide strategy (by name)
+  const isNovaGlide = strategy.name.toLowerCase().includes('nova');
+  
+  // Update isPremium check to include all premium strategies:
   // - Package is 'premium'
   // - OR isPremium flag is true
-  // - OR it's Evercrest
-  // - OR it's Speed Up
+  // - OR it's one of the specific premium strategies (Evercrest, Speed Up, Velox Edge, NovaGlide)
   // - BUT NOT if it's Zenflow (Zenflow is free)
-  const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
+  const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || 
+    isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  // Modified to handle Speed Up strategy
-  const isAccessible = (!isActuallyPremium || hasPremium || strategy.isPaid);
+  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
   // Show lock icon for premium strategies that are not accessible
-  const shouldShowLock = (isActuallyPremium && !isAccessible) || (isSpeedUp && !hasPremium);
+  const shouldShowLock = isActuallyPremium && !isAccessible;
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
@@ -61,52 +66,35 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     isEvercrest,
     isZenflow,
     isSpeedUp,
+    isVeloxEdge,
+    isNovaGlide,
     package: strategy.package,
     isAccessible,
     hasPremium,
     shouldShowLock
   });
   
-  // Handle clicks on the strategy - for premium strategies or Speed Up (when not premium), show the premium dialog
+  // Handle clicks on the strategy - for premium strategies when not accessible, show the premium dialog
   const handleStrategyClick = (e: React.MouseEvent) => {
-    if (!isAccessible || (isSpeedUp && !hasPremium)) {
+    if (!isAccessible) {
       e.preventDefault();
-      
-      // For Speed Up when user doesn't have premium, directly navigate to pricing
-      if (isSpeedUp && !hasPremium) {
-        sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-        sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
-        navigate('/pricing');
-        return;
-      }
-      
-      // For other premium strategies, use the passed in onPremiumClick
       onPremiumClick();
     }
   };
   
-  // Handle unlock button click - always navigate to pricing for Speed Up
+  // Handle unlock button click - navigate to pricing
   const handleUnlockClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (isSpeedUp && !hasPremium) {
-      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
-      navigate('/pricing');
-    } else {
-      onPremiumClick();
-    }
+    onPremiumClick();
   };
 
-  // Handle view details click separately to control redirection for Speed Up
+  // Handle view details click separately
   const handleViewDetailsClick = (e: React.MouseEvent) => {
-    if (isSpeedUp && !hasPremium) {
+    if (!isAccessible) {
       e.preventDefault();
       e.stopPropagation();
-      sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
-      navigate('/pricing');
+      onPremiumClick();
     }
   };
   
@@ -144,7 +132,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
           </div>
           <span 
             className="text-cyan text-xs cursor-pointer" 
-            onClick={isSpeedUp && !hasPremium ? handleViewDetailsClick : undefined}
+            onClick={!isAccessible ? handleViewDetailsClick : undefined}
           >
             View Details
           </span>

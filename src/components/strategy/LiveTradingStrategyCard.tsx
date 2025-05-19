@@ -35,9 +35,18 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically Speed Up (always premium)
   const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
   
-  // A strategy is premium if it's specifically Evercrest, Speed Up, has premium package or has the premium flag
+  // Check if this is specifically Velox Edge (always premium)
+  const isVeloxEdge = strategy.name && strategy.name.toLowerCase().includes('velox');
+  
+  // Check if this is specifically NovaGlide (always premium)
+  const isNovaGlide = strategy.name && strategy.name.toLowerCase().includes('nova');
+  
+  // A strategy is premium if it's specifically Evercrest, Speed Up, Velox, NovaGlide,
+  // has premium package or has the premium flag
   // But not if it's Zenflow
-  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
+  const isPremium = (strategy.package === 'premium' || 
+                     strategy.isPremium === true || 
+                     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR
@@ -45,23 +54,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // - this specific strategy has been paid for
   const isAccessible = !isPremium || strategy.isPaid === true;
   
-  // When the unlock button is clicked for premium or Speed Up strategies
+  // When the unlock button is clicked for premium strategies
   const handlePremiumClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // For Speed Up strategy when not paid for, always redirect to pricing page
-    if (isSpeedUp && !strategy.isPaid) {
-      // Save strategy ID and redirect path to session storage
-      sessionStorage.setItem('selectedStrategyId', strategy.id?.toString() || '');
-      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
-      // Navigate to pricing page
-      navigate('/pricing');
-      return;
-    }
-    
-    // For other premium strategies, use the parent's handler
-    onToggleLiveMode();
+    // Save strategy ID and redirect path to session storage
+    sessionStorage.setItem('selectedStrategyId', strategy.id?.toString() || '');
+    sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+    // Navigate to pricing page
+    navigate('/pricing');
   };
   
   return (

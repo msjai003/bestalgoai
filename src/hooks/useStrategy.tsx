@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,25 +54,32 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Check if this is Evercrest strategy (always premium)
           const isEvercrest = strategy.name.toLowerCase().includes('evercrest');
           
+          // Check if this is Speed Up strategy (always premium)
+          const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
+          
+          // Check if this is Velox Edge strategy (always premium)
+          const isVeloxEdge = strategy.name.toLowerCase().includes('velox');
+          
+          // Check if this is NovaGlide strategy (always premium)
+          const isNovaGlide = strategy.name.toLowerCase().includes('nova');
+          
           // A strategy is premium if:
           // - it has package='premium', OR 
           // - has isPremium flag, OR
-          // - is Evercrest,
+          // - is Evercrest, Speed Up, Velox Edge, or NovaGlide,
           // BUT NOT if it's Zenflow (Zenflow is always free)
-          const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest) && !isZenflow;
+          const isPremium = (strategy.package === 'premium' || 
+                           strategy.isPremium === true || 
+                           isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
           
-          // Force Speed Up to be premium regardless of other settings
-          const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
-          const finalIsPremium = isPremium || isSpeedUp;
-          
-          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${finalIsPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isEvercrest: ${isEvercrest}`);
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isEvercrest: ${isEvercrest}, isVeloxEdge: ${isVeloxEdge}, isNovaGlide: ${isNovaGlide}`);
           
           return {
             ...strategy,
             id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
-            isPremium: finalIsPremium, // Setting premium flag based on all conditions
+            isPremium: isPremium, // Setting premium flag based on all conditions
             isPaid: false
           };
         });
@@ -117,12 +125,19 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Check if this is Evercrest strategy (always premium)
           const isEvercrest = predefinedStrategy.name.toLowerCase().includes('evercrest');
           
-          // Check if this is Speed Up strategy
+          // Check if this is Speed Up strategy (always premium)
           const isSpeedUp = predefinedStrategy.name.toLowerCase().includes('speed up');
           
-          // Check if this is a premium strategy based on package field
+          // Check if this is Velox Edge strategy (always premium)
+          const isVeloxEdge = predefinedStrategy.name.toLowerCase().includes('velox');
+          
+          // Check if this is NovaGlide strategy (always premium)
+          const isNovaGlide = predefinedStrategy.name.toLowerCase().includes('nova');
+          
+          // Check if this is a premium strategy based on package field or specific strategy name
           const isPremium = (predefinedStrategy.package === 'premium' || 
-            predefinedStrategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
+                           predefinedStrategy.isPremium === true || 
+                           isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
@@ -131,21 +146,22 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isZenflow: isZenflow,
             isEvercrest: isEvercrest,
             isSpeedUp: isSpeedUp,
+            isVeloxEdge: isVeloxEdge,
+            isNovaGlide: isNovaGlide,
             package: predefinedStrategy.package,
             hasPremium: hasPremium
           });
           
-          // For premium users, mark Speed Up as paid/accessible
+          // For premium users, mark all premium strategies as accessible
           let isPaid = false;
-          if (isSpeedUp && hasPremium) {
-            console.log(`User has premium, marking Speed Up strategy as paid/accessible`);
+          if (hasPremium && isPremium) {
+            console.log(`User has premium, marking premium strategy ${predefinedStrategy.name} as accessible`);
             isPaid = true;
           }
           
-          // If user has a strategy with paid_status='paid', mark it as accessible
-          // We need to check if the property exists before accessing it
+          // If user has a strategy with paid_status='paid', preserve that status
           if (userStrategy && userStrategy.paid_status === 'paid') {
-            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked`);
+            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked in user data`);
             return { 
               ...predefinedStrategy, 
               ...userStrategy,
@@ -162,13 +178,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
             isPremium: isPremium, // Keep the premium flag
-            isPaid: isPaid  // Set isPaid based on premium status for Speed Up
+            isPaid: isPaid  // Set isPaid based on premium status
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on package
-            isPaid: isPaid  // Set isPaid based on premium status for Speed Up
+            isPaid: isPaid  // Set isPaid based on premium status
           };
         });
         
