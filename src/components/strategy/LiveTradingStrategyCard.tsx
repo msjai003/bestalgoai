@@ -66,6 +66,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     navigate('/pricing');
   };
   
+  console.log(`StrategyCard rendering ${strategy.name}:`, {
+    isPremium,
+    isAccessible,
+    isPaid: strategy.isPaid,
+    hasPremium: strategy.isPaid // If strategy is accessible, user has premium
+  });
+  
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
@@ -173,7 +180,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  {(isPremium && !strategy.isPaid) ? (
+                  {(isPremium && !isAccessible) ? (
                     <Button 
                       variant="outline"
                       size="sm"
@@ -202,7 +209,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   sideOffset={5}
                 >
                   <p className="whitespace-nowrap px-2 py-1">
-                    {(isPremium && !strategy.isPaid) ? 
+                    {(isPremium && !isAccessible) ? 
                       "Unlock premium strategy" : 
                       (strategy.isLive ? "Switch to paper trading" : "Enable live trading")}
                   </p>

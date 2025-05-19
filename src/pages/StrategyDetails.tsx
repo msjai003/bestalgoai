@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -18,8 +17,7 @@ const StrategyDetails = () => {
   const { data: strategies } = usePredefinedStrategies();
   const strategyId = parseInt(id || "0", 10);
   const strategy = strategies?.find((s) => s.id === strategyId);
-  const isPremium = strategyId > 1; // First strategy is free, others are premium
-
+  
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPremium, setHasPremium] = useState(false);
@@ -150,6 +148,7 @@ const StrategyDetails = () => {
         
         if (data && data.length > 0 && data[0].paid_status === 'paid') {
           setIsPaidStrategy(true);
+          console.log(`Strategy ${strategy.id} is individually marked as paid`);
         }
       } catch (error) {
         console.error('Error checking wishlist status:', error);
@@ -164,12 +163,14 @@ const StrategyDetails = () => {
           .from('plan_details')
           .select('*')
           .eq('user_id', user.id)
+          .eq('is_paid', true)
           .order('selected_at', { ascending: false })
           .limit(1)
           .maybeSingle();
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+        if (data && (data.plan_name === 'Premium' || data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
           setHasPremium(true);
+          console.log('User has active premium subscription');
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
@@ -182,13 +183,22 @@ const StrategyDetails = () => {
 
   // Check if user can access this premium strategy
   useEffect(() => {
-    if (isPremium && !hasPremium && !isPaidStrategy && user) {
+    const isPremiumStrategy = strategy && (
+      strategy.package === 'premium' || 
+      strategy.isPremium === true || 
+      strategy.name.toLowerCase().includes('evercrest') || 
+      strategy.name.toLowerCase().includes('nova') || 
+      strategy.name.toLowerCase().includes('velox') || 
+      strategy.name.toLowerCase().includes('speed up')
+    ) && !strategy.name.toLowerCase().includes('zen');
+    
+    if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
       toast({
         title: "Premium Strategy",
         description: "Please upgrade to access this premium strategy",
       });
     }
-  }, [isPremium, hasPremium, isPaidStrategy, user, toast]);
+  }, [strategy, hasPremium, isPaidStrategy, user, toast]);
 
   const handleToggleWishlist = async () => {
     if (!user || !strategy) {
@@ -258,10 +268,34 @@ const StrategyDetails = () => {
     );
   }
 
-  const canAccess = !isPremium || hasPremium || isPaidStrategy;
+  // Determine if this is a premium strategy that requires payment
+  const isPremium = strategy.package === 'premium' || 
+                   strategy.isPremium === true || 
+                   strategy.name.toLowerCase().includes('evercrest') || 
+                   strategy.name.toLowerCase().includes('nova') || 
+                   strategy.name.toLowerCase().includes('velox') || 
+                   strategy.name.toLowerCase().includes('speed up');
+
+  // A strategy is accessible if:
+  // - it's not premium, OR
+  // - the user has premium access (hasPremium), OR
+  // - this specific strategy has been individually paid for (isPaidStrategy)
+  // But Zenflow is always free
+  const isZenflow = strategy.name.toLowerCase().includes('zen');
+  const canAccess = !isPremium || hasPremium || isPaidStrategy || isZenflow;
+
+  console.log(`Strategy Details for ${strategy.name}:`, {
+    isPremium,
+    hasPremium,
+    isPaidStrategy,
+    isZenflow,
+    canAccess
+  });
+  
   const parameterCategories = strategy && strategy.strategy_details 
     ? getStrategyDetailsParams() 
     : getParameterCategories();
+    
   const strategyLegs = getStrategyLegs();
 
   return (
@@ -387,87 +421,31 @@ const StrategyDetails = () => {
                   </div>
                   
                   {activeTab === 'overview' ? (
-                    <>
-                      <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
-                        {showAdvanced ? (
-                          <div className="space-y-4">
-                            <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                              <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
-                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
-                                <li>Moving Average Crossover (EMA 9/21)</li>
-                                <li>Relative Strength Index (RSI)</li>
-                                <li>Volume Profile Analysis</li>
-                              </ul>
-                            </div>
-                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                              <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
-                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
-                                <li>EMA 9 crosses above EMA 21</li>
-                                <li>RSI moves above 50 from below</li>
-                                <li>Volume confirms price movement</li>
-                              </ul>
-                            </div>
-                          </div>
-                        ) : (
+                    <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
+                      {showAdvanced ? (
+                        <div className="space-y-4">
                           <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                        )}
-                      </ScrollArea>
-
-                      {/* Strategy Parameter Details */}
-                      <div className="space-y-6 mb-8">
-                        {parameterCategories.basicSettings?.length > 0 && (
-                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                              <Settings className="h-5 w-5 text-cyan mr-2" />
-                              Basic Settings
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                              {parameterCategories.basicSettings.map((param, index) => (
-                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                                  <p className="text-white font-medium">{param.value}</p>
-                                </div>
-                              ))}
-                            </div>
+                          <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                            <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
+                            <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                              <li>Moving Average Crossover (EMA 9/21)</li>
+                              <li>Relative Strength Index (RSI)</li>
+                              <li>Volume Profile Analysis</li>
+                            </ul>
                           </div>
-                        )}
-                        
-                        {parameterCategories.timeSettings?.length > 0 && (
-                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                              <Clock className="h-5 w-5 text-cyan mr-2" />
-                              Time Settings
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                              {parameterCategories.timeSettings.map((param, index) => (
-                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                                  <p className="text-white font-medium">{param.value}</p>
-                                </div>
-                              ))}
-                            </div>
+                          <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                            <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
+                            <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                              <li>EMA 9 crosses above EMA 21</li>
+                              <li>RSI moves above 50 from below</li>
+                              <li>Volume confirms price movement</li>
+                            </ul>
                           </div>
-                        )}
-                        
-                        {parameterCategories.executionSettings?.length > 0 && (
-                          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                              <Zap className="h-5 w-5 text-cyan mr-2" />
-                              Execution Settings
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                              {parameterCategories.executionSettings.map((param, index) => (
-                                <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-                                  <p className="text-white font-medium">{param.value}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
+                        </div>
+                      ) : (
+                        <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
+                      )}
+                    </ScrollArea>
                   ) : (
                     <div className="mb-8">
                       <div className="space-y-6">
@@ -544,6 +522,62 @@ const StrategyDetails = () => {
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Strategy parameters */}
+                  {activeTab === 'overview' && (
+                    <div className="space-y-6 mb-8">
+                      {parameterCategories.basicSettings?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Settings className="h-5 w-5 text-cyan mr-2" />
+                            Basic Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.basicSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {parameterCategories.timeSettings?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Clock className="h-5 w-5 text-cyan mr-2" />
+                            Time Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.timeSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {parameterCategories.executionSettings?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Zap className="h-5 w-5 text-cyan mr-2" />
+                            Execution Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.executionSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 

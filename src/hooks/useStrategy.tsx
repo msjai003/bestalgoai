@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -97,6 +96,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const checkPremiumStatus = async (userId: string) => {
     const isPremium = await checkUserPremiumStatus(userId);
     setHasPremium(isPremium);
+    console.log("Premium status set to:", isPremium);
   };
 
   const loadStrategies = async () => {
@@ -153,6 +153,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           });
           
           // For premium users, mark all premium strategies as accessible
+          // Only premium strategies need to be marked as paid
           let isPaid = false;
           if (hasPremium && isPremium) {
             console.log(`User has premium, marking premium strategy ${predefinedStrategy.name} as accessible`);
@@ -257,40 +258,38 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Check if this is Speed Up strategy (always premium)
     const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
     
+    // Check if this is Velox Edge strategy (always premium)
+    const isVeloxEdge = strategy.name && strategy.name.toLowerCase().includes('velox');
+    
+    // Check if this is NovaGlide strategy (always premium)
+    const isNovaGlide = strategy.name && strategy.name.toLowerCase().includes('nova');
+    
     // Check if this is a premium strategy
-    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
+    const isPremium = (strategy.package === 'premium' || 
+                     strategy.isPremium === true || 
+                     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && 
+                     !isZenflow;
     
     // A strategy can be accessed if:
     // - it's not premium, OR
     // - the user has premium access (hasPremium) OR
     // - this specific strategy has been paid for (isPaid)
-    // Speed Up is special - it's accessible if user has premium
-    let canAccess = !isPremium || hasPremium || strategy.isPaid === true;
-    
-    // Override for Speed Up - only accessible with premium
-    if (isSpeedUp) {
-      canAccess = hasPremium || strategy.isPaid === true;
-    }
+    const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
     
     console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
       isPremium, 
       hasPremium, 
       isPaid: strategy.isPaid,
       canAccess,
-      isSpeedUp
+      isEvercrest,
+      isSpeedUp,
+      isVeloxEdge,
+      isNovaGlide,
+      isZenflow
     });
     
-    // For Speed Up strategy without premium, always redirect to pricing
-    if (isSpeedUp && !canAccess) {
-      sessionStorage.setItem('selectedStrategyId', id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
-      navigate('/pricing');
-      return;
-    }
-    
-    // For other premium strategies, check if user has access
+    // For premium strategies without access, redirect to pricing
     if (isPremium && !canAccess) {
-      // If it's a premium strategy and user doesn't have access, redirect to pricing
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
