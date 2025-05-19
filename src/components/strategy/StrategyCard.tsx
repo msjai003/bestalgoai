@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,11 +49,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // BUT NOT if it's Zenflow (Zenflow is always free)
   const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
   
-  // A strategy can be accessed if:
-  // - it's not premium, OR
-  // - user has premium, OR 
-  // - the specific strategy has been paid for
-  // IMPORTANT: For Speed Up, we also allow access if the user has a premium subscription
+  // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
+  // Modified to allow Speed Up strategy access when user has premium
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
 
   console.log("Rendering strategy in StrategyCard:", {
@@ -69,8 +67,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     package: strategy.package,
     canAccess,
     isWishlisted: strategy.isWishlisted,
-    hasPremium,
-    isPaid: strategy.isPaid
+    hasPremium
   });
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -97,13 +94,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       return;
     }
     
-    // For Speed Up strategy, if the user has premium access, treat it as accessible
-    if (isSpeedUp && hasPremium) {
-      // Regular flow for premium users with Speed Up
-      onToggleLiveMode(strategy.id);
-      return;
-    }
-    
     // For Speed Up strategy when user doesn't have premium, redirect to pricing page
     if (isSpeedUp && !hasPremium) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
@@ -126,12 +116,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   const handleViewFullStrategy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // For Speed Up strategy, if the user has premium access, allow normal navigation
-    if (isSpeedUp && hasPremium) {
-      navigate(`/strategy-details/${strategy.id}`);
-      return;
-    }
     
     // For Speed Up strategy when user doesn't have premium, redirect to pricing page
     if (isSpeedUp && !hasPremium) {
@@ -217,8 +201,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
           
           {/* Only show locked description for strategies the user can't access */}
-          {/* IMPORTANT: For Speed Up with premium, show the full description */}
-          {(canAccess || (isSpeedUp && hasPremium)) ? (
+          {(canAccess && !(isSpeedUp && !hasPremium)) ? (
             <p className="text-gray-300 text-sm mb-4 line-clamp-2">
               {strategy.description}
             </p>

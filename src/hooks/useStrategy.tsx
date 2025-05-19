@@ -129,7 +129,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             hasPremium: hasPremium
           });
           
-          // IMPORTANT: For premium users, mark Speed Up as paid/accessible
+          // For premium users, mark Speed Up as paid/accessible
           let isPaid = false;
           if (isSpeedUp && hasPremium) {
             console.log(`User has premium, marking Speed Up strategy as paid/accessible`);
@@ -248,9 +248,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Speed Up is special - it's accessible if user has premium
     let canAccess = !isPremium || hasPremium || strategy.isPaid === true;
     
-    // Override for Speed Up - accessible if user has premium
-    if (isSpeedUp && hasPremium) {
-      canAccess = true;
+    // Override for Speed Up - only accessible with premium
+    if (isSpeedUp) {
+      canAccess = hasPremium || strategy.isPaid === true;
     }
     
     console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
@@ -261,17 +261,8 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       isSpeedUp
     });
     
-    // For Speed Up strategy with premium, proceed with normal flow
-    if (isSpeedUp && hasPremium) {
-      // Allow normal flow for Speed Up when user has premium
-      setSelectedStrategyId(id);
-      setTargetMode("live trade");
-      setConfirmDialogOpen(true);
-      return;
-    }
-    
     // For Speed Up strategy without premium, always redirect to pricing
-    if (isSpeedUp && !hasPremium) {
+    if (isSpeedUp && !canAccess) {
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
