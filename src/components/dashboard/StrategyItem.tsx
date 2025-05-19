@@ -22,7 +22,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
   // Check if this is specifically the Apexflow strategy (by name)
-  const isApexflow = strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow');
+  const isApexflow = strategy.name.toLowerCase().includes('apex');
   
   // Check if this is specifically the Zenflow strategy (by name)
   const isZenflow = strategy.name.toLowerCase().includes('zen');
