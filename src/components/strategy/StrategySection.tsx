@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -31,10 +30,14 @@ export const StrategySection = ({
   const navigate = useNavigate();
 
   // Helper function to determine if a strategy is premium based on its package field or isPremium flag
-  // or if it's specifically the Apexflow strategy (by name)
+  // or if it's specifically the Apexflow strategy (by name), but not if it's Zenflow
   const isPremiumStrategy = (strategy: any) => {
     // Special case for Apexflow - always show as premium
     if (strategy.name?.toLowerCase().includes('apex') || strategy.name?.toLowerCase().includes('flow')) {
+      // Special case for Zenflow - always free even though it has "flow" in the name
+      if (strategy.name?.toLowerCase().includes('zen')) {
+        return false;
+      }
       return true;
     }
     return strategy.package === 'premium' || strategy.isPremium === true;
@@ -61,7 +64,7 @@ export const StrategySection = ({
     const strategy = strategies.find(s => s.id === strategyId);
     if (!strategy) return;
     
-    // If it's a premium strategy (including Apexflow) and not paid for, redirect to pricing
+    // If it's a premium strategy (including Apexflow but not Zenflow) and not paid for, redirect to pricing
     const isPremium = isPremiumStrategy(strategy);
     const hasPaidAccess = isPaidStrategy(strategy);
     
@@ -135,7 +138,7 @@ export const StrategySection = ({
                     {(!isPremium || isPaidStrategy(strategy)) && strategy.description && (
                       <p className="text-gray-300 text-sm mt-1">{strategy.description}</p>
                     )}
-                    {/* Show locked message for premium strategies */}
+                    {/* Show premium badge if applicable */}
                     {isPremium && !isPaidStrategy(strategy) && (
                       <p className="text-gray-300 text-sm mt-1">
                         <span className="text-yellow-400">Premium strategy</span> - Upgrade to unlock

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,8 +33,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically the Apexflow strategy (by name)
   const isApexflow = strategy.name && (strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow'));
   
-  // A strategy is premium if it has package='premium' or isPremium flag is true or is Apexflow
-  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
+  // Check if this is specifically the Zenflow strategy (by name)
+  const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
+  
+  // A strategy is premium if it has package='premium' or isPremium flag is true or is Apexflow, but not if it's Zenflow
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
@@ -48,6 +50,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     description: strategy.description,
     isPremium,
     isApexflow,
+    isZenflow,
     package: strategy.package,
     canAccess,
     isWishlisted: strategy.isWishlisted,
@@ -136,13 +139,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                       variant="ghost" 
                       size="icon"
                       onClick={toggleLiveMode}
-                      className={`${!canAccess || isApexflow ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
+                      className={`${!canAccess ? "text-yellow-500 hover:text-yellow-400" : (strategy.isLive ? "text-green-400 hover:text-green-300" : "text-cyan hover:text-cyan/90")} 
                         transition-all duration-300 bg-gray-800/50 border border-gray-700/50 rounded-full h-10 w-10 
                         flex items-center justify-center cursor-pointer hover:bg-gray-700/50 hover:shadow-cyan/20 z-10`}
                       style={{ zIndex: 10 }}
-                      aria-label={!canAccess || isApexflow ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
+                      aria-label={!canAccess ? "Unlock this premium strategy" : strategy.isLive ? "Configure live trading" : "Enable live trading"}
                     >
-                      {!canAccess || isApexflow ? (
+                      {!canAccess ? (
                         <LockIcon size={26} className="cursor-pointer animate-pulse-slow filter drop-shadow-[0_0_3px_rgba(255,193,7,0.7)]" />
                       ) : (
                         strategy.isLive ? 
@@ -152,7 +155,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {!canAccess || isApexflow ? (
+                    {!canAccess ? (
                       <p>Unlock this premium strategy</p>
                     ) : strategy.isLive ? (
                       <p>Configure live trading settings</p>
@@ -165,7 +168,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </div>
           </div>
           
-          {canAccess && !isApexflow ? (
+          {canAccess ? (
             <p className="text-gray-300 text-sm mb-4 line-clamp-2">
               {strategy.description}
             </p>

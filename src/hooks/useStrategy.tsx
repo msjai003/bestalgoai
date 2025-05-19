@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,17 +38,27 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Explicitly convert strategy.id to number if it's a string
           const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
           
-          // A strategy is premium if it has package='premium' or has isPremium flag
-          const isPremium = strategy.package === 'premium' || strategy.isPremium === true;
+          // Check if this is Zenflow strategy (always free)
+          const isZenflow = strategy.name.toLowerCase().includes('zen');
           
-          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}`);
+          // Check if this is Apexflow strategy (always premium)
+          const isApexflow = strategy.name.toLowerCase().includes('apex') || (strategy.name.toLowerCase().includes('flow') && !isZenflow);
+          
+          // A strategy is premium if:
+          // - it has package='premium', OR 
+          // - has isPremium flag, OR
+          // - is Apexflow,
+          // BUT NOT if it's Zenflow (Zenflow is always free)
+          const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
+          
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isZenflow: ${isZenflow}, isApexflow: ${isApexflow}`);
           
           return {
             ...strategy,
             id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on package
+            isPremium: isPremium, // Setting premium flag based on package/name
             isPaid: false
           };
         });
@@ -82,13 +93,23 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           const strategyIdNumber = typeof predefinedStrategy.id === 'string' ? 
             parseInt(predefinedStrategy.id, 10) : predefinedStrategy.id;
           
+          // Check if this is Zenflow strategy (always free)
+          const isZenflow = predefinedStrategy.name.toLowerCase().includes('zen');
+          
+          // Check if this is Apexflow strategy (always premium)
+          const isApexflow = predefinedStrategy.name.toLowerCase().includes('apex') || 
+            (predefinedStrategy.name.toLowerCase().includes('flow') && !isZenflow);
+          
           // Check if this is a premium strategy based on package field
-          const isPremium = predefinedStrategy.package === 'premium' || predefinedStrategy.isPremium === true;
+          const isPremium = (predefinedStrategy.package === 'premium' || 
+            predefinedStrategy.isPremium === true || isApexflow) && !isZenflow;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
             userPaidStatus: userStrategy?.paid_status,
             isPremium: isPremium,
+            isZenflow: isZenflow,
+            isApexflow: isApexflow,
             package: predefinedStrategy.package
           });
           
@@ -181,9 +202,15 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       return;
     }
     
-    // Check if the strategy is premium and not paid
-    const isPremium = strategy.package === 'premium' || strategy.isPremium === true;
-    const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
+    // Check if this is Zenflow strategy (always free)
+    const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
+    
+    // Check if this is a premium strategy
+    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || 
+      (strategy.name && strategy.name.toLowerCase().includes('apex') || 
+       (strategy.name && strategy.name.toLowerCase().includes('flow') && !isZenflow)));
+    
+    const canAccess = !isPremium || hasPremium || strategy.isPaid === true || isZenflow;
     
     if (isPremium && !canAccess) {
       // If it's a premium strategy and user doesn't have access, redirect to pricing

@@ -24,8 +24,15 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // Check if this is specifically the Apexflow strategy (by name)
   const isApexflow = strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow');
   
-  // Update isPremium check to use the package field
-  const isActuallyPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
+  // Check if this is specifically the Zenflow strategy (by name)
+  const isZenflow = strategy.name.toLowerCase().includes('zen');
+  
+  // Update isPremium check:
+  // - Package is 'premium'
+  // - OR isPremium flag is true
+  // - OR it's Apexflow
+  // - BUT NOT if it's Zenflow (Zenflow is free)
+  const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR
@@ -33,7 +40,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
-  // Always show lock icon for Apexflow strategy and other premium strategies
+  // Show lock icon for premium strategies that are not accessible
   const shouldShowLock = isActuallyPremium && !isAccessible;
   
   console.log("Rendering strategy in StrategyItem:", {
@@ -44,13 +51,14 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     description: strategy.description,
     isPremium: isActuallyPremium,
     isApexflow,
+    isZenflow,
     package: strategy.package,
     isAccessible,
     hasPremium,
     shouldShowLock
   });
   
-  // Handle clicks on the strategy - for premium strategies (including Apexflow), show the premium dialog
+  // Handle clicks on the strategy - for premium strategies, show the premium dialog
   const handleStrategyClick = (e: React.MouseEvent) => {
     if (!isAccessible) {
       e.preventDefault();

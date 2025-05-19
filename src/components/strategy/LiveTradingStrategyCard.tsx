@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,9 +22,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Determine the correct button text based on strategy.isLive
   const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
   
-  // Check if this is a premium strategy or specifically Apexflow
+  // Check if this is a premium strategy or specifically Apexflow, but not Zenflow
   const isApexflow = strategy.name && (strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow'));
-  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
+  const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
   
   // When the unlock button is clicked for premium strategies
   const handlePremiumClick = (e: React.MouseEvent) => {
