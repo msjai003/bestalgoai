@@ -54,6 +54,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // BUT NOT if it's Zenflow (Zenflow is always free)
           const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
           
+          // Log the determination for debugging - especially important for Speed Up strategy
           console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isZenflow: ${isZenflow}, isApexflow: ${isApexflow}, isEvercrest: ${isEvercrest}`);
           
           return {

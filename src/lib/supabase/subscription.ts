@@ -119,3 +119,44 @@ export const syncWishlistMaintain = async (
     throw error;
   }
 };
+
+// Add a function to mark a specific strategy as paid/unlocked for a user
+export const markStrategyAsPaid = async (userId: string, strategyId: number): Promise<boolean> => {
+  try {
+    console.log(`Marking strategy ${strategyId} as paid for user ${userId}`);
+    
+    // Get strategy details first
+    const { data: strategyData, error: strategyError } = await supabase
+      .from('predefined_strategies')
+      .select('name, description')
+      .eq('id', strategyId)
+      .single();
+      
+    if (strategyError || !strategyData) {
+      console.error("Error fetching strategy details:", strategyError);
+      return false;
+    }
+    
+    // Update the strategy_selections table to mark this specific strategy as paid
+    const { error: updateError } = await supabase.rpc(
+      'force_strategy_paid_status',
+      { 
+        p_user_id: userId, 
+        p_strategy_id: strategyId,
+        p_strategy_name: strategyData.name,
+        p_strategy_description: strategyData.description || ''
+      }
+    );
+    
+    if (updateError) {
+      console.error("Error marking strategy as paid:", updateError);
+      return false;
+    }
+    
+    console.log(`Strategy ${strategyId} successfully marked as paid for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error("Error in markStrategyAsPaid:", error);
+    return false;
+  }
+};
