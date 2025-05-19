@@ -49,11 +49,12 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  // Modified to handle Speed Up strategy
-  const isAccessible = (!isActuallyPremium || hasPremium || strategy.isPaid);
+  // Modified to always consider Speed Up accessible when user has premium
+  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
   // Show lock icon for premium strategies that are not accessible
-  const shouldShowLock = (isActuallyPremium && !isAccessible) || (isSpeedUp && !hasPremium);
+  // IMPORTANT: Don't show lock for Speed Up when user has premium
+  const shouldShowLock = (isActuallyPremium && !isAccessible) && !(isSpeedUp && hasPremium);
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
@@ -74,10 +75,16 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   
   // Handle clicks on the strategy - for premium strategies or Speed Up (when not premium), show the premium dialog
   const handleStrategyClick = (e: React.MouseEvent) => {
+    // For Speed Up, when user has premium, always allow access
+    if (isSpeedUp && hasPremium) {
+      // Allow regular navigation
+      return;
+    }
+    
     if (!isAccessible || (isSpeedUp && !hasPremium)) {
       e.preventDefault();
       
-      // For Speed Up when user doesn't have premium, directly navigate to pricing
+      // For Speed Up strategy when user doesn't have premium, directly navigate to pricing
       if (isSpeedUp && !hasPremium) {
         sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
         sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
@@ -106,6 +113,11 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
 
   // Handle view details click separately to control redirection for Speed Up
   const handleViewDetailsClick = (e: React.MouseEvent) => {
+    // For Speed Up, when user has premium, always allow normal navigation
+    if (isSpeedUp && hasPremium) {
+      return;
+    }
+    
     if (isSpeedUp && !hasPremium) {
       e.preventDefault();
       e.stopPropagation();
@@ -149,7 +161,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
           </div>
           <span 
             className="text-cyan text-xs cursor-pointer" 
-            onClick={isSpeedUp && !hasPremium ? handleViewDetailsClick : undefined}
+            onClick={handleViewDetailsClick}
           >
             View Details
           </span>

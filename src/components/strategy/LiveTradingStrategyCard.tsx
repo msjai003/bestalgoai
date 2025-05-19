@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +45,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // - it's not premium, OR
   // - the user has premium access (checked by isPaid flag), OR
   // - this specific strategy has been paid for
+  // IMPORTANT: For Speed Up, we need to check if the strategy has isPaid=true (which means user has premium)
   const isAccessible = !isPremium || strategy.isPaid === true;
   
   // When the unlock button is clicked for premium or Speed Up strategies
