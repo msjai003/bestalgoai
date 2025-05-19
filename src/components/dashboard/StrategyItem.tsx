@@ -24,9 +24,6 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // Always convert ID to number for comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
-  // Check if this is specifically the Apexflow strategy (by name)
-  const isApexflow = strategy.name.toLowerCase().includes('apex');
-  
   // Check if this is specifically the Evercrest strategy (by name)
   const isEvercrest = strategy.name.toLowerCase().includes('evercrest');
   
@@ -39,11 +36,10 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // Update isPremium check:
   // - Package is 'premium'
   // - OR isPremium flag is true
-  // - OR it's Apexflow
   // - OR it's Evercrest
   // - OR it's Speed Up
   // - BUT NOT if it's Zenflow (Zenflow is free)
-  const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
+  const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR
@@ -62,7 +58,6 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     name: strategy.name,
     description: strategy.description,
     isPremium: isActuallyPremium,
-    isApexflow,
     isEvercrest,
     isZenflow,
     isSpeedUp,

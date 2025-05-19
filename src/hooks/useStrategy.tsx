@@ -24,26 +24,31 @@ export const useStrategy = (predefinedStrategies: any[]) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // When predefinedStrategies are loaded or change, update our state
+    // Filter out Apexflow strategies before setting them
     if (predefinedStrategies.length > 0) {
       console.log("Received predefined strategies in useStrategy:", predefinedStrategies);
+      
+      // Filter out Apexflow strategies
+      const filteredStrategies = predefinedStrategies.filter(
+        strategy => !strategy.name || !strategy.name.toLowerCase().includes('apex')
+      );
+      
       setStrategies(prevStrategies => {
         // If we already have strategies loaded with user settings, don't override them
         if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
           console.log("Preserving existing strategies with user settings");
-          return prevStrategies;
+          return prevStrategies.filter(strategy => 
+            !strategy.name || !strategy.name.toLowerCase().includes('apex')
+          );
         }
         
         console.log("Creating new strategies with defaults");
-        return predefinedStrategies.map(strategy => {
+        return filteredStrategies.map(strategy => {
           // Explicitly convert strategy.id to number if it's a string
           const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
           
           // Check if this is Zenflow strategy (always free)
           const isZenflow = strategy.name.toLowerCase().includes('zen');
-          
-          // Check if this is Apexflow strategy (always premium)
-          const isApexflow = strategy.name.toLowerCase().includes('apex');
           
           // Check if this is Evercrest strategy (always premium)
           const isEvercrest = strategy.name.toLowerCase().includes('evercrest');
@@ -51,15 +56,15 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // A strategy is premium if:
           // - it has package='premium', OR 
           // - has isPremium flag, OR
-          // - is Apexflow OR Evercrest,
+          // - is Evercrest,
           // BUT NOT if it's Zenflow (Zenflow is always free)
-          const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+          const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest) && !isZenflow;
           
           // Force Speed Up to be premium regardless of other settings
           const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
           const finalIsPremium = isPremium || isSpeedUp;
           
-          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${finalIsPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isApexflow: ${isApexflow}, isEvercrest: ${isEvercrest}`);
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${finalIsPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isEvercrest: ${isEvercrest}`);
           
           return {
             ...strategy,
@@ -93,8 +98,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       const userStrategies = await loadUserStrategies(user.id);
       
       setStrategies(prevStrategies => {
+        // Filter out Apexflow strategies from predefinedStrategies
+        const filteredPredefinedStrategies = predefinedStrategies.filter(
+          strategy => !strategy.name || !strategy.name.toLowerCase().includes('apex')
+        );
+        
         // Merge predefined strategies with user-specific configurations
-        const mergedStrategies = predefinedStrategies.map(predefinedStrategy => {
+        const mergedStrategies = filteredPredefinedStrategies.map(predefinedStrategy => {
           const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
           
           // Explicitly convert strategy ID to number if needed
@@ -104,9 +114,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Check if this is Zenflow strategy (always free)
           const isZenflow = predefinedStrategy.name.toLowerCase().includes('zen');
           
-          // Check if this is Apexflow strategy (always premium)
-          const isApexflow = predefinedStrategy.name.toLowerCase().includes('apex');
-          
           // Check if this is Evercrest strategy (always premium)
           const isEvercrest = predefinedStrategy.name.toLowerCase().includes('evercrest');
           
@@ -115,14 +122,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           // Check if this is a premium strategy based on package field
           const isPremium = (predefinedStrategy.package === 'premium' || 
-            predefinedStrategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
+            predefinedStrategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
             userPaidStatus: userStrategy?.paid_status,
             isPremium: isPremium,
             isZenflow: isZenflow,
-            isApexflow: isApexflow,
             isEvercrest: isEvercrest,
             isSpeedUp: isSpeedUp,
             package: predefinedStrategy.package,
@@ -229,9 +235,6 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Check if this is Zenflow strategy (always free)
     const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
     
-    // Check if this is Apexflow strategy (always premium)
-    const isApexflow = strategy.name && strategy.name.toLowerCase().includes('apex');
-    
     // Check if this is Evercrest strategy (always premium)
     const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
     
@@ -239,7 +242,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
     
     // Check if this is a premium strategy
-    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
+    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
     
     // A strategy can be accessed if:
     // - it's not premium, OR

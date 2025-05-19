@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,8 +26,8 @@ export const useCustomStrategies = () => {
         if (error) throw error;
 
         const formattedStrategies: Strategy[] = data
-          // Filter out any Evercrest-related strategies
-          .filter(strategy => !strategy.name.includes("Evercrest"))
+          // Filter out any Evercrest-related or Apex-related strategies
+          .filter(strategy => !strategy.name.includes("Evercrest") && !strategy.name.includes("Apex"))
           .map(strategy => {
             // Extract performance data safely with type checking
             let winRate = "N/A";

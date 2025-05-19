@@ -31,16 +31,14 @@ export const StrategySection = ({
   const navigate = useNavigate();
 
   // Helper function to determine if a strategy is premium based on its package field or isPremium flag
-  // or if it's specifically the Apexflow or Evercrest strategy (by name), but not if it's Zenflow
+  // or if it's specifically the Evercrest strategy (by name), but not if it's Zenflow
   const isPremiumStrategy = (strategy: any) => {
-    // Special case for Apexflow - always show as premium
-    const isApexflow = strategy.name?.toLowerCase().includes('apex');
     // Special case for Evercrest - always show as premium
     const isEvercrest = strategy.name?.toLowerCase().includes('evercrest');
     // Special case for Zenflow - always free even though it has "flow" in the name
     const isZenflow = strategy.name?.toLowerCase().includes('zen');
     
-    return (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+    return (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest) && !isZenflow;
   };
 
   // Helper to check if a premium strategy has been paid for
@@ -64,7 +62,7 @@ export const StrategySection = ({
     const strategy = strategies.find(s => s.id === strategyId);
     if (!strategy) return;
     
-    // If it's a premium strategy (including Apexflow and Evercrest but not Zenflow) and not paid for, redirect to pricing
+    // If it's a premium strategy (including Evercrest but not Zenflow) and not paid for, redirect to pricing
     const isPremium = isPremiumStrategy(strategy);
     const hasPaidAccess = isPaidStrategy(strategy);
     
@@ -122,17 +120,14 @@ export const StrategySection = ({
           </div>
         ) : (
           strategies.map((strategy) => {
-            // Check if this is Apexflow strategy (always premium)
-            const isApexflow = strategy.name?.toLowerCase().includes('apex');
-            
             // Check if this is Evercrest strategy (always premium)
             const isEvercrest = strategy.name?.toLowerCase().includes('evercrest');
             
             // Check if this is Zenflow strategy (always free)
             const isZenflow = strategy.name?.toLowerCase().includes('zen');
             
-            // Check if this is a premium strategy using the package field or if it's Apexflow or Evercrest
-            const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+            // Check if this is a premium strategy using the package field or if it's Evercrest
+            const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest) && !isZenflow;
             
             // Check if user has access to this premium strategy
             const canAccess = !isPremium || isPaidStrategy(strategy);

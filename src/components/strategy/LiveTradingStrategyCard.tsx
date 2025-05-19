@@ -26,9 +26,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Determine the correct button text based on strategy.isLive
   const buttonText = strategy.isLive ? "Switch to Paper" : "Enable Live";
   
-  // Check if this is specifically Apexflow (always premium)
-  const isApexflow = strategy.name && strategy.name.toLowerCase().includes('apex');
-  
   // Check if this is specifically Evercrest (always premium)
   const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
   
@@ -38,9 +35,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically Speed Up (always premium)
   const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
   
-  // A strategy is premium if it's specifically Apexflow, Evercrest, Speed Up, has premium package or has the premium flag
+  // A strategy is premium if it's specifically Evercrest, Speed Up, has premium package or has the premium flag
   // But not if it's Zenflow
-  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isEvercrest || isSpeedUp) && !isZenflow;
   
   // A strategy is accessible if:
   // - it's not premium, OR

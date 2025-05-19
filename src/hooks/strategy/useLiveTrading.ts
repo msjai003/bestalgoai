@@ -36,13 +36,18 @@ export const useLiveTrading = () => {
       try {
         const userStrategies = await loadUserStrategies(user.id);
         
-        // Filter out any strategies with "Evercrest" in their name
+        // Filter out any strategies with "Evercrest" or "Apex" in their name
         const filteredCustomStrategies = customStrategies.filter(
-          strategy => !strategy.name.includes("Evercrest")
+          strategy => !strategy.name.includes("Evercrest") && !strategy.name.includes("Apex")
+        );
+        
+        // Also filter out Apexflow from user strategies
+        const filteredUserStrategies = userStrategies.filter(
+          strategy => !strategy.name.includes("Apex")
         );
         
         setStrategies(prev => {
-          const combinedStrategies = [...userStrategies, ...filteredCustomStrategies];
+          const combinedStrategies = [...filteredUserStrategies, ...filteredCustomStrategies];
           
           if (selectedMode !== "all") {
             return combinedStrategies.filter(strategy => 
