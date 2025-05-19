@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -99,52 +100,97 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // For Premium plan, unlock all strategies
-      if (planName === 'Premium') {
+      // Special handling for premium strategies, particularly Apexflow
+      // Check if it's either a Premium plan or a specific strategy purchase (Apexflow)
+      const isApexflowStrategy = selectedStrategyName?.toLowerCase().includes('apex') || 
+                               selectedStrategyName?.toLowerCase().includes('flow');
+      
+      if (planName === 'Premium' || isApexflowStrategy) {
         try {
-          // Fetch all predefined strategies
-          const { data: strategies, error: strategiesError } = await supabase
-            .from('predefined_strategies')
-            .select('id, name, description');
-            
-          if (strategiesError) throw strategiesError;
-          
-          // Mark all strategies as paid without affecting wishlist status
-          if (strategies && strategies.length > 0) {
-            for (const strategy of strategies) {
-              // Check if strategy already exists for this user
-              const { data: existingStrategy, error: checkError } = await supabase
-                .from('strategy_selections')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('strategy_id', strategy.id)
-                .maybeSingle();
-                
-              if (checkError) throw checkError;
+          // For Premium plan, unlock all strategies
+          if (planName === 'Premium') {
+            // Fetch all predefined strategies
+            const { data: strategies, error: strategiesError } = await supabase
+              .from('predefined_strategies')
+              .select('id, name, description');
               
-              if (existingStrategy) {
-                // Update existing strategy to paid status without changing wishlist status
-                await supabase
+            if (strategiesError) throw strategiesError;
+            
+            // Mark all strategies as paid without affecting wishlist status
+            if (strategies && strategies.length > 0) {
+              for (const strategy of strategies) {
+                // Check if strategy already exists for this user
+                const { data: existingStrategy, error: checkError } = await supabase
                   .from('strategy_selections')
-                  .update({ 
-                    paid_status: 'paid',
-                    strategy_name: strategy.name,
-                    strategy_description: strategy.description || "Premium strategy"
-                  })
-                  .eq('id', existingStrategy.id);
-              } else {
-                // Insert new strategy entry with paid status but explicitly not wishlisted
-                await supabase
-                  .from('strategy_selections')
-                  .insert({
-                    user_id: user.id,
-                    strategy_id: strategy.id,
-                    strategy_name: strategy.name,
-                    strategy_description: strategy.description || "Premium strategy unlocked with subscription",
-                    paid_status: 'paid',
-                    is_wishlisted: false // Explicitly not wishlisted by default
-                  });
+                  .select('*')
+                  .eq('user_id', user.id)
+                  .eq('strategy_id', strategy.id)
+                  .maybeSingle();
+                  
+                if (checkError) throw checkError;
+                
+                if (existingStrategy) {
+                  // Update existing strategy to paid status without changing wishlist status
+                  await supabase
+                    .from('strategy_selections')
+                    .update({ 
+                      paid_status: 'paid',
+                      strategy_name: strategy.name,
+                      strategy_description: strategy.description || "Premium strategy"
+                    })
+                    .eq('id', existingStrategy.id);
+                } else {
+                  // Insert new strategy entry with paid status but explicitly not wishlisted
+                  await supabase
+                    .from('strategy_selections')
+                    .insert({
+                      user_id: user.id,
+                      strategy_id: strategy.id,
+                      strategy_name: strategy.name,
+                      strategy_description: strategy.description || "Premium strategy unlocked with subscription",
+                      paid_status: 'paid',
+                      is_wishlisted: false // Explicitly not wishlisted by default
+                    });
+                }
               }
+            }
+          } 
+          // For specific Apexflow strategy purchase
+          else if (selectedStrategyId && isApexflowStrategy) {
+            // Check if the strategy already exists in the user's selections
+            const { data: existingStrategy, error: queryError } = await supabase
+              .from('strategy_selections')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('strategy_id', selectedStrategyId)
+              .maybeSingle();
+              
+            if (queryError) {
+              throw queryError;
+            }
+            
+            // If the strategy exists, update its paid status without changing wishlist status
+            if (existingStrategy) {
+              await supabase
+                .from('strategy_selections')
+                .update({ 
+                  paid_status: 'paid',
+                  strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+                  strategy_description: "Premium strategy unlocked with payment"
+                })
+                .eq('id', existingStrategy.id);
+            } else {
+              // If the strategy doesn't exist, create a new entry with paid status
+              await supabase
+                .from('strategy_selections')
+                .insert({
+                  user_id: user.id,
+                  strategy_id: selectedStrategyId,
+                  strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
+                  strategy_description: "Premium strategy unlocked with payment",
+                  paid_status: 'paid',
+                  is_wishlisted: false
+                });
             }
           }
         } catch (error) {
@@ -157,8 +203,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         // You could implement specific logic for Pro plan here
         // E.g., mark only specific strategy IDs as paid
       }
-      // If a specific strategy was selected, mark it as paid
-      else if (selectedStrategyId) {
+      // If a specific strategy was selected that's not Apexflow
+      else if (selectedStrategyId && !isApexflowStrategy) {
         // First check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
