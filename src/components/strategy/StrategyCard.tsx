@@ -34,12 +34,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically the Apexflow strategy (by name)
   const isApexflow = strategy.name && strategy.name.toLowerCase().includes('apex');
   
+  // Check if this is specifically the Evercrest strategy (by name)
+  const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
+  
   // Check if this is specifically the Zenflow strategy (by name)
   const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
   
-  // A strategy is premium if it has package='premium' or isPremium flag is true or is Apexflow
+  // A strategy is premium if it has package='premium' or isPremium flag is true or is Apexflow or Evercrest
   // Zenflow is not premium even though it has "flow" in the name
-  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow) && !isZenflow;
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
@@ -52,6 +55,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     description: strategy.description,
     isPremium,
     isApexflow,
+    isEvercrest,
     isZenflow,
     package: strategy.package,
     canAccess,
