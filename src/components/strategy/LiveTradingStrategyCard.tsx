@@ -27,6 +27,14 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   const isApexflow = strategy.name && (strategy.name.toLowerCase().includes('apex') || strategy.name.toLowerCase().includes('flow'));
   const isPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow;
   
+  // When the unlock button is clicked for premium strategies
+  const handlePremiumClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Still call the parent's onToggleLiveMode which will handle the premium upgrade flow
+    onToggleLiveMode();
+  };
+  
   return (
     <div className="premium-card p-5 relative z-10 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan/10">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan/10 to-cyan/5 rounded-full -mr-16 -mt-16 blur-3xl z-0"></div>
@@ -138,7 +146,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     <Button 
                       variant="outline"
                       size="sm"
-                      onClick={onToggleLiveMode}
+                      onClick={handlePremiumClick}
                       className="min-w-[90px] bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-opacity-30 cursor-pointer flex items-center justify-center gap-1 px-3"
                     >
                       <Lock className="h-3.5 w-3.5 cursor-pointer pointer-events-auto" />

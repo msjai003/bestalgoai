@@ -33,8 +33,8 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
-  // Always show lock icon for Apexflow strategy
-  const shouldShowLock = (isActuallyPremium && !isAccessible) || isApexflow;
+  // Always show lock icon for Apexflow strategy and other premium strategies
+  const shouldShowLock = isActuallyPremium && !isAccessible;
   
   console.log("Rendering strategy in StrategyItem:", {
     id: strategy.id,
@@ -50,14 +50,19 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     shouldShowLock
   });
   
+  // Handle clicks on the strategy - for premium strategies (including Apexflow), show the premium dialog
+  const handleStrategyClick = (e: React.MouseEvent) => {
+    if (!isAccessible) {
+      e.preventDefault();
+      onPremiumClick();
+    }
+  };
+  
   return (
     <Link 
       to={`/strategy-details/${strategy.id}`}
       className="block mb-3"
-      onClick={!isAccessible ? (e) => {
-        e.preventDefault();
-        onPremiumClick();
-      } : undefined}
+      onClick={handleStrategyClick}
     >
       <div className="bg-charcoalSecondary rounded-xl p-4 border border-gray-800/40 hover:border-cyan/30 transition-all">
         <div className="flex justify-between items-center mb-2">

@@ -78,6 +78,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       return;
     }
     
+    // If it's premium and user doesn't have access, redirect to pricing page regardless of strategy type
     if (!canAccess) {
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');

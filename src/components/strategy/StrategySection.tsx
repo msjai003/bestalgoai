@@ -56,7 +56,20 @@ export const StrategySection = ({
   
   const handleToggleLiveMode = (strategyId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // Stop event from propagating
-    onToggleLiveMode(strategyId);
+    
+    // Get the strategy
+    const strategy = strategies.find(s => s.id === strategyId);
+    if (!strategy) return;
+    
+    // If it's a premium strategy (including Apexflow) and not paid for, redirect to pricing
+    const isPremium = isPremiumStrategy(strategy);
+    const hasPaidAccess = isPaidStrategy(strategy);
+    
+    if (isPremium && !hasPaidAccess) {
+      handlePremiumClick(strategyId, e);
+    } else {
+      onToggleLiveMode(strategyId);
+    }
   };
   
   const handleDeleteStrategy = (strategyId: number, e: React.MouseEvent) => {
