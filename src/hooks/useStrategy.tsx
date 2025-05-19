@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -54,15 +53,18 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // BUT NOT if it's Zenflow (Zenflow is always free)
           const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
           
-          // Log the determination for debugging - especially important for Speed Up strategy
-          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isZenflow: ${isZenflow}, isApexflow: ${isApexflow}, isEvercrest: ${isEvercrest}`);
+          // Force Speed Up to be premium regardless of other settings
+          const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
+          const finalIsPremium = isPremium || isSpeedUp;
+          
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${finalIsPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isApexflow: ${isApexflow}, isEvercrest: ${isEvercrest}`);
           
           return {
             ...strategy,
             id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
-            isPremium: isPremium, // Setting premium flag based on package/name
+            isPremium: finalIsPremium, // Setting premium flag based on all conditions
             isPaid: false
           };
         });
@@ -218,10 +220,21 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     // Check if this is Evercrest strategy (always premium)
     const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
     
+    // Check if this is Speed Up strategy (always premium)
+    const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
+    
     // Check if this is a premium strategy
-    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+    const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
     
     const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
+    
+    console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
+      isPremium, 
+      hasPremium, 
+      isPaid: strategy.isPaid,
+      canAccess,
+      isSpeedUp
+    });
     
     if (isPremium && !canAccess) {
       // If it's a premium strategy and user doesn't have access, redirect to pricing

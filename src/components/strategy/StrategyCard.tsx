@@ -8,7 +8,6 @@ import { HeartIcon, PlayIcon, StopCircleIcon, LockIcon, Eye } from "lucide-react
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 
 interface StrategyCardProps {
   strategy: Strategy;
@@ -40,12 +39,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically the Zenflow strategy (by name)
   const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
   
+  // Check if this is specifically the Speed Up strategy (by name)
+  const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
+  
   // A strategy is premium if:
   // - it has package='premium', OR 
   // - isPremium flag is true, OR
-  // - is Apexflow OR Evercrest,
+  // - is Apexflow OR Evercrest OR Speed Up,
   // BUT NOT if it's Zenflow (Zenflow is always free)
-  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest || isSpeedUp) && !isZenflow;
   
   // A strategy can be accessed if it's not premium, or user has premium, or the specific strategy has been paid for
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
@@ -60,6 +62,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     isApexflow,
     isEvercrest,
     isZenflow,
+    isSpeedUp,
     package: strategy.package,
     canAccess,
     isWishlisted: strategy.isWishlisted,
