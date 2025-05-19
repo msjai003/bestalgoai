@@ -29,8 +29,12 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Check if this is specifically Evercrest (always premium)
   const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
   
-  // A strategy is premium if it's specifically Apexflow, Evercrest or has the premium flag
-  const isPremium = strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest;
+  // Check if this is specifically Zenflow (always free)
+  const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
+  
+  // A strategy is premium if it's specifically Apexflow, Evercrest, has premium package or has the premium flag
+  // But not if it's Zenflow
+  const isPremium = (strategy.package === 'premium' || strategy.isPremium === true || isApexflow || isEvercrest) && !isZenflow;
   
   // When the unlock button is clicked for premium strategies
   const handlePremiumClick = (e: React.MouseEvent) => {
