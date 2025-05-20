@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -199,6 +198,9 @@ const StrategyDetails = () => {
 
   // Check if user can access this premium strategy
   useEffect(() => {
+    // Skip showing the toast until we've checked for access
+    if (!user || !strategy) return;
+    
     const isPremiumStrategy = strategy && (
       strategy.package === 'premium' || 
       strategy.package === 'Premium' ||
@@ -208,6 +210,16 @@ const StrategyDetails = () => {
       strategy.name.toLowerCase().includes('speed up')
     ) && !strategy.name.toLowerCase().includes('zen');
     
+    console.log('Access check for strategy details:', {
+      strategyId: strategy.id,
+      strategyName: strategy.name,
+      isPremiumStrategy,
+      hasPremium,
+      isPaidStrategy,
+      shouldShowToast: isPremiumStrategy && !hasPremium && !isPaidStrategy
+    });
+    
+    // Only show the upgrade toast if it's a premium strategy that the user doesn't have access to
     if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
       toast({
         description: "Please upgrade to access this premium strategy",
