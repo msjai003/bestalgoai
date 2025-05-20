@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -197,7 +198,6 @@ const StrategyDetails = () => {
   }, [user, strategy]);
 
   // Check if user can access this premium strategy
-  // MODIFIED: Removed the toast notification in this useEffect
   useEffect(() => {
     const isPremiumStrategy = strategy && (
       strategy.package === 'premium' || 
@@ -208,9 +208,12 @@ const StrategyDetails = () => {
       strategy.name.toLowerCase().includes('speed up')
     ) && !strategy.name.toLowerCase().includes('zen');
     
-    // Removed the toast notification that was here
-    // We'll let the canAccess variable handle the UI state instead
-  }, [strategy, hasPremium, isPaidStrategy, user]);
+    if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
+      toast({
+        description: "Please upgrade to access this premium strategy",
+      });
+    }
+  }, [strategy, hasPremium, isPaidStrategy, user, toast]);
 
   const handleToggleWishlist = async () => {
     if (!user || !strategy) {
