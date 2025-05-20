@@ -78,16 +78,19 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
     }
     
     // Check if a valid subscription exists - only Premium, Pro, or Elite plans grant universal access
+    // We specifically exclude plans that contain "Strategy" in the name as those are for specific strategies
     const hasPremium = planData && 
                       planData.length > 0 && 
                       (planData[0].plan_name === 'Premium' || 
                        planData[0].plan_name === 'Pro' || 
-                       planData[0].plan_name === 'Elite');
+                       planData[0].plan_name === 'Elite') &&
+                      !planData[0].plan_name.includes('Strategy'); // Added this check to exclude strategy-specific plans
     
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
-      hasPremium
+      hasPremium,
+      hasStrategyInName: planData?.[0]?.plan_name.includes('Strategy')
     });
     
     return !!hasPremium;
@@ -174,22 +177,17 @@ export const checkStrategyAccess = async (
     
     // If any plan entry references this strategy, grant access
     const hasSpecificAccess = planData && planData.some(plan => {
-      // Check if plan name includes this specific strategy ID
-      const planNameIncludesStrategy = 
-        plan.plan_name.includes(`Strategy ${strategyIdStr}`) || 
-        plan.plan_name.toLowerCase().includes(`strategy ${strategyIdStr}`) ||
-        plan.plan_name.toLowerCase().includes('sample');
-      
-      // Also check if this plan is specifically for this strategy
-      const hasStrategyIdInPlan = plan.plan_name.includes(`- Strategy ${strategyIdStr}`);
+      // Check if plan name explicitly includes this specific strategy ID
+      const hasStrategyIdInPlan = 
+        plan.plan_name.includes(`- Strategy ${strategyIdStr}`) || 
+        plan.plan_name.includes(`Strategy ${strategyIdStr}`);
       
       console.log(`Plan check for ${plan.plan_name}:`, {
         strategyIdStr,
-        planNameIncludesStrategy,
         hasStrategyIdInPlan
       });
       
-      return planNameIncludesStrategy || hasStrategyIdInPlan;
+      return hasStrategyIdInPlan;
     });
     
     console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);

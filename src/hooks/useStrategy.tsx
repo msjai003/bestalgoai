@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -142,22 +141,23 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                           predefinedStrategy.isPremium === true || 
                           isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
           
-          // Check for individual strategy access - we'll only mark specific paid strategies as accessible
-          // rather than universally unlocking all premium strategies
-          let isPaid = userStrategy && userStrategy.paid_status === 'paid';
-          
-          // We need to check if this specific strategy is accessible
-          // We'll do this asynchronously and update the state when we know the result
+          // Initially set isPaid to false, we'll check individual strategy access below
+          let isPaid = false;
+
+          // Check for individual strategy access more explicitly
           if (user) {
             // Check each strategy individually for access
             checkStrategyAccess(user.id, strategyIdNumber).then(hasAccess => {
               if (hasAccess) {
+                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is accessible`);
                 // If we have access, update the strategy to mark it as paid
                 setStrategies(currentStrategies => 
                   currentStrategies.map(s => 
                     s.id === strategyIdNumber ? { ...s, isPaid: true } : s
                   )
                 );
+              } else {
+                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is NOT accessible`);
               }
             });
           }
@@ -168,7 +168,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isPremium: isPremium,
             isZenflow: isZenflow,
             isEvercrest: isEvercrest,
-            isSpeedUp: isSpeedUp,
+            isSpeedUp: isSpeedUp, 
             isVeloxEdge: isVeloxEdge,
             isNovaGlide: isNovaGlide,
             package: predefinedStrategy.package,
@@ -176,11 +176,11 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isPaid: isPaid
           });
           
-          // If user has premium access from plan_details, mark all premium strategies as accessible
+          // Only set strategies as accessible if:
+          // 1. User has general premium access AND the strategy is premium OR
+          // 2. This specific strategy has been paid for
           let finalIsPaid = isPaid;
           
-          // User has premium access if hasPremium is true, but don't mark all strategies as paid
-          // Only if they actually have premium subscription or this specific strategy is paid for
           if (hasPremium && isPremium) {
             console.log(`User has premium plan, marking premium strategy ${predefinedStrategy.name} as accessible`);
             finalIsPaid = true;
@@ -192,13 +192,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
             isPremium: isPremium, // Keep the premium flag
-            isPaid: finalIsPaid  // Set isPaid based on combination of specific strategy payment and premium status
+            isPaid: finalIsPaid  // Set isPaid based on premium status
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on package
-            isPaid: finalIsPaid  // Set isPaid based on premium status
+            isPaid: finalIsPaid  // Initial value that will be updated by checkStrategyAccess
           };
         });
         
