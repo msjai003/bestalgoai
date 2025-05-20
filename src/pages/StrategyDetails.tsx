@@ -198,7 +198,7 @@ const StrategyDetails = () => {
 
   // Check if user can access this premium strategy
   useEffect(() => {
-    // Skip showing the toast until we've checked for access
+    // Skip showing the toast until we've checked for access and ensure we have necessary data
     if (!user || !strategy) return;
     
     const isPremiumStrategy = strategy && (
@@ -219,13 +219,9 @@ const StrategyDetails = () => {
       shouldShowToast: isPremiumStrategy && !hasPremium && !isPaidStrategy
     });
     
-    // Only show the upgrade toast if it's a premium strategy that the user doesn't have access to
-    if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
-      toast({
-        description: "Please upgrade to access this premium strategy",
-      });
-    }
-  }, [strategy, hasPremium, isPaidStrategy, user, toast]);
+    // We'll intentionally NOT show any toast message here
+    // The UI will automatically handle showing locked/unlocked content based on isPremium state
+  }, [strategy, hasPremium, isPaidStrategy, user]);
 
   const handleToggleWishlist = async () => {
     if (!user || !strategy) {
