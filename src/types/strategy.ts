@@ -50,4 +50,3 @@ export interface PredefinedStrategy {
   isPremium?: boolean;
   strategy_details?: any;
 }
-

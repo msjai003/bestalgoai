@@ -188,11 +188,11 @@ const StrategyDetails = () => {
     const isPremiumStrategy = strategy && (
       strategy.package === 'premium' || 
       strategy.isPremium === true || 
-      strategy.name.toLowerCase().includes('evercrest') || 
-      strategy.name.toLowerCase().includes('nova') || 
-      strategy.name.toLowerCase().includes('velox') || 
-      strategy.name.toLowerCase().includes('speed up')
-    ) && !strategy.name.toLowerCase().includes('zen');
+      strategy.name?.toLowerCase().includes('evercrest') || 
+      strategy.name?.toLowerCase().includes('nova') || 
+      strategy.name?.toLowerCase().includes('velox') || 
+      strategy.name?.toLowerCase().includes('speed up')
+    ) && !strategy.name?.toLowerCase().includes('zen');
     
     if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
       toast({
@@ -273,17 +273,17 @@ const StrategyDetails = () => {
   // Determine if this is a premium strategy that requires payment
   const isPremium = strategy.package === 'premium' || 
                    strategy.isPremium === true || 
-                   strategy.name.toLowerCase().includes('evercrest') || 
-                   strategy.name.toLowerCase().includes('nova') || 
-                   strategy.name.toLowerCase().includes('velox') || 
-                   strategy.name.toLowerCase().includes('speed up');
+                   strategy.name?.toLowerCase().includes('evercrest') || 
+                   strategy.name?.toLowerCase().includes('nova') || 
+                   strategy.name?.toLowerCase().includes('velox') || 
+                   strategy.name?.toLowerCase().includes('speed up');
 
   // A strategy is accessible if:
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been individually paid for (isPaidStrategy)
   // But Zenflow is always free
-  const isZenflow = strategy?.name.toLowerCase().includes('zen');
+  const isZenflow = strategy?.name?.toLowerCase().includes('zen');
   const canAccess = !isPremium || hasPremium || isPaidStrategy || isZenflow;
 
   console.log(`Strategy Details for ${strategy.name}:`, {
