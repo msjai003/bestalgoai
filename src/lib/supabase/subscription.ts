@@ -77,7 +77,8 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
       return false;
     }
     
-    // Check if a valid subscription exists - only Premium, Pro, or Elite plans grant universal access
+    // Check if a valid premium subscription exists
+    // Premium, Pro, or Elite plans grant universal access to all premium strategies
     // We specifically exclude plans that contain "Strategy" in the name as those are for specific strategies
     const hasPremium = planData && 
                       planData.length > 0 && 

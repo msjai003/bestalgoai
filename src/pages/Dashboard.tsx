@@ -11,7 +11,7 @@ import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import StrategiesSection from "@/components/dashboard/StrategiesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
-import { syncPremiumAccess } from "@/lib/supabase/subscription";
+import { syncPremiumAccess, checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -83,27 +83,18 @@ const Dashboard = () => {
     
     const checkPremium = async () => {
       try {
-        const { data, error } = await supabase
-          .from('plan_details')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('selected_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // Using the improved checkUserPremiumStatus function to check premium status
+        const isPremium = await checkUserPremiumStatus(user.id);
+        setHasPremium(isPremium);
+        
+        // If the user has premium, sync their access to unlock strategies
+        if (isPremium && !isSyncingPremium) {
+          setIsSyncingPremium(true);
+          const syncResult = await syncPremiumAccess(user.id, true);
+          setIsSyncingPremium(false);
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.plan_name === 'Premium')) {
-          setHasPremium(true);
-          
-          // If the user has premium, sync their access to unlock strategies
-          if (!isSyncingPremium && data.is_paid === true) {
-            setIsSyncingPremium(true);
-            // Make sure we include both required parameters
-            const syncResult = await syncPremiumAccess(user.id, true);
-            setIsSyncingPremium(false);
-            
-            if (syncResult) {
-              console.log("Premium access synced successfully");
-            }
+          if (syncResult) {
+            console.log("Premium access synced successfully");
           }
         }
       } catch (error) {

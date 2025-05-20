@@ -109,28 +109,33 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
+      // If user purchased the Premium plan, unlock all premium strategies
+      if (planName === 'Premium' || planName === 'Pro' || planName === 'Elite') {
+        console.log(`${planName} plan purchased - access to all premium strategies granted`);
+        await syncPremiumAccess(user.id, true);
+        toast({
+          title: "Payment successful",
+          description: `Your ${planName} plan is now active! All premium strategies are unlocked.`,
+          variant: "default"
+        });
+      }
       // If a specific strategy ID was selected, unlock only that strategy
-      if (selectedStrategyId) {
+      else if (selectedStrategyId) {
         console.log(`Unlocking specific strategy with ID: ${selectedStrategyId}`);
         
         // Store selected strategy ID in session storage to help with navigation after payment
         sessionStorage.setItem('selectedStrategyId', String(selectedStrategyId));
         
         await syncPremiumAccess(user.id, false, selectedStrategyId);
-      } 
-      // If user bought Premium plan, unlock all premium strategies
-      else if (planName === 'Premium') {
-        console.log("Premium plan purchased - access to all strategies granted");
-        await syncPremiumAccess(user.id, true);
+        
+        toast({
+          title: "Payment successful",
+          description: selectedStrategyName
+            ? `You've unlocked ${selectedStrategyName}!`
+            : `Strategy has been unlocked successfully!`,
+          variant: "default"
+        });
       }
-      
-      toast({
-        title: "Payment successful",
-        description: selectedStrategyName
-          ? `You've unlocked ${selectedStrategyName}!`
-          : `Your ${planName} plan is now active!`,
-        variant: "default"
-      });
       
       onSuccess();
       
