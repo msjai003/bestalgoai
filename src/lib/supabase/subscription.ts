@@ -78,19 +78,16 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
     
     // Check if a valid premium subscription exists
     // Premium, Pro, or Elite plans grant universal access to all premium strategies
-    // We specifically exclude plans that contain "Strategy" in the name as those are for specific strategies
     const hasPremium = planData && 
                       planData.length > 0 && 
                       (planData[0].plan_name === 'Premium' || 
                        planData[0].plan_name === 'Pro' || 
-                       planData[0].plan_name === 'Elite') &&
-                      !planData[0].plan_name.includes('Strategy'); // Added this check to exclude strategy-specific plans
+                       planData[0].plan_name === 'Elite');
     
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
-      hasPremium,
-      hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
+      hasPremium
     });
     
     return !!hasPremium;
@@ -154,7 +151,7 @@ export const checkStrategyAccess = async (
     const hasPremium = await checkUserPremiumStatus(userId);
     
     if (hasPremium) {
-      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
+      console.log(`User ${userId} has premium access to all strategies including ${strategyId}`);
       return true;
     }
     
