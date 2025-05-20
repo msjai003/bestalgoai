@@ -124,9 +124,11 @@ export const syncPremiumAccess = async (
       return true;
     }
     
-    // Standard premium subscription logic for plan-based premium access
-    // We no longer need to query strategy_selections for paid strategies
-    // as we're only using plan_details for access management
+    // For premium plans, if premiumStatus is true, all premium strategies should be accessible
+    if (premiumStatus) {
+      console.log(`User ${userId} has premium access to all strategies`);
+    }
+    
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
@@ -147,7 +149,7 @@ export const checkStrategyAccess = async (
   try {
     console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
     
-    // Check if the user has premium status, which grants access to all premium strategies
+    // First check if the user has premium status, which grants access to ALL premium strategies
     const hasPremium = await checkUserPremiumStatus(userId);
     
     if (hasPremium) {

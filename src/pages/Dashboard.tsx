@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -82,12 +83,15 @@ const Dashboard = () => {
     
     const checkPremium = async () => {
       try {
+        setIsSyncingPremium(true);
         // Using the improved checkUserPremiumStatus function to check premium status
         const isPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(isPremium);
         console.log("Dashboard - Premium status set to:", isPremium);
+        setIsSyncingPremium(false);
       } catch (error) {
         console.error('Error checking premium status:', error);
+        setIsSyncingPremium(false);
       }
     };
     
@@ -126,6 +130,15 @@ const Dashboard = () => {
             onPremiumClick={handlePremiumClick}
             showSignupPromo={!user}
           />
+        )}
+
+        {isSyncingPremium && (
+          <div className="fixed bottom-20 left-0 right-0 flex justify-center">
+            <div className="bg-charcoalSecondary px-4 py-2 rounded-full shadow-md text-xs text-cyan flex items-center">
+              <Loader className="h-3 w-3 animate-spin mr-2" />
+              Checking premium status...
+            </div>
+          </div>
         )}
       </main>
       <BottomNav />

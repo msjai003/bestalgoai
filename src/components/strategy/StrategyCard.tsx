@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
   // Determine if user has access to this strategy
+  // If user has premium access (hasPremium), they can access ALL premium strategies
   const hasAccess = !isPremium || hasPremium || strategy.isPaid;
 
   return (

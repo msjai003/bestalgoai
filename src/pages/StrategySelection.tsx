@@ -13,13 +13,22 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { Strategy } from "@/hooks/strategy/types";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   // Always set predefined as the selected tab and make sure it doesn't change
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
-  const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
+  const { data: predefinedStrategiesData, isLoading: isLoadingStrategies } = usePredefinedStrategies();
+  
+  // Convert PredefinedStrategy[] to Strategy[] to fix type error
+  const predefinedStrategies: Strategy[] = predefinedStrategiesData ? 
+    predefinedStrategiesData.map(strategy => ({
+      ...strategy,
+      isWishlisted: false,
+      isLive: false
+    })) : [];
   
   const {
     strategies,
@@ -41,7 +50,7 @@ const StrategySelection = () => {
     handleBrokerSubmit,
     handleCancelBroker,
     hasPremium
-  } = useStrategy(predefinedStrategies || []);
+  } = useStrategy(predefinedStrategies);
 
   // Force the selectedTab to always be "predefined"
   useEffect(() => {
@@ -71,6 +80,12 @@ const StrategySelection = () => {
                   <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-yellow-900/20 to-yellow-700/10 p-2 pl-3 rounded-lg border border-yellow-700/30">
                     <Sparkles className="h-4 w-4 text-yellow-400 flex-shrink-0" />
                     <p className="text-xs text-yellow-300">Upgrade to unlock premium strategies with advanced features</p>
+                  </div>
+                )}
+                {hasPremium && (
+                  <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-emerald-900/20 to-emerald-700/10 p-2 pl-3 rounded-lg border border-emerald-700/30">
+                    <Sparkles className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                    <p className="text-xs text-emerald-300">Premium account: All strategies are unlocked!</p>
                   </div>
                 )}
               </div>

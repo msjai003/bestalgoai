@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,7 +45,12 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
       try {
         if (!user) {
           // If user is not logged in, just return the predefined strategies without access checks
-          setStrategies(predefinedStrategies);
+          setStrategies(predefinedStrategies.map(strategy => ({
+            ...strategy,
+            isWishlisted: false,
+            isLive: false,
+            tradeMode: 'paper trade'
+          })));
           setIsLoading(false);
           return;
         }
@@ -63,6 +69,7 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
         // First check if the user has premium status
         const userHasPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(userHasPremium);
+        console.log("User has premium:", userHasPremium);
         
         // Map over predefined strategies to add access information
         const enhancedStrategies = await Promise.all(
@@ -90,11 +97,13 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
             // Access check for premium strategies
             if (strategy.package === 'premium' || strategy.isPremium) {
               if (userHasPremium) {
-                // User has premium subscription, grant access
+                // User has premium subscription, grant access to all premium strategies
                 hasAccess = true;
+                console.log(`User has premium subscription, granted access to strategy ${strategy.id}`);
               } else {
                 // Check if this specific strategy is paid for
                 hasAccess = await checkStrategyAccess(user.id, Number(strategy.id));
+                console.log(`Strategy ${strategy.id} specific access check: ${hasAccess}`);
               }
             } else {
               // Free strategies are always accessible
@@ -106,12 +115,14 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
               isWishlisted,
               tradeMode: selectionData?.trade_type || 'paper trade',
               isPaid: hasAccess, // Mark strategy as paid if the user has a valid paid access
-              isLive: selectionData?.trade_type === 'live trade'
+              isLive: selectionData?.trade_type === 'live trade',
+              quantity: selectionData?.quantity || 0
             };
           })
         );
         
         setStrategies(enhancedStrategies);
+        console.log("Enhanced strategies:", enhancedStrategies);
       } catch (error) {
         console.error('Error loading strategies with access:', error);
         toast({
@@ -191,7 +202,7 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
       return;
     }
     
-    const strategy = strategies.find(s => s.id === strategyId);
+    const strategy = strategies.find(s => Number(s.id) === strategyId);
     
     if (!strategy) {
       console.error(`Strategy with ID ${strategyId} not found`);
@@ -200,6 +211,7 @@ export const useStrategy = (predefinedStrategies: Strategy[]) => {
     
     // If the strategy is premium and user doesn't have premium or specific paid access
     const isPremium = strategy.package === 'premium' || strategy.isPremium;
+    // Critical check: if the user has premium subscription, they should have access to all premium strategies
     if (isPremium && !hasPremium && !strategy.isPaid) {
       toast({
         title: "Premium Strategy",
