@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -118,62 +117,15 @@ export const syncPremiumAccess = async (
 
     // If we're dealing with a specific strategy unlock
     if (specificStrategyId) {
-      // Only mark the specific strategy as paid, not applying full premium access
-      const { error: updateError } = await supabase
-        .from('strategy_selections')
-        .update({ paid_status: 'paid' })
-        .eq('user_id', userId)
-        .eq('strategy_id', specificStrategyId);
-        
-      if (updateError) {
-        console.error(`Error updating paid status for strategy ${specificStrategyId}:`, updateError);
-        return false;
-      }
-      
-      console.log(`Successfully updated paid status for strategy ${specificStrategyId}`);
+      // We don't need to do anything with the strategy_selections table anymore
+      // The plan_details entry is sufficient to grant access
+      console.log(`Strategy ${specificStrategyId} access is now managed through plan_details`);
       return true;
     }
     
-    // Standard premium subscription logic (unchanged)
-    // First, determine which strategies were previously paid for
-    const { data: paidStrategies, error: queryError } = await supabase
-      .from('strategy_selections')
-      .select('strategy_id, strategy_name, strategy_description')
-      .eq('user_id', userId)
-      .eq('paid_status', 'paid');
-
-    if (queryError) {
-      console.error('Error querying paid strategies:', queryError);
-      throw queryError;
-    }
-    
-    // If we're upgrading to premium, we don't need to do anything with individual
-    // strategy payments since premium access covers all strategies
-    if (premiumStatus) {
-      console.log('User upgraded to premium, no need to modify individual strategy payments');
-      return true;
-    }
-
-    // If we're downgrading from premium, we need to ensure previously individually
-    // paid strategies remain accessible
-    if (paidStrategies && paidStrategies.length > 0) {
-      console.log(`Found ${paidStrategies.length} individually paid strategies to preserve`);
-      
-      // For each previously paid strategy, ensure it remains marked as paid
-      for (const strategy of paidStrategies) {
-        const { error: updateError } = await supabase
-          .from('strategy_selections')
-          .update({ paid_status: 'paid' })
-          .eq('user_id', userId)
-          .eq('strategy_id', strategy.strategy_id);
-          
-        if (updateError) {
-          console.error(`Error preserving paid status for strategy ${strategy.strategy_id}:`, updateError);
-          // Continue with other strategies even if one fails
-        }
-      }
-    }
-    
+    // Standard premium subscription logic for plan-based premium access
+    // We no longer need to query strategy_selections for paid strategies
+    // as we're only using plan_details for access management
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
@@ -194,30 +146,40 @@ export const checkStrategyAccess = async (
   try {
     console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
     
-    // Check if the user has specifically paid for this strategy
-    const { data: strategyData, error: strategyError } = await supabase
-      .from('strategy_selections')
-      .select('paid_status')
-      .eq('user_id', userId)
-      .eq('strategy_id', strategyId)
-      .maybeSingle();
-      
-    if (strategyError) {
-      console.error('Error checking strategy access:', strategyError);
-      return false;
-    }
+    // Check if the user has premium status, which grants access to all premium strategies
+    const hasPremium = await checkUserPremiumStatus(userId);
     
-    // If the user has specifically paid for this strategy, grant access
-    if (strategyData && strategyData.paid_status === 'paid') {
-      console.log(`User ${userId} has individual access to strategy ${strategyId}`);
+    if (hasPremium) {
+      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
       return true;
     }
     
-    // Check if the user has premium status, which grants access to all premium strategies
-    const hasPremium = await checkUserPremiumStatus(userId);
-    console.log(`User ${userId} premium status: ${hasPremium}`);
+    // If the user doesn't have premium access, check if they specifically purchased this strategy
+    // by looking at the plan_details table with a strategy_id reference
+    const { data: planData, error: planError } = await supabase
+      .from('plan_details')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_paid', true)
+      .order('selected_at', { ascending: false });
+      
+    if (planError) {
+      console.error('Error checking specific strategy access:', planError);
+      return false;
+    }
     
-    return hasPremium;
+    // If any plan entry exists with a strategy included in its name or description, 
+    // or this is the specific strategyId, grant access
+    const hasSpecificAccess = planData && planData.some(plan => {
+      // Convert both to string for comparison since strategyId might be a number
+      return plan.plan_name.includes(`Strategy ${strategyId}`) || 
+             plan.plan_price.includes(`Strategy ${strategyId}`) ||
+             sessionStorage.getItem('selectedStrategyId') === String(strategyId);
+    });
+    
+    console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);
+    
+    return !!hasSpecificAccess;
   } catch (error) {
     console.error('Error checking strategy access:', error);
     return false;

@@ -143,7 +143,22 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           // Check for individual strategy access - we'll only mark specific paid strategies as accessible
           // rather than universally unlocking all premium strategies
-          const isPaid = userStrategy && userStrategy.paid_status === 'paid';
+          let isPaid = userStrategy && userStrategy.paid_status === 'paid';
+          
+          if (!isPaid && user) {
+            // If not already marked as paid, check if this specific strategy is accessible
+            // We'll do this asynchronously and update the state when we know the result
+            checkStrategyAccess(user.id, predefinedStrategy.id).then(hasAccess => {
+              if (hasAccess && !isPaid) {
+                // If we have access but it's not marked as paid yet, update the strategy
+                setStrategies(currentStrategies => 
+                  currentStrategies.map(s => 
+                    s.id === predefinedStrategy.id ? { ...s, isPaid: true } : s
+                  )
+                );
+              }
+            });
+          }
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -102,47 +101,12 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       }
       
       // If a specific strategy ID was selected, unlock only that strategy
+      // by calling syncPremiumAccess with the specificStrategyId
       if (selectedStrategyId) {
         console.log(`Unlocking specific strategy with ID: ${selectedStrategyId}`);
         
-        // Check if the strategy already exists in the user's selections
-        const { data: existingStrategy, error: queryError } = await supabase
-          .from('strategy_selections')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('strategy_id', selectedStrategyId)
-          .maybeSingle();
-          
-        if (queryError) {
-          throw queryError;
-        }
-        
-        // If the strategy exists, update its paid status without changing wishlist status
-        if (existingStrategy) {
-          await supabase
-            .from('strategy_selections')
-            .update({ 
-              paid_status: 'paid',
-              strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-              strategy_description: selectedStrategyName ? `You have unlocked ${selectedStrategyName}` : "Premium strategy unlocked with payment"
-            })
-            .eq('id', existingStrategy.id);
-        } else {
-          // If the strategy doesn't exist, create a new entry with paid status but explicitly not wishlisted
-          await supabase
-            .from('strategy_selections')
-            .insert({
-              user_id: user.id,
-              strategy_id: selectedStrategyId,
-              strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-              strategy_description: selectedStrategyName ? `You have unlocked ${selectedStrategyName}` : "Premium strategy unlocked with payment",
-              paid_status: 'paid',
-              is_wishlisted: false // Explicitly not wishlisted by default
-            });
-        }
-        
-        // Call syncPremiumAccess with the specificStrategyId and set premiumStatus to false
-        // This ensures ONLY this strategy is marked as paid and premium access is NOT granted
+        // We no longer need to check or update strategy_selections
+        // Just call syncPremiumAccess with the specificStrategyId
         await syncPremiumAccess(user.id, false, selectedStrategyId);
       } 
       // If user bought Premium plan, unlock all premium strategies

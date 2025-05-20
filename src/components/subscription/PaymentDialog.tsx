@@ -9,6 +9,7 @@ import { initializeRazorpayPayment, convertPriceToAmount } from "@/utils/razorpa
 import { useToast } from "@/hooks/use-toast";
 import { useFileManagement } from "@/hooks/useFileManagement";
 import { supabase } from "@/lib/supabase";
+import { syncPremiumAccess } from "@/lib/supabase/subscription";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -158,39 +159,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   .eq('id', planDetails.id);
               }
               
-              // Mark the specific strategy as paid in strategy_selections
-              if (selectedStrategyId) {
-                // Check if there's an existing selection
-                const { data: strategyData, error: strategyError } = await supabase
-                  .from('strategy_selections')
-                  .select('*')
-                  .eq('user_id', user.id)
-                  .eq('strategy_id', selectedStrategyId)
-                  .maybeSingle();
+              // For specific strategy unlocks, we don't need to store anything in strategy_selections
+              // We'll just mark the plan as paid in plan_details and let checkStrategyAccess handle access
 
-                if (!strategyError && !strategyData) {
-                  // Insert new record
-                  await supabase
-                    .from('strategy_selections')
-                    .insert({
-                      user_id: user.id,
-                      strategy_id: selectedStrategyId,
-                      strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-                      paid_status: 'paid'
-                    });
-                } else if (!strategyError) {
-                  // Update existing strategy selection
-                  await supabase
-                    .from('strategy_selections')
-                    .update({ paid_status: 'paid' })
-                    .eq('user_id', user.id)
-                    .eq('strategy_id', selectedStrategyId);
-                }
-                
-                // Call syncPremiumAccess with specificStrategyId parameter
-                // The false parameter ensures we don't grant universal premium access
-                await syncPremiumAccess(user.id, false, selectedStrategyId);
-              }
+              // Call syncPremiumAccess with specificStrategyId parameter
+              // The false parameter ensures we don't grant universal premium access
+              await syncPremiumAccess(user.id, false, selectedStrategyId);
 
               toast({
                 title: "Payment successful",
