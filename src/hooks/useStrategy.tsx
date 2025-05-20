@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +7,7 @@ import {
   updateStrategyLiveConfig,
   updateStrategyTradeType
 } from "@/hooks/strategy/useStrategyDatabase";
-import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
+import { checkUserPremiumStatus, checkStrategyAccess } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { useNavigate } from "react-router-dom";
 
@@ -93,12 +94,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
     }
   }, [user]);
 
+  // Check if the user has general premium access
   const checkPremiumStatus = async (userId: string) => {
     const isPremium = await checkUserPremiumStatus(userId);
     setHasPremium(isPremium);
     console.log("Premium status set to:", isPremium);
   };
 
+  // Load all user strategies
   const loadStrategies = async () => {
     if (!user) return;
     setIsLoading(true);
@@ -139,6 +142,10 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                            predefinedStrategy.isPremium === true || 
                            isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
           
+          // Check for individual strategy access - we'll only mark specific paid strategies as accessible
+          // rather than universally unlocking all premium strategies
+          const isPaid = userStrategy && userStrategy.paid_status === 'paid';
+          
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
             hasUserStrategy: !!userStrategy,
             userPaidStatus: userStrategy?.paid_status,
@@ -149,28 +156,15 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isVeloxEdge: isVeloxEdge,
             isNovaGlide: isNovaGlide,
             package: predefinedStrategy.package,
-            hasPremium: hasPremium
+            hasPremium: hasPremium,
+            isPaid: isPaid
           });
           
-          // For premium users, mark all premium strategies as accessible
-          // Only premium strategies need to be marked as paid
-          let isPaid = false;
+          // If user has premium access from plan_details, mark all premium strategies as accessible
+          let finalIsPaid = isPaid;
           if (hasPremium && isPremium) {
-            console.log(`User has premium, marking premium strategy ${predefinedStrategy.name} as accessible`);
-            isPaid = true;
-          }
-          
-          // If user has a strategy with paid_status='paid', preserve that status
-          if (userStrategy && userStrategy.paid_status === 'paid') {
-            console.log(`Strategy ${predefinedStrategy.id} is marked as paid/unlocked in user data`);
-            return { 
-              ...predefinedStrategy, 
-              ...userStrategy,
-              name: predefinedStrategy.name, // Ensure we keep the original name
-              description: predefinedStrategy.description, // Ensure we keep the original description
-              isPremium: isPremium, // Keep the premium flag
-              isPaid: true  // Mark as paid/unlocked
-            };
+            console.log(`User has premium plan, marking premium strategy ${predefinedStrategy.name} as accessible`);
+            finalIsPaid = true;
           }
           
           return userStrategy ? {
@@ -179,13 +173,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
             isPremium: isPremium, // Keep the premium flag
-            isPaid: isPaid  // Set isPaid based on premium status
+            isPaid: finalIsPaid  // Set isPaid based on combination of specific strategy payment and premium status
           } : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on package
-            isPaid: isPaid  // Set isPaid based on premium status
+            isPaid: finalIsPaid  // Set isPaid based on premium status
           };
         });
         
@@ -270,11 +264,26 @@ export const useStrategy = (predefinedStrategies: any[]) => {
                      isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && 
                      !isZenflow;
     
-    // A strategy can be accessed if:
-    // - it's not premium, OR
-    // - the user has premium access (hasPremium) OR
-    // - this specific strategy has been paid for (isPaid)
-    const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
+    // Check if user has access to this specific strategy
+    let canAccess = false;
+    
+    if (user) {
+      // If not premium, always accessible
+      if (!isPremium) {
+        canAccess = true;
+      } 
+      // If premium, check individual strategy access
+      else {
+        // Check if the user has individual access to this strategy
+        const hasAccess = await checkStrategyAccess(user.id, id);
+        if (hasAccess) {
+          canAccess = true;
+        } else {
+          // If no individual access, check if user has premium plan
+          canAccess = hasPremium;
+        }
+      }
+    }
     
     console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
       isPremium, 
@@ -288,7 +297,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       isZenflow
     });
     
-    // For premium strategies without access, redirect to pricing
+    // For premium strategies without access, redirect to pricing with this strategy ID
     if (isPremium && !canAccess) {
       sessionStorage.setItem('selectedStrategyId', id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/live-trading');

@@ -100,112 +100,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // Special handling for premium strategies, particularly Apexflow
-      // Check if it's either a Premium plan or a specific strategy purchase (Apexflow)
-      const isApexflowStrategy = selectedStrategyName?.toLowerCase().includes('apex') || 
-                               selectedStrategyName?.toLowerCase().includes('flow');
-      
-      if (planName === 'Premium' || isApexflowStrategy) {
-        try {
-          // For Premium plan, unlock all strategies
-          if (planName === 'Premium') {
-            // Fetch all predefined strategies
-            const { data: strategies, error: strategiesError } = await supabase
-              .from('predefined_strategies')
-              .select('id, name, description');
-              
-            if (strategiesError) throw strategiesError;
-            
-            // Mark all strategies as paid without affecting wishlist status
-            if (strategies && strategies.length > 0) {
-              for (const strategy of strategies) {
-                // Check if strategy already exists for this user
-                const { data: existingStrategy, error: checkError } = await supabase
-                  .from('strategy_selections')
-                  .select('*')
-                  .eq('user_id', user.id)
-                  .eq('strategy_id', strategy.id)
-                  .maybeSingle();
-                  
-                if (checkError) throw checkError;
-                
-                if (existingStrategy) {
-                  // Update existing strategy to paid status without changing wishlist status
-                  await supabase
-                    .from('strategy_selections')
-                    .update({ 
-                      paid_status: 'paid',
-                      strategy_name: strategy.name,
-                      strategy_description: strategy.description || "Premium strategy"
-                    })
-                    .eq('id', existingStrategy.id);
-                } else {
-                  // Insert new strategy entry with paid status but explicitly not wishlisted
-                  await supabase
-                    .from('strategy_selections')
-                    .insert({
-                      user_id: user.id,
-                      strategy_id: strategy.id,
-                      strategy_name: strategy.name,
-                      strategy_description: strategy.description || "Premium strategy unlocked with subscription",
-                      paid_status: 'paid',
-                      is_wishlisted: false // Explicitly not wishlisted by default
-                    });
-                }
-              }
-            }
-          } 
-          // For specific Apexflow strategy purchase
-          else if (selectedStrategyId && isApexflowStrategy) {
-            // Check if the strategy already exists in the user's selections
-            const { data: existingStrategy, error: queryError } = await supabase
-              .from('strategy_selections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('strategy_id', selectedStrategyId)
-              .maybeSingle();
-              
-            if (queryError) {
-              throw queryError;
-            }
-            
-            // If the strategy exists, update its paid status without changing wishlist status
-            if (existingStrategy) {
-              await supabase
-                .from('strategy_selections')
-                .update({ 
-                  paid_status: 'paid',
-                  strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-                  strategy_description: "Premium strategy unlocked with payment"
-                })
-                .eq('id', existingStrategy.id);
-            } else {
-              // If the strategy doesn't exist, create a new entry with paid status
-              await supabase
-                .from('strategy_selections')
-                .insert({
-                  user_id: user.id,
-                  strategy_id: selectedStrategyId,
-                  strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-                  strategy_description: "Premium strategy unlocked with payment",
-                  paid_status: 'paid',
-                  is_wishlisted: false
-                });
-            }
-          }
-        } catch (error) {
-          console.error("Error marking strategies as paid:", error);
-          // Continue with payment - not blocking
-        }
-      } 
-      // For Pro, mark only select strategies as paid (if needed)
-      else if (planName === 'Pro') {
-        // You could implement specific logic for Pro plan here
-        // E.g., mark only specific strategy IDs as paid
-      }
-      // If a specific strategy was selected that's not Apexflow
-      else if (selectedStrategyId && !isApexflowStrategy) {
-        // First check if the strategy already exists in the user's selections
+      // If a specific strategy ID was selected, unlock only that strategy
+      if (selectedStrategyId) {
+        console.log(`Unlocking specific strategy with ID: ${selectedStrategyId}`);
+        
+        // Check if the strategy already exists in the user's selections
         const { data: existingStrategy, error: queryError } = await supabase
           .from('strategy_selections')
           .select('*')
@@ -224,7 +123,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
             .update({ 
               paid_status: 'paid',
               strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-              strategy_description: "Premium strategy unlocked with subscription"
+              strategy_description: selectedStrategyName ? `You have unlocked ${selectedStrategyName}` : "Premium strategy unlocked with payment"
             })
             .eq('id', existingStrategy.id);
         } else {
@@ -235,11 +134,16 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
               user_id: user.id,
               strategy_id: selectedStrategyId,
               strategy_name: selectedStrategyName || `Strategy ${selectedStrategyId}`,
-              strategy_description: "Premium strategy unlocked with subscription",
+              strategy_description: selectedStrategyName ? `You have unlocked ${selectedStrategyName}` : "Premium strategy unlocked with payment",
               paid_status: 'paid',
               is_wishlisted: false // Explicitly not wishlisted by default
             });
         }
+      } 
+      // If user bought Premium plan, unlock all premium strategies
+      else if (planName === 'Premium') {
+        // No changes to the implementation of Premium plan purchase
+        console.log("Premium plan purchased - access to all strategies granted through plan_details");
       }
       
       // Remove the selected strategy ID from session storage
@@ -247,17 +151,15 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       
       toast({
         title: "Payment successful",
-        description: planName === 'Premium' 
-          ? "You've unlocked all premium strategies!" 
-          : (selectedStrategyName
-              ? `You've unlocked ${selectedStrategyName}!`
-              : `Your ${planName} plan is now active!`),
+        description: selectedStrategyName
+          ? `You've unlocked ${selectedStrategyName}!`
+          : `Your ${planName} plan is now active!`,
         variant: "default"
       });
       
       onSuccess();
       
-      // Redirect to live-trading page if we came from there
+      // Redirect to the appropriate page after payment
       const redirectPath = sessionStorage.getItem('redirectAfterPayment');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterPayment');

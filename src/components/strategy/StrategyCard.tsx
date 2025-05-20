@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // Explicitly convert strategy.id to a number to ensure proper comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
   
-  // Check if this is specifically the Apexflow strategy (by name)
-  const isApexflow = strategy.name && strategy.name.toLowerCase().includes('apex');
-  
   // Check if this is specifically the Evercrest strategy (by name)
   const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
   
@@ -50,15 +48,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   // A strategy is premium if:
   // - it has package='premium', OR 
   // - isPremium flag is true, OR
-  // - is Apexflow OR Evercrest OR Speed Up OR Velox Edge OR NovaGlide,
+  // - is Evercrest OR Speed Up OR Velox Edge OR NovaGlide,
   // BUT NOT if it's Zenflow (Zenflow is always free)
   const isPremium = (strategy.package === 'premium' || 
     strategy.isPremium === true || 
-    isApexflow || isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
+    isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
   // A strategy can be accessed if:
   // - it's not premium, OR
-  // - the user has premium access (hasPremium), OR
+  // - the user has premium access (hasPremium) from a plan, OR
   // - this specific strategy has been paid for (isPaid)
   const canAccess = !isPremium || hasPremium || strategy.isPaid === true;
 
@@ -69,7 +67,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     name: strategy.name,
     description: strategy.description,
     isPremium,
-    isApexflow,
     isEvercrest,
     isZenflow,
     isSpeedUp,
@@ -78,7 +75,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     package: strategy.package,
     canAccess,
     isWishlisted: strategy.isWishlisted,
-    hasPremium
+    hasPremium,
+    isPaid: strategy.isPaid
   });
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -107,8 +105,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     
     // For premium strategies when user doesn't have access, redirect to pricing page
     if (isPremium && !canAccess) {
+      console.log("Strategy requires premium access, redirecting to pricing", {
+        strategyId: strategy.id,
+        strategyName: strategy.name
+      });
+      
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
       navigate('/pricing');
       return;
     }
@@ -122,6 +125,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     
     // For premium strategies when user doesn't have access, redirect to pricing page
     if (isPremium && !canAccess) {
+      console.log("Strategy requires premium access, redirecting to pricing", {
+        strategyId: strategy.id,
+        strategyName: strategy.name
+      });
+      
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
       sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
       navigate('/pricing');

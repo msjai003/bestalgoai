@@ -1,5 +1,5 @@
 
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Check if a user has premium access

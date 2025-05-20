@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -114,17 +115,23 @@ const PricingPage = () => {
     const strategyId = sessionStorage.getItem('selectedStrategyId');
     if (strategyId) {
       setSelectedStrategyId(strategyId);
-      sessionStorage.removeItem('selectedStrategyId');
+      console.log("Retrieved strategy ID from session storage:", strategyId);
+    } else {
+      console.log("No strategy ID found in session storage");
     }
   }, []);
 
   useEffect(() => {
     if (selectedStrategyId && predefinedStrategies) {
+      const parsedId = parseInt(selectedStrategyId, 10);
       const strategy = predefinedStrategies.find(
-        s => s.id === parseInt(selectedStrategyId, 10)
+        s => s.id === parsedId
       );
       if (strategy) {
         setSelectedStrategyName(strategy.name);
+        console.log("Found strategy name:", strategy.name);
+      } else {
+        console.log("Strategy not found for ID:", selectedStrategyId);
       }
     }
   }, [selectedStrategyId, predefinedStrategies]);
@@ -142,8 +149,9 @@ const PricingPage = () => {
           .limit(1)
           .maybeSingle();
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Premium')) {
+        if (data && data.is_paid && (data.plan_name === 'Pro' || data.plan_name === 'Premium')) {
           setHasPremium(true);
+          console.log("User has premium status:", data);
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
@@ -177,6 +185,7 @@ const PricingPage = () => {
 
     setSelectedPlan({ name: planName, price: planPrice });
     setPaymentDialogOpen(true);
+    console.log("Opening payment dialog for plan:", planName, "with selected strategy:", selectedStrategyName);
   };
 
   const handlePaymentSuccess = () => {
@@ -187,7 +196,7 @@ const PricingPage = () => {
     if (selectedStrategyName) {
       toast({
         title: "Strategy Unlocked!",
-        description: `You now have access to ${selectedStrategyName} and all premium strategies.`,
+        description: `You now have access to ${selectedStrategyName}.`,
         variant: "default",
       });
       
@@ -200,8 +209,16 @@ const PricingPage = () => {
         }
         return;
       }
+    } else {
+      // If it was a regular plan purchase without a specific strategy
+      toast({
+        title: "Payment Successful!",
+        description: `You now have access to premium features.`,
+        variant: "default",
+      });
     }
     
+    // Default redirect to subscription page if no specific redirect is specified
     navigate('/subscription');
   };
 
@@ -214,7 +231,7 @@ const PricingPage = () => {
             <div className="bg-gradient-to-r from-accentPink/20 to-accentPurple/20 rounded-xl p-3 border border-accentPink/30">
               <h2 className="text-base font-medium mb-1">Unlock Premium Strategy</h2>
               <p className="text-textSecondary text-sm">
-                Subscribe to unlock <span className="text-accentPink font-semibold">{selectedStrategyName}</span> and all other premium strategies.
+                Subscribe to unlock <span className="text-accentPink font-semibold">{selectedStrategyName}</span> strategy.
               </p>
             </div>
           </section>
