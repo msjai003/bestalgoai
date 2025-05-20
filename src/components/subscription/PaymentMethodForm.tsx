@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -86,12 +87,20 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Store the actual plan details provided in the props
+      // Create the plan name string that includes the strategy ID if applicable
+      let fullPlanName = planName;
+      if (selectedStrategyId) {
+        fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
+      }
+      
+      console.log(`Storing plan details with name: ${fullPlanName}`);
+      
+      // Store the plan details with the strategy information
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
-          plan_name: planName, // Use the exact plan name from props
+          plan_name: fullPlanName,
           plan_price: planPrice,
           is_paid: true
         });
@@ -101,17 +110,13 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       }
       
       // If a specific strategy ID was selected, unlock only that strategy
-      // by calling syncPremiumAccess with the specificStrategyId
       if (selectedStrategyId) {
         console.log(`Unlocking specific strategy with ID: ${selectedStrategyId}`);
-        
-        // We no longer need to check or update strategy_selections
-        // Just call syncPremiumAccess with the specificStrategyId
         await syncPremiumAccess(user.id, false, selectedStrategyId);
       } 
       // If user bought Premium plan, unlock all premium strategies
       else if (planName === 'Premium') {
-        console.log("Premium plan purchased - access to all strategies granted through plan_details");
+        console.log("Premium plan purchased - access to all strategies granted");
         await syncPremiumAccess(user.id, true);
       }
       

@@ -143,25 +143,26 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 
               if (!planError && !planDetails) {
                 // No plan details found, insert new entry with the exact plan name
+                // Include the strategy ID in the plan name to track which strategy was purchased
                 await supabase
                   .from('plan_details')
                   .insert({
                     user_id: user.id,
-                    plan_name: planName, // Use exact plan name, not hardcoded "Premium"
+                    plan_name: `${planName} - Strategy ${selectedStrategyId}`,
                     plan_price: planPrice,
                     is_paid: true
                   });
               } else if (!planError) {
-                // Update existing plan to paid status
+                // Update existing plan to paid status with strategy ID
                 await supabase
                   .from('plan_details')
-                  .update({ is_paid: true, plan_name: planName }) // Update the plan name to correct value
+                  .update({ 
+                    is_paid: true, 
+                    plan_name: `${planName} - Strategy ${selectedStrategyId}`
+                  })
                   .eq('id', planDetails.id);
               }
               
-              // For specific strategy unlocks, we don't need to store anything in strategy_selections
-              // We'll just mark the plan as paid in plan_details and let checkStrategyAccess handle access
-
               // Call syncPremiumAccess with specificStrategyId parameter
               // The false parameter ensures we don't grant universal premium access
               await syncPremiumAccess(user.id, false, selectedStrategyId);

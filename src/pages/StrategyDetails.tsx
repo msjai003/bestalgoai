@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
+import { checkStrategyAccess } from "@/lib/supabase/subscription";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -145,11 +147,6 @@ const StrategyDetails = () => {
         }
         
         setIsWishlisted(data && data.length > 0);
-        
-        if (data && data.length > 0 && data[0].paid_status === 'paid') {
-          setIsPaidStrategy(true);
-          console.log(`Strategy ${strategy.id} is individually marked as paid`);
-        }
       } catch (error) {
         console.error('Error checking wishlist status:', error);
       }
@@ -176,9 +173,28 @@ const StrategyDetails = () => {
         console.error('Error checking premium status:', error);
       }
     };
+
+    // Check specific strategy access
+    const checkSpecificStrategyAccess = async () => {
+      if (!user || !strategy) return;
+
+      try {
+        // Use the checkStrategyAccess function to check if this strategy is accessible
+        const hasAccess = await checkStrategyAccess(user.id, strategy.id);
+        
+        console.log(`Strategy ${strategy.id} access check:`, hasAccess);
+        
+        if (hasAccess) {
+          setIsPaidStrategy(true);
+        }
+      } catch (error) {
+        console.error('Error checking specific strategy access:', error);
+      }
+    };
     
     checkWishlistStatus();
     checkPremiumStatus();
+    checkSpecificStrategyAccess();
   }, [user, strategy]);
 
   // Check if user can access this premium strategy

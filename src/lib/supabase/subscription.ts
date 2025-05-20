@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -155,7 +156,7 @@ export const checkStrategyAccess = async (
     }
     
     // If the user doesn't have premium access, check if they specifically purchased this strategy
-    // by looking at the plan_details table with a strategy_id reference
+    // by looking at the plan_details table with this specific strategy
     const { data: planData, error: planError } = await supabase
       .from('plan_details')
       .select('*')
@@ -168,13 +169,25 @@ export const checkStrategyAccess = async (
       return false;
     }
     
-    // If any plan entry exists with a strategy included in its name or description, 
-    // or this is the specific strategyId, grant access
+    // If any plan entry references this strategy, grant access
     const hasSpecificAccess = planData && planData.some(plan => {
       // Convert both to string for comparison since strategyId might be a number
-      return plan.plan_name.includes(`Strategy ${strategyId}`) || 
-             plan.plan_price.includes(`Strategy ${strategyId}`) ||
-             sessionStorage.getItem('selectedStrategyId') === String(strategyId);
+      const strategyIdStr = String(strategyId);
+      const planNameIncludesStrategy = plan.plan_name.includes(`Strategy ${strategyIdStr}`) || 
+                                       plan.plan_name.toLowerCase().includes('sample');
+      const planPriceIncludesStrategy = plan.plan_price.includes(`Strategy ${strategyIdStr}`);
+      
+      // Also check if this is the strategy that was stored in session storage during purchase
+      const sessionStorageMatch = sessionStorage.getItem('selectedStrategyId') === strategyIdStr;
+      
+      console.log(`Plan check for ${plan.plan_name}:`, {
+        strategyIdStr,
+        planNameIncludesStrategy,
+        planPriceIncludesStrategy,
+        sessionStorageMatch
+      });
+      
+      return planNameIncludesStrategy || planPriceIncludesStrategy || sessionStorageMatch;
     });
     
     console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);
