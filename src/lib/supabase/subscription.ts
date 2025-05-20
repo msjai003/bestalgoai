@@ -62,31 +62,35 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
   try {
     console.log('Checking premium status for user:', userId);
     
-    // Query the plan_details table for any premium subscriptions
+    // Query the plan_details table for the most recent subscription
     const { data: planData, error: planError } = await supabase
       .from('plan_details')
       .select('*')
       .eq('user_id', userId)
       .eq('is_paid', true)  // Make sure we only look at paid subscriptions
-      .order('selected_at', { ascending: false });
+      .order('selected_at', { ascending: false })
+      .limit(1);
       
     if (planError) {
       console.error('Error fetching plan details:', planError);
       return false;
     }
     
-    // Check if any premium plan exists (Premium, Pro, or Elite)
-    const hasPremium = planData && planData.length > 0 && planData.some(plan => 
-      (plan.plan_name === 'Premium' || 
-       plan.plan_name === 'Pro' || 
-       plan.plan_name === 'Elite') && 
-      !plan.plan_name.includes('Strategy') // Exclude strategy-specific plans
-    );
+    // Check if a valid premium subscription exists
+    // Premium, Pro, or Elite plans grant universal access to all premium strategies
+    // We specifically exclude plans that contain "Strategy" in the name as those are for specific strategies
+    const hasPremium = planData && 
+                      planData.length > 0 && 
+                      (planData[0].plan_name === 'Premium' || 
+                       planData[0].plan_name === 'Pro' || 
+                       planData[0].plan_name === 'Elite') &&
+                      !planData[0].plan_name.includes('Strategy'); // Added this check to exclude strategy-specific plans
     
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
-      planNames: planData?.map(p => p.plan_name),
-      hasPremium
+      planName: planData?.[0]?.plan_name,
+      hasPremium,
+      hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
     
     return !!hasPremium;
@@ -146,11 +150,11 @@ export const checkStrategyAccess = async (
   try {
     console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
     
-    // First, check if the user has premium status, which grants access to all premium strategies
+    // Check if the user has premium status, which grants access to all premium strategies
     const hasPremium = await checkUserPremiumStatus(userId);
     
     if (hasPremium) {
-      console.log(`User ${userId} has premium plan, granting access to strategy ${strategyId}`);
+      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
       return true;
     }
     
@@ -158,6 +162,7 @@ export const checkStrategyAccess = async (
     const strategyIdStr = String(strategyId);
     
     // If the user doesn't have premium access, check if they specifically purchased this strategy
+    // by looking at the plan_details table with this specific strategy
     const { data: planData, error: planError } = await supabase
       .from('plan_details')
       .select('*')
