@@ -77,3 +77,65 @@ export const checkStrategyAccess = async (userId: string, strategyId: number): P
     return false;
   }
 };
+
+/**
+ * Sync premium access for a user by updating strategies in the strategy_selections table
+ * @param userId The user's ID to sync premium access for
+ * @returns boolean indicating if sync was successful
+ */
+export const syncPremiumAccess = async (userId: string): Promise<boolean> => {
+  try {
+    console.log('Syncing premium access for user:', userId);
+    
+    // First check if the user has premium access
+    const hasPremium = await checkUserPremiumStatus(userId);
+    
+    if (!hasPremium) {
+      console.log('User does not have premium access, no sync needed');
+      return false;
+    }
+    
+    // Get all premium strategies that need to be updated
+    const { data: premiumStrategies, error: strategyError } = await supabase
+      .from('predefined_strategies')
+      .select('id, name, description, package')
+      .eq('package', 'premium');
+      
+    if (strategyError) {
+      console.error('Error fetching premium strategies:', strategyError);
+      return false;
+    }
+    
+    if (!premiumStrategies || premiumStrategies.length === 0) {
+      console.log('No premium strategies found to sync');
+      return true; // No work to do, but not an error
+    }
+    
+    console.log(`Found ${premiumStrategies.length} premium strategies to sync`);
+    
+    // For each premium strategy, use RPC call to force paid status
+    for (const strategy of premiumStrategies) {
+      const { error: rpcError } = await supabase.rpc(
+        'force_strategy_paid_status',
+        {
+          p_user_id: userId,
+          p_strategy_id: strategy.id,
+          p_strategy_name: strategy.name,
+          p_strategy_description: strategy.description
+        }
+      );
+      
+      if (rpcError) {
+        console.error(`Error updating strategy ${strategy.id}:`, rpcError);
+      } else {
+        console.log(`Successfully marked strategy ${strategy.id} as paid for user ${userId}`);
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Exception syncing premium access:', error);
+    return false;
+  }
+};
+
