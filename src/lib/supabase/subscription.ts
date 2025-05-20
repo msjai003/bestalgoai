@@ -78,16 +78,19 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
     
     // Check if a valid premium subscription exists
     // Premium, Pro, or Elite plans grant universal access to all premium strategies
+    // We specifically exclude plans that contain "Strategy" in the name as those are for specific strategies
     const hasPremium = planData && 
                       planData.length > 0 && 
                       (planData[0].plan_name === 'Premium' || 
                        planData[0].plan_name === 'Pro' || 
-                       planData[0].plan_name === 'Elite');
+                       planData[0].plan_name === 'Elite') &&
+                      !planData[0].plan_name.includes('Strategy'); // Added this check to exclude strategy-specific plans
     
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
-      hasPremium
+      hasPremium,
+      hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
     
     return !!hasPremium;
@@ -124,11 +127,9 @@ export const syncPremiumAccess = async (
       return true;
     }
     
-    // For premium plans, if premiumStatus is true, all premium strategies should be accessible
-    if (premiumStatus) {
-      console.log(`User ${userId} has premium access to all strategies`);
-    }
-    
+    // Standard premium subscription logic for plan-based premium access
+    // We no longer need to query strategy_selections for paid strategies
+    // as we're only using plan_details for access management
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
@@ -149,11 +150,11 @@ export const checkStrategyAccess = async (
   try {
     console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
     
-    // First check if the user has premium status, which grants access to ALL premium strategies
+    // Check if the user has premium status, which grants access to all premium strategies
     const hasPremium = await checkUserPremiumStatus(userId);
     
     if (hasPremium) {
-      console.log(`User ${userId} has premium access to all strategies including ${strategyId}`);
+      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
       return true;
     }
     

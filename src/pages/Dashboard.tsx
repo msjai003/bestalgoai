@@ -11,7 +11,7 @@ import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import StrategiesSection from "@/components/dashboard/StrategiesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
-import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
+import { syncPremiumAccess, checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -83,20 +83,27 @@ const Dashboard = () => {
     
     const checkPremium = async () => {
       try {
-        setIsSyncingPremium(true);
         // Using the improved checkUserPremiumStatus function to check premium status
         const isPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(isPremium);
-        console.log("Dashboard - Premium status set to:", isPremium);
-        setIsSyncingPremium(false);
+        
+        // If the user has premium, sync their access to unlock strategies
+        if (isPremium && !isSyncingPremium) {
+          setIsSyncingPremium(true);
+          const syncResult = await syncPremiumAccess(user.id, true);
+          setIsSyncingPremium(false);
+          
+          if (syncResult) {
+            console.log("Premium access synced successfully");
+          }
+        }
       } catch (error) {
         console.error('Error checking premium status:', error);
-        setIsSyncingPremium(false);
       }
     };
     
     checkPremium();
-  }, [user]);
+  }, [user, isSyncingPremium]);
 
   const handlePremiumClick = () => {
     navigate('/pricing');
@@ -130,15 +137,6 @@ const Dashboard = () => {
             onPremiumClick={handlePremiumClick}
             showSignupPromo={!user}
           />
-        )}
-
-        {isSyncingPremium && (
-          <div className="fixed bottom-20 left-0 right-0 flex justify-center">
-            <div className="bg-charcoalSecondary px-4 py-2 rounded-full shadow-md text-xs text-cyan flex items-center">
-              <Loader className="h-3 w-3 animate-spin mr-2" />
-              Checking premium status...
-            </div>
-          </div>
         )}
       </main>
       <BottomNav />

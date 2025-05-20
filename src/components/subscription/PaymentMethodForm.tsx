@@ -89,7 +89,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     try {
       // Create the plan name string that includes the strategy ID if applicable
       let fullPlanName = planName;
-      if (selectedStrategyId && planName !== 'Premium' && planName !== 'Pro' && planName !== 'Elite') {
+      if (selectedStrategyId) {
         fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
       }
       
@@ -109,9 +109,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // If user purchased the Premium, Pro, or Elite plan, unlock all premium strategies
-      const isPremiumPlan = planName === 'Premium' || planName === 'Pro' || planName === 'Elite';
-      if (isPremiumPlan) {
+      // If user purchased the Premium plan, unlock all premium strategies
+      if (planName === 'Premium' || planName === 'Pro' || planName === 'Elite') {
         console.log(`${planName} plan purchased - access to all premium strategies granted`);
         await syncPremiumAccess(user.id, true);
         toast({

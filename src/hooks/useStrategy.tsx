@@ -1,359 +1,448 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { syncWishlistMaintain, checkUserPremiumStatus, checkStrategyAccess } from "@/lib/supabase/subscription";
-import { Strategy } from "@/hooks/strategy/types";
+import {
+  loadUserStrategies,
+  updateStrategyLiveConfig,
+  updateStrategyTradeType
+} from "@/hooks/strategy/useStrategyDatabase";
+import { checkUserPremiumStatus, checkStrategyAccess } from "@/lib/supabase/subscription";
+import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
+import { useNavigate } from "react-router-dom";
 
-export const useStrategy = (predefinedStrategies: Strategy[]) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const useStrategy = (predefinedStrategies: any[]) => {
+  const [strategies, setStrategies] = useState(predefinedStrategies);
+  const [isLoading, setIsLoading] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
   const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
   const [targetMode, setTargetMode] = useState<"live trade" | "paper trade">("paper trade");
   const [selectedStrategyId, setSelectedStrategyId] = useState<number | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
   const [hasPremium, setHasPremium] = useState(false);
-  
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    if (user) {
-      const checkPremiumStatus = async () => {
-        try {
-          const isPremium = await checkUserPremiumStatus(user.id);
-          setHasPremium(isPremium);
-          console.log("UseStrategy - Premium status:", isPremium);
-        } catch (error) {
-          console.error('Error checking premium status:', error);
+    // Filter out Apexflow strategies before setting them
+    if (predefinedStrategies.length > 0) {
+      console.log("Received predefined strategies in useStrategy:", predefinedStrategies);
+      
+      // Filter out Apexflow strategies
+      const filteredStrategies = predefinedStrategies.filter(
+        strategy => !strategy.name || !strategy.name.toLowerCase().includes('apex')
+      );
+      
+      setStrategies(prevStrategies => {
+        // If we already have strategies loaded with user settings, don't override them
+        if (prevStrategies.length > 0 && prevStrategies[0].hasOwnProperty('isWishlisted')) {
+          console.log("Preserving existing strategies with user settings");
+          return prevStrategies.filter(strategy => 
+            !strategy.name || !strategy.name.toLowerCase().includes('apex')
+          );
         }
-      };
-      
-      checkPremiumStatus();
-    }
-  }, [user]);
-  
-  useEffect(() => {
-    if (!predefinedStrategies) return;
-    
-    const loadStrategiesWithAccess = async () => {
-      setIsLoading(true);
-      
-      try {
-        if (!user) {
-          // If user is not logged in, just return the predefined strategies without access checks
-          setStrategies(predefinedStrategies.map(strategy => ({
+        
+        console.log("Creating new strategies with defaults");
+        return filteredStrategies.map(strategy => {
+          // Explicitly convert strategy.id to number if it's a string
+          const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+          
+          // Check if this is Zenflow strategy (always free)
+          const isZenflow = strategy.name.toLowerCase().includes('zen');
+          
+          // Check if this is Evercrest strategy (always premium)
+          const isEvercrest = strategy.name.toLowerCase().includes('evercrest');
+          
+          // Check if this is Speed Up strategy (always premium)
+          const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
+          
+          // Check if this is Velox Edge strategy (always premium)
+          const isVeloxEdge = strategy.name.toLowerCase().includes('velox');
+          
+          // Check if this is NovaGlide strategy (always premium)
+          const isNovaGlide = strategy.name.toLowerCase().includes('nova');
+          
+          // A strategy is premium if:
+          // - it has package='premium', OR 
+          // - has isPremium flag, OR
+          // - is Evercrest, Speed Up, Velox Edge, or NovaGlide,
+          // BUT NOT if it's Zenflow (Zenflow is always free)
+          const isPremium = (strategy.package === 'premium' || 
+                           strategy.isPremium === true || 
+                           isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
+          
+          console.log(`Setting up strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isSpeedUp: ${isSpeedUp}, isZenflow: ${isZenflow}, isEvercrest: ${isEvercrest}, isVeloxEdge: ${isVeloxEdge}, isNovaGlide: ${isNovaGlide}`);
+          
+          return {
             ...strategy,
+            id: strategyIdNumber, // Ensure ID is a number
             isWishlisted: false,
             isLive: false,
-            tradeMode: 'paper trade'
-          })));
-          setIsLoading(false);
-          return;
-        }
-        
-        // Get wishlist data for the user
-        const { data: wishlistData, error: wishlistError } = await supabase
-          .from('wishlist_maintain')
-          .select('*')
-          .eq('user_id', user.id);
-          
-        if (wishlistError) {
-          console.error('Error fetching wishlist:', wishlistError);
-          throw wishlistError;
-        }
-        
-        // First check if the user has premium status
-        const userHasPremium = await checkUserPremiumStatus(user.id);
-        setHasPremium(userHasPremium);
-        console.log("User has premium:", userHasPremium);
-        
-        // Map over predefined strategies to add access information
-        const enhancedStrategies = await Promise.all(
-          predefinedStrategies.map(async (strategy) => {
-            // Check if the strategy is in the user's wishlist
-            const isWishlisted = wishlistData?.some(item => 
-              Number(item.strategy_id) === Number(strategy.id)
-            ) || false;
-            
-            // Get the strategy trade mode
-            const { data: selectionData, error: selectionError } = await supabase
-              .from('strategy_selections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('strategy_id', strategy.id)
-              .single();
-              
-            if (selectionError && selectionError.code !== 'PGRST116') {
-              console.error('Error fetching strategy selection:', selectionError);
-            }
-            
-            // Check if this strategy is specifically paid for by this user
-            let hasAccess = false;
-            
-            // Access check for premium strategies
-            if (strategy.package === 'premium' || strategy.isPremium) {
-              if (userHasPremium) {
-                // User has premium subscription, grant access to all premium strategies
-                hasAccess = true;
-                console.log(`User has premium subscription, granted access to strategy ${strategy.id}`);
-              } else {
-                // Check if this specific strategy is paid for
-                hasAccess = await checkStrategyAccess(user.id, Number(strategy.id));
-                console.log(`Strategy ${strategy.id} specific access check: ${hasAccess}`);
-              }
-            } else {
-              // Free strategies are always accessible
-              hasAccess = true;
-            }
-            
-            return {
-              ...strategy,
-              isWishlisted,
-              tradeMode: selectionData?.trade_type || 'paper trade',
-              isPaid: hasAccess, // Mark strategy as paid if the user has a valid paid access
-              isLive: selectionData?.trade_type === 'live trade',
-              quantity: selectionData?.quantity || 0
-            };
-          })
+            isPremium: isPremium, // Setting premium flag based on all conditions
+            isPaid: false
+          };
+        });
+      });
+    }
+  }, [predefinedStrategies]);
+
+  useEffect(() => {
+    if (user) {
+      loadStrategies();
+      checkPremiumStatus(user.id);
+    }
+  }, [user]);
+
+  // Check if the user has general premium access
+  const checkPremiumStatus = async (userId: string) => {
+    const isPremium = await checkUserPremiumStatus(userId);
+    setHasPremium(isPremium);
+    console.log("Premium status set to:", isPremium);
+  };
+
+  // Load all user strategies
+  const loadStrategies = async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const userStrategies = await loadUserStrategies(user.id);
+      
+      setStrategies(prevStrategies => {
+        // Filter out Apexflow strategies from predefinedStrategies
+        const filteredPredefinedStrategies = predefinedStrategies.filter(
+          strategy => !strategy.name || !strategy.name.toLowerCase().includes('apex')
         );
         
-        setStrategies(enhancedStrategies);
-        console.log("Enhanced strategies:", enhancedStrategies);
-      } catch (error) {
-        console.error('Error loading strategies with access:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load strategies. Please try again.",
-          variant: "destructive",
+        // Merge predefined strategies with user-specific configurations
+        const mergedStrategies = filteredPredefinedStrategies.map(predefinedStrategy => {
+          const userStrategy = userStrategies.find(userStrategy => userStrategy.id === predefinedStrategy.id);
+          
+          // Explicitly convert strategy ID to number if needed
+          const strategyIdNumber = typeof predefinedStrategy.id === 'string' ? 
+            parseInt(predefinedStrategy.id, 10) : predefinedStrategy.id;
+          
+          // Check if this is Zenflow strategy (always free)
+          const isZenflow = predefinedStrategy.name.toLowerCase().includes('zen');
+          
+          // Check if this is Evercrest strategy (always premium)
+          const isEvercrest = predefinedStrategy.name.toLowerCase().includes('evercrest');
+          
+          // Check if this is Speed Up strategy (always premium)
+          const isSpeedUp = predefinedStrategy.name.toLowerCase().includes('speed up');
+          
+          // Check if this is Velox Edge strategy (always premium)
+          const isVeloxEdge = predefinedStrategy.name.toLowerCase().includes('velox');
+          
+          // Check if this is NovaGlide strategy (always premium)
+          const isNovaGlide = predefinedStrategy.name.toLowerCase().includes('nova');
+          
+          // Check if this is a premium strategy based on package field or specific strategy name
+          const isPremium = (predefinedStrategy.package === 'premium' || 
+                          predefinedStrategy.isPremium === true || 
+                          isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
+          
+          // Initially set isPaid to false, we'll check individual strategy access below
+          let isPaid = false;
+
+          // Check for individual strategy access more explicitly
+          if (user) {
+            // Check each strategy individually for access
+            checkStrategyAccess(user.id, strategyIdNumber).then(hasAccess => {
+              if (hasAccess) {
+                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is accessible`);
+                // If we have access, update the strategy to mark it as paid
+                setStrategies(currentStrategies => 
+                  currentStrategies.map(s => 
+                    s.id === strategyIdNumber ? { ...s, isPaid: true } : s
+                  )
+                );
+              } else {
+                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is NOT accessible`);
+              }
+            });
+          }
+          
+          console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
+            hasUserStrategy: !!userStrategy,
+            userPaidStatus: userStrategy?.paid_status,
+            isPremium: isPremium,
+            isZenflow: isZenflow,
+            isEvercrest: isEvercrest,
+            isSpeedUp: isSpeedUp, 
+            isVeloxEdge: isVeloxEdge,
+            isNovaGlide: isNovaGlide,
+            package: predefinedStrategy.package,
+            hasPremium: hasPremium,
+            isPaid: isPaid
+          });
+          
+          // Only set strategies as accessible if:
+          // 1. User has general premium access AND the strategy is premium OR
+          // 2. This specific strategy has been paid for
+          let finalIsPaid = isPaid;
+          
+          if (hasPremium && isPremium) {
+            console.log(`User has premium plan, marking premium strategy ${predefinedStrategy.name} as accessible`);
+            finalIsPaid = true;
+          }
+          
+          return userStrategy ? {
+            ...predefinedStrategy,
+            ...userStrategy,
+            name: predefinedStrategy.name, // Ensure we keep the original name
+            description: predefinedStrategy.description, // Ensure we keep the original description
+            isPremium: isPremium, // Keep the premium flag
+            isPaid: finalIsPaid  // Set isPaid based on premium status
+          } : {
+            ...predefinedStrategy,
+            isWishlisted: false,
+            isLive: false,
+            isPremium: isPremium, // Setting premium flag based on package
+            isPaid: finalIsPaid  // Initial value that will be updated by checkStrategyAccess
+          };
         });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadStrategiesWithAccess();
-  }, [predefinedStrategies, user, toast]);
-  
-  const handleToggleWishlist = async (strategyId: number, isCurrentlyWishlisted: boolean) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to add strategies to your wishlist.",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-    
-    try {
-      // Find the strategy to get its name and description
-      const strategy = strategies.find(s => s.id === strategyId);
-      
-      if (!strategy) {
-        console.error(`Strategy with ID ${strategyId} not found`);
-        return;
-      }
-      
-      // Update the wishlist status in the database
-      await syncWishlistMaintain(
-        user.id,
-        strategyId,
-        strategy.name,
-        strategy.description,
-        !isCurrentlyWishlisted
-      );
-      
-      // Update the local state
-      setStrategies(prev => 
-        prev.map(s => 
-          s.id === strategyId 
-            ? { ...s, isWishlisted: !isCurrentlyWishlisted } 
-            : s
-        )
-      );
-      
-      toast({
-        title: isCurrentlyWishlisted ? "Removed from Wishlist" : "Added to Wishlist",
-        description: `${strategy.name} has been ${isCurrentlyWishlisted ? 'removed from' : 'added to'} your wishlist.`,
-        variant: "default",
+        
+        console.log("Final merged strategies:", mergedStrategies);
+        return mergedStrategies;
       });
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update wishlist. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error loading strategies:", error);
+      toast.error("Failed to load strategies");
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const handleToggleLiveMode = (strategyId: number) => {
+
+  // Updated handleToggleWishlist function to correctly use wishlist_maintain table
+  const handleToggleWishlist = async (id: number, isWishlisted: boolean) => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to toggle live mode.",
-        variant: "destructive",
-      });
-      navigate('/auth');
+      console.log("User not authenticated, cannot toggle wishlist");
       return;
     }
-    
-    const strategy = strategies.find(s => Number(s.id) === strategyId);
+
+    try {
+      console.log(`Toggle wishlist for strategy ${id}, current state: ${isWishlisted}`);
+
+      // Find the strategy to get its name and description
+      const strategy = strategies.find(s => s.id === id);
+      if (!strategy) {
+        console.error(`Strategy with ID ${id} not found`);
+        return;
+      }
+
+      if (!isWishlisted) {
+        // Add to wishlist
+        await addToWishlist(user.id, id, strategy.name, strategy.description || "");
+        toast.success(`Added "${strategy.name}" to your wishlist`);
+      } else {
+        // Remove from wishlist - with a more generic message
+        await removeFromWishlist(user.id, id);
+        toast.success(`Removed strategy from your wishlist`);
+      }
+
+      // Update local state
+      setStrategies(prevStrategies =>
+        prevStrategies.map(strategy =>
+          strategy.id === id ? { ...strategy, isWishlisted: !isWishlisted } : strategy
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      toast.error("Failed to update wishlist");
+    }
+  };
+
+  // Fixed type signature to match expected types in PredefinedStrategyList
+  const handleToggleLiveMode = async (id: number) => {
+    // Find the strategy
+    const strategy = strategies.find(s => s.id === id);
     
     if (!strategy) {
-      console.error(`Strategy with ID ${strategyId} not found`);
+      console.error(`Strategy with ID ${id} not found`);
       return;
     }
     
-    // If the strategy is premium and user doesn't have premium or specific paid access
-    const isPremium = strategy.package === 'premium' || strategy.isPremium;
-    // Critical check: if the user has premium subscription, they should have access to all premium strategies
-    if (isPremium && !hasPremium && !strategy.isPaid) {
-      toast({
-        title: "Premium Strategy",
-        description: "This is a premium strategy. Please upgrade to access it.",
-        variant: "destructive",
-      });
-      
-      // Store strategy ID for later use in pricing page
-      sessionStorage.setItem('selectedStrategyId', strategyId.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/strategy-selection');
-      
-      // Redirect to pricing page
+    // Check if this is Zenflow strategy (always free)
+    const isZenflow = strategy.name && strategy.name.toLowerCase().includes('zen');
+    
+    // Check if this is Evercrest strategy (always premium)
+    const isEvercrest = strategy.name && strategy.name.toLowerCase().includes('evercrest');
+    
+    // Check if this is Speed Up strategy (always premium)
+    const isSpeedUp = strategy.name && strategy.name.toLowerCase().includes('speed up');
+    
+    // Check if this is Velox Edge strategy (always premium)
+    const isVeloxEdge = strategy.name && strategy.name.toLowerCase().includes('velox');
+    
+    // Check if this is NovaGlide strategy (always premium)
+    const isNovaGlide = strategy.name && strategy.name.toLowerCase().includes('nova');
+    
+    // Check if this is a premium strategy
+    const isPremium = (strategy.package === 'premium' || 
+                     strategy.isPremium === true || 
+                     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && 
+                     !isZenflow;
+    
+    // Check if user has access to this specific strategy
+    let canAccess = false;
+    
+    if (user) {
+      // If not premium, always accessible
+      if (!isPremium) {
+        canAccess = true;
+      } 
+      // If premium, check individual strategy access
+      else {
+        // Check if the user has individual access to this strategy
+        const hasAccess = await checkStrategyAccess(user.id, id);
+        if (hasAccess) {
+          canAccess = true;
+        } else {
+          // If no individual access, check if user has premium plan
+          canAccess = hasPremium;
+        }
+      }
+    }
+    
+    console.log(`Toggle live mode for strategy ${id}: ${strategy.name}`, { 
+      isPremium, 
+      hasPremium, 
+      isPaid: strategy.isPaid,
+      canAccess,
+      isEvercrest,
+      isSpeedUp,
+      isVeloxEdge,
+      isNovaGlide,
+      isZenflow
+    });
+    
+    // For premium strategies without access, redirect to pricing with this strategy ID
+    if (isPremium && !canAccess) {
+      sessionStorage.setItem('selectedStrategyId', id.toString());
+      sessionStorage.setItem('redirectAfterPayment', '/live-trading');
       navigate('/pricing');
       return;
     }
     
-    // Set the target mode to the opposite of the current mode
-    const currentMode = strategy.tradeMode || 'paper trade';
-    const newMode = currentMode === 'live trade' ? 'paper trade' : 'live trade';
+    // Otherwise, proceed with the normal flow
+    setSelectedStrategyId(id);
+    // Always open the dialog to choose mode, regardless of current state
+    // This allows users to switch between brokers
+    setTargetMode("live trade");
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmLiveMode = async () => {
+    setConfirmDialogOpen(false);
     
-    // Only show confirmation dialog if switching to live mode
-    if (newMode === 'live trade') {
-      setTargetMode(newMode);
-      setSelectedStrategyId(strategyId);
-      setConfirmDialogOpen(true);
+    // For live trade mode, we need quantity and broker info
+    if (targetMode === "live trade") {
+      setQuantityDialogOpen(true);
     } else {
-      // No confirmation needed for paper trading
-      handleUpdateTradeMode(strategyId, newMode);
+      // Default values for paper trading - no broker needed
+      await handleBrokerSubmit("", "", "");
     }
   };
-  
-  const handleConfirmLiveMode = () => {
-    if (selectedStrategyId === null) return;
-    
-    setConfirmDialogOpen(false);
-    setQuantityDialogOpen(true);
-  };
-  
+
   const handleCancelLiveMode = () => {
     setConfirmDialogOpen(false);
-    setSelectedStrategyId(null);
+    resetDialogState();
   };
-  
+
   const handleQuantitySubmit = (quantity: number) => {
-    if (selectedStrategyId === null) return;
-    
+    // Close quantity dialog
     setQuantityDialogOpen(false);
+    
+    // Store the quantity for later use with broker selection
+    setSelectedQuantity(quantity);
+    
+    // Open the broker selection dialog
     setBrokerDialogOpen(true);
-    
-    // Save the quantity in session storage for use after broker selection
-    sessionStorage.setItem('selectedQuantity', quantity.toString());
   };
-  
-  const handleCancelQuantity = () => {
+
+  const resetDialogState = () => {
+    setSelectedStrategyId(null);
+    setSelectedQuantity(null);
+    setConfirmDialogOpen(false);
     setQuantityDialogOpen(false);
-    setSelectedStrategyId(null);
-  };
-  
-  const handleBrokerSubmit = async (brokerId: string, brokerUsername: string) => {
-    if (selectedStrategyId === null) return;
-    
     setBrokerDialogOpen(false);
-    
-    // Get quantity from session storage
-    const quantityStr = sessionStorage.getItem('selectedQuantity');
-    const quantity = quantityStr ? parseInt(quantityStr, 10) : 1;
-    
-    // Remove session storage items
-    sessionStorage.removeItem('selectedQuantity');
-    
-    await handleUpdateTradeMode(selectedStrategyId, 'live trade', quantity, brokerId, brokerUsername);
-    setSelectedStrategyId(null);
   };
-  
-  const handleCancelBroker = () => {
-    setBrokerDialogOpen(false);
-    setSelectedStrategyId(null);
-    sessionStorage.removeItem('selectedQuantity');
-  };
-  
-  const handleUpdateTradeMode = async (
-    strategyId: number, 
-    mode: 'live trade' | 'paper trade', 
-    quantity = 0, 
-    selectedBroker = '', 
-    brokerUsername = ''
-  ) => {
-    if (!user) return;
-    
+
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string, username: string) => {
     try {
-      const strategy = strategies.find(s => s.id === strategyId);
+      // Close the broker dialog
+      setBrokerDialogOpen(false);
       
-      if (!strategy) {
-        console.error(`Strategy with ID ${strategyId} not found`);
+      if (!user || !selectedStrategyId) {
+        console.error("Missing required data for broker submission", {
+          userId: user?.id,
+          strategyId: selectedStrategyId
+        });
+        toast.error("Missing required information");
         return;
       }
+
+      // Use default values for play icon (Zerodha and 789) only if no broker is selected
+      const finalBrokerName = targetMode === "live trade" ? (brokerName || "zerodha") : "";
+      const finalUsername = targetMode === "live trade" ? (username || "789") : "";
+      const finalQuantity = selectedQuantity || 75; // Default to 75 if not specified
       
-      // Update or insert the selection in strategy_selections table
-      const { error } = await supabase
-        .from('strategy_selections')
-        .upsert({
-          user_id: user.id,
-          strategy_id: strategyId,
-          strategy_name: strategy.name,
-          strategy_description: strategy.description,
-          trade_type: mode,
-          quantity: quantity,
-          selected_broker: selectedBroker,
-          broker_username: brokerUsername
-        }, {
-          onConflict: 'user_id,strategy_id'
-        });
-        
-      if (error) {
-        console.error('Error updating trade mode:', error);
-        throw error;
-      }
+      console.log("Updating strategy with broker:", {
+        userId: user.id,
+        strategyId: selectedStrategyId,
+        quantity: finalQuantity,
+        brokerName: finalBrokerName,
+        username: finalUsername,
+        mode: targetMode
+      });
       
-      // Update local state
-      setStrategies(prev => 
-        prev.map(s => 
-          s.id === strategyId 
-            ? { ...s, tradeMode: mode, isLive: mode === 'live trade' } 
-            : s
+      // Update the strategy configuration
+      await updateStrategyLiveConfig(
+        user.id,
+        Number(selectedStrategyId),
+        finalQuantity,
+        finalBrokerName,
+        finalUsername,
+        targetMode
+      );
+      
+      // Update local state to reflect changes immediately
+      setStrategies(prevStrategies =>
+        prevStrategies.map(strategy =>
+          strategy.id === selectedStrategyId
+            ? {
+                ...strategy,
+                isLive: targetMode === "live trade",
+                quantity: finalQuantity,
+                selectedBroker: finalBrokerName,
+                brokerUsername: finalUsername,
+                tradeType: targetMode
+              }
+            : strategy
         )
       );
       
-      toast({
-        title: "Strategy Updated",
-        description: `${strategy.name} is now set to ${mode === 'live trade' ? 'live trading' : 'paper trading'}.`,
-        variant: "default",
-      });
+      // Show success message
+      toast.success(`Strategy set to ${targetMode} with broker ${finalBrokerName} successfully`);
+      
+      // Reset all dialog state
+      resetDialogState();
     } catch (error) {
-      console.error('Error updating trade mode:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update strategy settings. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error updating strategy with broker:", error);
+      toast.error("Failed to update strategy settings");
     }
   };
-  
+
+  const handleCancelQuantity = () => {
+    setQuantityDialogOpen(false);
+    resetDialogState();
+  };
+
+  const handleCancelBroker = () => {
+    setBrokerDialogOpen(false);
+    resetDialogState();
+  };
+
   return {
     strategies,
     isLoading,
