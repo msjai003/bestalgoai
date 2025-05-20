@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -138,22 +139,23 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           // Check if this is a premium strategy based on package field or specific strategy name
           const isPremium = (predefinedStrategy.package === 'premium' || 
-                           predefinedStrategy.isPremium === true || 
-                           isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
+                          predefinedStrategy.isPremium === true || 
+                          isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
           
           // Check for individual strategy access - we'll only mark specific paid strategies as accessible
           // rather than universally unlocking all premium strategies
           let isPaid = userStrategy && userStrategy.paid_status === 'paid';
           
-          if (!isPaid && user) {
-            // If not already marked as paid, check if this specific strategy is accessible
-            // We'll do this asynchronously and update the state when we know the result
-            checkStrategyAccess(user.id, predefinedStrategy.id).then(hasAccess => {
-              if (hasAccess && !isPaid) {
-                // If we have access but it's not marked as paid yet, update the strategy
+          // We need to check if this specific strategy is accessible
+          // We'll do this asynchronously and update the state when we know the result
+          if (user) {
+            // Check each strategy individually for access
+            checkStrategyAccess(user.id, strategyIdNumber).then(hasAccess => {
+              if (hasAccess) {
+                // If we have access, update the strategy to mark it as paid
                 setStrategies(currentStrategies => 
                   currentStrategies.map(s => 
-                    s.id === predefinedStrategy.id ? { ...s, isPaid: true } : s
+                    s.id === strategyIdNumber ? { ...s, isPaid: true } : s
                   )
                 );
               }
@@ -176,6 +178,9 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           
           // If user has premium access from plan_details, mark all premium strategies as accessible
           let finalIsPaid = isPaid;
+          
+          // User has premium access if hasPremium is true, but don't mark all strategies as paid
+          // Only if they actually have premium subscription or this specific strategy is paid for
           if (hasPremium && isPremium) {
             console.log(`User has premium plan, marking premium strategy ${predefinedStrategy.name} as accessible`);
             finalIsPaid = true;

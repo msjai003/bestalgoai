@@ -112,6 +112,10 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       // If a specific strategy ID was selected, unlock only that strategy
       if (selectedStrategyId) {
         console.log(`Unlocking specific strategy with ID: ${selectedStrategyId}`);
+        
+        // Store selected strategy ID in session storage to help with navigation after payment
+        sessionStorage.setItem('selectedStrategyId', String(selectedStrategyId));
+        
         await syncPremiumAccess(user.id, false, selectedStrategyId);
       } 
       // If user bought Premium plan, unlock all premium strategies
@@ -119,9 +123,6 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         console.log("Premium plan purchased - access to all strategies granted");
         await syncPremiumAccess(user.id, true);
       }
-      
-      // Remove the selected strategy ID from session storage
-      sessionStorage.removeItem('selectedStrategyId');
       
       toast({
         title: "Payment successful",
@@ -137,7 +138,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       const redirectPath = sessionStorage.getItem('redirectAfterPayment');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterPayment');
-        navigate(redirectPath);
+        navigate(redirectPath, { replace: true });
       }
     } catch (error) {
       console.error("Payment error:", error);

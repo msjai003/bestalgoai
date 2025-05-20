@@ -132,36 +132,20 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             
             // Record the strategy payment in the database
             try {
-              // First check if the user has a plan_details entry
-              const { data: planDetails, error: planError } = await supabase
+              // Store the strategy ID in session storage to help with navigation
+              sessionStorage.setItem('selectedStrategyId', selectedStrategyId.toString());
+              
+              // Create a plan details entry specifically for this strategy
+              const planName = `${planName} - Strategy ${selectedStrategyId}`;
+              
+              await supabase
                 .from('plan_details')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('selected_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-                
-              if (!planError && !planDetails) {
-                // No plan details found, insert new entry with the exact plan name
-                // Include the strategy ID in the plan name to track which strategy was purchased
-                await supabase
-                  .from('plan_details')
-                  .insert({
-                    user_id: user.id,
-                    plan_name: `${planName} - Strategy ${selectedStrategyId}`,
-                    plan_price: planPrice,
-                    is_paid: true
-                  });
-              } else if (!planError) {
-                // Update existing plan to paid status with strategy ID
-                await supabase
-                  .from('plan_details')
-                  .update({ 
-                    is_paid: true, 
-                    plan_name: `${planName} - Strategy ${selectedStrategyId}`
-                  })
-                  .eq('id', planDetails.id);
-              }
+                .insert({
+                  user_id: user.id,
+                  plan_name: planName,
+                  plan_price: planPrice,
+                  is_paid: true
+                });
               
               // Call syncPremiumAccess with specificStrategyId parameter
               // The false parameter ensures we don't grant universal premium access

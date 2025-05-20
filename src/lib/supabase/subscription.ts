@@ -155,6 +155,9 @@ export const checkStrategyAccess = async (
       return true;
     }
     
+    // Convert strategyId to string for comparisons
+    const strategyIdStr = String(strategyId);
+    
     // If the user doesn't have premium access, check if they specifically purchased this strategy
     // by looking at the plan_details table with this specific strategy
     const { data: planData, error: planError } = await supabase
@@ -171,23 +174,22 @@ export const checkStrategyAccess = async (
     
     // If any plan entry references this strategy, grant access
     const hasSpecificAccess = planData && planData.some(plan => {
-      // Convert both to string for comparison since strategyId might be a number
-      const strategyIdStr = String(strategyId);
-      const planNameIncludesStrategy = plan.plan_name.includes(`Strategy ${strategyIdStr}`) || 
-                                       plan.plan_name.toLowerCase().includes('sample');
-      const planPriceIncludesStrategy = plan.plan_price.includes(`Strategy ${strategyIdStr}`);
+      // Check if plan name includes this specific strategy ID
+      const planNameIncludesStrategy = 
+        plan.plan_name.includes(`Strategy ${strategyIdStr}`) || 
+        plan.plan_name.toLowerCase().includes(`strategy ${strategyIdStr}`) ||
+        plan.plan_name.toLowerCase().includes('sample');
       
-      // Also check if this is the strategy that was stored in session storage during purchase
-      const sessionStorageMatch = sessionStorage.getItem('selectedStrategyId') === strategyIdStr;
+      // Also check if this plan is specifically for this strategy
+      const hasStrategyIdInPlan = plan.plan_name.includes(`- Strategy ${strategyIdStr}`);
       
       console.log(`Plan check for ${plan.plan_name}:`, {
         strategyIdStr,
         planNameIncludesStrategy,
-        planPriceIncludesStrategy,
-        sessionStorageMatch
+        hasStrategyIdInPlan
       });
       
-      return planNameIncludesStrategy || planPriceIncludesStrategy || sessionStorageMatch;
+      return planNameIncludesStrategy || hasStrategyIdInPlan;
     });
     
     console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);
