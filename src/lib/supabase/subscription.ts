@@ -173,21 +173,23 @@ export const checkStrategyAccess = async (
     const hasSpecificAccess = planData && planData.some(plan => {
       // Convert both to string for comparison since strategyId might be a number
       const strategyIdStr = String(strategyId);
-      const planNameIncludesStrategy = plan.plan_name.includes(`Strategy ${strategyIdStr}`) || 
-                                       plan.plan_name.toLowerCase().includes('sample');
-      const planPriceIncludesStrategy = plan.plan_price.includes(`Strategy ${strategyIdStr}`);
       
-      // Also check if this is the strategy that was stored in session storage during purchase
+      // Check for any of these conditions:
+      // 1. Plan name includes "Strategy {id}"
+      // 2. Plan name includes "sample" (case insensitive)
+      // 3. Session storage has the strategy ID
+      const planNameIncludesStrategy = plan.plan_name.includes(`Strategy ${strategyIdStr}`);
+      const planNameIncludesSample = plan.plan_name.toLowerCase().includes('sample');
       const sessionStorageMatch = sessionStorage.getItem('selectedStrategyId') === strategyIdStr;
       
       console.log(`Plan check for ${plan.plan_name}:`, {
         strategyIdStr,
         planNameIncludesStrategy,
-        planPriceIncludesStrategy,
+        planNameIncludesSample,
         sessionStorageMatch
       });
       
-      return planNameIncludesStrategy || planPriceIncludesStrategy || sessionStorageMatch;
+      return planNameIncludesStrategy || planNameIncludesSample || sessionStorageMatch;
     });
     
     console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);

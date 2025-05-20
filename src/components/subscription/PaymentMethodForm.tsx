@@ -90,7 +90,12 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       // Create the plan name string that includes the strategy ID if applicable
       let fullPlanName = planName;
       if (selectedStrategyId) {
-        fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
+        // Check if this is the Sample Plan
+        if (planName.toLowerCase().includes('sample')) {
+          fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
+        } else {
+          fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
+        }
       }
       
       console.log(`Storing plan details with name: ${fullPlanName}`);
@@ -120,8 +125,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         await syncPremiumAccess(user.id, true);
       }
       
-      // Remove the selected strategy ID from session storage
-      sessionStorage.removeItem('selectedStrategyId');
+      // Also store the selected strategy ID directly in sessionStorage for immediate access
+      if (selectedStrategyId) {
+        sessionStorage.setItem('selectedStrategyId', selectedStrategyId.toString());
+        console.log(`Set selectedStrategyId in sessionStorage: ${selectedStrategyId}`);
+      }
       
       toast({
         title: "Payment successful",
@@ -137,7 +145,14 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       const redirectPath = sessionStorage.getItem('redirectAfterPayment');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterPayment');
-        navigate(redirectPath);
+        
+        // If we're going to a strategy details page, make sure we clear any route state
+        // to avoid potential issues with toast notifications
+        if (redirectPath.includes('strategy-details')) {
+          navigate(redirectPath, { replace: true });
+        } else {
+          navigate(redirectPath);
+        }
       }
     } catch (error) {
       console.error("Payment error:", error);
