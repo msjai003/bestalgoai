@@ -11,7 +11,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
-import { checkStrategyAccess } from "@/lib/supabase/subscription";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -184,31 +183,22 @@ const StrategyDetails = () => {
 
   // Check if user can access this premium strategy
   useEffect(() => {
-    const checkAccess = async () => {
-      if (!strategy || !user) return;
-      
-      const isPremiumStrategy = strategy && (
-        strategy.package === 'premium' || 
-        strategy.isPremium === true || 
-        strategy.name.toLowerCase().includes('evercrest') || 
-        strategy.name.toLowerCase().includes('nova') || 
-        strategy.name.toLowerCase().includes('velox') || 
-        strategy.name.toLowerCase().includes('speed up')
-      ) && !strategy.name.toLowerCase().includes('zen');
-
-      if (isPremiumStrategy) {
-        const hasAccess = await checkStrategyAccess(user.id, strategyId);
-        if (!hasAccess && !hasPremium && !isPaidStrategy) {
-          toast({
-            title: "Premium Strategy",
-            description: "Please upgrade to access this premium strategy",
-          });
-        }
-      }
-    };
-
-    checkAccess();
-  }, [strategy, hasPremium, isPaidStrategy, user, toast, strategyId]);
+    const isPremiumStrategy = strategy && (
+      strategy.package === 'premium' || 
+      strategy.isPremium === true || 
+      strategy.name.toLowerCase().includes('evercrest') || 
+      strategy.name.toLowerCase().includes('nova') || 
+      strategy.name.toLowerCase().includes('velox') || 
+      strategy.name.toLowerCase().includes('speed up')
+    ) && !strategy.name.toLowerCase().includes('zen');
+    
+    if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
+      toast({
+        title: "Premium Strategy",
+        description: "Please upgrade to access this premium strategy",
+      });
+    }
+  }, [strategy, hasPremium, isPaidStrategy, user, toast]);
 
   const handleToggleWishlist = async () => {
     if (!user || !strategy) {
