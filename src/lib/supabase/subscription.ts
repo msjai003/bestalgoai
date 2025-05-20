@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
  * @param strategyId The strategy ID
  * @param strategyName The name of the strategy
  * @param strategyDescription The description of the strategy
- * @param isWishlisted Whether the strategy should be wishlisted or not
  * @returns Promise<void>
  */
 export const syncWishlistMaintain = async (
@@ -91,7 +90,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
       hasPremium,
-      hasStrategyInName: planData?.[0]?.plan_name.includes('Strategy')
+      hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
     
     return !!hasPremium;
