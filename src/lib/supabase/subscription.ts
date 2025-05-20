@@ -77,3 +77,56 @@ export const checkStrategyAccess = async (userId: string, strategyId: number): P
     return false;
   }
 };
+
+/**
+ * Sync wishlist status with the wishlist_maintain table
+ * @param userId User ID
+ * @param strategyId Strategy ID
+ * @param strategyName Strategy name
+ * @param strategyDescription Strategy description
+ * @param isWishlisted Boolean indicating if the strategy should be added to wishlist (true) or removed (false)
+ */
+export const syncWishlistMaintain = async (
+  userId: string,
+  strategyId: number,
+  strategyName: string,
+  strategyDescription: string,
+  isWishlisted: boolean
+): Promise<void> => {
+  try {
+    if (isWishlisted) {
+      // Add to wishlist - insert if not exists, upsert will not update if it exists
+      const { error } = await supabase
+        .from('wishlist_maintain')
+        .upsert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        }, { onConflict: 'user_id,strategy_id', ignoreDuplicates: true });
+
+      if (error) {
+        console.error('Error adding strategy to wishlist_maintain:', error);
+        throw error;
+      }
+      console.log(`Strategy ${strategyId} added to wishlist_maintain for user ${userId}`);
+    } else {
+      // Remove from wishlist
+      const { error } = await supabase
+        .from('wishlist_maintain')
+        .delete()
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId);
+
+      if (error) {
+        console.error('Error removing strategy from wishlist_maintain:', error);
+        throw error;
+      }
+      console.log(`Strategy ${strategyId} removed from wishlist_maintain for user ${userId}`);
+    }
+  } catch (error) {
+    console.error('Exception syncing wishlist maintain:', error);
+    throw error;
+  }
+};
+

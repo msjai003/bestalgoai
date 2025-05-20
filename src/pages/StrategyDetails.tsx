@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
+import { PredefinedStrategy } from "@/types/strategy"; // Import the PredefinedStrategy interface
+import { checkStrategyAccess, checkUserPremiumStatus } from "@/lib/supabase/subscription"; // Import from subscription
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -281,7 +283,7 @@ const StrategyDetails = () => {
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been individually paid for (isPaidStrategy)
   // But Zenflow is always free
-  const isZenflow = strategy.name.toLowerCase().includes('zen');
+  const isZenflow = strategy?.name.toLowerCase().includes('zen');
   const canAccess = !isPremium || hasPremium || isPaidStrategy || isZenflow;
 
   console.log(`Strategy Details for ${strategy.name}:`, {

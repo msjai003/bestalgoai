@@ -34,3 +34,20 @@ export const STEPS = {
   PARAMETERS: 4,
   BROKER: 5
 } as const;
+
+// Add the PredefinedStrategy interface 
+export interface PredefinedStrategy {
+  id: number;
+  name: string;
+  description: string;
+  parameters: any[];
+  performance: {
+    winRate: string;
+    avgProfit: string;
+    drawdown: string;
+  };
+  package?: string;
+  isPremium?: boolean;
+  strategy_details?: any;
+}
+
