@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -76,7 +77,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
       return false;
     }
     
-    // Check if a valid subscription exists
+    // Check if a valid subscription exists - only Premium, Pro, or Elite plans grant universal access
     const hasPremium = planData && 
                       planData.length > 0 && 
                       (planData[0].plan_name === 'Premium' || 
@@ -110,12 +111,12 @@ export const syncPremiumAccess = async (
 ): Promise<boolean> => {
   try {
     if (specificStrategyId) {
-      console.log(`Syncing access for user ${userId} to specific strategy ${specificStrategyId}`);
+      console.log(`Syncing access for user ${userId} to specific strategy ${specificStrategyId}, premiumStatus=${premiumStatus}`);
     } else {
       console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
     }
 
-    // If we're dealing with a specific strategy unlock rather than full premium subscription
+    // If we're dealing with a specific strategy unlock
     if (specificStrategyId) {
       // Only mark the specific strategy as paid, not applying full premium access
       const { error: updateError } = await supabase

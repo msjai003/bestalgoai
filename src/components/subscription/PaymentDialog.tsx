@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -142,12 +141,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 .maybeSingle();
                 
               if (!planError && !planDetails) {
-                // No plan details found, insert new entry
+                // No plan details found, insert new entry with the exact plan name
                 await supabase
                   .from('plan_details')
                   .insert({
                     user_id: user.id,
-                    plan_name: 'Premium',
+                    plan_name: planName, // Use exact plan name, not hardcoded "Premium"
                     plan_price: planPrice,
                     is_paid: true
                   });
@@ -155,7 +154,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 // Update existing plan to paid status
                 await supabase
                   .from('plan_details')
-                  .update({ is_paid: true })
+                  .update({ is_paid: true, plan_name: planName }) // Update the plan name to correct value
                   .eq('id', planDetails.id);
               }
               
@@ -187,6 +186,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     .eq('user_id', user.id)
                     .eq('strategy_id', selectedStrategyId);
                 }
+                
+                // Call syncPremiumAccess with specificStrategyId parameter
+                // The false parameter ensures we don't grant universal premium access
+                await syncPremiumAccess(user.id, false, selectedStrategyId);
               }
 
               toast({

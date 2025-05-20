@@ -87,12 +87,12 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Store the actual plan name provided in the props rather than a hardcoded value
+      // Store the actual plan details provided in the props
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
-          plan_name: planName, // Use the actual plan name from props
+          plan_name: planName, // Use the exact plan name from props
           plan_price: planPrice,
           is_paid: true
         });
@@ -141,12 +141,12 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
             });
         }
         
-        // Call syncPremiumAccess with the specificStrategyId to ensure ONLY this strategy is marked as paid
+        // Call syncPremiumAccess with the specificStrategyId and set premiumStatus to false
+        // This ensures ONLY this strategy is marked as paid and premium access is NOT granted
         await syncPremiumAccess(user.id, false, selectedStrategyId);
       } 
       // If user bought Premium plan, unlock all premium strategies
       else if (planName === 'Premium') {
-        // No changes to the implementation of Premium plan purchase
         console.log("Premium plan purchased - access to all strategies granted through plan_details");
         await syncPremiumAccess(user.id, true);
       }
