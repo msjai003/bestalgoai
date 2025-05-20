@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -89,7 +88,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     try {
       // Create the plan name string that includes the strategy ID if applicable
       let fullPlanName = planName;
-      if (selectedStrategyId) {
+      if (selectedStrategyId && !['Premium', 'Pro', 'Elite'].includes(planName)) {
         fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
       }
       

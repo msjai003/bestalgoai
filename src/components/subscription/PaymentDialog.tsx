@@ -40,6 +40,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const { recordFilePayment } = useFileManagement(user?.id);
+  
+  // Determine if this is a premium plan (Premium, Pro, Elite)
+  const isPremiumPlan = ['Premium', 'Pro', 'Elite'].includes(planName);
 
   const handlePayment = async () => {
     if (!user) {
@@ -109,87 +112,20 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             setIsProcessing(false);
           }
         );
-      } else if (selectedStrategyId) {
-        // Handle strategy purchase
-        const strategyPlanName = `${planName} - Strategy ${selectedStrategyId}`;
-        
-        const options = {
-          key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
-          amount: convertPriceToAmount(planPrice),
-          currency: "INR",
-          name: "InfoCap AI",
-          description: `Payment for ${selectedStrategyName || planName}`,
-          prefill: {
-            name: user.email?.split('@')[0] || "",
-            email: user.email || "",
-          },
-          theme: {
-            color: "#0891B2",
-          },
-        };
-
-        initializeRazorpayPayment(
-          options,
-          async (payment_id) => {
-            console.log("Strategy payment success:", payment_id);
-            
-            // Record the strategy payment in the database
-            try {
-              // Store the strategy ID in session storage to help with navigation
-              sessionStorage.setItem('selectedStrategyId', selectedStrategyId.toString());
-              
-              // Create a plan details entry specifically for this strategy
-              await supabase
-                .from('plan_details')
-                .insert({
-                  user_id: user.id,
-                  plan_name: strategyPlanName,
-                  plan_price: planPrice,
-                  is_paid: true
-                });
-              
-              // Call syncPremiumAccess with specificStrategyId parameter
-              // The false parameter ensures we don't grant universal premium access
-              await syncPremiumAccess(user.id, false, selectedStrategyId);
-
-              toast({
-                title: "Payment successful",
-                description: selectedStrategyName 
-                  ? `You now have access to ${selectedStrategyName}`
-                  : "You now have premium access",
-              });
-              
-              if (onSuccess) onSuccess();
-            } catch (error) {
-              console.error("Error recording strategy payment:", error);
-              toast({
-                title: "Payment recorded but access not updated",
-                description: "Please contact support for assistance.",
-                variant: "destructive",
-              });
-            }
-            
-            setIsProcessing(false);
-            onOpenChange(false);
-          },
-          () => {
-            console.error("Payment failed");
-            toast({
-              title: "Payment failed",
-              description: "Something went wrong with your payment. Please try again.",
-              variant: "destructive",
-            });
-            setIsProcessing(false);
-          }
-        );
       } else {
-        // Regular subscription payment
+        // Handle subscription or strategy purchase
+        const finalPlanName = selectedStrategyId && !isPremiumPlan
+          ? `${planName} - Strategy ${selectedStrategyId}`
+          : planName;
+          
         const options = {
           key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
           amount: convertPriceToAmount(planPrice),
           currency: "INR",
           name: "InfoCap AI",
-          description: `Subscription to ${planName} Plan`,
+          description: selectedStrategyName && !isPremiumPlan 
+            ? `Payment for ${selectedStrategyName}` 
+            : `Subscription to ${planName} Plan`,
           prefill: {
             name: user.email?.split('@')[0] || "",
             email: user.email || "",
@@ -202,23 +138,40 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         initializeRazorpayPayment(
           options,
           async (payment_id) => {
-            console.log("Subscription payment success:", payment_id);
+            console.log("Plan payment success:", payment_id);
             
-            // Record the plan selection with paid status
             try {
+              // Record the plan selection with paid status
               await supabase
                 .from('plan_details')
                 .insert({
                   user_id: user.id,
-                  plan_name: planName,
+                  plan_name: finalPlanName,
                   plan_price: planPrice,
                   is_paid: true
                 });
+              
+              // If this is a premium plan, sync premium access to unlock all strategies
+              if (isPremiumPlan) {
+                await syncPremiumAccess(user.id, true);
                 
-              toast({
-                title: "Payment successful",
-                description: `Your subscription to ${planName} plan is now active`,
-              });
+                toast({
+                  title: "Payment successful",
+                  description: `Your ${planName} plan is now active! All premium strategies are unlocked.`,
+                });
+              } else if (selectedStrategyId) {
+                // For individual strategy purchases
+                // Store selected strategy ID in session storage to help with navigation
+                sessionStorage.setItem('selectedStrategyId', String(selectedStrategyId));
+                
+                // Sync access for this specific strategy
+                await syncPremiumAccess(user.id, false, selectedStrategyId);
+                
+                toast({
+                  title: "Payment successful",
+                  description: `You now have access to ${selectedStrategyName || 'the selected strategy'}`,
+                });
+              }
               
               if (onSuccess) onSuccess();
             } catch (error) {
@@ -273,11 +226,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               <p className="text-gray-300 text-sm mt-2">
                 One-time payment to unlock this file for permanent access.
               </p>
-            ) : selectedStrategyId ? (
+            ) : selectedStrategyId && !isPremiumPlan ? (
               <p className="text-gray-300 text-sm mt-2">
                 One-time payment to unlock the {selectedStrategyName} strategy permanently.
               </p>
-            ) : (
+            ) : isPremiumPlan ? (
               <div className="mt-2 space-y-2">
                 <p className="text-gray-300 text-sm flex items-center">
                   <span className="mr-2">✓</span> All Premium Trading Strategies
@@ -289,6 +242,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <span className="mr-2">✓</span> Priority Support
                 </p>
               </div>
+            ) : (
+              <p className="text-gray-300 text-sm mt-2">
+                Subscription to {planName} plan.
+              </p>
             )}
           </div>
 

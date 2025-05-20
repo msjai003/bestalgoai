@@ -13,6 +13,7 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const StrategySelection = () => {
   // Always set predefined as the selected tab and make sure it doesn't change
   const [selectedTab, setSelectedTab] = useState<"predefined" | "custom">("predefined");
   const { data: predefinedStrategies, isLoading: isLoadingStrategies } = usePredefinedStrategies();
+  const [hasPremium, setHasPremium] = useState(false);
   
   const {
     strategies,
@@ -40,7 +42,6 @@ const StrategySelection = () => {
     handleCancelQuantity,
     handleBrokerSubmit,
     handleCancelBroker,
-    hasPremium
   } = useStrategy(predefinedStrategies || []);
 
   // Force the selectedTab to always be "predefined"
@@ -49,6 +50,19 @@ const StrategySelection = () => {
       setSelectedTab("predefined");
     }
   }, [selectedTab]);
+  
+  // Check for premium status when user is available
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      if (user) {
+        const isPremium = await checkUserPremiumStatus(user.id);
+        setHasPremium(isPremium);
+        console.log("Premium status in StrategySelection:", isPremium);
+      }
+    };
+    
+    checkPremiumStatus();
+  }, [user]);
 
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
