@@ -90,12 +90,13 @@ const Dashboard = () => {
           .limit(1)
           .maybeSingle();
           
-        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.is_paid === true)) {
+        if (data && (data.plan_name === 'Pro' || data.plan_name === 'Elite' || data.plan_name === 'Premium')) {
           setHasPremium(true);
           
           // If the user has premium, sync their access to unlock strategies
           if (!isSyncingPremium && data.is_paid === true) {
             setIsSyncingPremium(true);
+            // Make sure we include both required parameters
             const syncResult = await syncPremiumAccess(user.id, true);
             setIsSyncingPremium(false);
             

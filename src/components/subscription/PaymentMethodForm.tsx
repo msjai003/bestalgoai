@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { syncPremiumAccess } from "@/lib/supabase/subscription";
 
 interface PaymentMethodFormProps {
   planName: string;
@@ -86,12 +87,12 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Save the plan details
+      // Store the actual plan name provided in the props rather than a hardcoded value
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
           user_id: user.id,
-          plan_name: planName,
+          plan_name: planName, // Use the actual plan name from props
           plan_price: planPrice,
           is_paid: true
         });
@@ -139,11 +140,15 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
               is_wishlisted: false // Explicitly not wishlisted by default
             });
         }
+        
+        // Call syncPremiumAccess with the specificStrategyId to ensure ONLY this strategy is marked as paid
+        await syncPremiumAccess(user.id, false, selectedStrategyId);
       } 
       // If user bought Premium plan, unlock all premium strategies
       else if (planName === 'Premium') {
         // No changes to the implementation of Premium plan purchase
         console.log("Premium plan purchased - access to all strategies granted through plan_details");
+        await syncPremiumAccess(user.id, true);
       }
       
       // Remove the selected strategy ID from session storage
