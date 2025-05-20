@@ -185,7 +185,7 @@ const StrategyDetails = () => {
   useEffect(() => {
     const isPremiumStrategy = strategy && (
       strategy.package === 'premium' || 
-      strategy.isPremium === true || 
+      strategy.package === 'Premium' ||
       strategy.name.toLowerCase().includes('evercrest') || 
       strategy.name.toLowerCase().includes('nova') || 
       strategy.name.toLowerCase().includes('velox') || 
@@ -194,7 +194,6 @@ const StrategyDetails = () => {
     
     if (isPremiumStrategy && !hasPremium && !isPaidStrategy && user) {
       toast({
-        title: "Premium Strategy",
         description: "Please upgrade to access this premium strategy",
       });
     }
@@ -203,7 +202,6 @@ const StrategyDetails = () => {
   const handleToggleWishlist = async () => {
     if (!user || !strategy) {
       toast({
-        title: "Authentication required",
         description: "Please log in to add strategies to your wishlist",
       });
       return;
@@ -218,7 +216,6 @@ const StrategyDetails = () => {
         
         setIsWishlisted(true);
         toast({
-          title: "Added to wishlist",
           description: "Strategy has been added to your wishlist",
         });
       } else {
@@ -227,14 +224,12 @@ const StrategyDetails = () => {
         
         setIsWishlisted(false);
         toast({
-          title: "Removed from wishlist",
           description: "Strategy has been removed from your wishlist",
         });
       }
     } catch (error) {
       console.error('Error toggling wishlist status:', error);
       toast({
-        title: "Error",
         description: "Failed to update wishlist in database",
         variant: "destructive"
       });
@@ -270,7 +265,7 @@ const StrategyDetails = () => {
 
   // Determine if this is a premium strategy that requires payment
   const isPremium = strategy.package === 'premium' || 
-                   strategy.isPremium === true || 
+                   strategy.package === 'Premium' ||
                    strategy.name.toLowerCase().includes('evercrest') || 
                    strategy.name.toLowerCase().includes('nova') || 
                    strategy.name.toLowerCase().includes('velox') || 

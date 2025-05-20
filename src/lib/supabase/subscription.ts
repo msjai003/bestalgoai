@@ -2,6 +2,59 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
+ * Syncs the wishlist status for a strategy in the wishlist_maintain table
+ * @param userId The user's ID
+ * @param strategyId The strategy ID
+ * @param strategyName The name of the strategy
+ * @param strategyDescription The description of the strategy
+ * @param isWishlisted Whether the strategy should be wishlisted or not
+ * @returns Promise<void>
+ */
+export const syncWishlistMaintain = async (
+  userId: string,
+  strategyId: number,
+  strategyName: string,
+  strategyDescription: string,
+  isWishlisted: boolean
+): Promise<void> => {
+  try {
+    if (isWishlisted) {
+      // Add to wishlist_maintain table
+      const { error } = await supabase
+        .from('wishlist_maintain')
+        .upsert({
+          user_id: userId,
+          strategy_id: strategyId,
+          strategy_name: strategyName,
+          strategy_description: strategyDescription
+        }, {
+          onConflict: 'user_id,strategy_id'
+        });
+        
+      if (error) {
+        console.error('Error adding to wishlist_maintain:', error);
+        throw error;
+      }
+    } else {
+      // Remove from wishlist_maintain table
+      const { error } = await supabase
+        .from('wishlist_maintain')
+        .delete()
+        .eq('user_id', userId)
+        .eq('strategy_id', strategyId);
+        
+      if (error) {
+        console.error('Error removing from wishlist_maintain:', error);
+        throw error;
+      }
+    }
+  } catch (error) {
+    console.error('Error in syncWishlistMaintain:', error);
+    throw error;
+  }
+};
+
+/**
  * Check if a user has premium access
  * @param userId The user's ID to check subscription status for
  * @returns boolean indicating if the user has an active premium subscription
@@ -45,35 +98,57 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
 };
 
 /**
- * Check if a user has access to a specific strategy
+ * Updates a user's premium access in both strategy_selections and wishlist tables
  * @param userId The user's ID
- * @param strategyId The strategy ID to check access for
- * @returns boolean indicating if the user can access this strategy
+ * @param premiumStatus The premium status to set
  */
-export const checkStrategyAccess = async (userId: string, strategyId: number): Promise<boolean> => {
+export const syncPremiumAccess = async (
+  userId: string,
+  premiumStatus: boolean
+): Promise<void> => {
   try {
-    // First, check if the user has general premium access
-    const hasPremium = await checkUserPremiumStatus(userId);
-    if (hasPremium) {
-      return true;
-    }
-    
-    // If not, check if this specific strategy has been individually purchased/unlocked
-    const { data, error } = await supabase
+    console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
+
+    // First, determine which strategies were previously paid for
+    const { data: paidStrategies, error: queryError } = await supabase
       .from('strategy_selections')
-      .select('id, paid_status')
+      .select('strategy_id, strategy_name, strategy_description')
       .eq('user_id', userId)
-      .eq('strategy_id', strategyId);
-      
-    if (error) {
-      console.error('Error checking strategy access:', error);
-      return false;
+      .eq('paid_status', 'paid');
+
+    if (queryError) {
+      console.error('Error querying paid strategies:', queryError);
+      throw queryError;
     }
     
-    // Strategy is accessible if it exists in the user's selection and is marked as paid
-    return data && data.length > 0 && data[0].paid_status === 'paid';
+    // If we're upgrading to premium, we don't need to do anything with individual
+    // strategy payments since premium access covers all strategies
+    if (premiumStatus) {
+      console.log('User upgraded to premium, no need to modify individual strategy payments');
+      return;
+    }
+
+    // If we're downgrading from premium, we need to ensure previously individually
+    // paid strategies remain accessible
+    if (paidStrategies && paidStrategies.length > 0) {
+      console.log(`Found ${paidStrategies.length} individually paid strategies to preserve`);
+      
+      // For each previously paid strategy, ensure it remains marked as paid
+      for (const strategy of paidStrategies) {
+        const { error: updateError } = await supabase
+          .from('strategy_selections')
+          .update({ paid_status: 'paid' })
+          .eq('user_id', userId)
+          .eq('strategy_id', strategy.strategy_id);
+          
+        if (updateError) {
+          console.error(`Error preserving paid status for strategy ${strategy.strategy_id}:`, updateError);
+          // Continue with other strategies even if one fails
+        }
+      }
+    }
   } catch (error) {
-    console.error('Exception checking strategy access:', error);
-    return false;
+    console.error('Error in syncPremiumAccess:', error);
+    throw error;
   }
 };

@@ -4,7 +4,6 @@ import { Strategy } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { syncWishlistMaintain } from "@/lib/supabase/subscription";
 
 // Helper function to add strategy to wishlist using the wishlist_maintain table
 export const addToWishlist = async (
@@ -16,8 +15,17 @@ export const addToWishlist = async (
   try {
     console.log(`Adding strategy ${strategyId} to wishlist for user ${userId}`);
     
-    // Sync with wishlist_maintain table
-    await syncWishlistMaintain(userId, strategyId, strategyName, strategyDescription, true);
+    // Insert into wishlist_maintain table
+    const { error } = await supabase
+      .from('wishlist_maintain')
+      .insert({
+        user_id: userId,
+        strategy_id: strategyId,
+        strategy_name: strategyName,
+        strategy_description: strategyDescription
+      });
+    
+    if (error) throw error;
     console.log("Strategy added to wishlist_maintain table");
     
     // Also update the strategy_selections table to maintain backward compatibility
@@ -73,8 +81,14 @@ export const removeFromWishlist = async (userId: string, strategyId: number): Pr
   try {
     console.log(`Removing strategy ${strategyId} from wishlist for user ${userId}`);
     
-    // Sync with wishlist_maintain table - set isWishlisted to false to remove
-    await syncWishlistMaintain(userId, strategyId, "", "", false);
+    // Remove from wishlist_maintain table
+    const { error: deleteError } = await supabase
+      .from('wishlist_maintain')
+      .delete()
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId);
+    
+    if (deleteError) throw deleteError;
     console.log("Deleted from wishlist_maintain table");
     
     // Update the strategy_selections table to maintain backward compatibility
@@ -179,7 +193,7 @@ export const useStrategyWishlist = () => {
             performance: {
               winRate: "N/A",
               avgProfit: "N/A",
-              drawdown: "N/A" // Added missing property from Strategy interface
+              drawdown: "N/A"
             }
           }));
           
@@ -189,7 +203,6 @@ export const useStrategyWishlist = () => {
       } catch (error) {
         console.error("Error loading wishlist:", error);
         toast({
-          title: "Error",
           description: "Failed to load wishlist items",
           variant: "destructive"
         });
