@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         );
       } else if (selectedStrategyId) {
         // Handle strategy purchase
+        const strategyPlanName = `${planName} - Strategy ${selectedStrategyId}`;
+        
         const options = {
           key: "rzp_test_mASR2hbkwpBOuE", // Updated to test key
           amount: convertPriceToAmount(planPrice),
@@ -136,13 +139,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               sessionStorage.setItem('selectedStrategyId', selectedStrategyId.toString());
               
               // Create a plan details entry specifically for this strategy
-              const planName = `${planName} - Strategy ${selectedStrategyId}`;
-              
               await supabase
                 .from('plan_details')
                 .insert({
                   user_id: user.id,
-                  plan_name: planName,
+                  plan_name: strategyPlanName,
                   plan_price: planPrice,
                   is_paid: true
                 });
