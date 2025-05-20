@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -97,10 +96,10 @@ const Dashboard = () => {
           // If the user has premium, sync their access to unlock strategies
           if (!isSyncingPremium && data.is_paid === true) {
             setIsSyncingPremium(true);
-            const synced = await syncPremiumAccess(user.id);
+            const syncResult = await syncPremiumAccess(user.id, true);
             setIsSyncingPremium(false);
             
-            if (synced) {
+            if (syncResult) {
               console.log("Premium access synced successfully");
             }
           }

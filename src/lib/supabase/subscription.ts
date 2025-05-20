@@ -101,11 +101,12 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
  * Updates a user's premium access in both strategy_selections and wishlist tables
  * @param userId The user's ID
  * @param premiumStatus The premium status to set
+ * @returns Promise<boolean> indicating if the operation was successful
  */
 export const syncPremiumAccess = async (
   userId: string,
   premiumStatus: boolean
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
 
@@ -125,7 +126,7 @@ export const syncPremiumAccess = async (
     // strategy payments since premium access covers all strategies
     if (premiumStatus) {
       console.log('User upgraded to premium, no need to modify individual strategy payments');
-      return;
+      return true;
     }
 
     // If we're downgrading from premium, we need to ensure previously individually
@@ -147,8 +148,53 @@ export const syncPremiumAccess = async (
         }
       }
     }
+    
+    return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
-    throw error;
+    return false;
+  }
+};
+
+/**
+ * Checks if a user has access to a specific strategy, either through individual purchase or premium status
+ * @param userId The user's ID
+ * @param strategyId The strategy ID to check access for
+ * @returns Promise<boolean> indicating if the user has access to the strategy
+ */
+export const checkStrategyAccess = async (
+  userId: string,
+  strategyId: number
+): Promise<boolean> => {
+  try {
+    console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
+    
+    // Check if the user has specifically paid for this strategy
+    const { data: strategyData, error: strategyError } = await supabase
+      .from('strategy_selections')
+      .select('paid_status')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId)
+      .maybeSingle();
+      
+    if (strategyError) {
+      console.error('Error checking strategy access:', strategyError);
+      return false;
+    }
+    
+    // If the user has specifically paid for this strategy, grant access
+    if (strategyData && strategyData.paid_status === 'paid') {
+      console.log(`User ${userId} has individual access to strategy ${strategyId}`);
+      return true;
+    }
+    
+    // Check if the user has premium status, which grants access to all premium strategies
+    const hasPremium = await checkUserPremiumStatus(userId);
+    console.log(`User ${userId} premium status: ${hasPremium}`);
+    
+    return hasPremium;
+  } catch (error) {
+    console.error('Error checking strategy access:', error);
+    return false;
   }
 };
