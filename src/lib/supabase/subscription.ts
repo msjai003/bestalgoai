@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -101,15 +100,40 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
  * Updates a user's premium access in both strategy_selections and wishlist tables
  * @param userId The user's ID
  * @param premiumStatus The premium status to set
+ * @param specificStrategyId The specific strategy ID to update (optional)
  * @returns Promise<boolean> indicating if the operation was successful
  */
 export const syncPremiumAccess = async (
   userId: string,
-  premiumStatus: boolean
+  premiumStatus: boolean,
+  specificStrategyId?: number
 ): Promise<boolean> => {
   try {
-    console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
+    if (specificStrategyId) {
+      console.log(`Syncing access for user ${userId} to specific strategy ${specificStrategyId}`);
+    } else {
+      console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
+    }
 
+    // If we're dealing with a specific strategy unlock rather than full premium subscription
+    if (specificStrategyId) {
+      // Only mark the specific strategy as paid, not applying full premium access
+      const { error: updateError } = await supabase
+        .from('strategy_selections')
+        .update({ paid_status: 'paid' })
+        .eq('user_id', userId)
+        .eq('strategy_id', specificStrategyId);
+        
+      if (updateError) {
+        console.error(`Error updating paid status for strategy ${specificStrategyId}:`, updateError);
+        return false;
+      }
+      
+      console.log(`Successfully updated paid status for strategy ${specificStrategyId}`);
+      return true;
+    }
+    
+    // Standard premium subscription logic (unchanged)
     // First, determine which strategies were previously paid for
     const { data: paidStrategies, error: queryError } = await supabase
       .from('strategy_selections')
