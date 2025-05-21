@@ -83,8 +83,7 @@ const Dashboard = () => {
     
     const checkPremium = async () => {
       try {
-        // Using the checkUserPremiumStatus function to check premium status
-        // This will check if the user has a paid Premium/Pro/Elite plan
+        // Check if the user has a paid Premium/Pro/Elite plan
         const isPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(isPremium);
         
