@@ -116,9 +116,19 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       }
       
       // If user purchased the Premium plan, unlock all premium strategies
-      if (planName === 'Premium' || planName === 'Pro' || planName === 'Elite') {
+      const isPremiumPlan = planName === 'Premium' || planName === 'Pro' || planName === 'Elite';
+      if (isPremiumPlan) {
         console.log(`${planName} plan purchased - access to all premium strategies granted`);
-        await syncPremiumAccess(user.id, true);
+        
+        // This will now update strategy_selections with all premium strategies
+        const syncResult = await syncPremiumAccess(user.id, true);
+        
+        if (syncResult) {
+          console.log("Successfully synced premium access to all strategies");
+        } else {
+          console.error("Failed to sync premium access to all strategies");
+        }
+        
         toast({
           title: "Payment successful",
           description: `Your ${planName} plan is now active! All premium strategies are unlocked.`,
@@ -132,6 +142,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         // Store selected strategy ID in session storage to help with navigation after payment
         sessionStorage.setItem('selectedStrategyId', String(selectedStrategyId));
         
+        // This will update just the one strategy
         await syncPremiumAccess(user.id, false, selectedStrategyId);
         
         toast({
