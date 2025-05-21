@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,7 +85,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           </div>
           
           {/* Show premium badge only if not paid for */}
-          {(isPremium && !strategy.isPaid) && (
+          {(isPremium && !isAccessible) && (
             <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
               Premium
             </Badge>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,13 @@ import { NoStrategiesFound } from '@/components/strategy/NoStrategiesFound';
 import { StrategyList } from '@/components/strategy/StrategyList';
 import { TradingControls } from '@/components/strategy/TradingControls';
 import { useLiveTrading } from '@/hooks/strategy/useLiveTrading';
+import { checkUserPremiumStatus } from '@/lib/supabase/subscription';
+import { useAuth } from '@/contexts/auth/AuthContext';
+import { toast } from 'sonner';
 
 const LiveTrading = () => {
+  const { user } = useAuth();
+  
   const {
     isActive,
     selectedMode,
@@ -35,8 +40,47 @@ const LiveTrading = () => {
     navigate,
     setCurrentStrategyId,
     currentStrategyName,
-    currentBrokerName
+    currentBrokerName,
+    refreshStrategies
   } = useLiveTrading();
+
+  // Check premium status when component mounts or when user changes
+  useEffect(() => {
+    if (!user) return;
+    
+    const verifyPremiumStatus = async () => {
+      try {
+        const hasPremium = await checkUserPremiumStatus(user.id);
+        console.log("LiveTrading - Premium status check:", hasPremium);
+        
+        // If premium status changes, refresh strategies to update UI
+        if (hasPremium) {
+          console.log("User has premium access, refreshing strategies");
+          refreshStrategies();
+        }
+      } catch (error) {
+        console.error("Error checking premium status:", error);
+      }
+    };
+    
+    verifyPremiumStatus();
+    
+    // Check for potential redirect after payment
+    const redirectPath = sessionStorage.getItem('redirectAfterPayment');
+    const selectedStrategyId = sessionStorage.getItem('selectedStrategyId');
+    
+    if (redirectPath === '/live-trading' && selectedStrategyId) {
+      console.log("Detected return from payment for strategy:", selectedStrategyId);
+      sessionStorage.removeItem('redirectAfterPayment');
+      sessionStorage.removeItem('selectedStrategyId');
+      
+      // Force refresh strategies to reflect new premium status
+      setTimeout(() => {
+        refreshStrategies();
+        toast.success("Your premium access has been activated!");
+      }, 500);
+    }
+  }, [user, refreshStrategies]);
 
   return (
     <div className="bg-[#121212] min-h-screen flex flex-col">
