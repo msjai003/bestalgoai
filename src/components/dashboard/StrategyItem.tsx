@@ -87,6 +87,15 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   const handleUnlockClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Store the strategy ID in session storage so the pricing page knows which strategy to unlock
+    if (strategy.id) {
+      sessionStorage.setItem('selectedStrategyId', String(strategyIdNumber));
+      
+      // Set a path to return to after payment
+      sessionStorage.setItem('redirectAfterPayment', `/strategy-details/${strategyIdNumber}`);
+    }
+    
     onPremiumClick();
   };
 
@@ -95,6 +104,15 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     if (!isAccessible) {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Store the strategy ID in session storage so the pricing page knows which strategy to unlock
+      if (strategy.id) {
+        sessionStorage.setItem('selectedStrategyId', String(strategyIdNumber));
+        
+        // Set a path to return to after payment
+        sessionStorage.setItem('redirectAfterPayment', `/strategy-details/${strategyIdNumber}`);
+      }
+      
       onPremiumClick();
     }
   };

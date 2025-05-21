@@ -87,21 +87,20 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // For premium plan purchases, store just the plan name without appending strategy ID
+      // Determine if this is a premium plan (Premium, Pro, Elite)
+      const isPremiumPlan = planName === 'Premium' || planName === 'Pro' || planName === 'Elite';
+      
+      // For premium plans, store just the plan name
       // For individual strategy purchases, include the strategy ID in the plan name
       let fullPlanName = planName;
       
-      // Only append strategy ID for non-premium/pro/elite plans
-      if (selectedStrategyId && 
-          planName !== 'Premium' && 
-          planName !== 'Pro' && 
-          planName !== 'Elite') {
+      if (selectedStrategyId && !isPremiumPlan) {
         fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
       }
       
-      console.log(`Storing plan details with name: ${fullPlanName}`);
+      console.log(`Storing plan details with name: ${fullPlanName}, is premium plan: ${isPremiumPlan}`);
       
-      // Store the plan details with the strategy information and explicitly set is_paid to true
+      // Always store with is_paid set to true to ensure it's recognized as a valid purchase
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
@@ -115,10 +114,15 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         throw planError;
       }
       
-      // If user purchased the Premium plan, unlock all premium strategies
-      if (planName === 'Premium' || planName === 'Pro' || planName === 'Elite') {
-        console.log(`${planName} plan purchased - access to all premium strategies granted`);
-        await syncPremiumAccess(user.id, true);
+      // For Premium/Pro/Elite plans, sync premium access to unlock all premium strategies
+      if (isPremiumPlan) {
+        console.log(`${planName} plan purchased - syncing access to all premium strategies`);
+        const syncResult = await syncPremiumAccess(user.id, true);
+        
+        if (!syncResult) {
+          console.error("Error syncing premium access");
+        }
+        
         toast({
           title: "Payment successful",
           description: `Your ${planName} plan is now active! All premium strategies are unlocked.`,

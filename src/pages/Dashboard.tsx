@@ -92,19 +92,30 @@ const Dashboard = () => {
         // If the user has premium, sync their access to unlock strategies
         if (isPremium && !isSyncingPremium) {
           setIsSyncingPremium(true);
+          
+          // Make sure to sync premium access on load
           const syncResult = await syncPremiumAccess(user.id, true);
           setIsSyncingPremium(false);
           
           if (syncResult) {
             console.log("Premium access synced successfully");
+          } else {
+            console.error("Failed to sync premium access");
           }
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
+        setIsSyncingPremium(false);
       }
     };
     
+    // Check premium status on initial load
     checkPremium();
+    
+    // Also set up a periodic check to ensure premium status is up to date
+    const checkInterval = setInterval(checkPremium, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(checkInterval);
   }, [user, isSyncingPremium]);
 
   const handlePremiumClick = () => {

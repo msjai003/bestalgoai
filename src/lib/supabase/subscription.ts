@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -125,9 +126,80 @@ export const syncPremiumAccess = async (
       return true;
     }
     
-    // Standard premium subscription logic for plan-based premium access
-    // We no longer need to query strategy_selections for paid strategies
-    // as we're only using plan_details for access management
+    // If the user has premium status, we need to update all premium strategies 
+    // to mark them as accessible by adding entries to strategy_selections
+    if (premiumStatus) {
+      console.log(`Setting premium access to TRUE for user ${userId}`);
+      
+      // Get all premium strategies from predefined_strategies
+      const { data: premiumStrategies, error: strategiesError } = await supabase
+        .from('predefined_strategies')
+        .select('*')
+        .eq('package', 'premium');
+      
+      if (strategiesError) {
+        console.error('Error fetching premium strategies:', strategiesError);
+        return false;
+      }
+      
+      // For each premium strategy, ensure the user has an entry in strategy_selections
+      // This is only for visibility in the UI, as we now check premium status directly
+      if (premiumStrategies && premiumStrategies.length > 0) {
+        console.log(`Found ${premiumStrategies.length} premium strategies to sync`);
+        
+        for (const strategy of premiumStrategies) {
+          const { data: existingSelection, error: selectionError } = await supabase
+            .from('strategy_selections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('strategy_id', strategy.id)
+            .maybeSingle();
+          
+          if (selectionError) {
+            console.error(`Error checking existing selection for strategy ${strategy.id}:`, selectionError);
+            continue;
+          }
+          
+          if (existingSelection) {
+            // Update existing entry to mark it as paid
+            const { error: updateError } = await supabase
+              .from('strategy_selections')
+              .update({ 
+                paid_status: 'paid' 
+              })
+              .eq('user_id', userId)
+              .eq('strategy_id', strategy.id);
+              
+            if (updateError) {
+              console.error(`Error updating strategy selection for strategy ${strategy.id}:`, updateError);
+            } else {
+              console.log(`Updated strategy selection for strategy ${strategy.id}`);
+            }
+          } else {
+            // Create new entry for this strategy
+            const { error: insertError } = await supabase
+              .from('strategy_selections')
+              .insert({
+                user_id: userId,
+                strategy_id: strategy.id,
+                strategy_name: strategy.name,
+                strategy_description: strategy.description,
+                paid_status: 'paid',
+                is_wishlisted: false,
+                trade_type: 'paper trade',
+                quantity: 0
+              });
+              
+            if (insertError) {
+              console.error(`Error inserting strategy selection for strategy ${strategy.id}:`, insertError);
+            } else {
+              console.log(`Inserted strategy selection for strategy ${strategy.id}`);
+            }
+          }
+        }
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
