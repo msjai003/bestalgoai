@@ -51,29 +51,10 @@ const Dashboard = () => {
               // Ensure ID is a number for comparison
               const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
               
-              // Check if this is Zenflow strategy (always free)
-              const isZenflow = strategy.name.toLowerCase().includes('zen');
+              // Check if strategy is premium based on package field
+              const isPremium = strategy.package === 'premium';
               
-              // Check if this is Evercrest strategy (always premium)
-              const isEvercrest = strategy.name.toLowerCase().includes('evercrest');
-              
-              // Check if this is Speed Up strategy (always premium)
-              const isSpeedUp = strategy.name.toLowerCase().includes('speed up');
-              
-              // Check if this is Velox Edge strategy (always premium)
-              const isVeloxEdge = strategy.name.toLowerCase().includes('velox');
-              
-              // Check if this is NovaGlide strategy (always premium)
-              const isNovaGlide = strategy.name.toLowerCase().includes('nova');
-              
-              // A strategy is premium if:
-              // - it has package='premium', OR 
-              // - isPremium flag is true, OR
-              // - is Evercrest, Speed Up, Velox Edge, or NovaGlide,
-              // BUT NOT if it's Zenflow (Zenflow is always free)
-              const isPremium = (strategy.package === 'premium' || isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
-              
-              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}, isZenflow: ${isZenflow}, isEvercrest: ${isEvercrest}, isSpeedUp: ${isSpeedUp}, isVeloxEdge: ${isVeloxEdge}, isNovaGlide: ${isNovaGlide}`);
+              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}`);
               
               return {
                 id: strategyIdNumber,
@@ -105,7 +86,6 @@ const Dashboard = () => {
         // Using the improved checkUserPremiumStatus function to check premium status
         const isPremium = await checkUserPremiumStatus(user.id);
         setHasPremium(isPremium);
-        console.log("Dashboard: Premium status set to:", isPremium);
         
         // If the user has premium, sync their access to unlock strategies
         if (isPremium && !isSyncingPremium) {
