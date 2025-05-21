@@ -49,7 +49,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   
   // A strategy is accessible if:
   // - it's not premium, OR
-  // - the user has premium access (hasPremium), OR
+  // - the user has premium access (hasPremium from a plan), OR
   // - this specific strategy has been paid for (isPaid)
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   

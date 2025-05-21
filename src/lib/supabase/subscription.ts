@@ -85,7 +85,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
                        planData[0].plan_name === 'Pro' || 
                        planData[0].plan_name === 'Elite') &&
                       !planData[0].plan_name.includes('Strategy') && 
-                      planData[0].is_paid === true; // Added explicit check for is_paid being true
+                      planData[0].is_paid === true; // Explicit check for is_paid being true
     
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
