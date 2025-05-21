@@ -43,7 +43,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - Package is 'premium'
   // - OR isPremium flag is true
   // - OR it's one of the specific premium strategies (Evercrest, Speed Up, Velox Edge, NovaGlide)
-  // - BUT NOT if it's Zenflow (Zenflow is free)
+  // - BUT NOT if it's Zenflow (Zenflow is always free)
   const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || 
     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
@@ -51,8 +51,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
-  // This enforces that the strategy is only accessible if it has been specifically paid for
-  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
+  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid === true;
   
   // Show lock icon for premium strategies that are not accessible
   const shouldShowLock = isActuallyPremium && !isAccessible;
