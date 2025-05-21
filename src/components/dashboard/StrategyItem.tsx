@@ -1,11 +1,9 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { checkStrategyAccess } from "@/lib/supabase/subscription";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface StrategyItemProps {
   strategy: {
@@ -22,8 +20,6 @@ interface StrategyItemProps {
 
 const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isAccessible, setIsAccessible] = useState(false);
   
   // Always convert ID to number for comparison
   const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
@@ -51,34 +47,11 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   const isActuallyPremium = (strategy.package === 'premium' || strategy.isPremium === true || 
     isEvercrest || isSpeedUp || isVeloxEdge || isNovaGlide) && !isZenflow;
   
-  useEffect(() => {
-    const checkAccess = async () => {
-      if (!user || !isActuallyPremium) {
-        // If no user or strategy is not premium, set default access state
-        setIsAccessible(!isActuallyPremium || hasPremium || strategy.isPaid === true);
-        return;
-      }
-
-      try {
-        // Check access directly from the database for accurate real-time status
-        const hasAccess = await checkStrategyAccess(user.id, strategyIdNumber);
-        setIsAccessible(hasAccess);
-        
-        console.log(`Strategy ${strategyIdNumber} (${strategy.name}) access check:`, {
-          isActuallyPremium,
-          hasPremium,
-          isPaid: strategy.isPaid,
-          hasAccess
-        });
-      } catch (error) {
-        console.error(`Error checking access for strategy ${strategyIdNumber}:`, error);
-        // Fall back to local logic if DB check fails
-        setIsAccessible(hasPremium || strategy.isPaid === true);
-      }
-    };
-    
-    checkAccess();
-  }, [user, strategyIdNumber, isActuallyPremium, hasPremium, strategy.isPaid, strategy.name]);
+  // A strategy is accessible if:
+  // - it's not premium, OR
+  // - the user has premium access (hasPremium), OR
+  // - this specific strategy has been paid for (isPaid)
+  const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid === true;
   
   // Show lock icon for premium strategies that are not accessible
   const shouldShowLock = isActuallyPremium && !isAccessible;
@@ -114,11 +87,6 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   const handleUnlockClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Store the strategy ID in sessionStorage before redirecting
-    sessionStorage.setItem('selectedStrategyId', strategyIdNumber.toString());
-    sessionStorage.setItem('redirectAfterPayment', '/dashboard');
-    
     onPremiumClick();
   };
 

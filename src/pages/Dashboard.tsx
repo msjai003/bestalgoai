@@ -85,43 +85,27 @@ const Dashboard = () => {
       try {
         // Check if the user has a paid Premium/Pro/Elite plan
         const isPremium = await checkUserPremiumStatus(user.id);
+        setHasPremium(isPremium);
         
-        // Only update state if premium status has changed
-        if (isPremium !== hasPremium) {
-          console.log(`Premium status changed to: ${isPremium}`);
-          setHasPremium(isPremium);
+        console.log('Premium status check result:', isPremium);
+        
+        // If the user has premium, sync their access to unlock strategies
+        if (isPremium && !isSyncingPremium) {
+          setIsSyncingPremium(true);
+          const syncResult = await syncPremiumAccess(user.id, true);
+          setIsSyncingPremium(false);
           
-          // If the user has premium and we haven't synced yet, sync their access to unlock strategies
-          if (isPremium && !isSyncingPremium) {
-            setIsSyncingPremium(true);
-            console.log("Starting premium sync process...");
-            
-            const syncResult = await syncPremiumAccess(user.id, true);
-            setIsSyncingPremium(false);
-            
-            if (syncResult) {
-              console.log("Premium access synced successfully, all strategies unlocked");
-            } else {
-              console.error("Failed to sync premium access");
-            }
+          if (syncResult) {
+            console.log("Premium access synced successfully");
           }
-        } else {
-          console.log(`Premium status unchanged: ${isPremium}`);
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
       }
     };
     
-    // Check premium status immediately on component mount
     checkPremium();
-    
-    // Also set up an interval to check premium status periodically
-    const intervalId = setInterval(checkPremium, 30000); // Check every 30 seconds
-    
-    // Cleanup interval on unmount
-    return () => clearInterval(intervalId);
-  }, [user, isSyncingPremium, hasPremium]);
+  }, [user, isSyncingPremium]);
 
   const handlePremiumClick = () => {
     navigate('/pricing');
