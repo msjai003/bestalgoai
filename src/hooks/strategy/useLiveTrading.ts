@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -89,10 +88,7 @@ export const useLiveTrading = () => {
           brokerUsername: strategy.broker_username,
           isPremium: isPremiumStrategy,
           isPaid: isPaid, // Mark as paid based on premium status
-          package: strategy.package || (isPremiumStrategy ? 'premium' : 'free'),
-          uniqueId: strategy.uniqueId || `${strategy.strategy_id}-${Date.now()}`,
-          rowId: strategy.rowId || `row-${strategy.strategy_id}-${Date.now()}`,
-          paid_status: strategy.paid_status
+          package: strategy.package || (isPremiumStrategy ? 'premium' : 'free')
         };
       }));
       
