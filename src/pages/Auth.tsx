@@ -8,6 +8,7 @@ import { Eye, EyeOff, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
 import ForgotPassword from "@/components/auth/ForgotPassword";
+import { toast } from "sonner";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: toastUI } = useToast();
   const { signIn, user } = useAuth();
 
   // Check if user is already logged in and redirect if true
@@ -39,7 +40,7 @@ const Auth = () => {
       if (error) throw error;
 
       // Successfully logged in - updated message here
-      toast({
+      toastUI({
         title: "Login successful!",
         description: "Welcome back to BestAlgo.ai.",
         variant: "default",
@@ -48,7 +49,7 @@ const Auth = () => {
       signIn(data.session?.user);
       navigate("/dashboard");
     } catch (error: any) {
-      toast({
+      toastUI({
         title: "Login failed!",
         description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",

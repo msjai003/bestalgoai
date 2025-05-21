@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ForgotPasswordProps {
   onBack: () => void;
@@ -16,7 +18,6 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,15 +31,25 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
     }
 
     try {
-      const { error } = await resetPassword(email);
+      // Get the current window location to use as base for the reset URL
+      const baseUrl = window.location.origin;
+      
+      // Send reset email with a redirect to our reset-password page
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${baseUrl}/reset-password`
+      });
       
       if (error) {
-        setErrorMessage(error.message);
+        console.error('Error sending password reset email:', error);
+        setErrorMessage(error.message || 'An error occurred while sending the reset link');
       } else {
         setIsSuccess(true);
+        toast.success('Password reset email sent successfully!');
+        console.log('Password reset email sent to:', email);
       }
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred');
+      console.error('Exception during password reset:', error);
     } finally {
       setIsLoading(false);
     }

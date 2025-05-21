@@ -110,6 +110,7 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
         
         // Get the current window location to use as base for the reset URL
         const baseUrl = window.location.origin;
+        console.log('Reset password base URL:', baseUrl);
         
         // Send reset email with a redirect to our reset-password page
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -121,10 +122,32 @@ export const useAuthActions = ({ setUser, setIsLoading }: UseAuthActionsProps) =
           return { error };
         }
         
+        console.log('Password reset email sent to:', email);
         toast.success('Password reset email sent. Please check your inbox.');
         return { error: null };
       } catch (error: any) {
         console.error('Error sending password reset email:', error);
+        return { error };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    
+    updatePassword: async (newPassword: string) => {
+      try {
+        setIsLoading(true);
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        
+        if (error) {
+          console.error('Error updating password:', error);
+          return { error };
+        }
+        
+        return { error: null };
+      } catch (error: any) {
+        console.error('Error updating password:', error);
         return { error };
       } finally {
         setIsLoading(false);
