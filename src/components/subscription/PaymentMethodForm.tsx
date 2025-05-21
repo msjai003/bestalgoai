@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -86,9 +87,15 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Create the plan name string that includes the strategy ID if applicable
+      // For premium plan purchases, store just the plan name without appending strategy ID
+      // For individual strategy purchases, include the strategy ID in the plan name
       let fullPlanName = planName;
-      if (selectedStrategyId) {
+      
+      // Only append strategy ID for non-premium/pro/elite plans
+      if (selectedStrategyId && 
+          planName !== 'Premium' && 
+          planName !== 'Pro' && 
+          planName !== 'Elite') {
         fullPlanName = `${planName} - Strategy ${selectedStrategyId}`;
       }
       

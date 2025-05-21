@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -83,7 +82,6 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
                       (planData[0].plan_name === 'Premium' || 
                        planData[0].plan_name === 'Pro' || 
                        planData[0].plan_name === 'Elite') &&
-                      !planData[0].plan_name.includes('Strategy') && // Added this check to exclude strategy-specific plans
                       planData[0].is_paid === true; // Explicitly verify is_paid is true
     
     console.log('Premium status check result:', {
@@ -91,7 +89,6 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
       planName: planData?.[0]?.plan_name,
       hasPremium,
       isPaid: planData?.[0]?.is_paid,
-      hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
     
     return !!hasPremium;
