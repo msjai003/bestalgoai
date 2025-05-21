@@ -110,11 +110,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       }
       
       // If user purchased the Premium plan, unlock all premium strategies
-      const isPremiumPlan = planName === 'Premium' || planName === 'Pro' || planName === 'Elite';
-      
-      if (isPremiumPlan) {
+      if (planName === 'Premium' || planName === 'Pro' || planName === 'Elite') {
         console.log(`${planName} plan purchased - access to all premium strategies granted`);
-        // This will unlock all premium strategies
         await syncPremiumAccess(user.id, true);
         toast({
           title: "Payment successful",
@@ -129,7 +126,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
         // Store selected strategy ID in session storage to help with navigation after payment
         sessionStorage.setItem('selectedStrategyId', String(selectedStrategyId));
         
-        await syncPremiumAccess(user.id, true, selectedStrategyId);
+        await syncPremiumAccess(user.id, false, selectedStrategyId);
         
         toast({
           title: "Payment successful",
