@@ -90,7 +90,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
     console.log('Premium status check result:', {
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
-      isPaid: planData?.[0]?.is_paid, // Log the is_paid status
+      isPaid: planData?.[0]?.is_paid, 
       hasPremium,
       hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
@@ -117,21 +117,66 @@ export const syncPremiumAccess = async (
   try {
     if (specificStrategyId) {
       console.log(`Syncing access for user ${userId} to specific strategy ${specificStrategyId}, premiumStatus=${premiumStatus}`);
-    } else {
-      console.log(`Syncing premium access for user ${userId} to ${premiumStatus}`);
-    }
 
-    // If we're dealing with a specific strategy unlock
-    if (specificStrategyId) {
-      // We don't need to do anything with the strategy_selections table anymore
-      // The plan_details entry is sufficient to grant access
-      console.log(`Strategy ${specificStrategyId} access is now managed through plan_details`);
-      return true;
+      // When purchasing a specific strategy, update the strategy_selections table
+      // to mark this specific strategy as paid
+      if (premiumStatus) {
+        const { data: strategyData } = await supabase
+          .from('predefined_strategies')
+          .select('name, description')
+          .eq('id', specificStrategyId)
+          .single();
+
+        if (strategyData) {
+          // Use the DB function to force paid status for this specific strategy
+          const { error } = await supabase.rpc('force_strategy_paid_status', {
+            p_user_id: userId,
+            p_strategy_id: specificStrategyId,
+            p_strategy_name: strategyData.name,
+            p_strategy_description: strategyData.description
+          });
+
+          if (error) {
+            console.error('Error setting strategy paid status:', error);
+            return false;
+          }
+        }
+      }
+    } else if (premiumStatus) {
+      // For general premium access (not strategy-specific), we need to ensure all premium
+      // strategies are marked as accessible
+      console.log(`Syncing general premium access for user ${userId}`);
+
+      // Fetch all premium strategies
+      const { data: premiumStrategies, error: fetchError } = await supabase
+        .from('predefined_strategies')
+        .select('id, name, description')
+        .eq('package', 'premium');
+
+      if (fetchError) {
+        console.error('Error fetching premium strategies:', fetchError);
+        return false;
+      }
+
+      // Mark each premium strategy as paid in the strategy_selections table
+      if (premiumStrategies && premiumStrategies.length > 0) {
+        for (const strategy of premiumStrategies) {
+          // Use the DB function to force paid status for each premium strategy
+          const { error } = await supabase.rpc('force_strategy_paid_status', {
+            p_user_id: userId,
+            p_strategy_id: strategy.id,
+            p_strategy_name: strategy.name,
+            p_strategy_description: strategy.description
+          });
+
+          if (error) {
+            console.error(`Error setting paid status for strategy ${strategy.id}:`, error);
+            // Continue with other strategies even if one fails
+          }
+        }
+      }
     }
     
-    // Standard premium subscription logic for plan-based premium access
-    // We no longer need to query strategy_selections for paid strategies
-    // as we're only using plan_details for access management
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
@@ -192,9 +237,19 @@ export const checkStrategyAccess = async (
       return hasStrategyIdInPlan;
     });
     
-    console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);
+    // Also check if this strategy is marked as paid in strategy_selections table
+    const { data: strategyData, error: strategyError } = await supabase
+      .from('strategy_selections')
+      .select('paid_status')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId)
+      .single();
     
-    return !!hasSpecificAccess;
+    const isStrategyPaid = strategyData && strategyData.paid_status === 'paid';
+    
+    console.log(`User ${userId} strategy access check for ${strategyId}: plan=${hasSpecificAccess}, selection=${isStrategyPaid}`);
+    
+    return !!hasSpecificAccess || !!isStrategyPaid;
   } catch (error) {
     console.error('Error checking strategy access:', error);
     return false;
