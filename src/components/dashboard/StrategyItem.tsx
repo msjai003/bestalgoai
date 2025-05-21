@@ -51,6 +51,7 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   // - it's not premium, OR
   // - the user has premium access (hasPremium), OR
   // - this specific strategy has been paid for (isPaid)
+  // This enforces that the strategy is only accessible if it has been specifically paid for
   const isAccessible = !isActuallyPremium || hasPremium || strategy.isPaid;
   
   // Show lock icon for premium strategies that are not accessible
@@ -87,11 +88,6 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
   const handleUnlockClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Save this strategy ID for after payment
-    sessionStorage.setItem('selectedStrategyId', String(strategy.id));
-    sessionStorage.setItem('redirectAfterPayment', `/strategy-details/${strategy.id}`);
-    
     onPremiumClick();
   };
 
@@ -100,21 +96,13 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
     if (!isAccessible) {
       e.preventDefault();
       e.stopPropagation();
-      
-      // Save this strategy ID for after payment
-      sessionStorage.setItem('selectedStrategyId', String(strategy.id));
-      sessionStorage.setItem('redirectAfterPayment', `/strategy-details/${strategy.id}`);
-      
       onPremiumClick();
-      return;
     }
-    
-    // For accessible strategies, use normal navigation
-    navigate(`/strategy-details/${strategy.id}`);
   };
   
   return (
-    <div 
+    <Link 
+      to={`/strategy-details/${strategy.id}`}
       className="block mb-3"
       onClick={handleStrategyClick}
     >
@@ -146,13 +134,13 @@ const StrategyItem = ({ strategy, hasPremium, onPremiumClick }: StrategyItemProp
           </div>
           <span 
             className="text-cyan text-xs cursor-pointer" 
-            onClick={handleViewDetailsClick}
+            onClick={!isAccessible ? handleViewDetailsClick : undefined}
           >
             View Details
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

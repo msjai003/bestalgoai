@@ -111,7 +111,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       });
       
       sessionStorage.setItem('selectedStrategyId', strategy.id.toString());
-      sessionStorage.setItem('redirectAfterPayment', '/strategy-selection');
+      sessionStorage.setItem('redirectAfterPayment', '/strategy-details/' + strategy.id);
       navigate('/pricing');
       return;
     }
