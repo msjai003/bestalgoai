@@ -89,6 +89,7 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
       hasPlanData: !!planData?.length,
       planName: planData?.[0]?.plan_name,
       hasPremium,
+      isPaid: planData?.[0]?.is_paid,
       hasStrategyInName: planData?.[0]?.plan_name?.includes('Strategy')
     });
     

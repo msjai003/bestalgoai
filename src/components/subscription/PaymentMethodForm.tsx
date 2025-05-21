@@ -95,7 +95,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({
       
       console.log(`Storing plan details with name: ${fullPlanName}`);
       
-      // Store the plan details with the strategy information
+      // Store the plan details with the strategy information and explicitly set is_paid to true
       const { error: planError } = await supabase
         .from('plan_details')
         .insert({
