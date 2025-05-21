@@ -9,9 +9,10 @@ import {
 import { checkUserPremiumStatus, checkStrategyAccess } from "@/lib/supabase/subscription";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { useNavigate } from "react-router-dom";
+import { Strategy } from "./strategy/types";
 
 export const useStrategy = (predefinedStrategies: any[]) => {
-  const [strategies, setStrategies] = useState(predefinedStrategies);
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
@@ -80,7 +81,7 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on all conditions
             isPaid: false
-          };
+          } as Strategy;
         });
       });
     }
@@ -144,22 +145,14 @@ export const useStrategy = (predefinedStrategies: any[]) => {
           // Initially set isPaid to false, we'll check individual strategy access below
           let isPaid = false;
 
-          // Check for individual strategy access more explicitly
-          if (user) {
-            // Check each strategy individually for access
-            checkStrategyAccess(user.id, strategyIdNumber).then(hasAccess => {
-              if (hasAccess) {
-                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is accessible`);
-                // If we have access, update the strategy to mark it as paid
-                setStrategies(currentStrategies => 
-                  currentStrategies.map(s => 
-                    s.id === strategyIdNumber ? { ...s, isPaid: true } : s
-                  )
-                );
-              } else {
-                console.log(`Strategy ${strategyIdNumber}: ${predefinedStrategy.name} is NOT accessible`);
-              }
-            });
+          // If user has premium plan access, mark all premium strategies as paid
+          if (hasPremium && isPremium) {
+            isPaid = true;
+            console.log(`User has premium plan, marking strategy ${predefinedStrategy.name} as accessible`);
+          } else if (userStrategy && userStrategy.paid_status === 'paid') {
+            // If user has individually purchased this strategy, mark it as paid
+            isPaid = true;
+            console.log(`Strategy ${predefinedStrategy.name} is individually purchased`);
           }
           
           console.log(`Merging strategy ${predefinedStrategy.id}: ${predefinedStrategy.name}`, {
@@ -176,30 +169,20 @@ export const useStrategy = (predefinedStrategies: any[]) => {
             isPaid: isPaid
           });
           
-          // Only set strategies as accessible if:
-          // 1. User has general premium access AND the strategy is premium OR
-          // 2. This specific strategy has been paid for
-          let finalIsPaid = isPaid;
-          
-          if (hasPremium && isPremium) {
-            console.log(`User has premium plan, marking premium strategy ${predefinedStrategy.name} as accessible`);
-            finalIsPaid = true;
-          }
-          
           return userStrategy ? {
             ...predefinedStrategy,
             ...userStrategy,
             name: predefinedStrategy.name, // Ensure we keep the original name
             description: predefinedStrategy.description, // Ensure we keep the original description
             isPremium: isPremium, // Keep the premium flag
-            isPaid: finalIsPaid  // Set isPaid based on premium status
-          } : {
+            isPaid: isPaid  // Set isPaid based on premium status
+          } as Strategy : {
             ...predefinedStrategy,
             isWishlisted: false,
             isLive: false,
             isPremium: isPremium, // Setting premium flag based on package
-            isPaid: finalIsPaid  // Initial value that will be updated by checkStrategyAccess
-          };
+            isPaid: isPaid  // Initial value that will be updated by checkStrategyAccess
+          } as Strategy;
         });
         
         console.log("Final merged strategies:", mergedStrategies);
@@ -291,16 +274,13 @@ export const useStrategy = (predefinedStrategies: any[]) => {
       if (!isPremium) {
         canAccess = true;
       } 
-      // If premium, check individual strategy access
+      // If premium, check if user has premium plan
+      else if (hasPremium) {
+        canAccess = true;
+      }
+      // Lastly, check individual strategy access
       else {
-        // Check if the user has individual access to this strategy
-        const hasAccess = await checkStrategyAccess(user.id, id);
-        if (hasAccess) {
-          canAccess = true;
-        } else {
-          // If no individual access, check if user has premium plan
-          canAccess = hasPremium;
-        }
+        canAccess = strategy.isPaid === true;
       }
     }
     

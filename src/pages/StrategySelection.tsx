@@ -13,6 +13,7 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
@@ -50,6 +51,18 @@ const StrategySelection = () => {
     }
   }, [selectedTab]);
 
+  // Check premium status on component mount if user is logged in
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      if (user) {
+        const isPremium = await checkUserPremiumStatus(user.id);
+        console.log("User premium status in StrategySelection:", isPremium);
+      }
+    };
+    
+    checkPremiumStatus();
+  }, [user]);
+
   return (
     <div className="bg-charcoalPrimary min-h-screen flex flex-col">
       <Header />
@@ -71,6 +84,12 @@ const StrategySelection = () => {
                   <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-yellow-900/20 to-yellow-700/10 p-2 pl-3 rounded-lg border border-yellow-700/30">
                     <Sparkles className="h-4 w-4 text-yellow-400 flex-shrink-0" />
                     <p className="text-xs text-yellow-300">Upgrade to unlock premium strategies with advanced features</p>
+                  </div>
+                )}
+                {hasPremium && (
+                  <div className="mt-3 flex items-center gap-2 bg-gradient-to-r from-emerald-900/20 to-emerald-700/10 p-2 pl-3 rounded-lg border border-emerald-700/30">
+                    <Sparkles className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                    <p className="text-xs text-emerald-300">Premium subscription active - All strategies are unlocked</p>
                   </div>
                 )}
               </div>
