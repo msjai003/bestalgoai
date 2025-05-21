@@ -13,6 +13,7 @@ import { StrategyTabNavigation } from "@/components/strategy/StrategyTabNavigati
 import { useStrategy } from "@/hooks/useStrategy";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const StrategySelection = () => {
   const navigate = useNavigate();
