@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BarChart2, ChevronRight, Settings, Power, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     isPremium,
     isAccessible,
     isPaid: strategy.isPaid,
-    hasPremium: strategy.isPaid // If strategy is accessible, user has premium
+    hasPremium: strategy.isPaid, // If strategy is accessible, user has premium
+    name: strategy.name,
+    description: strategy.description,
+    selectedBroker: strategy.selectedBroker,
+    brokerUsername: strategy.brokerUsername
   });
   
   return (

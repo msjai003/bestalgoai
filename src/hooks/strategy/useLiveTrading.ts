@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -123,7 +124,6 @@ export const useLiveTrading = () => {
   const handleTradingToggle = () => {
     setIsActive(!isActive);
     toast({
-      title: !isActive ? "Trading Activated" : "Trading Deactivated",
       description: !isActive 
         ? "Your strategies are now live and will execute trades based on your settings." 
         : "Trading has been paused. No new trades will be executed.",
@@ -195,7 +195,8 @@ export const useLiveTrading = () => {
         finalQuantity,
         finalBrokerName,
         finalUsername,
-        targetMode
+        targetMode,
+        currentStrategyName || ""
       );
       
       toast.success(`Strategy set to ${targetMode} mode successfully`);

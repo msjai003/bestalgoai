@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export const loadUserStrategies = async (userId: string) => {
@@ -14,14 +13,20 @@ export const loadUserStrategies = async (userId: string) => {
     }
 
     return strategySelections.map(selection => ({
+      strategy_id: selection.strategy_id,
+      strategy_name: selection.strategy_name,
+      strategy_description: selection.strategy_description,
       id: selection.strategy_id,
       name: selection.strategy_name,
       description: selection.strategy_description,
       isWishlisted: false, // This value is not stored in the strategy_selections table
       isLive: selection.trade_type === "live trade",
       quantity: selection.quantity,
+      selected_broker: selection.selected_broker,
       selectedBroker: selection.selected_broker,
+      broker_username: selection.broker_username,
       brokerUsername: selection.broker_username,
+      trade_type: selection.trade_type as "paper trade" | "live trade",
       tradeType: selection.trade_type as "paper trade" | "live trade",
       uniqueId: `${selection.strategy_id}-${selection.selected_broker}-${selection.broker_username}`,
       rowId: selection.id,
@@ -31,7 +36,8 @@ export const loadUserStrategies = async (userId: string) => {
         winRate: "N/A",
         avgProfit: "N/A",
         drawdown: "N/A"
-      }
+      },
+      package: 'free' // Default to free unless explicitly set as premium
     }));
   } catch (error) {
     console.error("Error loading user strategies:", error);
