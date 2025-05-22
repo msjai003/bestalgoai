@@ -1,24 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-export interface StrategyLeg {
-  id: number;
-  lots: number;
-  position: string;
-  optionType: string;
-  expiry: string;
-  strikeCriteria: string;
-  premium: number;
-  targetProfit: string;
-  stopLoss: string;
-  trailSL: string;
-  reEntryOnTarget: string;
-  reEntryOnStopLoss: string;
-  simpleMomentum: string;
-  rangeBreakout: string;
-  segment?: string;
-}
+import { StrategyLeg } from "@/hooks/strategy/types";
 
 export interface PredefinedStrategy {
   id: number;
