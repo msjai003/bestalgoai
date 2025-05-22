@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategyLeg } from "@/hooks/strategy/types";
@@ -19,7 +20,8 @@ export interface PredefinedStrategy {
     [key: string]: any;
     Legs?: StrategyLeg[];
   } | null;
-  package: string; // New field: 'premium' or 'free'
+  package: string; // 'premium' or 'free'
+  isPremium: boolean; // Derived from package field
 }
 
 const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
@@ -69,20 +71,20 @@ const fetchPredefinedStrategies = async (): Promise<PredefinedStrategy[]> => {
       console.log(`Strategy ${strategyId} has no legs or invalid leg data.`);
     }
     
-    // Set isPremium based on the new package field
+    // Set isPremium based on the package field
     const isPremium = strategy.package === 'premium';
     
     console.log(`Setting isPremium flag for strategy ${strategyId} to ${isPremium}. Package: ${strategy.package}`);
     
     return {
-      id: strategyId, // Ensure id is a number
+      id: strategyId,
       name: strategy.name,
       description: strategy.description,
       performance: strategy.performance as PredefinedStrategy['performance'],
       parameters: strategy.parameters as PredefinedStrategy['parameters'],
       strategy_details: parsedStrategyDetails as PredefinedStrategy['strategy_details'],
-      package: strategy.package, // Include the package field
-      isPremium: isPremium // Set isPremium based on package field
+      package: strategy.package,
+      isPremium
     };
   });
 };
