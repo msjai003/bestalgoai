@@ -64,31 +64,32 @@ export interface StrategyLeg {
   expiry?: string;
   strikeCriteria?: string;
   premium?: number | string;
+  // Updated to make these properties nullable and consistent with the JSON structure
   stopLoss?: {
     enabled: boolean;
     value?: string | number;
     type?: string;
-  };
+  } | null | string;
   trailSL?: {
     enabled: boolean;
-  };
+  } | null | string;
   targetProfit?: {
     enabled: boolean;
-  };
+  } | null | string;
   reEntryOnTarget?: {
     enabled: boolean;
-  };
+  } | null | string;
   reEntryOnStopLoss?: {
     enabled: boolean;
-  };
+  } | null | string;
   simpleMomentum?: {
     enabled: boolean;
-  };
+  } | null | string;
   rangeBreakout?: {
     enabled: boolean;
     breakoutTime?: string;
     breakoutCondition?: string;
-  };
+  } | null | string;
   [key: string]: any;
 }
 
