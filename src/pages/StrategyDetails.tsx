@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -78,46 +79,94 @@ const StrategyDetails = () => {
       other: []
     };
     
-    const categories = {
-      basicSettings: [
-        'Index', 'Underlying from', 'Strategy Type', 'Segment', 
-        'Position', 'Option Type'
-      ],
-      timeSettings: [
-        'Entry Time', 'Exit Time', 'No Re-entry After', 'Expiry'
-      ],
-      executionSettings: [
-        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
-        'Total Lot', 'Strike Criteria', 'Premium'
-      ]
-    };
-    
-    const categorizedParams: Record<string, any[]> = {
+    const result: Record<string, any[]> = {
       basicSettings: [],
       timeSettings: [],
       executionSettings: [],
       other: []
     };
     
-    // Iterate through strategy_details and categorize
-    Object.entries(strategy.strategy_details).forEach(([key, value]) => {
-      // Skip the 'Legs' key as we'll handle it separately
-      if (key === 'Legs') return;
-      
-      const param = { name: key, value: value };
-      
-      if (categories.basicSettings.includes(key)) {
-        categorizedParams.basicSettings.push(param);
-      } else if (categories.timeSettings.includes(key)) {
-        categorizedParams.timeSettings.push(param);
-      } else if (categories.executionSettings.includes(key)) {
-        categorizedParams.executionSettings.push(param);
-      } else {
-        categorizedParams.other.push(param);
-      }
-    });
+    // Map from the new structure to the expected parameter format
+    const strategyDetails = strategy.strategy_details;
     
-    return categorizedParams;
+    // Process instrumentSettings
+    if (strategyDetails.instrumentSettings) {
+      if (strategyDetails.instrumentSettings.index) {
+        result.basicSettings.push({ name: 'Index', value: strategyDetails.instrumentSettings.index });
+      }
+      if (strategyDetails.instrumentSettings.underlyingFrom) {
+        result.basicSettings.push({ name: 'Underlying from', value: strategyDetails.instrumentSettings.underlyingFrom });
+      }
+    }
+    
+    // Process entrySettings
+    if (strategyDetails.entrySettings) {
+      if (strategyDetails.entrySettings.strategyType) {
+        result.basicSettings.push({ name: 'Strategy Type', value: strategyDetails.entrySettings.strategyType });
+      }
+      if (strategyDetails.entrySettings.entryTime) {
+        result.timeSettings.push({ name: 'Entry Time', value: strategyDetails.entrySettings.entryTime });
+      }
+      if (strategyDetails.entrySettings.exitTime) {
+        result.timeSettings.push({ name: 'Exit Time', value: strategyDetails.entrySettings.exitTime });
+      }
+      if (strategyDetails.entrySettings.noReentryAfter !== undefined) {
+        result.timeSettings.push({ 
+          name: 'No re-entry after', 
+          value: strategyDetails.entrySettings.noReentryAfter ? 'Enabled' : 'Disabled' 
+        });
+      }
+    }
+    
+    // Process legwiseSettings
+    if (strategyDetails.legwiseSettings) {
+      if (strategyDetails.legwiseSettings.squareOff) {
+        result.executionSettings.push({ name: 'Square Off', value: strategyDetails.legwiseSettings.squareOff });
+      }
+      if (strategyDetails.legwiseSettings.trailSLToBreakeven !== undefined) {
+        result.executionSettings.push({ 
+          name: 'Trail SL to Break-even price', 
+          value: strategyDetails.legwiseSettings.trailSLToBreakeven ? 'Enabled' : 'Disabled' 
+        });
+      }
+      if (strategyDetails.legwiseSettings.slAppliedTo) {
+        result.executionSettings.push({ name: 'SL Applied To', value: strategyDetails.legwiseSettings.slAppliedTo });
+      }
+    }
+    
+    // Process legBuilder
+    if (strategyDetails.legBuilder) {
+      if (strategyDetails.legBuilder.segment) {
+        result.basicSettings.push({ name: 'Segment', value: strategyDetails.legBuilder.segment });
+      }
+      if (strategyDetails.legBuilder.totalLot) {
+        result.executionSettings.push({ name: 'Total Lot', value: strategyDetails.legBuilder.totalLot });
+      }
+      if (strategyDetails.legBuilder.position) {
+        result.basicSettings.push({ name: 'Position', value: strategyDetails.legBuilder.position });
+      }
+      if (strategyDetails.legBuilder.optionType) {
+        result.basicSettings.push({ name: 'Option Type', value: strategyDetails.legBuilder.optionType });
+      }
+      if (strategyDetails.legBuilder.expiry) {
+        result.timeSettings.push({ name: 'Expiry', value: strategyDetails.legBuilder.expiry });
+      }
+      if (strategyDetails.legBuilder.strikeCriteria) {
+        result.executionSettings.push({ name: 'Strike Criteria', value: strategyDetails.legBuilder.strikeCriteria });
+      }
+      if (strategyDetails.legBuilder.premium !== undefined) {
+        result.executionSettings.push({ name: 'Premium', value: strategyDetails.legBuilder.premium });
+      }
+    }
+    
+    // Add any other properties not covered above
+    for (const [key, value] of Object.entries(strategyDetails)) {
+      if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
+        result.other.push({ name: key, value: JSON.stringify(value) });
+      }
+    }
+    
+    return result;
   };
 
   // Function to get the legs from strategy_details
@@ -504,34 +553,62 @@ const StrategyDetails = () => {
                               </div>
                               
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
-                                  <p className="text-white font-medium">{leg.targetProfit || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.stopLoss || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
-                                  <p className="text-white font-medium">{leg.trailSL || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnTarget || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
-                                  <p className="text-white font-medium">{leg.simpleMomentum || "Off"}</p>
-                                </div>
-                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                  <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
-                                  <p className="text-white font-medium">{leg.rangeBreakout || "Off"}</p>
-                                </div>
+                                {leg.stopLoss && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
+                                    <p className="text-white font-medium">
+                                      {leg.stopLoss.enabled ? 
+                                        `${leg.stopLoss.value || ''} ${leg.stopLoss.type || ''}` : 
+                                        "Disabled"}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {leg.trailSL && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
+                                    <p className="text-white font-medium">{leg.trailSL.enabled ? "Enabled" : "Disabled"}</p>
+                                  </div>
+                                )}
+                                
+                                {leg.targetProfit && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
+                                    <p className="text-white font-medium">{leg.targetProfit.enabled ? "Enabled" : "Disabled"}</p>
+                                  </div>
+                                )}
+                                
+                                {leg.reEntryOnTarget && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
+                                    <p className="text-white font-medium">{leg.reEntryOnTarget.enabled ? "Enabled" : "Disabled"}</p>
+                                  </div>
+                                )}
+                                
+                                {leg.reEntryOnStopLoss && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
+                                    <p className="text-white font-medium">{leg.reEntryOnStopLoss.enabled ? "Enabled" : "Disabled"}</p>
+                                  </div>
+                                )}
+                                
+                                {leg.simpleMomentum && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
+                                    <p className="text-white font-medium">{leg.simpleMomentum.enabled ? "Enabled" : "Disabled"}</p>
+                                  </div>
+                                )}
+                                
+                                {leg.rangeBreakout && (
+                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                    <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
+                                    <p className="text-white font-medium">
+                                      {leg.rangeBreakout.enabled ? 
+                                        `${leg.rangeBreakout.breakoutTime || ''} - ${leg.rangeBreakout.breakoutCondition || ''}` : 
+                                        "Disabled"}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))
