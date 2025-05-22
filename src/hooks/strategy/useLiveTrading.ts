@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { loadUserStrategies, updateStrategyLiveConfig } from "./useStrategyDatabase";
+import { loadUserStrategies, updateStrategyLiveConfig, updateStrategyTradeType } from "./useStrategyDatabase";
 import { checkUserPremiumStatus, checkStrategyAccess } from "@/lib/supabase/subscription";
 
 export const useLiveTrading = () => {
@@ -124,6 +124,7 @@ export const useLiveTrading = () => {
   const handleTradingToggle = () => {
     setIsActive(!isActive);
     toast({
+      title: !isActive ? "Trading Active" : "Trading Paused",
       description: !isActive 
         ? "Your strategies are now live and will execute trades based on your settings." 
         : "Trading has been paused. No new trades will be executed.",
@@ -154,14 +155,35 @@ export const useLiveTrading = () => {
     setShowConfirmationDialog(true);
   };
 
-  const confirmModeChange = () => {
+  const confirmModeChange = async () => {
     // This will be handled in the dialog's onConfirm callback
     setShowConfirmationDialog(false);
     
-    if (targetMode === "live trade") {
+    // For paper trading, directly update without showing quantity/broker dialogs
+    if (targetMode === "paper trade" && currentStrategyId && user) {
+      try {
+        const strategy = strategies.find(s => s.id === currentStrategyId);
+        if (!strategy) return;
+        
+        // Use updateStrategyTradeType to only update the trade_type field
+        await updateStrategyTradeType(
+          user.id,
+          currentStrategyId,
+          targetMode,
+          strategy.selectedBroker || "",
+          strategy.brokerUsername || ""
+        );
+        
+        toast.success(`Strategy set to paper trading mode`);
+        refreshStrategies();
+        resetDialogState();
+      } catch (error) {
+        console.error("Error updating trade type:", error);
+        toast.error("Failed to update strategy");
+      }
+    } else if (targetMode === "live trade") {
+      // For live trading, show quantity dialog first
       setShowQuantityDialog(true);
-    } else {
-      handleBrokerSubmit("", "", "");
     }
   };
 
