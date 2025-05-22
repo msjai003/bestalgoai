@@ -23,13 +23,6 @@ export const QuickAccessSection = () => {
         />
         
         <QuickAccessItem
-          icon={BookOpen}
-          text="Education"
-          route="/education"
-          className=""
-        />
-        
-        <QuickAccessItem
           icon={School}
           text="Classes"
           route="/classes"
@@ -57,8 +50,6 @@ export const QuickAccessSection = () => {
           className=""
         />
         
-        {/* Removed Results QuickAccessItem */}
-
         <QuickAccessItem
           icon={Files}
           text="Files"
