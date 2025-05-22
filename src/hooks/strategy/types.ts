@@ -23,8 +23,73 @@ export interface Strategy {
   isCustom?: boolean; // Whether this is a custom strategy or predefined
   paid_status?: string; // Add this property to match what's coming from the database
   parameters?: any;
-  strategy_details?: any;
+  strategy_details?: StrategyDetails;
   package?: string; // New field from database: 'premium' or 'free'
+}
+
+export interface StrategyDetails {
+  instrumentSettings?: {
+    index?: string;
+    underlyingFrom?: string;
+  };
+  entrySettings?: {
+    strategyType?: string;
+    entryTime?: string;
+    exitTime?: string;
+    noReentryAfter?: boolean;
+  };
+  legwiseSettings?: {
+    squareOff?: string;
+    trailSLToBreakeven?: boolean;
+    slAppliedTo?: string;
+  };
+  legBuilder?: {
+    segment?: string;
+    totalLot?: number;
+    position?: string;
+    optionType?: string;
+    expiry?: string;
+    strikeCriteria?: string;
+    premium?: number | string;
+  };
+  Legs?: StrategyLeg[];
+  [key: string]: any;
+}
+
+export interface StrategyLeg {
+  id?: number;
+  lots?: number;
+  position?: string;
+  optionType?: string;
+  expiry?: string;
+  strikeCriteria?: string;
+  premium?: number | string;
+  stopLoss?: {
+    enabled: boolean;
+    value?: string | number;
+    type?: string;
+  } | null;
+  trailSL?: {
+    enabled: boolean;
+  } | null;
+  targetProfit?: {
+    enabled: boolean;
+  } | null;
+  reEntryOnTarget?: {
+    enabled: boolean;
+  } | null;
+  reEntryOnStopLoss?: {
+    enabled: boolean;
+  } | null;
+  simpleMomentum?: {
+    enabled: boolean;
+  } | null;
+  rangeBreakout?: {
+    enabled: boolean;
+    breakoutTime?: string;
+    breakoutCondition?: string;
+  } | null;
+  [key: string]: any;
 }
 
 export interface StrategySelection {

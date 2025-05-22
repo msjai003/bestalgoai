@@ -557,8 +557,8 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.stopLoss === 'object' && leg.stopLoss.enabled ? 
-                                        `${leg.stopLoss.value || ''} ${leg.stopLoss.type || ''}` : 
+                                      {typeof leg.stopLoss === 'object' && leg.stopLoss?.enabled ? 
+                                        `${leg.stopLoss?.value || ''} ${leg.stopLoss?.type || ''}` : 
                                         "Disabled"}
                                     </p>
                                   </div>
@@ -568,7 +568,7 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.trailSL === 'object' && leg.trailSL.enabled ? "Enabled" : "Disabled"}
+                                      {typeof leg.trailSL === 'object' && leg.trailSL?.enabled ? "Enabled" : "Disabled"}
                                     </p>
                                   </div>
                                 )}
@@ -577,7 +577,7 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.targetProfit === 'object' && leg.targetProfit.enabled ? "Enabled" : "Disabled"}
+                                      {typeof leg.targetProfit === 'object' && leg.targetProfit?.enabled ? "Enabled" : "Disabled"}
                                     </p>
                                   </div>
                                 )}
@@ -586,7 +586,7 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.reEntryOnTarget === 'object' && leg.reEntryOnTarget.enabled ? "Enabled" : "Disabled"}
+                                      {typeof leg.reEntryOnTarget === 'object' && leg.reEntryOnTarget?.enabled ? "Enabled" : "Disabled"}
                                     </p>
                                   </div>
                                 )}
@@ -595,7 +595,7 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.reEntryOnStopLoss === 'object' && leg.reEntryOnStopLoss.enabled ? "Enabled" : "Disabled"}
+                                      {typeof leg.reEntryOnStopLoss === 'object' && leg.reEntryOnStopLoss?.enabled ? "Enabled" : "Disabled"}
                                     </p>
                                   </div>
                                 )}
@@ -604,7 +604,7 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.simpleMomentum === 'object' && leg.simpleMomentum.enabled ? "Enabled" : "Disabled"}
+                                      {typeof leg.simpleMomentum === 'object' && leg.simpleMomentum?.enabled ? "Enabled" : "Disabled"}
                                     </p>
                                   </div>
                                 )}
@@ -613,8 +613,8 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
                                     <p className="text-white font-medium">
-                                      {typeof leg.rangeBreakout === 'object' && leg.rangeBreakout.enabled ? 
-                                        `${leg.rangeBreakout.breakoutTime || ''} - ${leg.rangeBreakout.breakoutCondition || ''}` : 
+                                      {typeof leg.rangeBreakout === 'object' && leg.rangeBreakout?.enabled ? 
+                                        `${leg.rangeBreakout?.breakoutTime || ''} - ${leg.rangeBreakout?.breakoutCondition || ''}` : 
                                         "Disabled"}
                                     </p>
                                   </div>
