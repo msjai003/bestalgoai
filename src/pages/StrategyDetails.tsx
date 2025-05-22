@@ -385,7 +385,10 @@ const StrategyDetails = () => {
                   <Button 
                     variant="outline"
                     className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-4 py-2 shadow-md transition-all duration-300 hover:shadow-cyan/20 hover:shadow-lg"
-                    onClick={handleUpgrade}
+                    onClick={() => {
+                      sessionStorage.setItem('selectedStrategyId', strategyId.toString());
+                      navigate('/pricing');
+                    }}
                   >
                     <Lock className="h-4 w-4 mr-2" />
                     Unlock
@@ -395,7 +398,44 @@ const StrategyDetails = () => {
                   size="icon"
                   variant="ghost"
                   className="text-pink-500 hover:text-pink-400"
-                  onClick={handleToggleWishlist}
+                  onClick={async () => {
+                    if (!user || !strategy) {
+                      toast({
+                        description: "Please log in to add strategies to your wishlist",
+                      });
+                      return;
+                    }
+                    
+                    setIsLoading(true);
+                    
+                    try {
+                      if (!isWishlisted) {
+                        // Add to wishlist
+                        await addToWishlist(user.id, strategy.id, strategy.name, strategy.description);
+                        
+                        setIsWishlisted(true);
+                        toast({
+                          description: "Strategy has been added to your wishlist",
+                        });
+                      } else {
+                        // Remove from wishlist
+                        await removeFromWishlist(user.id, strategy.id);
+                        
+                        setIsWishlisted(false);
+                        toast({
+                          description: "Strategy has been removed from your wishlist",
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Error toggling wishlist status:', error);
+                      toast({
+                        description: "Failed to update wishlist in database",
+                        variant: "destructive"
+                      });
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
                   disabled={isLoading}
                 >
                   <Heart className="h-5 w-5" fill={isWishlisted ? "currentColor" : "none"} />
@@ -556,9 +596,11 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
                                     <p className="text-white font-medium">
-                                      {leg.stopLoss && leg.stopLoss.enabled ? 
-                                        `${leg.stopLoss.value || ''} ${leg.stopLoss.type || ''}` : 
-                                        "Disabled"}
+                                      {leg.stopLoss && typeof leg.stopLoss === 'object' && 'enabled' in leg.stopLoss ? 
+                                        (leg.stopLoss.enabled ? 
+                                          `${leg.stopLoss.value || ''} ${leg.stopLoss.type || ''}` : 
+                                          "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -567,7 +609,9 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
                                     <p className="text-white font-medium">
-                                      {leg.trailSL && leg.trailSL.enabled ? "Enabled" : "Disabled"}
+                                      {leg.trailSL && typeof leg.trailSL === 'object' && 'enabled' in leg.trailSL ? 
+                                        (leg.trailSL.enabled ? "Enabled" : "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -576,7 +620,9 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
                                     <p className="text-white font-medium">
-                                      {leg.targetProfit && leg.targetProfit.enabled ? "Enabled" : "Disabled"}
+                                      {leg.targetProfit && typeof leg.targetProfit === 'object' && 'enabled' in leg.targetProfit ? 
+                                        (leg.targetProfit.enabled ? "Enabled" : "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -585,7 +631,9 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
                                     <p className="text-white font-medium">
-                                      {leg.reEntryOnTarget && leg.reEntryOnTarget.enabled ? "Enabled" : "Disabled"}
+                                      {leg.reEntryOnTarget && typeof leg.reEntryOnTarget === 'object' && 'enabled' in leg.reEntryOnTarget ? 
+                                        (leg.reEntryOnTarget.enabled ? "Enabled" : "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -594,7 +642,9 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
                                     <p className="text-white font-medium">
-                                      {leg.reEntryOnStopLoss && leg.reEntryOnStopLoss.enabled ? "Enabled" : "Disabled"}
+                                      {leg.reEntryOnStopLoss && typeof leg.reEntryOnStopLoss === 'object' && 'enabled' in leg.reEntryOnStopLoss ? 
+                                        (leg.reEntryOnStopLoss.enabled ? "Enabled" : "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -603,7 +653,9 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
                                     <p className="text-white font-medium">
-                                      {leg.simpleMomentum && leg.simpleMomentum.enabled ? "Enabled" : "Disabled"}
+                                      {leg.simpleMomentum && typeof leg.simpleMomentum === 'object' && 'enabled' in leg.simpleMomentum ? 
+                                        (leg.simpleMomentum.enabled ? "Enabled" : "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -612,9 +664,11 @@ const StrategyDetails = () => {
                                   <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                     <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
                                     <p className="text-white font-medium">
-                                      {leg.rangeBreakout && leg.rangeBreakout.enabled ? 
-                                        `${leg.rangeBreakout.breakoutTime || ''} - ${leg.rangeBreakout.breakoutCondition || ''}` : 
-                                        "Disabled"}
+                                      {leg.rangeBreakout && typeof leg.rangeBreakout === 'object' && 'enabled' in leg.rangeBreakout ? 
+                                        (leg.rangeBreakout.enabled ? 
+                                          `${leg.rangeBreakout.breakoutTime || ''} - ${leg.rangeBreakout.breakoutCondition || ''}` : 
+                                          "Disabled") : 
+                                        "N/A"}
                                     </p>
                                   </div>
                                 )}
@@ -727,7 +781,10 @@ const StrategyDetails = () => {
                 </p>
                 <Button 
                   className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-8 py-6 rounded-full shadow-lg hover:shadow-cyan/20 font-medium text-base transition-all duration-300"
-                  onClick={handleUpgrade}
+                  onClick={() => {
+                    sessionStorage.setItem('selectedStrategyId', strategyId.toString());
+                    navigate('/pricing');
+                  }}
                 >
                   Unlock {strategy.name}
                 </Button>
