@@ -68,27 +68,27 @@ export interface StrategyLeg {
     enabled: boolean;
     value?: string | number;
     type?: string;
-  } | null;
+  };
   trailSL?: {
     enabled: boolean;
-  } | null;
+  };
   targetProfit?: {
     enabled: boolean;
-  } | null;
+  };
   reEntryOnTarget?: {
     enabled: boolean;
-  } | null;
+  };
   reEntryOnStopLoss?: {
     enabled: boolean;
-  } | null;
+  };
   simpleMomentum?: {
     enabled: boolean;
-  } | null;
+  };
   rangeBreakout?: {
     enabled: boolean;
     breakoutTime?: string;
     breakoutCondition?: string;
-  } | null;
+  };
   [key: string]: any;
 }
 
