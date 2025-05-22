@@ -123,13 +123,15 @@ export const useLiveTrading = () => {
 
   const handleTradingToggle = () => {
     setIsActive(!isActive);
-    toast({
-      title: !isActive ? "Trading Active" : "Trading Paused",
-      description: !isActive 
-        ? "Your strategies are now live and will execute trades based on your settings." 
-        : "Trading has been paused. No new trades will be executed.",
-      duration: 3000,
-    });
+    if (!isActive) {
+      toast.success("Trading Active", {
+        description: "Your strategies are now live and will execute trades based on your settings."
+      });
+    } else {
+      toast.info("Trading Paused", {
+        description: "Trading has been paused. No new trades will be executed."
+      });
+    }
   };
 
   const handleModeChange = (mode: "all" | "live" | "paper") => {
