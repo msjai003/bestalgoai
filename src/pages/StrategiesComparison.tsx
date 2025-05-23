@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StrategiesComparisonTable } from '@/components/strategy/StrategiesComparisonTable';
 import { useAllStrategiesMetrics } from '@/hooks/strategy/useAllStrategiesMetrics';
 import { toast } from 'sonner';
+import Header from "@/components/Header";
 
 const StrategiesComparison = () => {
   const { strategies, loading, error, refreshData } = useAllStrategiesMetrics();
@@ -18,25 +19,24 @@ const StrategiesComparison = () => {
 
   return (
     <div className="bg-charcoalPrimary min-h-screen">
-      <header className="fixed top-0 left-0 right-0 bg-charcoalPrimary/95 backdrop-blur-lg border-b border-gray-800 z-50">
-        <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/dashboard" className="p-2">
-            <ChevronLeft className="h-5 w-5 text-charcoalTextSecondary" />
-          </Link>
-          <h1 className="text-charcoalTextPrimary text-lg font-medium">Strategies Comparison</h1>
-          <div className="w-8"></div>
-        </div>
-      </header>
-
+      <Header />
+      
       <main className="pt-16 pb-20 px-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Link to="/dashboard" className="text-charcoalTextSecondary hover:text-white transition-colors">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-xl font-bold text-white">Strategies Comparison</h1>
+        </div>
+
         <div className="mt-4 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Strategy Performance Metrics</h2>
+            <h2 className="text-lg font-medium text-white">Strategy Performance Metrics</h2>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleRefresh}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 border-gray-700 bg-charcoalSecondary/30 text-charcoalTextSecondary hover:bg-charcoalSecondary/50 hover:text-white"
             >
               <RefreshCw className="h-4 w-4" />
               Refresh
@@ -48,14 +48,14 @@ const StrategiesComparison = () => {
         </div>
 
         {error ? (
-          <div className="p-4 border border-red-400 bg-red-900/20 rounded-lg text-red-300 mb-6">
+          <div className="p-4 border border-red-500/30 bg-red-900/10 rounded-lg text-red-300 mb-6">
             Error loading metrics: {error}
           </div>
         ) : (
           <StrategiesComparisonTable strategies={strategies} loading={loading} />
         )}
 
-        <div className="mt-8 p-4 bg-charcoalSecondary/30 rounded-xl border border-gray-700">
+        <div className="mt-8 p-4 bg-charcoalSecondary/30 rounded-xl border border-gray-700/50 shadow-lg">
           <h3 className="text-lg font-medium text-white mb-3">About the Metrics</h3>
           <div className="space-y-3">
             <div>
