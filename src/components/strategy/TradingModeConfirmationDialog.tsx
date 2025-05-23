@@ -86,7 +86,7 @@ export const TradingModeConfirmationDialog = ({
             Cancel
           </Button>
           <Button 
-            variant={isLiveMode ? "destructive" : "cyan"}
+            variant="cyan"
             onClick={onConfirm}
           >
             {isLiveMode ? "Enable Live Trading" : "Switch to Paper"}
