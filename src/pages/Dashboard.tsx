@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
@@ -7,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
+import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
 import StrategiesSection from "@/components/dashboard/StrategiesSection";
 import { mockPerformanceData } from "@/components/dashboard/DashboardData";
 import { syncPremiumAccess, checkUserPremiumStatus } from "@/lib/supabase/subscription";
@@ -139,6 +141,7 @@ const Dashboard = () => {
           performanceData={mockPerformanceData} 
           currentValue={currentValue} 
         />
+        <QuickAccessSection />
         
         {dashboardStrategies.length > 0 && (
           <StrategiesSection
