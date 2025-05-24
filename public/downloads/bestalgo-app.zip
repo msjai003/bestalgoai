@@ -1,0 +1,4 @@
+
+// This is a placeholder for the actual ZIP file
+// In a real implementation, you would need to generate this ZIP file during your build process
+// containing the essential app files for offline usage
