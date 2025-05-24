@@ -171,6 +171,8 @@ export const useStrategyWishlist = () => {
       setIsLoading(true);
       try {
         if (user) {
+          console.log("Loading wishlist for user:", user.id);
+          
           // Load wishlist items from the wishlist_maintain table
           const items = await loadWishlistItems(user.id);
           console.log("Wishlist items loaded:", items);

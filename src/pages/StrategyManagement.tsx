@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Strategy } from "@/hooks/strategy/types";
@@ -32,11 +33,19 @@ const StrategyManagement = () => {
   useEffect(() => {
     // Add additional debug logging when component mounts or strategies change
     console.log("StrategyManagement mounted or strategies changed", {
-      strategiesCount: wishlistedStrategies.length,
+      strategiesCount: wishlistedStrategies?.length || 0,
       isLoading,
       hasPremium
     });
-  }, [wishlistedStrategies, isLoading, hasPremium]);
+    
+    // Force a reload of strategies when the component mounts
+    if (user && !isLoading) {
+      // If we've loaded and there are no strategies, log that information
+      if (!wishlistedStrategies || wishlistedStrategies.length === 0) {
+        console.log("No wishlist strategies found after loading. User may need to add some.");
+      }
+    }
+  }, [wishlistedStrategies, isLoading, hasPremium, user]);
 
   const handleToggleLiveMode = (id: number | string) => {
     const strategy = wishlistedStrategies.find(s => s.id === id);
@@ -67,6 +76,7 @@ const StrategyManagement = () => {
     if (!user || !strategyToDelete) return;
     
     try {
+      console.log(`Removing strategy ${strategyToDelete.id} from wishlist`);
       await removeFromWishlist(user.id, strategyToDelete.id);
       setDeleteConfirmationOpen(false);
       
