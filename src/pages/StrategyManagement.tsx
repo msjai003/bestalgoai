@@ -115,6 +115,10 @@ const StrategyManagement = () => {
     setConfirmationOpen(false);
   };
 
+  const handleNavigateToStrategySelection = () => {
+    navigate('/strategy-selection');
+  };
+
   return (
     <div className="bg-charcoalPrimary min-h-screen pb-16">
       <Header />
@@ -151,7 +155,7 @@ const StrategyManagement = () => {
           />
         ) : (
           <div className="mt-8">
-            <NoStrategiesFound onAddStrategies={() => navigate('/strategy-selection')} />
+            <NoStrategiesFound onAddStrategies={handleNavigateToStrategySelection} />
           </div>
         )}
       </main>
