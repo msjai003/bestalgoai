@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Download } from 'lucide-react';
+import { Menu, X, Download, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Header = () => {
@@ -72,11 +72,7 @@ const Header = () => {
       <nav className="container mx-auto px-4 flex items-center justify-between py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <img 
-              src="/lovable-uploads/6a70d117-77a0-4917-957d-15db00264cdc.png" 
-              alt="BestAlgo.ai Logo" 
-              className="h-10 w-auto"
-            />
+            <Heart className="h-10 w-10 text-white fill-white" />
             <span className="ml-2 text-white font-semibold text-lg">BestAlgo.ai</span>
           </Link>
           
