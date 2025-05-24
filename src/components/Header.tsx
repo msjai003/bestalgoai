@@ -73,9 +73,9 @@ const Header = () => {
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/1310710b-b366-4b7d-a379-833f2f156d51.png" 
+              src="/lovable-uploads/6a70d117-77a0-4917-957d-15db00264cdc.png" 
               alt="BestAlgo.ai Logo" 
-              className="h-10 w-auto" // Increased height from h-6 to h-10
+              className="h-10 w-auto"
             />
             <span className="ml-2 text-white font-semibold text-lg">BestAlgo.ai</span>
           </Link>
