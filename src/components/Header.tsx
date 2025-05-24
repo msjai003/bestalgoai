@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { installApp } from '@/services/downloadService';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,15 +35,30 @@ const Header = () => {
   };
 
   // Function to handle app download/installation
-  async function handleDownloadApp(e: React.MouseEvent) {
+  function handleDownloadApp(e: React.MouseEvent) {
     e.preventDefault();
     
-    try {
-      const result = await installApp();
-      // The toast messages are now handled inside the installApp function
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to download the app. Please try again later.');
+    if ('serviceWorker' in navigator && window.matchMedia('(display-mode: browser)').matches) {
+      // Check if the app can be installed (has a beforeinstallprompt event stored)
+      if (window.deferredPrompt) {
+        window.deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        window.deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            toast.success('Thanks for installing our app!');
+          } else {
+            toast.info('You can install the app later from the menu');
+          }
+          // Clear the saved prompt since it can't be used again
+          window.deferredPrompt = null;
+        });
+      } else {
+        // The app is already installed or can't be installed
+        toast.info('This app is already installed or your browser does not support app installation');
+      }
+    } else {
+      toast.error('Your browser does not support app installation');
     }
     
     // Close mobile menu if open
