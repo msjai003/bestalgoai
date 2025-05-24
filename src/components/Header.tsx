@@ -73,7 +73,7 @@ const Header = () => {
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/6a70d117-77a0-4917-957d-15db00264cdc.png" 
+              src="/lovable-uploads/a17919ed-3916-40d4-a9fc-d7860a25789e.png" 
               alt="BestAlgo.ai Logo" 
               className="h-10 w-auto"
             />
