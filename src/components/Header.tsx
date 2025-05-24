@@ -33,7 +33,11 @@ const Header = () => {
       <nav className="container mx-auto px-4 flex items-center justify-between py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <i className="fa-solid fa-chart-line text-cyan text-xl"></i>
+            <img 
+              src="/lovable-uploads/1310710b-b366-4b7d-a379-833f2f156d51.png" 
+              alt="BestAlgo.ai Logo" 
+              className="h-6 w-auto"
+            />
             <span className="ml-2 text-white font-semibold text-lg">BestAlgo.ai</span>
           </Link>
           
@@ -82,6 +86,7 @@ const Header = () => {
         </div>
       </nav>
       
+      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-charcoalSecondary border-b border-white/5">
           <div className="container mx-auto px-4 py-3 space-y-1">
