@@ -20,7 +20,7 @@ const StrategyManagement = () => {
   const { user } = useAuth();
   const { wishlistedStrategies, isLoading, hasPremium } = useStrategyWishlist();
   const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
-  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>(null);
+  const [targetMode, setTargetMode] = useState<"live" | "paper" | null>("paper"); // Initialize with a default value
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [strategyToDelete, setStrategyToDelete] = useState<Strategy | null>(null);

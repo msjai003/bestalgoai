@@ -14,7 +14,7 @@ import { AlertTriangle } from "lucide-react";
 interface TradingModeConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  targetMode: "live trade" | "paper trade" | "live" | "paper";
+  targetMode: "live trade" | "paper trade" | "live" | "paper" | null;
   onConfirm: () => void;
   onCancel: () => void;
   strategyName?: string | null;
@@ -30,10 +30,13 @@ export const TradingModeConfirmationDialog = ({
   strategyName,
   brokerName,
 }: TradingModeConfirmationDialogProps) => {
+  // Add a default value and null check for targetMode
+  const safeTargetMode = targetMode || "paper";
+  
   // Normalize targetMode to ensure it works with both formats
-  const normalizedMode = targetMode.includes("trade") 
-    ? targetMode 
-    : targetMode === "live" 
+  const normalizedMode = safeTargetMode.includes("trade") 
+    ? safeTargetMode 
+    : safeTargetMode === "live" 
       ? "live trade" 
       : "paper trade";
   
