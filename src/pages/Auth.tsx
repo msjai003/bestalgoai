@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Info } from "lucide-react";
+import { Eye, EyeOff, Info, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth/AuthContext";
 import ForgotPassword from "@/components/auth/ForgotPassword";
@@ -74,6 +74,14 @@ const Auth = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-charcoalPrimary p-4">
       <div className="w-full max-w-md mx-auto">
+        {/* Back button header */}
+        <div className="flex items-center mb-6">
+          <Link to="/" className="flex items-center text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            <span className="text-sm">Back to Home</span>
+          </Link>
+        </div>
+
         <div className="text-left mb-6 px-1">
           <h1 className="text-2xl font-semibold text-white mb-2">Welcome Back</h1>
           <p className="text-gray-400">Login to access your trading algorithms and portfolio management.</p>
