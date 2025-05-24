@@ -36,7 +36,7 @@ const Header = () => {
             <img 
               src="/lovable-uploads/1310710b-b366-4b7d-a379-833f2f156d51.png" 
               alt="BestAlgo.ai Logo" 
-              className="h-6 w-auto"
+              className="h-10 w-auto" // Increased height from h-6 to h-10
             />
             <span className="ml-2 text-white font-semibold text-lg">BestAlgo.ai</span>
           </Link>
