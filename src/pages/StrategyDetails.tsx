@@ -29,49 +29,9 @@ const StrategyDetails = () => {
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
-  // Group parameters by category for better organization
-  const getParameterCategories = () => {
-    if (!strategy || !strategy.parameters) return {};
-    
-    const categories = {
-      basicSettings: [
-        'Index', 'Underlying from', 'Strategy Type', 'Segment', 
-        'Position', 'Option Type', 'Risk Score'
-      ],
-      timeSettings: [
-        'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
-      ],
-      executionSettings: [
-        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
-        'Total Lot', 'Strike Criteria', 'Premium'
-      ]
-    };
-    
-    const categorizedParams: Record<string, any[]> = {
-      basicSettings: [],
-      timeSettings: [],
-      executionSettings: [],
-      other: []
-    };
-    
-    strategy.parameters.forEach(param => {
-      if (categories.basicSettings.includes(param.name)) {
-        categorizedParams.basicSettings.push(param);
-      } else if (categories.timeSettings.includes(param.name)) {
-        categorizedParams.timeSettings.push(param);
-      } else if (categories.executionSettings.includes(param.name)) {
-        categorizedParams.executionSettings.push(param);
-      } else {
-        categorizedParams.other.push(param);
-      }
-    });
-    
-    return categorizedParams;
-  };
-
-  // Function to get strategy details from new column
+  // Function to get strategy details from new column or fall back to parameters
   const getStrategyDetailsParams = () => {
-    if (!strategy || !strategy.strategy_details) return {
+    if (!strategy) return {
       basicSettings: [],
       timeSettings: [],
       executionSettings: [],
@@ -85,84 +45,119 @@ const StrategyDetails = () => {
       other: []
     };
     
-    // Map from the new structure to the expected parameter format
-    const strategyDetails = strategy.strategy_details;
-    
-    // Process instrumentSettings
-    if (strategyDetails.instrumentSettings) {
-      if (strategyDetails.instrumentSettings.index) {
-        result.basicSettings.push({ name: 'Index', value: strategyDetails.instrumentSettings.index });
+    // First try to get from strategy_details if available
+    if (strategy.strategy_details && typeof strategy.strategy_details === 'object') {
+      const strategyDetails = strategy.strategy_details;
+      
+      // Process instrumentSettings
+      if (strategyDetails.instrumentSettings) {
+        if (strategyDetails.instrumentSettings.index) {
+          result.basicSettings.push({ name: 'Index', value: strategyDetails.instrumentSettings.index });
+        }
+        if (strategyDetails.instrumentSettings.underlyingFrom) {
+          result.basicSettings.push({ name: 'Underlying from', value: strategyDetails.instrumentSettings.underlyingFrom });
+        }
       }
-      if (strategyDetails.instrumentSettings.underlyingFrom) {
-        result.basicSettings.push({ name: 'Underlying from', value: strategyDetails.instrumentSettings.underlyingFrom });
+      
+      // Process entrySettings
+      if (strategyDetails.entrySettings) {
+        if (strategyDetails.entrySettings.strategyType) {
+          result.basicSettings.push({ name: 'Strategy Type', value: strategyDetails.entrySettings.strategyType });
+        }
+        if (strategyDetails.entrySettings.entryTime) {
+          result.timeSettings.push({ name: 'Entry Time', value: strategyDetails.entrySettings.entryTime });
+        }
+        if (strategyDetails.entrySettings.exitTime) {
+          result.timeSettings.push({ name: 'Exit Time', value: strategyDetails.entrySettings.exitTime });
+        }
+        if (strategyDetails.entrySettings.noReentryAfter !== undefined) {
+          result.timeSettings.push({ 
+            name: 'No re-entry after', 
+            value: strategyDetails.entrySettings.noReentryAfter ? 'Enabled' : 'Disabled' 
+          });
+        }
       }
-    }
-    
-    // Process entrySettings
-    if (strategyDetails.entrySettings) {
-      if (strategyDetails.entrySettings.strategyType) {
-        result.basicSettings.push({ name: 'Strategy Type', value: strategyDetails.entrySettings.strategyType });
+      
+      // Process legwiseSettings
+      if (strategyDetails.legwiseSettings) {
+        if (strategyDetails.legwiseSettings.squareOff) {
+          result.executionSettings.push({ name: 'Square Off', value: strategyDetails.legwiseSettings.squareOff });
+        }
+        if (strategyDetails.legwiseSettings.trailSLToBreakeven !== undefined) {
+          result.executionSettings.push({ 
+            name: 'Trail SL to Break-even price', 
+            value: strategyDetails.legwiseSettings.trailSLToBreakeven ? 'Enabled' : 'Disabled' 
+          });
+        }
+        if (strategyDetails.legwiseSettings.slAppliedTo) {
+          result.executionSettings.push({ name: 'SL Applied To', value: strategyDetails.legwiseSettings.slAppliedTo });
+        }
       }
-      if (strategyDetails.entrySettings.entryTime) {
-        result.timeSettings.push({ name: 'Entry Time', value: strategyDetails.entrySettings.entryTime });
+      
+      // Process legBuilder
+      if (strategyDetails.legBuilder) {
+        if (strategyDetails.legBuilder.segment) {
+          result.basicSettings.push({ name: 'Segment', value: strategyDetails.legBuilder.segment });
+        }
+        if (strategyDetails.legBuilder.totalLot) {
+          result.executionSettings.push({ name: 'Total Lot', value: strategyDetails.legBuilder.totalLot });
+        }
+        if (strategyDetails.legBuilder.position) {
+          result.basicSettings.push({ name: 'Position', value: strategyDetails.legBuilder.position });
+        }
+        if (strategyDetails.legBuilder.optionType) {
+          result.basicSettings.push({ name: 'Option Type', value: strategyDetails.legBuilder.optionType });
+        }
+        if (strategyDetails.legBuilder.expiry) {
+          result.timeSettings.push({ name: 'Expiry', value: strategyDetails.legBuilder.expiry });
+        }
+        if (strategyDetails.legBuilder.strikeCriteria) {
+          result.executionSettings.push({ name: 'Strike Criteria', value: strategyDetails.legBuilder.strikeCriteria });
+        }
+        if (strategyDetails.legBuilder.premium !== undefined) {
+          result.executionSettings.push({ name: 'Premium', value: strategyDetails.legBuilder.premium });
+        }
       }
-      if (strategyDetails.entrySettings.exitTime) {
-        result.timeSettings.push({ name: 'Exit Time', value: strategyDetails.entrySettings.exitTime });
+      
+      // Add any other properties not covered above
+      for (const [key, value] of Object.entries(strategyDetails)) {
+        if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
+          result.other.push({ name: key, value: JSON.stringify(value) });
+        }
       }
-      if (strategyDetails.entrySettings.noReentryAfter !== undefined) {
-        result.timeSettings.push({ 
-          name: 'No re-entry after', 
-          value: strategyDetails.entrySettings.noReentryAfter ? 'Enabled' : 'Disabled' 
-        });
-      }
-    }
-    
-    // Process legwiseSettings
-    if (strategyDetails.legwiseSettings) {
-      if (strategyDetails.legwiseSettings.squareOff) {
-        result.executionSettings.push({ name: 'Square Off', value: strategyDetails.legwiseSettings.squareOff });
-      }
-      if (strategyDetails.legwiseSettings.trailSLToBreakeven !== undefined) {
-        result.executionSettings.push({ 
-          name: 'Trail SL to Break-even price', 
-          value: strategyDetails.legwiseSettings.trailSLToBreakeven ? 'Enabled' : 'Disabled' 
-        });
-      }
-      if (strategyDetails.legwiseSettings.slAppliedTo) {
-        result.executionSettings.push({ name: 'SL Applied To', value: strategyDetails.legwiseSettings.slAppliedTo });
-      }
-    }
-    
-    // Process legBuilder
-    if (strategyDetails.legBuilder) {
-      if (strategyDetails.legBuilder.segment) {
-        result.basicSettings.push({ name: 'Segment', value: strategyDetails.legBuilder.segment });
-      }
-      if (strategyDetails.legBuilder.totalLot) {
-        result.executionSettings.push({ name: 'Total Lot', value: strategyDetails.legBuilder.totalLot });
-      }
-      if (strategyDetails.legBuilder.position) {
-        result.basicSettings.push({ name: 'Position', value: strategyDetails.legBuilder.position });
-      }
-      if (strategyDetails.legBuilder.optionType) {
-        result.basicSettings.push({ name: 'Option Type', value: strategyDetails.legBuilder.optionType });
-      }
-      if (strategyDetails.legBuilder.expiry) {
-        result.timeSettings.push({ name: 'Expiry', value: strategyDetails.legBuilder.expiry });
-      }
-      if (strategyDetails.legBuilder.strikeCriteria) {
-        result.executionSettings.push({ name: 'Strike Criteria', value: strategyDetails.legBuilder.strikeCriteria });
-      }
-      if (strategyDetails.legBuilder.premium !== undefined) {
-        result.executionSettings.push({ name: 'Premium', value: strategyDetails.legBuilder.premium });
-      }
-    }
-    
-    // Add any other properties not covered above
-    for (const [key, value] of Object.entries(strategyDetails)) {
-      if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
-        result.other.push({ name: key, value: JSON.stringify(value) });
-      }
+    } 
+    // Fall back to parameters array if strategy_details is not available
+    else if (strategy.parameters && Array.isArray(strategy.parameters)) {
+      const categories = {
+        basicSettings: [
+          'Index', 'Underlying from', 'Strategy Type', 'Segment', 
+          'Position', 'Option Type', 'Risk Score'
+        ],
+        timeSettings: [
+          'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
+        ],
+        executionSettings: [
+          'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+          'Total Lot', 'Strike Criteria', 'Premium'
+        ]
+      };
+      
+      strategy.parameters.forEach(param => {
+        // Skip Take Profit parameter
+        if (param.name === 'Take Profit') {
+          return;
+        }
+        
+        if (categories.basicSettings.includes(param.name)) {
+          result.basicSettings.push(param);
+        } else if (categories.timeSettings.includes(param.name)) {
+          result.timeSettings.push(param);
+        } else if (categories.executionSettings.includes(param.name)) {
+          result.executionSettings.push(param);
+        } else {
+          result.other.push(param);
+        }
+      });
     }
     
     return result;
@@ -359,10 +354,7 @@ const StrategyDetails = () => {
     canAccess
   });
   
-  const parameterCategories = strategy && strategy.strategy_details 
-    ? getStrategyDetailsParams() 
-    : getParameterCategories();
-    
+  const parameterCategories = getStrategyDetailsParams();
   const strategyLegs = getStrategyLegs();
 
   return (
@@ -482,7 +474,7 @@ const StrategyDetails = () => {
                         Risk Score
                       </p>
                       <p className="text-cyan font-semibold text-xl">
-                        {strategy.parameters.find(p => p.name === "Risk Score")?.value || "N/A"}
+                        {strategy.parameters?.find(p => p.name === "Risk Score")?.value || "N/A"}
                       </p>
                     </div>
                   </div>
