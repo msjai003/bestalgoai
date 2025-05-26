@@ -29,6 +29,20 @@ const StrategyDetails = () => {
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
+  // Helper function to convert leg property to string
+  const formatLegProperty = (property: any): string => {
+    if (typeof property === 'string') {
+      return property;
+    }
+    if (typeof property === 'object' && property !== null) {
+      if (property.enabled !== undefined) {
+        return property.enabled ? (property.value?.toString() || 'On') : 'Off';
+      }
+      return JSON.stringify(property);
+    }
+    return 'Off';
+  };
+
   // Function to get strategy details from strategy_details column
   const getStrategyDetailsParams = () => {
     if (!strategy || !strategy.strategy_details) {
@@ -457,31 +471,31 @@ const StrategyDetails = () => {
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.stopLoss || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.stopLoss)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
-                                  <p className="text-white font-medium">{leg.trailSL || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.trailSL)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
-                                  <p className="text-white font-medium">{leg.targetProfit || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.targetProfit)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnTarget || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.reEntryOnTarget)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
-                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.reEntryOnStopLoss)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
-                                  <p className="text-white font-medium">{leg.simpleMomentum || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.simpleMomentum)}</p>
                                 </div>
                                 <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                   <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
-                                  <p className="text-white font-medium">{leg.rangeBreakout || "Off"}</p>
+                                  <p className="text-white font-medium">{formatLegProperty(leg.rangeBreakout)}</p>
                                 </div>
                               </div>
                             </div>
