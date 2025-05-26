@@ -76,11 +76,31 @@ const StrategyDetails = () => {
     // Process each key-value pair from strategy_details
     Object.entries(strategyDetails).forEach(([key, value]) => {
       // Skip the Legs array as it's handled separately
-      if (key === 'Legs' || !value || value === '' || value === 'Not selected') {
+      if (key === 'Legs') {
         return;
       }
       
-      const stringValue = String(value);
+      // Convert value to string, handling different types
+      let stringValue = '';
+      if (value === null || value === undefined) {
+        return; // Skip null/undefined values
+      } else if (typeof value === 'boolean') {
+        stringValue = value ? 'Yes' : 'No';
+      } else if (typeof value === 'object') {
+        // Handle object values by extracting meaningful information
+        if (value.enabled !== undefined) {
+          stringValue = value.enabled ? (value.value?.toString() || 'On') : 'Off';
+        } else {
+          stringValue = JSON.stringify(value);
+        }
+      } else {
+        stringValue = String(value);
+      }
+      
+      // Skip empty strings, "Not selected", and other meaningless values
+      if (!stringValue || stringValue === '' || stringValue === 'Not selected' || stringValue === 'null') {
+        return;
+      }
       
       if (instrumentKeys.includes(key)) {
         result.instrumentSettings.push({ name: key, value: stringValue });
