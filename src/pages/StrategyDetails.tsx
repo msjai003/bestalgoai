@@ -29,7 +29,7 @@ const StrategyDetails = () => {
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
-  // Function to get strategy details from new column or fall back to parameters
+  // Enhanced function to get strategy details from strategy_details column
   const getStrategyDetailsParams = () => {
     if (!strategy) return {
       basicSettings: [],
@@ -45,6 +45,7 @@ const StrategyDetails = () => {
       other: []
     };
     
+    console.log('Processing strategy:', strategy.name);
     console.log('Strategy details raw data:', strategy.strategy_details);
     console.log('Strategy parameters raw data:', strategy.parameters);
     
@@ -52,101 +53,116 @@ const StrategyDetails = () => {
     if (strategy.strategy_details && typeof strategy.strategy_details === 'object') {
       const strategyDetails = strategy.strategy_details;
       
-      // Process instrumentSettings - prioritize getting data from strategy_details
-      if (strategyDetails.instrumentSettings) {
-        Object.entries(strategyDetails.instrumentSettings).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            const displayName = key === 'index' ? 'Index' : 
-                              key === 'underlyingFrom' ? 'Underlying from' : 
-                              key.charAt(0).toUpperCase() + key.slice(1);
-            result.basicSettings.push({ name: displayName, value: String(value) });
-          }
-        });
-      }
-      
-      // Process entrySettings - for time-related settings
-      if (strategyDetails.entrySettings) {
-        Object.entries(strategyDetails.entrySettings).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            if (key === 'strategyType') {
-              result.basicSettings.push({ name: 'Strategy Type', value: String(value) });
-            } else if (key === 'entryTime') {
-              result.timeSettings.push({ name: 'Entry Time', value: String(value) });
-            } else if (key === 'exitTime') {
-              result.timeSettings.push({ name: 'Exit Time', value: String(value) });
-            } else if (key === 'noReentryAfter') {
-              result.timeSettings.push({ 
-                name: 'No re-entry after', 
-                value: value ? 'Enabled' : 'Disabled' 
-              });
-            } else {
-              // Other entry settings
-              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-              result.executionSettings.push({ name: displayName, value: String(value) });
+      // Process all sections comprehensively
+      Object.entries(strategyDetails).forEach(([sectionKey, sectionValue]) => {
+        if (sectionKey === 'Legs' || !sectionValue || typeof sectionValue !== 'object') {
+          return; // Skip legs and invalid sections
+        }
+        
+        console.log(`Processing section: ${sectionKey}`, sectionValue);
+        
+        // Handle different section types
+        if (sectionKey === 'instrumentSettings' || sectionKey === 'InstrumentSettings') {
+          Object.entries(sectionValue).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              const displayName = key === 'index' ? 'Index' : 
+                                key === 'underlyingFrom' ? 'Underlying From' : 
+                                key === 'segment' ? 'Segment' :
+                                key.charAt(0).toUpperCase() + key.slice(1);
+              result.basicSettings.push({ name: displayName, value: String(value) });
             }
-          }
-        });
-      }
-      
-      // Process legwiseSettings - for execution settings
-      if (strategyDetails.legwiseSettings) {
-        Object.entries(strategyDetails.legwiseSettings).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            if (key === 'squareOff') {
-              result.executionSettings.push({ name: 'Square Off', value: String(value) });
-            } else if (key === 'trailSLToBreakeven') {
-              result.executionSettings.push({ 
-                name: 'Trail SL to Break-even price', 
-                value: value ? 'Enabled' : 'Disabled' 
-              });
-            } else if (key === 'slAppliedTo') {
-              result.executionSettings.push({ name: 'SL Applied To', value: String(value) });
-            } else {
-              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-              result.executionSettings.push({ name: displayName, value: String(value) });
+          });
+        }
+        else if (sectionKey === 'entrySettings' || sectionKey === 'EntrySettings') {
+          Object.entries(sectionValue).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              if (key === 'strategyType') {
+                result.basicSettings.push({ name: 'Strategy Type', value: String(value) });
+              } else if (key === 'entryTime') {
+                result.timeSettings.push({ name: 'Entry Time', value: String(value) });
+              } else if (key === 'exitTime') {
+                result.timeSettings.push({ name: 'Exit Time', value: String(value) });
+              } else if (key === 'noReentryAfter') {
+                result.timeSettings.push({ 
+                  name: 'No Re-entry After', 
+                  value: value ? 'Enabled' : 'Disabled' 
+                });
+              } else if (key === 'entryCondition') {
+                result.executionSettings.push({ name: 'Entry Condition', value: String(value) });
+              } else {
+                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+                result.executionSettings.push({ name: displayName, value: String(value) });
+              }
             }
-          }
-        });
-      }
-      
-      // Process legBuilder - mix of basic and execution settings
-      if (strategyDetails.legBuilder) {
-        Object.entries(strategyDetails.legBuilder).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            if (key === 'segment') {
-              result.basicSettings.push({ name: 'Segment', value: String(value) });
-            } else if (key === 'position') {
-              result.basicSettings.push({ name: 'Position', value: String(value) });
-            } else if (key === 'optionType') {
-              result.basicSettings.push({ name: 'Option Type', value: String(value) });
-            } else if (key === 'expiry') {
-              result.timeSettings.push({ name: 'Expiry', value: String(value) });
-            } else if (key === 'totalLot') {
-              result.executionSettings.push({ name: 'Total Lot', value: String(value) });
-            } else if (key === 'strikeCriteria') {
-              result.executionSettings.push({ name: 'Strike Criteria', value: String(value) });
-            } else if (key === 'premium') {
-              result.executionSettings.push({ name: 'Premium', value: String(value) });
-            } else {
-              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-              result.other.push({ name: displayName, value: String(value) });
+          });
+        }
+        else if (sectionKey === 'legwiseSettings' || sectionKey === 'LegwiseSettings') {
+          Object.entries(sectionValue).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              if (key === 'squareOff') {
+                result.executionSettings.push({ name: 'Square Off', value: String(value) });
+              } else if (key === 'trailSLToBreakeven') {
+                result.executionSettings.push({ 
+                  name: 'Trail SL to Break-even', 
+                  value: value ? 'Enabled' : 'Disabled' 
+                });
+              } else if (key === 'slAppliedTo') {
+                result.executionSettings.push({ name: 'SL Applied To', value: String(value) });
+              } else {
+                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+                result.executionSettings.push({ name: displayName, value: String(value) });
+              }
             }
-          }
-        });
-      }
-      
-      // Process any other top-level properties in strategy_details
-      Object.entries(strategyDetails).forEach(([key, value]) => {
-        if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
-          if (value !== undefined && value !== null && value !== '') {
-            const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-            result.other.push({ name: displayName, value: JSON.stringify(value) });
+          });
+        }
+        else if (sectionKey === 'legBuilder' || sectionKey === 'LegBuilder') {
+          Object.entries(sectionValue).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              if (key === 'segment') {
+                result.basicSettings.push({ name: 'Segment', value: String(value) });
+              } else if (key === 'position') {
+                result.basicSettings.push({ name: 'Position', value: String(value) });
+              } else if (key === 'optionType') {
+                result.basicSettings.push({ name: 'Option Type', value: String(value) });
+              } else if (key === 'expiry') {
+                result.timeSettings.push({ name: 'Expiry', value: String(value) });
+              } else if (key === 'totalLot') {
+                result.executionSettings.push({ name: 'Total Lot', value: String(value) });
+              } else if (key === 'strikeCriteria') {
+                result.executionSettings.push({ name: 'Strike Criteria', value: String(value) });
+              } else if (key === 'premium') {
+                result.executionSettings.push({ name: 'Premium', value: String(value) });
+              } else {
+                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+                result.other.push({ name: displayName, value: String(value) });
+              }
+            }
+          });
+        }
+        else {
+          // Handle any other top-level sections
+          if (typeof sectionValue === 'object') {
+            Object.entries(sectionValue).forEach(([key, value]) => {
+              if (value !== undefined && value !== null && value !== '') {
+                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+                result.other.push({ name: displayName, value: String(value) });
+              }
+            });
+          } else {
+            // Direct value
+            const displayName = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+            result.other.push({ name: displayName, value: String(sectionValue) });
           }
         }
       });
-    } 
-    // Fall back to parameters array if strategy_details is not available or incomplete
-    else if (strategy.parameters && Array.isArray(strategy.parameters)) {
+    }
+    
+    // If no data found in strategy_details or to supplement missing data, fall back to parameters array
+    if ((result.basicSettings.length === 0 && result.timeSettings.length === 0 && result.executionSettings.length === 0) || 
+        (strategy.parameters && Array.isArray(strategy.parameters))) {
+      
+      console.log('Using parameters array as fallback or supplement');
+      
       const categories = {
         basicSettings: [
           'Index', 'Underlying from', 'Strategy Type', 'Segment', 
@@ -161,7 +177,7 @@ const StrategyDetails = () => {
         ]
       };
       
-      strategy.parameters.forEach(param => {
+      strategy.parameters?.forEach(param => {
         // Skip Take Profit parameter
         if (param.name === 'Take Profit') {
           return;
@@ -179,7 +195,7 @@ const StrategyDetails = () => {
       });
     }
     
-    console.log('Processed strategy parameters:', result);
+    console.log('Final processed strategy parameters:', result);
     return result;
   };
 
@@ -410,44 +426,7 @@ const StrategyDetails = () => {
                   size="icon"
                   variant="ghost"
                   className="text-pink-500 hover:text-pink-400"
-                  onClick={async () => {
-                    if (!user || !strategy) {
-                      toast({
-                        description: "Please log in to add strategies to your wishlist",
-                      });
-                      return;
-                    }
-                    
-                    setIsLoading(true);
-                    
-                    try {
-                      if (!isWishlisted) {
-                        // Add to wishlist
-                        await addToWishlist(user.id, strategy.id, strategy.name, strategy.description);
-                        
-                        setIsWishlisted(true);
-                        toast({
-                          description: "Strategy has been added to your wishlist",
-                        });
-                      } else {
-                        // Remove from wishlist
-                        await removeFromWishlist(user.id, strategy.id);
-                        
-                        setIsWishlisted(false);
-                        toast({
-                          description: "Strategy has been removed from your wishlist",
-                        });
-                      }
-                    } catch (error) {
-                      console.error('Error toggling wishlist status:', error);
-                      toast({
-                        description: "Failed to update wishlist in database",
-                        variant: "destructive"
-                      });
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
+                  onClick={handleToggleWishlist}
                   disabled={isLoading}
                 >
                   <Heart className="h-5 w-5" fill={isWishlisted ? "currentColor" : "none"} />
@@ -696,14 +675,14 @@ const StrategyDetails = () => {
                     </div>
                   )}
 
-                  {/* Strategy parameters */}
+                  {/* Strategy parameters - Enhanced display */}
                   {activeTab === 'overview' && (
                     <div className="space-y-6 mb-8">
                       {parameterCategories.basicSettings?.length > 0 && (
                         <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                           <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                             <Settings className="h-5 w-5 text-cyan mr-2" />
-                            Basic Settings
+                            Instrument Settings
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {parameterCategories.basicSettings.map((param, index) => (
