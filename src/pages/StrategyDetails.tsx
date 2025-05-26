@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -35,9 +36,14 @@ const StrategyDetails = () => {
       return <p className="text-gray-400">No parameters available</p>;
     }
 
+    // Filter out "Take Profit" parameter
+    const filteredParameters = strategy.parameters.filter(param => 
+      !param.name.toLowerCase().includes('take profit')
+    );
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {strategy.parameters.map((param, index) => (
+        {filteredParameters.map((param, index) => (
           <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
             <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
             <p className="text-white font-medium">{param.value}</p>
