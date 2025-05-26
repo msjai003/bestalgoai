@@ -65,12 +65,25 @@ const StrategyDetails = () => {
       other: [] as Array<{name: string, value: string}>
     };
     
-    // Define categories for organizing the data
-    const instrumentKeys = ['Index', 'Segment', 'Underlying from', 'Position', 'Option Type'];
-    const timeKeys = ['Entry Time', 'Exit Time', 'Expiry', 'No Re-entry After'];
+    // Define categories for organizing the data based on actual field names from database
+    const instrumentKeys = [
+      'Index', 'Segment', 'Underlying from', 'Position', 'Option Type',
+      'index', 'segment', 'underlyingFrom', 'position', 'optionType',
+      'instrumentSettings'
+    ];
+    
+    const timeKeys = [
+      'Entry Time', 'Exit Time', 'Expiry', 'No Re-entry After',
+      'entryTime', 'exitTime', 'expiry', 'noReentryAfter',
+      'entrySettings', 'timeSettings'
+    ];
+    
     const executionKeys = [
       'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
-      'Total Lot', 'Strike Criteria', 'Premium', 'Strategy Type'
+      'Total Lot', 'Strike Criteria', 'Premium', 'Strategy Type',
+      'squareOff', 'trailSLToBreakeven', 'legSelection', 'totalLot',
+      'strikeCriteria', 'premium', 'strategyType', 'legwiseSettings',
+      'legBuilder', 'executionSettings'
     ];
     
     // Process each key-value pair from strategy_details
@@ -80,7 +93,49 @@ const StrategyDetails = () => {
         return;
       }
       
-      // Convert value to string, handling different types
+      // Handle nested objects (like instrumentSettings, entrySettings, etc.)
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        // If it's a nested object, process its properties
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+          if (nestedValue === null || nestedValue === undefined) {
+            return;
+          }
+          
+          let stringValue = '';
+          if (typeof nestedValue === 'boolean') {
+            stringValue = nestedValue ? 'Yes' : 'No';
+          } else if (typeof nestedValue === 'object') {
+            if (nestedValue.enabled !== undefined) {
+              stringValue = nestedValue.enabled ? (nestedValue.value?.toString() || 'On') : 'Off';
+            } else {
+              stringValue = JSON.stringify(nestedValue);
+            }
+          } else {
+            stringValue = String(nestedValue);
+          }
+          
+          // Skip empty or meaningless values
+          if (!stringValue || stringValue === '' || stringValue === 'Not selected' || stringValue === 'null') {
+            return;
+          }
+          
+          // Categorize based on the parent key and nested key
+          const displayName = `${key} - ${nestedKey}`;
+          
+          if (instrumentKeys.some(k => key.toLowerCase().includes(k.toLowerCase()) || nestedKey.toLowerCase().includes(k.toLowerCase()))) {
+            result.instrumentSettings.push({ name: displayName, value: stringValue });
+          } else if (timeKeys.some(k => key.toLowerCase().includes(k.toLowerCase()) || nestedKey.toLowerCase().includes(k.toLowerCase()))) {
+            result.timeSettings.push({ name: displayName, value: stringValue });
+          } else if (executionKeys.some(k => key.toLowerCase().includes(k.toLowerCase()) || nestedKey.toLowerCase().includes(k.toLowerCase()))) {
+            result.executionSettings.push({ name: displayName, value: stringValue });
+          } else {
+            result.other.push({ name: displayName, value: stringValue });
+          }
+        });
+        return;
+      }
+      
+      // Handle primitive values
       let stringValue = '';
       if (value === null || value === undefined) {
         return; // Skip null/undefined values
@@ -102,11 +157,11 @@ const StrategyDetails = () => {
         return;
       }
       
-      if (instrumentKeys.includes(key)) {
+      if (instrumentKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         result.instrumentSettings.push({ name: key, value: stringValue });
-      } else if (timeKeys.includes(key)) {
+      } else if (timeKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         result.timeSettings.push({ name: key, value: stringValue });
-      } else if (executionKeys.includes(key)) {
+      } else if (executionKeys.some(k => key.toLowerCase().includes(k.toLowerCase()))) {
         result.executionSettings.push({ name: key, value: stringValue });
       } else {
         result.other.push({ name: key, value: stringValue });
@@ -574,6 +629,23 @@ const StrategyDetails = () => {
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {strategyDetailsParams.executionSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {strategyDetailsParams.other?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Filter className="h-5 w-5 text-cyan mr-2" />
+                            Other Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {strategyDetailsParams.other.map((param, index) => (
                               <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                 <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
                                 <p className="text-white font-medium">{param.value}</p>
