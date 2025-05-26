@@ -53,105 +53,43 @@ const StrategyDetails = () => {
     if (strategy.strategy_details && typeof strategy.strategy_details === 'object') {
       const strategyDetails = strategy.strategy_details;
       
-      // Process all sections comprehensively
-      Object.entries(strategyDetails).forEach(([sectionKey, sectionValue]) => {
-        if (sectionKey === 'Legs' || !sectionValue || typeof sectionValue !== 'object') {
-          return; // Skip legs and invalid sections
+      // Define instrument settings keys
+      const instrumentKeys = ['Index', 'Segment', 'Underlying from', 'Position', 'Option Type'];
+      
+      // Define time settings keys
+      const timeKeys = ['Entry Time', 'Exit Time', 'Expiry', 'No Re-entry After'];
+      
+      // Define execution settings keys
+      const executionKeys = [
+        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+        'Total Lot', 'Strike Criteria', 'Premium', 'Strategy Type'
+      ];
+      
+      // Process direct properties from strategy_details
+      Object.entries(strategyDetails).forEach(([key, value]) => {
+        if (key === 'Legs' || !value || value === '' || value === 'Not selected') {
+          return; // Skip legs and empty/unselected values
         }
         
-        console.log(`Processing section: ${sectionKey}`, sectionValue);
+        console.log(`Processing key: ${key}, value:`, value);
         
-        // Handle different section types
-        if (sectionKey === 'instrumentSettings' || sectionKey === 'InstrumentSettings') {
-          Object.entries(sectionValue).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              const displayName = key === 'index' ? 'Index' : 
-                                key === 'underlyingFrom' ? 'Underlying From' : 
-                                key === 'segment' ? 'Segment' :
-                                key.charAt(0).toUpperCase() + key.slice(1);
-              result.basicSettings.push({ name: displayName, value: String(value) });
-            }
-          });
-        }
-        else if (sectionKey === 'entrySettings' || sectionKey === 'EntrySettings') {
-          Object.entries(sectionValue).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              if (key === 'strategyType') {
-                result.basicSettings.push({ name: 'Strategy Type', value: String(value) });
-              } else if (key === 'entryTime') {
-                result.timeSettings.push({ name: 'Entry Time', value: String(value) });
-              } else if (key === 'exitTime') {
-                result.timeSettings.push({ name: 'Exit Time', value: String(value) });
-              } else if (key === 'noReentryAfter') {
-                result.timeSettings.push({ 
-                  name: 'No Re-entry After', 
-                  value: value ? 'Enabled' : 'Disabled' 
-                });
-              } else if (key === 'entryCondition') {
-                result.executionSettings.push({ name: 'Entry Condition', value: String(value) });
-              } else {
-                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-                result.executionSettings.push({ name: displayName, value: String(value) });
-              }
-            }
-          });
-        }
-        else if (sectionKey === 'legwiseSettings' || sectionKey === 'LegwiseSettings') {
-          Object.entries(sectionValue).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              if (key === 'squareOff') {
-                result.executionSettings.push({ name: 'Square Off', value: String(value) });
-              } else if (key === 'trailSLToBreakeven') {
-                result.executionSettings.push({ 
-                  name: 'Trail SL to Break-even', 
-                  value: value ? 'Enabled' : 'Disabled' 
-                });
-              } else if (key === 'slAppliedTo') {
-                result.executionSettings.push({ name: 'SL Applied To', value: String(value) });
-              } else {
-                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-                result.executionSettings.push({ name: displayName, value: String(value) });
-              }
-            }
-          });
-        }
-        else if (sectionKey === 'legBuilder' || sectionKey === 'LegBuilder') {
-          Object.entries(sectionValue).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              if (key === 'segment') {
-                result.basicSettings.push({ name: 'Segment', value: String(value) });
-              } else if (key === 'position') {
-                result.basicSettings.push({ name: 'Position', value: String(value) });
-              } else if (key === 'optionType') {
-                result.basicSettings.push({ name: 'Option Type', value: String(value) });
-              } else if (key === 'expiry') {
-                result.timeSettings.push({ name: 'Expiry', value: String(value) });
-              } else if (key === 'totalLot') {
-                result.executionSettings.push({ name: 'Total Lot', value: String(value) });
-              } else if (key === 'strikeCriteria') {
-                result.executionSettings.push({ name: 'Strike Criteria', value: String(value) });
-              } else if (key === 'premium') {
-                result.executionSettings.push({ name: 'Premium', value: String(value) });
-              } else {
-                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-                result.other.push({ name: displayName, value: String(value) });
-              }
-            }
-          });
-        }
-        else {
-          // Handle any other top-level sections
-          if (typeof sectionValue === 'object') {
-            Object.entries(sectionValue).forEach(([key, value]) => {
-              if (value !== undefined && value !== null && value !== '') {
-                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-                result.other.push({ name: displayName, value: String(value) });
+        if (instrumentKeys.includes(key)) {
+          result.basicSettings.push({ name: key, value: String(value) });
+        } else if (timeKeys.includes(key)) {
+          result.timeSettings.push({ name: key, value: String(value) });
+        } else if (executionKeys.includes(key)) {
+          result.executionSettings.push({ name: key, value: String(value) });
+        } else {
+          // Handle nested objects
+          if (typeof value === 'object' && value !== null) {
+            Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+              if (nestedValue !== undefined && nestedValue !== null && nestedValue !== '') {
+                const displayName = nestedKey.charAt(0).toUpperCase() + nestedKey.slice(1);
+                result.other.push({ name: displayName, value: String(nestedValue) });
               }
             });
           } else {
-            // Direct value
-            const displayName = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
-            result.other.push({ name: displayName, value: String(sectionValue) });
+            result.other.push({ name: key, value: String(value) });
           }
         }
       });
