@@ -29,120 +29,68 @@ const StrategyDetails = () => {
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
-  // Enhanced function to get strategy details from strategy_details column
+  // Function to get strategy details from strategy_details column
   const getStrategyDetailsParams = () => {
-    if (!strategy) return {
-      basicSettings: [],
-      timeSettings: [],
-      executionSettings: [],
-      other: []
-    };
-    
-    const result: Record<string, any[]> = {
-      basicSettings: [],
-      timeSettings: [],
-      executionSettings: [],
-      other: []
-    };
-    
-    console.log('Processing strategy:', strategy.name);
-    console.log('Strategy details raw data:', strategy.strategy_details);
-    console.log('Strategy parameters raw data:', strategy.parameters);
-    
-    // First try to get from strategy_details if available
-    if (strategy.strategy_details && typeof strategy.strategy_details === 'object') {
-      const strategyDetails = strategy.strategy_details;
-      
-      // Define instrument settings keys
-      const instrumentKeys = ['Index', 'Segment', 'Underlying from', 'Position', 'Option Type'];
-      
-      // Define time settings keys
-      const timeKeys = ['Entry Time', 'Exit Time', 'Expiry', 'No Re-entry After'];
-      
-      // Define execution settings keys
-      const executionKeys = [
-        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
-        'Total Lot', 'Strike Criteria', 'Premium', 'Strategy Type'
-      ];
-      
-      // Process direct properties from strategy_details
-      Object.entries(strategyDetails).forEach(([key, value]) => {
-        if (key === 'Legs' || !value || value === '' || value === 'Not selected') {
-          return; // Skip legs and empty/unselected values
-        }
-        
-        console.log(`Processing key: ${key}, value:`, value);
-        
-        if (instrumentKeys.includes(key)) {
-          result.basicSettings.push({ name: key, value: String(value) });
-        } else if (timeKeys.includes(key)) {
-          result.timeSettings.push({ name: key, value: String(value) });
-        } else if (executionKeys.includes(key)) {
-          result.executionSettings.push({ name: key, value: String(value) });
-        } else {
-          // Handle nested objects
-          if (typeof value === 'object' && value !== null) {
-            Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-              if (nestedValue !== undefined && nestedValue !== null && nestedValue !== '') {
-                const displayName = nestedKey.charAt(0).toUpperCase() + nestedKey.slice(1);
-                result.other.push({ name: displayName, value: String(nestedValue) });
-              }
-            });
-          } else {
-            result.other.push({ name: key, value: String(value) });
-          }
-        }
-      });
-    }
-    
-    // If no data found in strategy_details or to supplement missing data, fall back to parameters array
-    if ((result.basicSettings.length === 0 && result.timeSettings.length === 0 && result.executionSettings.length === 0) || 
-        (strategy.parameters && Array.isArray(strategy.parameters))) {
-      
-      console.log('Using parameters array as fallback or supplement');
-      
-      const categories = {
-        basicSettings: [
-          'Index', 'Underlying from', 'Strategy Type', 'Segment', 
-          'Position', 'Option Type', 'Risk Score'
-        ],
-        timeSettings: [
-          'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
-        ],
-        executionSettings: [
-          'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
-          'Total Lot', 'Strike Criteria', 'Premium'
-        ]
+    if (!strategy || !strategy.strategy_details) {
+      console.log('No strategy or strategy_details found');
+      return {
+        instrumentSettings: [],
+        timeSettings: [],
+        executionSettings: [],
+        other: []
       };
-      
-      strategy.parameters?.forEach(param => {
-        // Skip Take Profit parameter
-        if (param.name === 'Take Profit') {
-          return;
-        }
-        
-        if (categories.basicSettings.includes(param.name)) {
-          result.basicSettings.push(param);
-        } else if (categories.timeSettings.includes(param.name)) {
-          result.timeSettings.push(param);
-        } else if (categories.executionSettings.includes(param.name)) {
-          result.executionSettings.push(param);
-        } else {
-          result.other.push(param);
-        }
-      });
     }
     
-    console.log('Final processed strategy parameters:', result);
+    const strategyDetails = strategy.strategy_details;
+    console.log('Processing strategy details for:', strategy.name, strategyDetails);
+    
+    const result = {
+      instrumentSettings: [] as Array<{name: string, value: string}>,
+      timeSettings: [] as Array<{name: string, value: string}>,
+      executionSettings: [] as Array<{name: string, value: string}>,
+      other: [] as Array<{name: string, value: string}>
+    };
+    
+    // Define categories for organizing the data
+    const instrumentKeys = ['Index', 'Segment', 'Underlying from', 'Position', 'Option Type'];
+    const timeKeys = ['Entry Time', 'Exit Time', 'Expiry', 'No Re-entry After'];
+    const executionKeys = [
+      'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+      'Total Lot', 'Strike Criteria', 'Premium', 'Strategy Type'
+    ];
+    
+    // Process each key-value pair from strategy_details
+    Object.entries(strategyDetails).forEach(([key, value]) => {
+      // Skip the Legs array as it's handled separately
+      if (key === 'Legs' || !value || value === '' || value === 'Not selected') {
+        return;
+      }
+      
+      const stringValue = String(value);
+      
+      if (instrumentKeys.includes(key)) {
+        result.instrumentSettings.push({ name: key, value: stringValue });
+      } else if (timeKeys.includes(key)) {
+        result.timeSettings.push({ name: key, value: stringValue });
+      } else if (executionKeys.includes(key)) {
+        result.executionSettings.push({ name: key, value: stringValue });
+      } else {
+        result.other.push({ name: key, value: stringValue });
+      }
+    });
+    
+    console.log('Processed strategy details:', result);
     return result;
   };
 
   // Function to get the legs from strategy_details
   const getStrategyLegs = () => {
     if (!strategy || !strategy.strategy_details || !strategy.strategy_details.Legs) {
+      console.log('No legs found in strategy details');
       return [];
     }
     
+    console.log('Strategy legs:', strategy.strategy_details.Legs);
     return strategy.strategy_details.Legs;
   };
 
@@ -328,7 +276,7 @@ const StrategyDetails = () => {
     canAccess
   });
   
-  const parameterCategories = getStrategyDetailsParams();
+  const strategyDetailsParams = getStrategyDetailsParams();
   const strategyLegs = getStrategyLegs();
 
   return (
@@ -383,33 +331,19 @@ const StrategyDetails = () => {
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
-                      <p className="text-gray-400 mb-1 text-sm">
-                        Win Rate
-                      </p>
-                      <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance.winRate}
-                      </p>
+                      <p className="text-gray-400 mb-1 text-sm">Win Rate</p>
+                      <p className="text-cyan font-semibold text-xl">{strategy.performance.winRate}</p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
-                      <p className="text-gray-400 mb-1 text-sm">
-                        Average Return
-                      </p>
-                      <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance.avgProfit}
-                      </p>
+                      <p className="text-gray-400 mb-1 text-sm">Average Return</p>
+                      <p className="text-cyan font-semibold text-xl">{strategy.performance.avgProfit}</p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
-                      <p className="text-gray-400 mb-1 text-sm">
-                        Max Drawdown
-                      </p>
-                      <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance.drawdown}
-                      </p>
+                      <p className="text-gray-400 mb-1 text-sm">Max Drawdown</p>
+                      <p className="text-cyan font-semibold text-xl">{strategy.performance.drawdown}</p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
-                      <p className="text-gray-400 mb-1 text-sm">
-                        Risk Score
-                      </p>
+                      <p className="text-gray-400 mb-1 text-sm">Risk Score</p>
                       <p className="text-cyan font-semibold text-xl">
                         {strategy.parameters?.find(p => p.name === "Risk Score")?.value || "N/A"}
                       </p>
@@ -521,86 +455,34 @@ const StrategyDetails = () => {
                               </div>
                               
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {leg.stopLoss && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.stopLoss === 'object' && leg.stopLoss && 'enabled' in leg.stopLoss ? 
-                                        (leg.stopLoss.enabled ? 
-                                          `${leg.stopLoss.value || ''} ${leg.stopLoss.type || ''}` : 
-                                          "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.trailSL && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.trailSL === 'object' && leg.trailSL && 'enabled' in leg.trailSL ? 
-                                        (leg.trailSL.enabled ? "Enabled" : "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.targetProfit && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.targetProfit === 'object' && leg.targetProfit && 'enabled' in leg.targetProfit ? 
-                                        (leg.targetProfit.enabled ? "Enabled" : "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.reEntryOnTarget && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.reEntryOnTarget === 'object' && leg.reEntryOnTarget && 'enabled' in leg.reEntryOnTarget ? 
-                                        (leg.reEntryOnTarget.enabled ? "Enabled" : "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.reEntryOnStopLoss && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.reEntryOnStopLoss === 'object' && leg.reEntryOnStopLoss && 'enabled' in leg.reEntryOnStopLoss ? 
-                                        (leg.reEntryOnStopLoss.enabled ? "Enabled" : "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.simpleMomentum && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.simpleMomentum === 'object' && leg.simpleMomentum && 'enabled' in leg.simpleMomentum ? 
-                                        (leg.simpleMomentum.enabled ? "Enabled" : "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {leg.rangeBreakout && (
-                                  <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                                    <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
-                                    <p className="text-white font-medium">
-                                      {typeof leg.rangeBreakout === 'object' && leg.rangeBreakout && 'enabled' in leg.rangeBreakout ? 
-                                        (leg.rangeBreakout.enabled ? 
-                                          `${leg.rangeBreakout.breakoutTime || ''} - ${leg.rangeBreakout.breakoutCondition || ''}` : 
-                                          "Disabled") : 
-                                        "N/A"}
-                                    </p>
-                                  </div>
-                                )}
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Stop Loss</span>
+                                  <p className="text-white font-medium">{leg.stopLoss || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Trail SL</span>
+                                  <p className="text-white font-medium">{leg.trailSL || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Target Profit</span>
+                                  <p className="text-white font-medium">{leg.targetProfit || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Target</span>
+                                  <p className="text-white font-medium">{leg.reEntryOnTarget || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Re-entry on Stop Loss</span>
+                                  <p className="text-white font-medium">{leg.reEntryOnStopLoss || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Simple Momentum</span>
+                                  <p className="text-white font-medium">{leg.simpleMomentum || "Off"}</p>
+                                </div>
+                                <div className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                  <span className="text-gray-400 text-xs block mb-1">Range Breakout</span>
+                                  <p className="text-white font-medium">{leg.rangeBreakout || "Off"}</p>
+                                </div>
                               </div>
                             </div>
                           ))
@@ -613,17 +495,17 @@ const StrategyDetails = () => {
                     </div>
                   )}
 
-                  {/* Strategy parameters - Enhanced display */}
+                  {/* Strategy parameters from strategy_details */}
                   {activeTab === 'overview' && (
                     <div className="space-y-6 mb-8">
-                      {parameterCategories.basicSettings?.length > 0 && (
+                      {strategyDetailsParams.instrumentSettings?.length > 0 && (
                         <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                           <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                             <Settings className="h-5 w-5 text-cyan mr-2" />
                             Instrument Settings
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {parameterCategories.basicSettings.map((param, index) => (
+                            {strategyDetailsParams.instrumentSettings.map((param, index) => (
                               <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                 <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
                                 <p className="text-white font-medium">{param.value}</p>
@@ -633,14 +515,14 @@ const StrategyDetails = () => {
                         </div>
                       )}
                       
-                      {parameterCategories.timeSettings?.length > 0 && (
+                      {strategyDetailsParams.timeSettings?.length > 0 && (
                         <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                           <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                             <Clock className="h-5 w-5 text-cyan mr-2" />
                             Time Settings
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {parameterCategories.timeSettings.map((param, index) => (
+                            {strategyDetailsParams.timeSettings.map((param, index) => (
                               <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                 <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
                                 <p className="text-white font-medium">{param.value}</p>
@@ -650,14 +532,14 @@ const StrategyDetails = () => {
                         </div>
                       )}
                       
-                      {parameterCategories.executionSettings?.length > 0 && (
+                      {strategyDetailsParams.executionSettings?.length > 0 && (
                         <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                           <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                             <Zap className="h-5 w-5 text-cyan mr-2" />
                             Execution Settings
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {parameterCategories.executionSettings.map((param, index) => (
+                            {strategyDetailsParams.executionSettings.map((param, index) => (
                               <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
                                 <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
                                 <p className="text-white font-medium">{param.value}</p>
