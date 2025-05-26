@@ -45,88 +45,107 @@ const StrategyDetails = () => {
       other: []
     };
     
+    console.log('Strategy details raw data:', strategy.strategy_details);
+    console.log('Strategy parameters raw data:', strategy.parameters);
+    
     // First try to get from strategy_details if available
     if (strategy.strategy_details && typeof strategy.strategy_details === 'object') {
       const strategyDetails = strategy.strategy_details;
       
-      // Process instrumentSettings
+      // Process instrumentSettings - prioritize getting data from strategy_details
       if (strategyDetails.instrumentSettings) {
-        if (strategyDetails.instrumentSettings.index) {
-          result.basicSettings.push({ name: 'Index', value: strategyDetails.instrumentSettings.index });
-        }
-        if (strategyDetails.instrumentSettings.underlyingFrom) {
-          result.basicSettings.push({ name: 'Underlying from', value: strategyDetails.instrumentSettings.underlyingFrom });
-        }
+        Object.entries(strategyDetails.instrumentSettings).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            const displayName = key === 'index' ? 'Index' : 
+                              key === 'underlyingFrom' ? 'Underlying from' : 
+                              key.charAt(0).toUpperCase() + key.slice(1);
+            result.basicSettings.push({ name: displayName, value: String(value) });
+          }
+        });
       }
       
-      // Process entrySettings
+      // Process entrySettings - for time-related settings
       if (strategyDetails.entrySettings) {
-        if (strategyDetails.entrySettings.strategyType) {
-          result.basicSettings.push({ name: 'Strategy Type', value: strategyDetails.entrySettings.strategyType });
-        }
-        if (strategyDetails.entrySettings.entryTime) {
-          result.timeSettings.push({ name: 'Entry Time', value: strategyDetails.entrySettings.entryTime });
-        }
-        if (strategyDetails.entrySettings.exitTime) {
-          result.timeSettings.push({ name: 'Exit Time', value: strategyDetails.entrySettings.exitTime });
-        }
-        if (strategyDetails.entrySettings.noReentryAfter !== undefined) {
-          result.timeSettings.push({ 
-            name: 'No re-entry after', 
-            value: strategyDetails.entrySettings.noReentryAfter ? 'Enabled' : 'Disabled' 
-          });
-        }
+        Object.entries(strategyDetails.entrySettings).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (key === 'strategyType') {
+              result.basicSettings.push({ name: 'Strategy Type', value: String(value) });
+            } else if (key === 'entryTime') {
+              result.timeSettings.push({ name: 'Entry Time', value: String(value) });
+            } else if (key === 'exitTime') {
+              result.timeSettings.push({ name: 'Exit Time', value: String(value) });
+            } else if (key === 'noReentryAfter') {
+              result.timeSettings.push({ 
+                name: 'No re-entry after', 
+                value: value ? 'Enabled' : 'Disabled' 
+              });
+            } else {
+              // Other entry settings
+              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+              result.executionSettings.push({ name: displayName, value: String(value) });
+            }
+          }
+        });
       }
       
-      // Process legwiseSettings
+      // Process legwiseSettings - for execution settings
       if (strategyDetails.legwiseSettings) {
-        if (strategyDetails.legwiseSettings.squareOff) {
-          result.executionSettings.push({ name: 'Square Off', value: strategyDetails.legwiseSettings.squareOff });
-        }
-        if (strategyDetails.legwiseSettings.trailSLToBreakeven !== undefined) {
-          result.executionSettings.push({ 
-            name: 'Trail SL to Break-even price', 
-            value: strategyDetails.legwiseSettings.trailSLToBreakeven ? 'Enabled' : 'Disabled' 
-          });
-        }
-        if (strategyDetails.legwiseSettings.slAppliedTo) {
-          result.executionSettings.push({ name: 'SL Applied To', value: strategyDetails.legwiseSettings.slAppliedTo });
-        }
+        Object.entries(strategyDetails.legwiseSettings).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (key === 'squareOff') {
+              result.executionSettings.push({ name: 'Square Off', value: String(value) });
+            } else if (key === 'trailSLToBreakeven') {
+              result.executionSettings.push({ 
+                name: 'Trail SL to Break-even price', 
+                value: value ? 'Enabled' : 'Disabled' 
+              });
+            } else if (key === 'slAppliedTo') {
+              result.executionSettings.push({ name: 'SL Applied To', value: String(value) });
+            } else {
+              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+              result.executionSettings.push({ name: displayName, value: String(value) });
+            }
+          }
+        });
       }
       
-      // Process legBuilder
+      // Process legBuilder - mix of basic and execution settings
       if (strategyDetails.legBuilder) {
-        if (strategyDetails.legBuilder.segment) {
-          result.basicSettings.push({ name: 'Segment', value: strategyDetails.legBuilder.segment });
-        }
-        if (strategyDetails.legBuilder.totalLot) {
-          result.executionSettings.push({ name: 'Total Lot', value: strategyDetails.legBuilder.totalLot });
-        }
-        if (strategyDetails.legBuilder.position) {
-          result.basicSettings.push({ name: 'Position', value: strategyDetails.legBuilder.position });
-        }
-        if (strategyDetails.legBuilder.optionType) {
-          result.basicSettings.push({ name: 'Option Type', value: strategyDetails.legBuilder.optionType });
-        }
-        if (strategyDetails.legBuilder.expiry) {
-          result.timeSettings.push({ name: 'Expiry', value: strategyDetails.legBuilder.expiry });
-        }
-        if (strategyDetails.legBuilder.strikeCriteria) {
-          result.executionSettings.push({ name: 'Strike Criteria', value: strategyDetails.legBuilder.strikeCriteria });
-        }
-        if (strategyDetails.legBuilder.premium !== undefined) {
-          result.executionSettings.push({ name: 'Premium', value: strategyDetails.legBuilder.premium });
-        }
+        Object.entries(strategyDetails.legBuilder).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (key === 'segment') {
+              result.basicSettings.push({ name: 'Segment', value: String(value) });
+            } else if (key === 'position') {
+              result.basicSettings.push({ name: 'Position', value: String(value) });
+            } else if (key === 'optionType') {
+              result.basicSettings.push({ name: 'Option Type', value: String(value) });
+            } else if (key === 'expiry') {
+              result.timeSettings.push({ name: 'Expiry', value: String(value) });
+            } else if (key === 'totalLot') {
+              result.executionSettings.push({ name: 'Total Lot', value: String(value) });
+            } else if (key === 'strikeCriteria') {
+              result.executionSettings.push({ name: 'Strike Criteria', value: String(value) });
+            } else if (key === 'premium') {
+              result.executionSettings.push({ name: 'Premium', value: String(value) });
+            } else {
+              const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+              result.other.push({ name: displayName, value: String(value) });
+            }
+          }
+        });
       }
       
-      // Add any other properties not covered above
-      for (const [key, value] of Object.entries(strategyDetails)) {
+      // Process any other top-level properties in strategy_details
+      Object.entries(strategyDetails).forEach(([key, value]) => {
         if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
-          result.other.push({ name: key, value: JSON.stringify(value) });
+          if (value !== undefined && value !== null && value !== '') {
+            const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+            result.other.push({ name: displayName, value: JSON.stringify(value) });
+          }
         }
-      }
+      });
     } 
-    // Fall back to parameters array if strategy_details is not available
+    // Fall back to parameters array if strategy_details is not available or incomplete
     else if (strategy.parameters && Array.isArray(strategy.parameters)) {
       const categories = {
         basicSettings: [
@@ -160,6 +179,7 @@ const StrategyDetails = () => {
       });
     }
     
+    console.log('Processed strategy parameters:', result);
     return result;
   };
 
