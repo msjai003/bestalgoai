@@ -24,14 +24,6 @@ export const TradingControls: React.FC<TradingControlsProps> = ({
                 </div>
                 <span className="text-xs text-cyan bg-cyan/30 px-2 py-1 rounded-full">Live</span>
               </div>
-              
-              <Button 
-                variant="destructive"
-                className="w-full py-6 rounded-lg font-medium"
-                onClick={onToggleTrading}
-              >
-                Deactivate Trading
-              </Button>
             </div>
           ) : (
             <Button 
