@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -24,118 +23,149 @@ const StrategyDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasPremium, setHasPremium] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'legs' | 'details'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'legs'>('overview');
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
 
-  // Function to render strategy parameters in a structured way
-  const renderStrategyParameters = () => {
-    if (!strategy?.parameters || !Array.isArray(strategy.parameters)) {
-      return <p className="text-gray-400">No parameters available</p>;
-    }
-
-    // Filter out "Take Profit" parameter
-    const filteredParameters = strategy.parameters.filter(param => 
-      !param.name.toLowerCase().includes('take profit')
-    );
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredParameters.map((param, index) => (
-          <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-            <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
-            <p className="text-white font-medium">{param.value}</p>
-          </div>
-        ))}
-      </div>
-    );
+  // Group parameters by category for better organization
+  const getParameterCategories = () => {
+    if (!strategy || !strategy.parameters) return {};
+    
+    const categories = {
+      basicSettings: [
+        'Index', 'Underlying from', 'Strategy Type', 'Segment', 
+        'Position', 'Option Type', 'Risk Score'
+      ],
+      timeSettings: [
+        'Entry Time', 'Exit Time', 'No re-entry after', 'Expiry'
+      ],
+      executionSettings: [
+        'Square Off', 'Trail SL to Break-even price', 'Leg Selection',
+        'Total Lot', 'Strike Criteria', 'Premium'
+      ]
+    };
+    
+    const categorizedParams: Record<string, any[]> = {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
+    
+    strategy.parameters.forEach(param => {
+      if (categories.basicSettings.includes(param.name)) {
+        categorizedParams.basicSettings.push(param);
+      } else if (categories.timeSettings.includes(param.name)) {
+        categorizedParams.timeSettings.push(param);
+      } else if (categories.executionSettings.includes(param.name)) {
+        categorizedParams.executionSettings.push(param);
+      } else {
+        categorizedParams.other.push(param);
+      }
+    });
+    
+    return categorizedParams;
   };
 
-  // Function to render strategy details from the strategy_details JSON column
-  const renderStrategyDetailsData = () => {
-    if (!strategy?.strategy_details) {
-      return <p className="text-gray-400">No detailed strategy information available</p>;
-    }
-
-    const details = strategy.strategy_details;
+  // Function to get strategy details from new column
+  const getStrategyDetailsParams = () => {
+    if (!strategy || !strategy.strategy_details) return {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
     
-    return (
-      <div className="space-y-6">
-        {/* Instrument Settings */}
-        {details.instrumentSettings && (
-          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-              <Settings className="h-5 w-5 text-cyan mr-2" />
-              Instrument Settings
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(details.instrumentSettings).map(([key, value]) => (
-                <div key={key} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                  <span className="text-gray-400 text-xs block mb-1">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-                  <p className="text-white font-medium">{String(value)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Entry Settings */}
-        {details.entrySettings && (
-          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-              <Clock className="h-5 w-5 text-cyan mr-2" />
-              Entry Settings
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(details.entrySettings).map(([key, value]) => (
-                <div key={key} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                  <span className="text-gray-400 text-xs block mb-1">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-                  <p className="text-white font-medium">{String(value)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Leg Builder Settings */}
-        {details.legBuilder && (
-          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-              <Zap className="h-5 w-5 text-cyan mr-2" />
-              Leg Builder
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(details.legBuilder).map(([key, value]) => (
-                <div key={key} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                  <span className="text-gray-400 text-xs block mb-1">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-                  <p className="text-white font-medium">{String(value)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Legwise Settings */}
-        {details.legwiseSettings && (
-          <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
-            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-              <Filter className="h-5 w-5 text-cyan mr-2" />
-              Legwise Settings
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(details.legwiseSettings).map(([key, value]) => (
-                <div key={key} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
-                  <span className="text-gray-400 text-xs block mb-1">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-                  <p className="text-white font-medium">{typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : String(value)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    const result: Record<string, any[]> = {
+      basicSettings: [],
+      timeSettings: [],
+      executionSettings: [],
+      other: []
+    };
+    
+    // Map from the new structure to the expected parameter format
+    const strategyDetails = strategy.strategy_details;
+    
+    // Process instrumentSettings
+    if (strategyDetails.instrumentSettings) {
+      if (strategyDetails.instrumentSettings.index) {
+        result.basicSettings.push({ name: 'Index', value: strategyDetails.instrumentSettings.index });
+      }
+      if (strategyDetails.instrumentSettings.underlyingFrom) {
+        result.basicSettings.push({ name: 'Underlying from', value: strategyDetails.instrumentSettings.underlyingFrom });
+      }
+    }
+    
+    // Process entrySettings
+    if (strategyDetails.entrySettings) {
+      if (strategyDetails.entrySettings.strategyType) {
+        result.basicSettings.push({ name: 'Strategy Type', value: strategyDetails.entrySettings.strategyType });
+      }
+      if (strategyDetails.entrySettings.entryTime) {
+        result.timeSettings.push({ name: 'Entry Time', value: strategyDetails.entrySettings.entryTime });
+      }
+      if (strategyDetails.entrySettings.exitTime) {
+        result.timeSettings.push({ name: 'Exit Time', value: strategyDetails.entrySettings.exitTime });
+      }
+      if (strategyDetails.entrySettings.noReentryAfter !== undefined) {
+        result.timeSettings.push({ 
+          name: 'No re-entry after', 
+          value: strategyDetails.entrySettings.noReentryAfter ? 'Enabled' : 'Disabled' 
+        });
+      }
+    }
+    
+    // Process legwiseSettings
+    if (strategyDetails.legwiseSettings) {
+      if (strategyDetails.legwiseSettings.squareOff) {
+        result.executionSettings.push({ name: 'Square Off', value: strategyDetails.legwiseSettings.squareOff });
+      }
+      if (strategyDetails.legwiseSettings.trailSLToBreakeven !== undefined) {
+        result.executionSettings.push({ 
+          name: 'Trail SL to Break-even price', 
+          value: strategyDetails.legwiseSettings.trailSLToBreakeven ? 'Enabled' : 'Disabled' 
+        });
+      }
+      if (strategyDetails.legwiseSettings.slAppliedTo) {
+        result.executionSettings.push({ name: 'SL Applied To', value: strategyDetails.legwiseSettings.slAppliedTo });
+      }
+    }
+    
+    // Process legBuilder
+    if (strategyDetails.legBuilder) {
+      if (strategyDetails.legBuilder.segment) {
+        result.basicSettings.push({ name: 'Segment', value: strategyDetails.legBuilder.segment });
+      }
+      if (strategyDetails.legBuilder.totalLot) {
+        result.executionSettings.push({ name: 'Total Lot', value: strategyDetails.legBuilder.totalLot });
+      }
+      if (strategyDetails.legBuilder.position) {
+        result.basicSettings.push({ name: 'Position', value: strategyDetails.legBuilder.position });
+      }
+      if (strategyDetails.legBuilder.optionType) {
+        result.basicSettings.push({ name: 'Option Type', value: strategyDetails.legBuilder.optionType });
+      }
+      if (strategyDetails.legBuilder.expiry) {
+        result.timeSettings.push({ name: 'Expiry', value: strategyDetails.legBuilder.expiry });
+      }
+      if (strategyDetails.legBuilder.strikeCriteria) {
+        result.executionSettings.push({ name: 'Strike Criteria', value: strategyDetails.legBuilder.strikeCriteria });
+      }
+      if (strategyDetails.legBuilder.premium !== undefined) {
+        result.executionSettings.push({ name: 'Premium', value: strategyDetails.legBuilder.premium });
+      }
+    }
+    
+    // Add any other properties not covered above
+    for (const [key, value] of Object.entries(strategyDetails)) {
+      if (!['instrumentSettings', 'entrySettings', 'legwiseSettings', 'legBuilder', 'Legs'].includes(key)) {
+        result.other.push({ name: key, value: JSON.stringify(value) });
+      }
+    }
+    
+    return result;
   };
 
   // Function to get the legs from strategy_details
@@ -328,6 +358,10 @@ const StrategyDetails = () => {
     isZenflow,
     canAccess
   });
+  
+  const parameterCategories = strategy && strategy.strategy_details 
+    ? getStrategyDetailsParams() 
+    : getParameterCategories();
     
   const strategyLegs = getStrategyLegs();
 
@@ -364,7 +398,44 @@ const StrategyDetails = () => {
                   size="icon"
                   variant="ghost"
                   className="text-pink-500 hover:text-pink-400"
-                  onClick={handleToggleWishlist}
+                  onClick={async () => {
+                    if (!user || !strategy) {
+                      toast({
+                        description: "Please log in to add strategies to your wishlist",
+                      });
+                      return;
+                    }
+                    
+                    setIsLoading(true);
+                    
+                    try {
+                      if (!isWishlisted) {
+                        // Add to wishlist
+                        await addToWishlist(user.id, strategy.id, strategy.name, strategy.description);
+                        
+                        setIsWishlisted(true);
+                        toast({
+                          description: "Strategy has been added to your wishlist",
+                        });
+                      } else {
+                        // Remove from wishlist
+                        await removeFromWishlist(user.id, strategy.id);
+                        
+                        setIsWishlisted(false);
+                        toast({
+                          description: "Strategy has been removed from your wishlist",
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Error toggling wishlist status:', error);
+                      toast({
+                        description: "Failed to update wishlist in database",
+                        variant: "destructive"
+                      });
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
                   disabled={isLoading}
                 >
                   <Heart className="h-5 w-5" fill={isWishlisted ? "currentColor" : "none"} />
@@ -387,7 +458,7 @@ const StrategyDetails = () => {
                         Win Rate
                       </p>
                       <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance?.winRate || "N/A"}
+                        {strategy.performance.winRate}
                       </p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
@@ -395,7 +466,7 @@ const StrategyDetails = () => {
                         Average Return
                       </p>
                       <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance?.avgProfit || "N/A"}
+                        {strategy.performance.avgProfit}
                       </p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
@@ -403,7 +474,7 @@ const StrategyDetails = () => {
                         Max Drawdown
                       </p>
                       <p className="text-cyan font-semibold text-xl">
-                        {strategy.performance?.drawdown || "N/A"}
+                        {strategy.performance.drawdown}
                       </p>
                     </div>
                     <div className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/70 border border-gray-700/30 rounded-lg p-4 hover:shadow-lg hover:border-cyan/30 transition-all duration-300">
@@ -411,7 +482,7 @@ const StrategyDetails = () => {
                         Risk Score
                       </p>
                       <p className="text-cyan font-semibold text-xl">
-                        {strategy.parameters?.find(p => p.name === "Risk Score")?.value || "N/A"}
+                        {strategy.parameters.find(p => p.name === "Risk Score")?.value || "N/A"}
                       </p>
                     </div>
                   </div>
@@ -443,18 +514,6 @@ const StrategyDetails = () => {
                       >
                         <Layers className="h-4 w-4 mr-2" />
                         Legs
-                      </Button>
-                      <Button
-                        variant={activeTab === 'details' ? 'default' : 'outline'}
-                        className={`${
-                          activeTab === 'details'
-                            ? 'bg-cyan text-charcoalPrimary'
-                            : 'bg-transparent border-gray-700 text-gray-300 hover:text-cyan hover:border-cyan/50'
-                        }`}
-                        onClick={() => setActiveTab('details')}
-                      >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Details
                       </Button>
                     </div>
                     {activeTab === 'overview' && (
@@ -494,7 +553,7 @@ const StrategyDetails = () => {
                         <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
                       )}
                     </ScrollArea>
-                  ) : activeTab === 'legs' ? (
+                  ) : (
                     <div className="mb-8">
                       <div className="space-y-6">
                         {strategyLegs && strategyLegs.length > 0 ? (
@@ -623,27 +682,61 @@ const StrategyDetails = () => {
                         )}
                       </div>
                     </div>
-                  ) : (
-                    <div className="mb-8">
-                      <div className="space-y-6">
+                  )}
+
+                  {/* Strategy parameters */}
+                  {activeTab === 'overview' && (
+                    <div className="space-y-6 mb-8">
+                      {parameterCategories.basicSettings?.length > 0 && (
                         <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
                           <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
                             <Settings className="h-5 w-5 text-cyan mr-2" />
-                            Strategy Parameters
+                            Basic Settings
                           </h3>
-                          {renderStrategyParameters()}
-                        </div>
-                        
-                        {strategy.strategy_details && (
-                          <div>
-                            <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
-                              <Zap className="h-5 w-5 text-cyan mr-2" />
-                              Detailed Configuration
-                            </h3>
-                            {renderStrategyDetailsData()}
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.basicSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
+                      
+                      {parameterCategories.timeSettings?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Clock className="h-5 w-5 text-cyan mr-2" />
+                            Time Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.timeSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {parameterCategories.executionSettings?.length > 0 && (
+                        <div className="bg-gradient-to-br from-charcoalSecondary/40 to-charcoalSecondary/20 rounded-lg p-4 border border-gray-700/30">
+                          <h3 className="text-lg font-semibold mb-3 text-white/90 flex items-center">
+                            <Zap className="h-5 w-5 text-cyan mr-2" />
+                            Execution Settings
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {parameterCategories.executionSettings.map((param, index) => (
+                              <div key={index} className="bg-charcoalSecondary/30 rounded p-3 border border-gray-700/20">
+                                <span className="text-gray-400 text-xs block mb-1">{param.name}</span>
+                                <p className="text-white font-medium">{param.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
