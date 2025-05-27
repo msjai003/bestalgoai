@@ -35,7 +35,7 @@ const StrategyDetails = () => {
       return property;
     }
     if (typeof property === 'object' && property !== null) {
-      if ('enabled' in property && typeof property.enabled === 'boolean') {
+      if (property.enabled !== undefined) {
         return property.enabled ? (property.value?.toString() || 'On') : 'Off';
       }
       return JSON.stringify(property);
@@ -104,8 +104,8 @@ const StrategyDetails = () => {
           let stringValue = '';
           if (typeof nestedValue === 'boolean') {
             stringValue = nestedValue ? 'Yes' : 'No';
-          } else if (typeof nestedValue === 'object' && nestedValue !== null) {
-            if ('enabled' in nestedValue && typeof nestedValue.enabled === 'boolean') {
+          } else if (typeof nestedValue === 'object') {
+            if (nestedValue.enabled !== undefined) {
               stringValue = nestedValue.enabled ? (nestedValue.value?.toString() || 'On') : 'Off';
             } else {
               stringValue = JSON.stringify(nestedValue);
@@ -143,7 +143,7 @@ const StrategyDetails = () => {
         stringValue = value ? 'Yes' : 'No';
       } else if (typeof value === 'object') {
         // Handle object values by extracting meaningful information
-        if (value !== null && 'enabled' in value && typeof value.enabled === 'boolean') {
+        if (value.enabled !== undefined) {
           stringValue = value.enabled ? (value.value?.toString() || 'On') : 'Off';
         } else {
           stringValue = JSON.stringify(value);

@@ -31,7 +31,7 @@ export const StrategyTabNavigation: React.FC<StrategyTabNavigationProps> = ({
           size="sm"
         >
           <Zap className="h-3 w-3 mr-1.5" />
-          Strategies
+          Predefined Strategies
         </Button>
       </div>
     </div>
