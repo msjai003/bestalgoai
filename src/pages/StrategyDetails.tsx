@@ -12,6 +12,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyWishlist";
 import { checkStrategyAccess } from "@/lib/supabase/subscription";
+import { useLiveTrading } from "@/hooks/strategy/useLiveTrading";
+import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
+import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
+import { BrokerSelectionDialog } from "@/components/strategy/BrokerSelectionDialog";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +32,25 @@ const StrategyDetails = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
+
+  // Use the live trading hook for deploy functionality
+  const {
+    showConfirmationDialog,
+    setShowConfirmationDialog,
+    showQuantityDialog,
+    setShowQuantityDialog,
+    showBrokerDialog,
+    setShowBrokerDialog,
+    targetMode,
+    confirmModeChange,
+    handleQuantitySubmit,
+    handleCancelQuantity,
+    handleBrokerSubmit,
+    handleCancelBroker,
+    currentStrategyName,
+    currentBrokerName,
+    refreshStrategies
+  } = useLiveTrading();
 
   // Helper function to convert leg property to string
   const formatLegProperty = (property: any): string => {
@@ -322,6 +345,35 @@ const StrategyDetails = () => {
   const handleUpgrade = () => {
     sessionStorage.setItem('selectedStrategyId', strategyId.toString());
     navigate('/pricing');
+  };
+
+  const handleDeployStrategy = () => {
+    if (!user || !strategy) {
+      toast({
+        description: "Please log in to deploy strategies",
+      });
+      return;
+    }
+
+    // Check if strategy is premium and user doesn't have access
+    const isPremium = strategy.package === 'premium' || 
+                     strategy.package === 'Premium' ||
+                     strategy.name.toLowerCase().includes('evercrest') || 
+                     strategy.name.toLowerCase().includes('nova') || 
+                     strategy.name.toLowerCase().includes('velox') || 
+                     strategy.name.toLowerCase().includes('speed up');
+
+    const isZenflow = strategy.name.toLowerCase().includes('zen');
+    const canAccess = !isPremium || hasPremium || isPaidStrategy || isZenflow;
+
+    if (isPremium && !canAccess) {
+      sessionStorage.setItem('selectedStrategyId', strategyId.toString());
+      navigate('/pricing');
+      return;
+    }
+
+    // Show the live trading confirmation dialog
+    setShowConfirmationDialog(true);
   };
 
   if (!strategy) {
@@ -685,6 +737,7 @@ const StrategyDetails = () => {
                     
                     <Button 
                       className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-6 py-6 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-base"
+                      onClick={handleDeployStrategy}
                     >
                       <Play className="h-5 w-5 mr-2" />
                       Deploy Strategy
@@ -712,6 +765,30 @@ const StrategyDetails = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Live Trading Dialogs */}
+        <TradingModeConfirmationDialog
+          open={showConfirmationDialog}
+          onOpenChange={setShowConfirmationDialog}
+          targetMode="live trade"
+          strategyName={strategy?.name || ""}
+          onConfirm={confirmModeChange}
+        />
+
+        <QuantityInputDialog
+          open={showQuantityDialog}
+          onOpenChange={setShowQuantityDialog}
+          onSubmit={handleQuantitySubmit}
+          onCancel={handleCancelQuantity}
+        />
+
+        <BrokerSelectionDialog
+          open={showBrokerDialog}
+          onOpenChange={setShowBrokerDialog}
+          onSubmit={handleBrokerSubmit}
+          onCancel={handleCancelBroker}
+          currentBrokerName={currentBrokerName}
+        />
       </main>
     </div>
   );
