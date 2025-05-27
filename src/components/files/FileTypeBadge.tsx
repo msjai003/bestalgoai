@@ -13,7 +13,7 @@ const FileTypeBadge = ({ type, name }: FileTypeBadgeProps) => {
   if (!isZipFile) return null;
 
   return (
-    <Badge variant="outline" className="ml-0 sm:ml-2">
+    <Badge variant="outline" className="ml-0 sm:ml-2 text-cyan border-cyan">
       ZIP
     </Badge>
   );
