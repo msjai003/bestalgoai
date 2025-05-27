@@ -14,7 +14,7 @@ const FileStatusBadge = ({ isLockedFile, requiresPayment, hasPaid }: FileStatusB
 
   if (requiresPayment) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1 mr-2">
+      <Badge variant="outline" className="flex items-center gap-1 mr-2 text-charcoalTextPrimary border-gray-600">
         <Lock className="h-3.5 w-3.5" />
         <span>Locked</span>
       </Badge>

@@ -104,9 +104,11 @@ const StrategyDetails = () => {
           let stringValue = '';
           if (typeof nestedValue === 'boolean') {
             stringValue = nestedValue ? 'Yes' : 'No';
-          } else if (typeof nestedValue === 'object') {
-            if (nestedValue.enabled !== undefined) {
-              stringValue = nestedValue.enabled ? (nestedValue.value?.toString() || 'On') : 'Off';
+          } else if (typeof nestedValue === 'object' && nestedValue !== null) {
+            // Type assertion for the object with enabled property
+            const objWithEnabled = nestedValue as { enabled?: boolean; value?: any };
+            if (objWithEnabled.enabled !== undefined) {
+              stringValue = objWithEnabled.enabled ? (objWithEnabled.value?.toString() || 'On') : 'Off';
             } else {
               stringValue = JSON.stringify(nestedValue);
             }
@@ -143,8 +145,9 @@ const StrategyDetails = () => {
         stringValue = value ? 'Yes' : 'No';
       } else if (typeof value === 'object') {
         // Handle object values by extracting meaningful information
-        if (value.enabled !== undefined) {
-          stringValue = value.enabled ? (value.value?.toString() || 'On') : 'Off';
+        const objWithEnabled = value as { enabled?: boolean; value?: any };
+        if (objWithEnabled.enabled !== undefined) {
+          stringValue = objWithEnabled.enabled ? (objWithEnabled.value?.toString() || 'On') : 'Off';
         } else {
           stringValue = JSON.stringify(value);
         }
