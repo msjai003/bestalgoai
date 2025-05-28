@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from '@/components/Header';
@@ -85,7 +84,7 @@ const StrategyDetails = () => {
 
     // Set up the deploy flow
     setTargetStrategyId(strategyId);
-    setTargetMode("live trade");
+    setTargetMode("live");  // Fixed: Changed from "live trade" to "live"
     setShowConfirmationDialog(true);
   };
 
