@@ -18,34 +18,32 @@ const PortfolioOverview = ({ performanceData, currentValue }: PortfolioOverviewP
 
   return (
     <section id="portfolio-overview" className="mt-4">
-      <div className="bg-charcoalSecondary rounded-xl p-6 lg:p-8 border border-gray-800/40 shadow-lg">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
+      <div className="bg-charcoalSecondary rounded-xl p-6 border border-gray-800/40 shadow-lg">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-gray-400 text-sm mb-1">Portfolio Value</h2>
-            <p className="text-3xl lg:text-4xl font-bold text-white">{formattedValue}</p>
+            <h2 className="text-gray-400 text-sm">Portfolio Value</h2>
+            <p className="text-2xl font-bold text-white">{formattedValue}</p>
           </div>
           <Button 
             variant="logout"
             size="sm"
             asChild
-            className="text-charcoalPrimary px-6 py-2 lg:px-8 lg:py-3 self-start lg:self-center"
+            className="text-charcoalPrimary px-4"
           >
             <Link to="/subscription">Upgrade</Link>
           </Button>
         </div>
         
-        <div className="mb-6">
-          <PortfolioChart performanceData={performanceData} />
-        </div>
+        <PortfolioChart performanceData={performanceData} />
         
-        <div className="grid grid-cols-2 gap-6 lg:gap-8">
+        <div className="flex justify-between text-sm mt-4">
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <p className="text-gray-400 text-sm mb-1">Today's P&L</p>
-            <p className="text-emerald-400 font-semibold text-lg lg:text-xl">+₹24,500</p>
+            <p className="text-gray-400">Today's P&L</p>
+            <p className="text-emerald-400 font-medium">+₹24,500</p>
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <p className="text-gray-400 text-sm mb-1">Overall P&L</p>
-            <p className="text-emerald-400 font-semibold text-lg lg:text-xl">+₹1,45,500</p>
+            <p className="text-gray-400">Overall P&L</p>
+            <p className="text-emerald-400 font-medium">+₹1,45,500</p>
           </div>
         </div>
       </div>

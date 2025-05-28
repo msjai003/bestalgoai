@@ -85,7 +85,7 @@ const StrategyDetails = () => {
 
     // Set up the deploy flow
     setTargetStrategyId(strategyId);
-    setTargetMode("live");
+    setTargetMode("live trade");
     setShowConfirmationDialog(true);
   };
 
@@ -119,7 +119,7 @@ const StrategyDetails = () => {
         pendingQuantity,
         brokerName,
         username,
-        "live",
+        "live trade",
         strategy.name
       );
       
@@ -141,7 +141,7 @@ const StrategyDetails = () => {
     return (
       <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
         <Header />
-        <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <main className="container mx-auto px-4 py-8">
           <div className="flex items-center mb-4">
             <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-cyan transition-colors">
               <ChevronLeft className="mr-1 h-5 w-5" />
@@ -184,23 +184,23 @@ const StrategyDetails = () => {
   return (
     <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-8 max-w-6xl">
-        <div className="flex items-center mb-8">
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center mb-6">
           <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-cyan transition-colors">
-            <ChevronLeft className="mr-2 h-5 w-5" />
+            <ChevronLeft className="mr-1 h-5 w-5" />
             <span className="font-medium">Back to Strategies</span>
           </Link>
         </div>
 
         <Card className="bg-charcoalSecondary border border-cyan/20 shadow-lg rounded-xl overflow-hidden">
-          <CardContent className="p-8 lg:p-10">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-8 gap-4">
-              <h1 className="text-3xl lg:text-4xl font-bold text-white bg-clip-text bg-gradient-to-r from-cyan to-cyan/80">{strategy?.name}</h1>
-              <div className="flex space-x-3">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold text-white bg-clip-text bg-gradient-to-r from-cyan to-cyan/80">{strategy?.name}</h1>
+              <div className="flex space-x-2">
                 {isPremium && !canAccess && (
                   <Button 
                     variant="outline"
-                    className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-6 py-3 shadow-md transition-all duration-300 hover:shadow-cyan/20 hover:shadow-lg"
+                    className="bg-gradient-to-r from-cyan/20 to-cyan/10 text-cyan border border-cyan/30 hover:bg-cyan/20 rounded-full px-4 py-2 shadow-md transition-all duration-300 hover:shadow-cyan/20 hover:shadow-lg"
                     onClick={() => {
                       sessionStorage.setItem('selectedStrategyId', strategyId.toString());
                       navigate('/pricing');
@@ -213,27 +213,27 @@ const StrategyDetails = () => {
                 <Button 
                   size="icon"
                   variant="ghost"
-                  className="text-pink-500 hover:text-pink-400 h-12 w-12"
+                  className="text-pink-500 hover:text-pink-400"
                   onClick={handleToggleWishlist}
                   disabled={isLoading}
                 >
-                  <Heart className="h-6 w-6" fill={isWishlisted ? "currentColor" : "none"} />
+                  <Heart className="h-5 w-5" fill={isWishlisted ? "currentColor" : "none"} />
                 </Button>
               </div>
             </div>
             
             {canAccess ? (
-              <div className="space-y-10">
-                <p className="text-gray-400 mb-10 leading-relaxed text-lg lg:text-xl">{strategy.description}</p>
+              <div>
+                <p className="text-gray-400 mb-8 leading-relaxed md:text-lg">{strategy.description}</p>
 
                 <StrategyMetrics strategy={strategy} />
 
-                <div className="space-y-8">
-                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+                <div className="mb-6">
+                  <div className="flex justify-between mb-4">
                     <div className="flex space-x-4">
                       <Button
                         variant={activeTab === 'overview' ? 'default' : 'outline'}
-                        className={`px-6 py-3 ${
+                        className={`${
                           activeTab === 'overview'
                             ? 'bg-cyan text-charcoalPrimary'
                             : 'bg-transparent border-gray-700 text-gray-300 hover:text-cyan hover:border-cyan/50'
@@ -245,7 +245,7 @@ const StrategyDetails = () => {
                       </Button>
                       <Button
                         variant={activeTab === 'legs' ? 'default' : 'outline'}
-                        className={`px-6 py-3 ${
+                        className={`${
                           activeTab === 'legs'
                             ? 'bg-cyan text-charcoalPrimary'
                             : 'bg-transparent border-gray-700 text-gray-300 hover:text-cyan hover:border-cyan/50'
@@ -257,7 +257,7 @@ const StrategyDetails = () => {
                       </Button>
                     </div>
                     {activeTab === 'overview' && (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-400">Advanced View</span>
                         <Switch 
                           checked={showAdvanced} 
@@ -268,22 +268,22 @@ const StrategyDetails = () => {
                   </div>
                   
                   {activeTab === 'overview' ? (
-                    <div className="space-y-8">
-                      <ScrollArea className="h-64 bg-charcoalSecondary/40 rounded-lg p-6 border border-gray-700/50">
+                    <>
+                      <ScrollArea className="h-48 bg-charcoalSecondary/40 rounded-lg p-5 border border-gray-700/50 mb-8">
                         {showAdvanced ? (
-                          <div className="space-y-6">
+                          <div className="space-y-4">
                             <p className="text-gray-300 leading-relaxed">{strategy.description}</p>
-                            <div className="p-4 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                              <h4 className="text-cyan text-sm font-medium mb-3">Technical Indicators</h4>
-                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-2">
+                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                              <h4 className="text-cyan text-sm font-medium mb-2">Technical Indicators</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
                                 <li>Moving Average Crossover (EMA 9/21)</li>
                                 <li>Relative Strength Index (RSI)</li>
                                 <li>Volume Profile Analysis</li>
                               </ul>
                             </div>
-                            <div className="p-4 bg-charcoalSecondary/70 rounded border border-gray-700/50">
-                              <h4 className="text-cyan text-sm font-medium mb-3">Entry Conditions</h4>
-                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-2">
+                            <div className="p-3 bg-charcoalSecondary/70 rounded border border-gray-700/50">
+                              <h4 className="text-cyan text-sm font-medium mb-2">Entry Conditions</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
                                 <li>EMA 9 crosses above EMA 21</li>
                                 <li>RSI moves above 50 from below</li>
                                 <li>Volume confirms price movement</li>
@@ -295,38 +295,38 @@ const StrategyDetails = () => {
                         )}
                       </ScrollArea>
                       <StrategyParameters strategyDetailsParams={strategyDetailsParams} />
-                    </div>
+                    </>
                   ) : (
                     <div className="mb-8">
                       <StrategyLegs strategyLegs={strategyLegs} />
                     </div>
                   )}
 
-                  <div className="p-6 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Award className="h-6 w-6 text-cyan" />
-                      <h3 className="text-xl font-semibold text-white">Performance Highlights</h3>
+                  <div className="p-4 bg-gradient-to-r from-cyan/10 to-cyan/5 rounded-lg border border-cyan/20 mb-8">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Award className="h-5 w-5 text-cyan" />
+                      <h3 className="text-lg font-semibold text-white">Performance Highlights</h3>
                     </div>
-                    <ul className="space-y-3 pl-9">
+                    <ul className="space-y-2 pl-9">
                       <li className="text-gray-300 list-disc">Consistent returns in ranging markets</li>
                       <li className="text-gray-300 list-disc">Optimal for medium-term horizons (1-3 days)</li>
                       <li className="text-gray-300 list-disc">Manages downside risk with adaptive stop-loss</li>
                     </ul>
                   </div>
 
-                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+                  <div className="flex justify-between items-center flex-wrap gap-4">
                     <div className="flex items-center">
-                      <div className="p-3 bg-charcoalPrimary rounded-full border border-gray-700 mr-4">
-                        <AlertCircle className="h-6 w-6 text-cyan" />
+                      <div className="p-2 bg-charcoalPrimary rounded-full border border-gray-700 mr-3">
+                        <AlertCircle className="h-5 w-5 text-cyan" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-400">Risk Level</p>
-                        <p className="font-medium text-white text-lg">Moderate</p>
+                        <p className="font-medium text-white">Moderate</p>
                       </div>
                     </div>
                     
                     <Button 
-                      className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-8 py-4 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-lg"
+                      className="bg-gradient-to-r from-cyan to-cyan/80 hover:from-cyan/90 hover:to-cyan/70 text-charcoalPrimary px-6 py-6 rounded-lg shadow-lg hover:shadow-cyan/20 transition-all duration-300 font-medium text-base"
                       onClick={handleDeployStrategy}
                     >
                       <Play className="h-5 w-5 mr-2" />
@@ -352,7 +352,7 @@ const StrategyDetails = () => {
         <TradingModeConfirmationDialog
           open={showConfirmationDialog}
           onOpenChange={setShowConfirmationDialog}
-          targetMode="live"
+          targetMode="live trade"
           strategyName={strategy?.name || ""}
           onConfirm={handleConfirmLiveTrading}
           onCancel={() => {
