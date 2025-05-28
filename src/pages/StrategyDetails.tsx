@@ -773,21 +773,21 @@ const StrategyDetails = () => {
           targetMode="live trade"
           strategyName={strategy?.name || ""}
           onConfirm={confirmModeChange}
+          onCancel={() => setShowConfirmationDialog(false)}
         />
 
         <QuantityInputDialog
           open={showQuantityDialog}
           onOpenChange={setShowQuantityDialog}
-          onSubmit={handleQuantitySubmit}
+          onConfirm={handleQuantitySubmit}
           onCancel={handleCancelQuantity}
         />
 
         <BrokerSelectionDialog
           open={showBrokerDialog}
           onOpenChange={setShowBrokerDialog}
-          onSubmit={handleBrokerSubmit}
+          onConfirm={handleBrokerSubmit}
           onCancel={handleCancelBroker}
-          currentBrokerName={currentBrokerName}
         />
       </main>
     </div>
