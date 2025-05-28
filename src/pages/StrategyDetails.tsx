@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
 import { useLiveTrading } from "@/hooks/strategy/useLiveTrading";
 import { useStrategyDetails } from "@/hooks/strategy/useStrategyDetails";
+import { useStrategyDialogs } from "@/hooks/strategy/useStrategyDialogs";
 import { TradingModeConfirmationDialog } from "@/components/strategy/TradingModeConfirmationDialog";
 import { QuantityInputDialog } from "@/components/strategy/QuantityInputDialog";
 import { BrokerSelectionDialog } from "@/components/strategy/BrokerSelectionDialog";
@@ -19,6 +20,8 @@ import { StrategyParameters } from "@/components/strategy/details/StrategyParame
 import { StrategyLegs } from "@/components/strategy/details/StrategyLegs";
 import { LockedStrategyView } from "@/components/strategy/details/LockedStrategyView";
 import { getStrategyDetailsParams, getStrategyLegs } from "@/utils/strategy/strategyDetailsUtils";
+import { updateStrategyLiveConfig } from "@/hooks/strategy/useStrategyDatabase";
+import { toast } from "sonner";
 
 const StrategyDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +42,7 @@ const StrategyDetails = () => {
     handleToggleWishlist
   } = useStrategyDetails(strategy, user);
 
-  // Use the live trading hook for deploy functionality
+  // Use the strategy dialogs hook for deploy functionality
   const {
     showConfirmationDialog,
     setShowConfirmationDialog,
@@ -47,16 +50,19 @@ const StrategyDetails = () => {
     setShowQuantityDialog,
     showBrokerDialog,
     setShowBrokerDialog,
-    confirmModeChange,
-    handleQuantitySubmit,
-    handleCancelQuantity,
-    handleBrokerSubmit,
-    handleCancelBroker,
-  } = useLiveTrading();
+    targetStrategyId,
+    setTargetStrategyId,
+    targetMode,
+    setTargetMode,
+    pendingQuantity,
+    setPendingQuantity,
+    resetDialogState,
+    openBrokerDialogAfterQuantity
+  } = useStrategyDialogs();
 
   const handleDeployStrategy = () => {
     if (!user || !strategy) {
-      // Handle auth error through toast from hook
+      toast.error("Please log in to deploy strategies");
       return;
     }
 
@@ -77,8 +83,58 @@ const StrategyDetails = () => {
       return;
     }
 
-    // Show the live trading confirmation dialog
+    // Set up the deploy flow
+    setTargetStrategyId(strategyId);
+    setTargetMode("live trade");
     setShowConfirmationDialog(true);
+  };
+
+  const handleConfirmLiveTrading = () => {
+    setShowConfirmationDialog(false);
+    setShowQuantityDialog(true);
+  };
+
+  const handleQuantitySubmit = (quantity: number) => {
+    setPendingQuantity(quantity);
+    openBrokerDialogAfterQuantity(quantity);
+  };
+
+  const handleQuantityCancel = () => {
+    setShowQuantityDialog(false);
+    resetDialogState();
+  };
+
+  const handleBrokerSubmit = async (brokerId: string, brokerName: string, username: string) => {
+    try {
+      setShowBrokerDialog(false);
+      
+      if (!user || !targetStrategyId || !strategy) {
+        toast.error("Missing required information");
+        return;
+      }
+      
+      await updateStrategyLiveConfig(
+        user.id,
+        targetStrategyId,
+        pendingQuantity,
+        brokerName,
+        username,
+        "live trade",
+        strategy.name
+      );
+      
+      toast.success(`${strategy.name} deployed successfully in live trading mode`);
+      resetDialogState();
+      
+    } catch (error) {
+      console.error("Error deploying strategy:", error);
+      toast.error("Failed to deploy strategy");
+    }
+  };
+
+  const handleBrokerCancel = () => {
+    setShowBrokerDialog(false);
+    resetDialogState();
   };
 
   if (!strategy) {
@@ -292,28 +348,31 @@ const StrategyDetails = () => {
           </CardContent>
         </Card>
 
-        {/* Live Trading Dialogs */}
+        {/* Deploy Strategy Dialogs */}
         <TradingModeConfirmationDialog
           open={showConfirmationDialog}
           onOpenChange={setShowConfirmationDialog}
           targetMode="live trade"
           strategyName={strategy?.name || ""}
-          onConfirm={confirmModeChange}
-          onCancel={() => setShowConfirmationDialog(false)}
+          onConfirm={handleConfirmLiveTrading}
+          onCancel={() => {
+            setShowConfirmationDialog(false);
+            resetDialogState();
+          }}
         />
 
         <QuantityInputDialog
           open={showQuantityDialog}
           onOpenChange={setShowQuantityDialog}
           onConfirm={handleQuantitySubmit}
-          onCancel={handleCancelQuantity}
+          onCancel={handleQuantityCancel}
         />
 
         <BrokerSelectionDialog
           open={showBrokerDialog}
           onOpenChange={setShowBrokerDialog}
           onConfirm={handleBrokerSubmit}
-          onCancel={handleCancelBroker}
+          onCancel={handleBrokerCancel}
         />
       </main>
     </div>
