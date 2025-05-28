@@ -101,12 +101,23 @@ const Dashboard = () => {
   return (
     <div className="bg-charcoalPrimary min-h-screen">
       <Header />
-      <main className="pt-16 pb-20 px-4">
-        <PortfolioOverview 
-          performanceData={mockPerformanceData} 
-          currentValue={currentValue} 
-        />
-        <QuickAccessSection />
+      <main className="pt-16 pb-20 px-4 lg:px-8">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            {/* Portfolio Overview - Takes more space on larger screens */}
+            <div className="lg:col-span-8">
+              <PortfolioOverview 
+                performanceData={mockPerformanceData} 
+                currentValue={currentValue} 
+              />
+            </div>
+            
+            {/* Quick Access - Sidebar on larger screens */}
+            <div className="lg:col-span-4">
+              <QuickAccessSection />
+            </div>
+          </div>
+        </div>
       </main>
       <BottomNav />
     </div>
