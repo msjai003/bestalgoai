@@ -1,86 +1,157 @@
 
-import React, { useState, useEffect } from "react";
-import Header from '@/components/Header';
-import { Card, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Loader } from "lucide-react";
+import Header from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import QuickAccessSection from "@/components/dashboard/QuickAccessSection";
-import OrdersView from "@/components/dashboard/OrdersView";
-import { useAuth } from "@/contexts/AuthContext";
-import { usePredefinedStrategies } from "@/hooks/strategy/usePredefinedStrategies";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
+import StrategiesSection from "@/components/dashboard/StrategiesSection";
+import { mockPerformanceData } from "@/components/dashboard/DashboardData";
+import { syncPremiumAccess, checkUserPremiumStatus } from "@/lib/supabase/subscription";
 
 const Dashboard = () => {
-  const [showBalance, setShowBalance] = useState(false);
-  const [hasPremium, setHasPremium] = useState(false);
+  const { toast } = useToast();
   const { user } = useAuth();
-  const { data: strategies } = usePredefinedStrategies();
   const navigate = useNavigate();
-
+  const [hasPremium, setHasPremium] = useState<boolean>(false);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [isSyncingPremium, setIsSyncingPremium] = useState(false);
+  const [dashboardStrategies, setDashboardStrategies] = useState<any[]>([]);
+  const currentValue = mockPerformanceData[mockPerformanceData.length - 1].value;
+  
   useEffect(() => {
-    const checkPremiumStatus = async () => {
-      if (!user) return;
-      
+    const checkAuth = async () => {
       try {
-        const { data, error } = await supabase
-          .from('plan_details')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_paid', true)
-          .order('selected_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          console.log('No active session found on dashboard, redirecting to auth');
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access the dashboard.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        } else {
+          setIsVerifyingAuth(false);
           
-        if (data && (data.plan_name === 'Premium' || data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
-          setHasPremium(true);
+          // Fetch some predefined strategies for dashboard display
+          const { data: predefinedData, error } = await supabase
+            .from('predefined_strategies')
+            .select('*')
+            .order('id', { ascending: true })
+            .limit(3);
+            
+          if (!error && predefinedData) {
+            // Process strategies to identify premium ones using the package field
+            const processedStrategies = predefinedData.map(strategy => {
+              // Ensure ID is a number for comparison
+              const strategyIdNumber = typeof strategy.id === 'string' ? parseInt(strategy.id, 10) : Number(strategy.id);
+              
+              // Check if strategy is premium based on package field
+              const isPremium = strategy.package === 'premium';
+              
+              console.log(`Dashboard strategy ${strategyIdNumber}: ${strategy.name}, isPremium: ${isPremium}, package: ${strategy.package}`);
+              
+              return {
+                id: strategyIdNumber,
+                name: strategy.name,
+                description: strategy.description,
+                isPremium: isPremium,
+                package: strategy.package
+              };
+            });
+            setDashboardStrategies(processedStrategies);
+          }
         }
       } catch (error) {
-        console.error('Error checking premium status:', error);
+        console.error('Error checking auth session:', error);
+        setIsVerifyingAuth(false);
       }
     };
     
-    checkPremiumStatus();
-  }, [user]);
+    checkAuth();
+  }, [navigate, toast]);
+  
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    
+    const checkPremium = async () => {
+      try {
+        // Check if the user has a paid Premium/Pro/Elite plan
+        const isPremium = await checkUserPremiumStatus(user.id);
+        setHasPremium(isPremium);
+        
+        console.log('Premium status check result:', isPremium);
+        
+        // If the user has premium, sync their access to unlock strategies
+        if (isPremium && !isSyncingPremium) {
+          setIsSyncingPremium(true);
+          
+          // Make sure to sync premium access on load
+          const syncResult = await syncPremiumAccess(user.id, true);
+          setIsSyncingPremium(false);
+          
+          if (syncResult) {
+            console.log("Premium access synced successfully");
+          } else {
+            console.error("Failed to sync premium access");
+          }
+        }
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+        setIsSyncingPremium(false);
+      }
+    };
+    
+    // Check premium status on initial load
+    checkPremium();
+    
+    // Also set up a periodic check to ensure premium status is up to date
+    const checkInterval = setInterval(checkPremium, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(checkInterval);
+  }, [user, isSyncingPremium]);
 
   const handlePremiumClick = () => {
     navigate('/pricing');
   };
 
+  if (isVerifyingAuth || user === null) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin text-cyan mx-auto mb-4" />
+          <p className="text-gray-300">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
+    <div className="bg-charcoalPrimary min-h-screen">
       <Header />
-      <main className="container mx-auto px-4 py-8 pb-20">
-        {/* Portfolio Overview */}
-        <Card className="bg-gradient-to-br from-charcoalSecondary to-charcoalSecondary/80 border border-cyan/20 shadow-lg rounded-xl mb-8 overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan to-cyan/80 bg-clip-text text-transparent">
-                Portfolio Overview
-              </h2>
-              <button
-                onClick={() => setShowBalance(!showBalance)}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                {showBalance ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
-                )}
-              </button>
-            </div>
-            <PortfolioOverview showBalance={showBalance} />
-          </CardContent>
-        </Card>
-
-        {/* Quick Access */}
+      <main className="pt-16 pb-20 px-4">
+        <PortfolioOverview 
+          performanceData={mockPerformanceData} 
+          currentValue={currentValue} 
+        />
         <QuickAccessSection />
-
-        {/* Orders View */}
-        <OrdersView />
+        
+        {dashboardStrategies.length > 0 && (
+          <StrategiesSection
+            strategies={dashboardStrategies}
+            hasPremium={hasPremium}
+            onPremiumClick={handlePremiumClick}
+            showSignupPromo={!user}
+          />
+        )}
       </main>
-
       <BottomNav />
     </div>
   );
