@@ -17,6 +17,7 @@ export const useLiveTrading = () => {
   const [currentStrategyId, setCurrentStrategyId] = useState<number | null>(null);
   const [currentStrategyName, setCurrentStrategyName] = useState<string | null>(null);
   const [currentBrokerName, setCurrentBrokerName] = useState<string | null>(null);
+  const [currentBrokerUsername, setCurrentBrokerUsername] = useState<string | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
   const [hasPremium, setHasPremium] = useState(false);
   
@@ -153,6 +154,7 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(id);
     setCurrentStrategyName(strategy.name);
     setCurrentBrokerName(strategy.selectedBroker || null);
+    setCurrentBrokerUsername(strategy.brokerUsername || null);
     setTargetMode(strategy.isLive ? "paper trade" : "live trade");
     setShowConfirmationDialog(true);
   };
@@ -167,7 +169,7 @@ export const useLiveTrading = () => {
         const strategy = strategies.find(s => s.id === currentStrategyId);
         if (!strategy) return;
         
-        // Use updateStrategyTradeType to only update the trade_type field
+        // Use updateStrategyTradeType with broker AND username to target specific record
         await updateStrategyTradeType(
           user.id,
           currentStrategyId,
@@ -176,7 +178,7 @@ export const useLiveTrading = () => {
           strategy.brokerUsername || ""
         );
         
-        toast.success(`Strategy set to paper trading mode`);
+        toast.success(`Strategy switched to paper trading mode for ${strategy.selectedBroker}`);
         refreshStrategies();
         resetDialogState();
       } catch (error) {
@@ -242,6 +244,7 @@ export const useLiveTrading = () => {
     setCurrentStrategyId(null);
     setCurrentStrategyName(null);
     setCurrentBrokerName(null);
+    setCurrentBrokerUsername(null);
     setSelectedQuantity(null);
   };
 
