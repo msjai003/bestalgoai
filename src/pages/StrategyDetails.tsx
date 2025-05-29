@@ -84,7 +84,7 @@ const StrategyDetails = () => {
 
     // Set up the deploy flow
     setTargetStrategyId(strategyId);
-    setTargetMode("live trade");
+    setTargetMode("live");
     setShowConfirmationDialog(true);
   };
 
