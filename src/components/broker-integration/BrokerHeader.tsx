@@ -15,10 +15,9 @@ export const BrokerHeader = ({ onBack, title }: BrokerHeaderProps) => {
           variant="outline" 
           className="bg-gray-200 border border-cyan text-charcoalPrimary hover:bg-gray-100"
           onClick={onBack}
-          size="sm"
+          size="icon"
         >
-          <ChevronLeft className="w-4 h-4 mr-1 text-cyan" />
-          <span className="text-xs font-medium">Back</span>
+          <ChevronLeft className="w-4 h-4 text-cyan" />
         </Button>
         <h1 className="text-lg font-semibold">{title}</h1>
         <Button variant="ghost" className="p-2">
