@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,8 @@ interface PaymentDialogProps {
   planPrice: string;
   onSuccess: () => void;
   fileId?: number;
+  selectedStrategyId?: number;
+  selectedStrategyName?: string;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -27,6 +28,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   planPrice,
   onSuccess,
   fileId,
+  selectedStrategyId,
+  selectedStrategyName,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
