@@ -62,7 +62,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           await recordFilePayment(fileId);
         }
         
-        // Don't show toast here - let the parent component handle it
         onSuccess();
         onOpenChange(false);
       } catch (error) {
