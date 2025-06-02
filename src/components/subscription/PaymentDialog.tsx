@@ -53,7 +53,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     console.log("Starting payment process for:", { planName, planPrice, user: user.email });
 
     const options = {
-      key: "rzp_test_yb9BsUPOlZGzUn",
+      key: "rzp_test_gcRzcheYaSXTPJ",
       amount: convertPriceToAmount(planPrice),
       currency: "INR",
       name: "BestAlgo.ai",
@@ -101,9 +101,19 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     const handleError = (error?: any) => {
       console.error("Payment failed:", error);
       setIsProcessing(false);
+      
+      // Provide more specific error messages
+      let errorMessage = "There was an issue processing your payment. Please try again.";
+      
+      if (error?.description) {
+        errorMessage = error.description;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Payment Failed",
-        description: "There was an issue processing your payment. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     };
