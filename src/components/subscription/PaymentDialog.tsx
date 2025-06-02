@@ -10,7 +10,6 @@ import {
 import { initializeRazorpayPayment, convertPriceToAmount } from "@/utils/razorpayUtils";
 import { useFileManagement } from "@/hooks/useFileManagement";
 import { useAuth } from "@/contexts/auth/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -19,8 +18,6 @@ interface PaymentDialogProps {
   planPrice: string;
   onSuccess: () => void;
   fileId?: number;
-  selectedStrategyId?: number;
-  selectedStrategyName?: string;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -30,30 +27,21 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   planPrice,
   onSuccess,
   fileId,
-  selectedStrategyId,
-  selectedStrategyName,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { recordFilePayment } = useFileManagement(user?.id);
-  const { toast } = useToast();
 
   const handlePayment = () => {
     if (!user) {
       console.error("User not authenticated");
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to continue with payment",
-        variant: "destructive",
-      });
       return;
     }
 
     setIsProcessing(true);
-    console.log("Starting payment process for:", { planName, planPrice, user: user.email });
 
     const options = {
-      key: "rzp_test_gcRzcheYaSXTPJ",
+      key: "rzp_test_yb9BsUPOlZGzUn",
       amount: convertPriceToAmount(planPrice),
       currency: "INR",
       name: "BestAlgo.ai",
@@ -67,63 +55,29 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       },
     };
 
-    console.log("Payment options:", options);
-
     const handleSuccess = async (payment_id: string) => {
-      console.log("Payment successful:", payment_id);
       try {
         // Record payment in database if this is a file payment
         if (fileId) {
-          console.log("Recording file payment for fileId:", fileId);
           await recordFilePayment(fileId);
         }
         
-        toast({
-          title: "Payment Successful!",
-          description: `Your payment for ${planName} was processed successfully.`,
-          variant: "default",
-        });
-        
+        // Don't show toast here - let the parent component handle it
         onSuccess();
         onOpenChange(false);
       } catch (error) {
         console.error("Error recording payment:", error);
-        toast({
-          title: "Payment Recorded, but...",
-          description: "Payment was successful but there was an issue updating your account. Please contact support.",
-          variant: "destructive",
-        });
       } finally {
         setIsProcessing(false);
       }
     };
 
-    const handleError = (error?: any) => {
-      console.error("Payment failed:", error);
+    const handleError = () => {
+      console.error("Payment failed");
       setIsProcessing(false);
-      
-      // Provide more specific error messages
-      let errorMessage = "There was an issue processing your payment. Please try again.";
-      
-      if (error?.description) {
-        errorMessage = error.description;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Payment Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
     };
 
-    try {
-      initializeRazorpayPayment(options, handleSuccess, handleError);
-    } catch (error) {
-      console.error("Error initializing payment:", error);
-      handleError(error);
-    }
+    initializeRazorpayPayment(options, handleSuccess, handleError);
   };
 
   return (
@@ -137,11 +91,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">{planName}</h3>
             <p className="text-2xl font-bold text-cyan">{planPrice}</p>
-            {selectedStrategyName && (
-              <p className="text-sm text-gray-400 mt-2">
-                Unlocking: {selectedStrategyName}
-              </p>
-            )}
           </div>
           
           <div className="space-y-3">
@@ -156,7 +105,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isProcessing}
               className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
             >
               Cancel
