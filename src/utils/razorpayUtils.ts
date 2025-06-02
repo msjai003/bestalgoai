@@ -22,12 +22,14 @@ interface RazorpayOptions {
 export const initializeRazorpayPayment = (
   options: RazorpayOptions, 
   onSuccess: (payment_id: string, order_id?: string, signature?: string) => void,
-  onError: () => void
+  onError: (error?: any) => void
 ) => {
+  console.log("Initializing Razorpay payment with options:", options);
+  
   // Set a timeout to handle case where script fails to load or initialize
   const timeoutId = setTimeout(() => {
     console.error('Razorpay script load timed out');
-    onError();
+    onError(new Error('Payment initialization timed out'));
   }, 15000); // 15 seconds timeout for better reliability
   
   if (!(window as any).Razorpay) {
@@ -40,10 +42,10 @@ export const initializeRazorpayPayment = (
       clearTimeout(timeoutId);
       createRazorpayInstance(options, onSuccess, onError);
     };
-    script.onerror = () => {
+    script.onerror = (error) => {
       clearTimeout(timeoutId);
-      console.error('Razorpay SDK failed to load');
-      onError();
+      console.error('Razorpay SDK failed to load:', error);
+      onError(new Error('Failed to load payment processor'));
     };
     document.body.appendChild(script);
   } else {
@@ -57,21 +59,38 @@ export const initializeRazorpayPayment = (
 const createRazorpayInstance = (
   options: RazorpayOptions, 
   onSuccess: (payment_id: string, order_id?: string, signature?: string) => void,
-  onError: () => void
+  onError: (error?: any) => void
 ) => {
   try {
     console.log("Creating Razorpay instance with options:", options);
+    
+    // Validate required fields
+    if (!options.key) {
+      throw new Error("Razorpay key is required");
+    }
+    if (!options.amount || options.amount <= 0) {
+      throw new Error("Valid payment amount is required");
+    }
     
     // Make sure the handler is not overridden
     const finalOptions = {
       ...options,
       handler: function (response: any) {
         console.log("Payment successful:", response);
-        onSuccess(
-          response.razorpay_payment_id,
-          response.razorpay_order_id,
-          response.razorpay_signature
-        );
+        try {
+          if (response.razorpay_payment_id) {
+            onSuccess(
+              response.razorpay_payment_id,
+              response.razorpay_order_id,
+              response.razorpay_signature
+            );
+          } else {
+            throw new Error("Payment ID not received");
+          }
+        } catch (error) {
+          console.error("Error in payment success handler:", error);
+          onError(error);
+        }
       },
     };
     
@@ -83,21 +102,31 @@ const createRazorpayInstance = (
     
     rzp.on('payment.failed', function (response: any) {
       console.error('Payment failed:', response.error);
-      onError();
+      onError(response.error);
     });
     
     console.log("Opening Razorpay payment modal");
     rzp.open();
   } catch (error) {
     console.error('Error creating Razorpay instance:', error);
-    onError();
+    onError(error);
   }
 };
 
 // Helper to convert price string to amount in paise (smallest currency unit)
 export const convertPriceToAmount = (priceString: string): number => {
+  console.log("Converting price string to amount:", priceString);
   // Remove currency symbol and commas, then parse as float
   const numericPrice = parseFloat(priceString.replace(/[^\d.]/g, ''));
+  console.log("Numeric price:", numericPrice);
+  
+  if (isNaN(numericPrice) || numericPrice <= 0) {
+    console.error("Invalid price:", priceString);
+    throw new Error("Invalid price format");
+  }
+  
   // Convert to paise (multiply by 100)
-  return Math.round(numericPrice * 100);
+  const amountInPaise = Math.round(numericPrice * 100);
+  console.log("Amount in paise:", amountInPaise);
+  return amountInPaise;
 };
