@@ -18,6 +18,8 @@ interface PaymentDialogProps {
   planPrice: string;
   onSuccess: () => void;
   fileId?: number;
+  selectedStrategyId?: number;
+  selectedStrategyName?: string | null;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -41,7 +43,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     setIsProcessing(true);
 
     const options = {
-      key: "rzp_test_yb9BsUPOlZGzUn",
+      key: "rzp_test_gcRzcheYaSXTPJ",
       amount: convertPriceToAmount(planPrice),
       currency: "INR",
       name: "BestAlgo.ai",
