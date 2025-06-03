@@ -100,6 +100,87 @@ export const checkUserPremiumStatus = async (userId: string): Promise<boolean> =
 };
 
 /**
+ * Checks if a user has access to a specific strategy, either through individual purchase or premium status
+ * @param userId The user's ID
+ * @param strategyId The strategy ID to check access for
+ * @returns Promise<boolean> indicating if the user has access to the strategy
+ */
+export const checkStrategyAccess = async (
+  userId: string,
+  strategyId: number
+): Promise<boolean> => {
+  try {
+    console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
+    
+    // Check if the user has premium status, which grants access to all premium strategies
+    const hasPremium = await checkUserPremiumStatus(userId);
+    
+    if (hasPremium) {
+      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
+      return true;
+    }
+    
+    // Convert strategyId to string for comparisons
+    const strategyIdStr = String(strategyId);
+    
+    // If the user doesn't have premium access, check if they specifically purchased this strategy
+    // by looking at the plan_details table with this specific strategy
+    const { data: planData, error: planError } = await supabase
+      .from('plan_details')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_paid', true)
+      .order('selected_at', { ascending: false });
+      
+    if (planError) {
+      console.error('Error checking specific strategy access:', planError);
+      return false;
+    }
+    
+    // If any plan entry references this strategy, grant access
+    const hasSpecificAccess = planData && planData.some(plan => {
+      // Check if plan name explicitly includes this specific strategy ID
+      const hasStrategyIdInPlan = 
+        plan.plan_name.includes(`- Strategy ${strategyIdStr}`) || 
+        plan.plan_name.includes(`Strategy ${strategyIdStr}`);
+      
+      console.log(`Plan check for ${plan.plan_name}:`, {
+        strategyIdStr,
+        hasStrategyIdInPlan
+      });
+      
+      return hasStrategyIdInPlan;
+    });
+    
+    // Also check strategy_selections table for paid status
+    const { data: strategyData, error: strategyError } = await supabase
+      .from('strategy_selections')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('strategy_id', strategyId)
+      .eq('paid_status', 'paid')
+      .maybeSingle();
+      
+    if (strategyError) {
+      console.error('Error checking strategy_selections:', strategyError);
+    }
+    
+    const hasStrategyAccess = !!strategyData;
+    
+    console.log(`User ${userId} access to strategy ${strategyId}:`, {
+      hasSpecificAccess,
+      hasStrategyAccess,
+      finalAccess: hasSpecificAccess || hasStrategyAccess
+    });
+    
+    return hasSpecificAccess || hasStrategyAccess;
+  } catch (error) {
+    console.error('Error checking strategy access:', error);
+    return false;
+  }
+};
+
+/**
  * Updates a user's premium access in both strategy_selections and wishlist tables
  * @param userId The user's ID
  * @param premiumStatus The premium status to set
@@ -203,68 +284,6 @@ export const syncPremiumAccess = async (
     return true;
   } catch (error) {
     console.error('Error in syncPremiumAccess:', error);
-    return false;
-  }
-};
-
-/**
- * Checks if a user has access to a specific strategy, either through individual purchase or premium status
- * @param userId The user's ID
- * @param strategyId The strategy ID to check access for
- * @returns Promise<boolean> indicating if the user has access to the strategy
- */
-export const checkStrategyAccess = async (
-  userId: string,
-  strategyId: number
-): Promise<boolean> => {
-  try {
-    console.log(`Checking strategy access for user ${userId}, strategy ${strategyId}`);
-    
-    // Check if the user has premium status, which grants access to all premium strategies
-    const hasPremium = await checkUserPremiumStatus(userId);
-    
-    if (hasPremium) {
-      console.log(`User ${userId} has premium access to strategy ${strategyId}`);
-      return true;
-    }
-    
-    // Convert strategyId to string for comparisons
-    const strategyIdStr = String(strategyId);
-    
-    // If the user doesn't have premium access, check if they specifically purchased this strategy
-    // by looking at the plan_details table with this specific strategy
-    const { data: planData, error: planError } = await supabase
-      .from('plan_details')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_paid', true)
-      .order('selected_at', { ascending: false });
-      
-    if (planError) {
-      console.error('Error checking specific strategy access:', planError);
-      return false;
-    }
-    
-    // If any plan entry references this strategy, grant access
-    const hasSpecificAccess = planData && planData.some(plan => {
-      // Check if plan name explicitly includes this specific strategy ID
-      const hasStrategyIdInPlan = 
-        plan.plan_name.includes(`- Strategy ${strategyIdStr}`) || 
-        plan.plan_name.includes(`Strategy ${strategyIdStr}`);
-      
-      console.log(`Plan check for ${plan.plan_name}:`, {
-        strategyIdStr,
-        hasStrategyIdInPlan
-      });
-      
-      return hasStrategyIdInPlan;
-    });
-    
-    console.log(`User ${userId} specific access to strategy ${strategyId}: ${hasSpecificAccess}`);
-    
-    return !!hasSpecificAccess;
-  } catch (error) {
-    console.error('Error checking strategy access:', error);
     return false;
   }
 };
