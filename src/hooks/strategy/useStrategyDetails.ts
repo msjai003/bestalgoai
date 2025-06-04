@@ -8,73 +8,70 @@ import { addToWishlist, removeFromWishlist } from "@/hooks/strategy/useStrategyW
 
 export const useStrategyDetails = (strategy: any, user: any) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [hasPremium, setHasPremium] = useState(false);
   const [isPaidStrategy, setIsPaidStrategy] = useState(false);
+  const [accessCheckComplete, setAccessCheckComplete] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkWishlistStatus = async () => {
-      if (!user || !strategy) return;
+    const checkAllAccess = async () => {
+      if (!user || !strategy) {
+        setIsLoading(false);
+        setAccessCheckComplete(true);
+        return;
+      }
+      
+      setIsLoading(true);
+      setAccessCheckComplete(false);
       
       try {
-        const { data, error } = await supabase
-          .from('strategy_selections')
-          .select('id, paid_status')
-          .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id);
+        // Run all checks in parallel for better performance
+        const [wishlistData, premiumData, strategyAccess] = await Promise.all([
+          // Check wishlist status
+          supabase
+            .from('strategy_selections')
+            .select('id, paid_status')
+            .eq('user_id', user.id)
+            .eq('strategy_id', strategy.id),
           
-        if (error) {
-          console.error('Error checking wishlist status:', error);
-          return;
+          // Check premium status
+          supabase
+            .from('plan_details')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('is_paid', true)
+            .order('selected_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          
+          // Check specific strategy access
+          checkStrategyAccess(user.id, strategy.id)
+        ]);
+        
+        // Process results
+        if (!wishlistData.error) {
+          setIsWishlisted(wishlistData.data && wishlistData.data.length > 0);
         }
         
-        setIsWishlisted(data && data.length > 0);
-      } catch (error) {
-        console.error('Error checking wishlist status:', error);
-      }
-    };
-    
-    const checkPremiumStatus = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('plan_details')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_paid', true)
-          .order('selected_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-          
-        if (data && (data.plan_name === 'Premium' || data.plan_name === 'Pro' || data.plan_name === 'Elite')) {
+        if (!premiumData.error && premiumData.data && 
+            (premiumData.data.plan_name === 'Premium' || 
+             premiumData.data.plan_name === 'Pro' || 
+             premiumData.data.plan_name === 'Elite')) {
           setHasPremium(true);
-          console.log('User has active premium subscription');
         }
-      } catch (error) {
-        console.error('Error checking premium status:', error);
-      }
-    };
-
-    const checkSpecificStrategyAccess = async () => {
-      if (!user || !strategy) return;
-
-      try {
-        const hasAccess = await checkStrategyAccess(user.id, strategy.id);
-        console.log(`Strategy ${strategy.id} access check:`, hasAccess);
         
-        if (hasAccess) {
-          setIsPaidStrategy(true);
-        }
+        setIsPaidStrategy(strategyAccess);
+        
       } catch (error) {
-        console.error('Error checking specific strategy access:', error);
+        console.error('Error checking strategy access:', error);
+      } finally {
+        setIsLoading(false);
+        setAccessCheckComplete(true);
       }
     };
     
-    checkWishlistStatus();
-    checkPremiumStatus();
-    checkSpecificStrategyAccess();
+    checkAllAccess();
   }, [user, strategy]);
 
   const handleToggleWishlist = async () => {
@@ -117,6 +114,7 @@ export const useStrategyDetails = (strategy: any, user: any) => {
     isLoading,
     hasPremium,
     isPaidStrategy,
+    accessCheckComplete,
     handleToggleWishlist
   };
 };

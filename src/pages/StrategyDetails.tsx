@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from '@/components/Header';
@@ -38,6 +39,7 @@ const StrategyDetails = () => {
     isLoading,
     hasPremium,
     isPaidStrategy,
+    accessCheckComplete,
     handleToggleWishlist
   } = useStrategyDetails(strategy, user);
 
@@ -156,6 +158,37 @@ const StrategyDetails = () => {
     );
   }
 
+  // Show loading skeleton while checking access
+  if (!accessCheckComplete) {
+    return (
+      <div className="min-h-screen bg-charcoalPrimary text-charcoalTextPrimary">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center mb-6">
+            <Link to="/strategy-selection" className="flex items-center text-gray-400 hover:text-cyan transition-colors">
+              <ChevronLeft className="mr-1 h-5 w-5" />
+              <span className="font-medium">Back to Strategies</span>
+            </Link>
+          </div>
+          <Card className="bg-charcoalSecondary border border-cyan/20 shadow-lg rounded-xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-700 rounded mb-4"></div>
+                <div className="h-4 bg-gray-700 rounded mb-8 w-3/4"></div>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="h-16 bg-gray-700 rounded"></div>
+                  <div className="h-16 bg-gray-700 rounded"></div>
+                  <div className="h-16 bg-gray-700 rounded"></div>
+                </div>
+                <div className="h-32 bg-gray-700 rounded"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   // Determine if this is a premium strategy that requires payment
   const isPremium = strategy.package === 'premium' || 
                    strategy.package === 'Premium' ||
@@ -174,7 +207,8 @@ const StrategyDetails = () => {
     hasPremium,
     isPaidStrategy,
     isZenflow,
-    canAccess
+    canAccess,
+    accessCheckComplete
   });
   
   const strategyDetailsParams = getStrategyDetailsParams(strategy);
