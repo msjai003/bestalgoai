@@ -12,13 +12,12 @@ export const BrokerHeader = ({ onBack, title }: BrokerHeaderProps) => {
     <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-b border-gray-800 z-50">
       <div className="flex items-center justify-between px-4 h-16">
         <Button 
-          variant="outline" 
-          className="bg-gray-200 border border-cyan text-charcoalPrimary hover:bg-gray-100"
+          variant="ghost" 
           onClick={onBack}
-          size="sm"
+          size="icon"
+          className="text-gray-300 hover:text-cyan hover:bg-gray-800/50"
         >
-          <ChevronLeft className="w-4 h-4 mr-1 text-cyan" />
-          <span className="text-xs font-medium">Back</span>
+          <ChevronLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-lg font-semibold">{title}</h1>
         <Button variant="ghost" className="p-2">
